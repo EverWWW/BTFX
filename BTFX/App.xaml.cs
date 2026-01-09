@@ -6,6 +6,7 @@ using BTFX.Services.Implementations;
 using BTFX.Services.Interfaces;
 using BTFX.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using ToolHelper.LoggingDiagnostics;
 
 namespace BTFX;
 
@@ -46,24 +47,27 @@ public partial class App : Application
         // 3. 初始化目录结构
         InitializeDirectories();
 
-        // 4. 配置依赖注入
+        // 4. 初始化日志框架 (TODO: 第四阶段完善)
+        // InitializeLogging();
+
+        // 5. 配置依赖注入
         var services = new ServiceCollection();
         ConfigureServices(services);
         Services = services.BuildServiceProvider();
 
-        // 5. 加载配置
+        // 6. 加载配置
         var settingsService = Services.GetRequiredService<ISettingsService>();
         settingsService.LoadSettings();
 
-        // 6. 应用主题
+        // 7. 应用主题
         var themeService = Services.GetRequiredService<IThemeService>();
         themeService.ApplyTheme(settingsService.CurrentSettings.Application.Theme);
 
-        // 7. 应用语言
+        // 8. 应用语言
         var localizationService = Services.GetRequiredService<ILocalizationService>();
         localizationService.ApplyLanguage(settingsService.CurrentSettings.Application.Language);
 
-        // 8. 显示主窗口
+        // 9. 显示主窗口
         var mainWindow = Services.GetRequiredService<MainWindow>();
         mainWindow.Show();
 
@@ -147,11 +151,9 @@ public partial class App : Application
     /// </summary>
     private static void HandleException(Exception ex, string source)
     {
-        // 记录日志
+        // 记录日志 (TODO: 第四阶段使用ToolHelper.LoggingDiagnostics)
         System.Diagnostics.Debug.WriteLine($"[{source}] {ex.Message}");
         System.Diagnostics.Debug.WriteLine(ex.StackTrace);
-
-        // TODO: 使用ToolHelper.LoggingDiagnostics记录日志
 
         // 显示友好提示
         MessageBox.Show(
@@ -185,13 +187,13 @@ public partial class App : Application
             {
                 Directory.CreateDirectory(fullPath);
             }
+            }
         }
-    }
 
-    /// <summary>
-    /// 配置服务
-    /// </summary>
-    private static void ConfigureServices(IServiceCollection services)
+        /// <summary>
+        /// 配置服务
+        /// </summary>
+        private static void ConfigureServices(IServiceCollection services)
     {
         // ========== Singleton 服务 ==========
         services.AddSingleton<INavigationService, NavigationService>();

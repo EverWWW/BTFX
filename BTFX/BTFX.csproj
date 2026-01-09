@@ -39,5 +39,23 @@
     <Resource Include="Resources\Fonts\*.ttf" />
     <Resource Include="Resources\Images\*.*" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Behaviors\" />
+    <Folder Include="Controls\" />
+    <Folder Include="Resources\Themes\" />
+    <Folder Include="Resources\Styles\" />
+    <Folder Include="Resources\Images\" />
+    <Folder Include="Validators\" />
+    <Folder Include="Extensions\" />
+    <Folder Include="Views\Dialogs\" />
+    <Folder Include="Data\Database\" />
+    <Folder Include="Data\Backups\" />
+    <Folder Include="Data\Logs\" />
+    <Folder Include="Data\Reports\" />
+    <Folder Include="Data\Videos\" />
+    <Folder Include="Data\Temp\" />
+    <Folder Include="Data\Config\" />
+    <Folder Include="Data\" />
+  </ItemGroup>
 
 </Project>

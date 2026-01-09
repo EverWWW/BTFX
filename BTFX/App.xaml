@@ -30,9 +30,12 @@
             <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
             <converters:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter" />
 
+            <!-- 字体资源 -->
+            <FontFamily x:Key="AlibabaPuHuiTi">pack://application:,,,/Resources/Fonts/#Alibaba PuHuiTi</FontFamily>
+
             <!-- 全局字体样式 -->
             <Style TargetType="Window" BasedOn="{StaticResource {x:Type Window}}">
-                <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial" />
+                <Setter Property="FontFamily" Value="{StaticResource AlibabaPuHuiTi}" />
                 <Setter Property="FontSize" Value="14" />
                 <Setter Property="UseLayoutRounding" Value="True" />
                 <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
@@ -40,15 +43,23 @@
             </Style>
 
             <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
-                <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial" />
+                <Setter Property="FontFamily" Value="{StaticResource AlibabaPuHuiTi}" />
             </Style>
 
             <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
-                <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial" />
+                <Setter Property="FontFamily" Value="{StaticResource AlibabaPuHuiTi}" />
             </Style>
 
             <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
-                <Setter Property="FontFamily" Value="Microsoft YaHei UI, Segoe UI, Arial" />
+                <Setter Property="FontFamily" Value="{StaticResource AlibabaPuHuiTi}" />
+            </Style>
+
+            <Style TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
+                <Setter Property="FontFamily" Value="{StaticResource AlibabaPuHuiTi}" />
+            </Style>
+
+            <Style TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignComboBox}">
+                <Setter Property="FontFamily" Value="{StaticResource AlibabaPuHuiTi}" />
             </Style>
 
         </ResourceDictionary>
