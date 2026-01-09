@@ -4,4 +4,5 @@
   <Project Path="../GIAS/ToolHelper.DataProcessing/ToolHelper.DataProcessing.csproj" />
   <Project Path="../GIAS/ToolHelper.LoggingDiagnostics/ToolHelper.LoggingDiagnostics.csproj" />
   <Project Path="BTFX/BTFX.csproj" />
+  <Project Path="ToolHelperTest/ToolHelperTest.csproj" />
 </Solution>

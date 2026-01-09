@@ -6,7 +6,10 @@ using BTFX.Services.Implementations;
 using BTFX.Services.Interfaces;
 using BTFX.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
-using ToolHelper.LoggingDiagnostics;
+using Microsoft.Extensions.Options;
+using ToolHelper.LoggingDiagnostics.Abstractions;
+using ToolHelper.LoggingDiagnostics.Configuration;
+using ToolHelper.LoggingDiagnostics.Logging;
 
 namespace BTFX;
 
@@ -16,6 +19,7 @@ namespace BTFX;
 public partial class App : Application
 {
     private static Mutex? _mutex;
+    private static ILogHelper? _logHelper;
 
     /// <summary>
     /// 服务提供者
@@ -47,8 +51,8 @@ public partial class App : Application
         // 3. 初始化目录结构
         InitializeDirectories();
 
-        // 4. 初始化日志框架 (TODO: 第四阶段完善)
-        // InitializeLogging();
+        // 4. 初始化日志框架
+        InitializeLogging();
 
         // 5. 配置依赖注入
         var services = new ServiceCollection();
@@ -82,9 +86,16 @@ public partial class App : Application
     /// </summary>
     protected override void OnExit(ExitEventArgs e)
     {
+        // 记录关闭日志
+        _logHelper?.Information($"{Constants.APP_DISPLAY_NAME} 正在关闭");
+
         // 保存配置
         var settingsService = Services?.GetService<ISettingsService>();
         settingsService?.SaveSettings();
+
+        // 释放资源
+        _logHelper?.FlushAsync().GetAwaiter().GetResult();
+        (_logHelper as IAsyncDisposable)?.DisposeAsync().AsTask().GetAwaiter().GetResult();
 
         // 释放Mutex
         _mutex?.ReleaseMutex();
@@ -151,9 +162,22 @@ public partial class App : Application
     /// </summary>
     private static void HandleException(Exception ex, string source)
     {
-        // 记录日志 (TODO: 第四阶段使用ToolHelper.LoggingDiagnostics)
-        System.Diagnostics.Debug.WriteLine($"[{source}] {ex.Message}");
-        System.Diagnostics.Debug.WriteLine(ex.StackTrace);
+        // 记录日志
+        try
+        {
+            _logHelper?.Error($"[{source}] 应用程序异常", ex, new Dictionary<string, object>
+            {
+                ["Source"] = source,
+                ["ExceptionType"] = ex.GetType().Name,
+                ["StackTrace"] = ex.StackTrace ?? "No stack trace"
+            });
+        }
+        catch
+        {
+            // 如果日志记录失败，回退到调试输出
+            System.Diagnostics.Debug.WriteLine($"[{source}] {ex.Message}");
+            System.Diagnostics.Debug.WriteLine(ex.StackTrace);
+        }
 
         // 显示友好提示
         MessageBox.Show(
@@ -187,13 +211,57 @@ public partial class App : Application
             {
                 Directory.CreateDirectory(fullPath);
             }
+                }
             }
-        }
 
-        /// <summary>
-        /// 配置服务
-        /// </summary>
-        private static void ConfigureServices(IServiceCollection services)
+            /// <summary>
+            /// 初始化日志框架
+            /// </summary>
+            private static void InitializeLogging()
+            {
+                try
+                {
+                    var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                    var logDirectory = Path.Combine(baseDir, Constants.LOG_DIRECTORY);
+
+                    // 配置日志选项
+                    var logOptions = Options.Create(new LogOptions
+                    {
+                        MinimumLevel = ToolHelper.LoggingDiagnostics.Abstractions.LogLevel.Information,
+                        LogDirectory = logDirectory,
+                        EnableConsoleOutput = false, // WPF应用不需要控制台输出
+                        SeparateFileByLevel = true,  // 按日志级别分文件
+                        EnableAsyncWrite = true,     // 启用异步写入
+                        BufferSize = 100,            // 缓冲区大小
+                        FlushIntervalMs = 1000,      // 刷新间隔1秒
+                        ArchiveAfterDays = Constants.LOG_RETENTION_DAYS,
+                        MessageTemplate = "[{timestamp:yyyy-MM-dd HH:mm:ss.fff}] [{level}] {message}"
+                    });
+
+                    // 创建 LogHelper 实例
+                    _logHelper = new LogHelper(logOptions, Constants.APP_NAME);
+
+                    // 记录启动日志
+                    _logHelper.Information($"{Constants.APP_DISPLAY_NAME} {Constants.VERSION_FULL} 启动", new Dictionary<string, object>
+                    {
+                        ["Version"] = Constants.VERSION_FULL,
+                        ["StartTime"] = DateTime.Now,
+                        ["OSVersion"] = Environment.OSVersion.ToString(),
+                        ["MachineName"] = Environment.MachineName
+                    });
+                }
+                catch (Exception ex)
+                {
+                    // 如果日志初始化失败，输出到调试窗口
+                    System.Diagnostics.Debug.WriteLine($"日志初始化失败: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine(ex.StackTrace);
+                }
+            }
+
+            /// <summary>
+            /// 配置服务
+            /// </summary>
+            private static void ConfigureServices(IServiceCollection services)
     {
         // ========== Singleton 服务 ==========
         services.AddSingleton<INavigationService, NavigationService>();
