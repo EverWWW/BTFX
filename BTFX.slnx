@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="../GIAS/ToolHelper.Communication/ToolHelper.Communication.csproj" />
+  <Project Path="../GIAS/ToolHelper.Database/ToolHelper.Database.csproj" />
+  <Project Path="../GIAS/ToolHelper.DataProcessing/ToolHelper.DataProcessing.csproj" />
+  <Project Path="../GIAS/ToolHelper.LoggingDiagnostics/ToolHelper.LoggingDiagnostics.csproj" />
+  <Project Path="BTFX/BTFX.csproj" />
+</Solution>

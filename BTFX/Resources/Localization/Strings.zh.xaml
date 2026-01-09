@@ -1,0 +1,212 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <!-- Temporary English content to avoid encoding issues -->
+    <system:String x:Key="AppName">Gait Intelligent Analysis System</system:String>
+    <system:String x:Key="AppNameShort">BTFX</system:String>
+    
+    <system:String x:Key="OK">OK</system:String>
+    <system:String x:Key="Cancel">Cancel</system:String>
+    <system:String x:Key="Save">Save</system:String>
+    <system:String x:Key="Delete">Delete</system:String>
+    <system:String x:Key="Edit">Edit</system:String>
+    <system:String x:Key="Add">Add</system:String>
+    <system:String x:Key="Search">Search</system:String>
+    <system:String x:Key="Refresh">Refresh</system:String>
+    <system:String x:Key="Export">Export</system:String>
+    <system:String x:Key="Import">Import</system:String>
+    <system:String x:Key="Print">Print</system:String>
+    <system:String x:Key="Preview">Preview</system:String>
+    <system:String x:Key="Close">Close</system:String>
+    <system:String x:Key="Back">Back</system:String>
+    <system:String x:Key="Next">Next</system:String>
+    <system:String x:Key="Previous">Previous</system:String>
+    <system:String x:Key="Confirm">Confirm</system:String>
+    <system:String x:Key="Reset">Reset</system:String>
+    <system:String x:Key="Select">Select</system:String>
+    <system:String x:Key="Clear">Clear</system:String>
+    <system:String x:Key="Yes">Yes</system:String>
+    <system:String x:Key="No">No</system:String>
+    
+    <system:String x:Key="Login">Login</system:String>
+    <system:String x:Key="Logout">Logout</system:String>
+    <system:String x:Key="Username">Username</system:String>
+    <system:String x:Key="Password">Password</system:String>
+    <system:String x:Key="RememberPassword">Remember Password</system:String>
+    <system:String x:Key="GuestLogin">Guest Login</system:String>
+    <system:String x:Key="LoginSuccess">Login Successful</system:String>
+    <system:String x:Key="LoginFailed">Invalid username or password</system:String>
+    <system:String x:Key="AccountDisabled">Account Disabled</system:String>
+    <system:String x:Key="PleaseEnterUsername">Enter Username</system:String>
+    <system:String x:Key="PleaseEnterPassword">Enter Password</system:String>
+    <system:String x:Key="UsernameLength">Username 3-20 chars</system:String>
+    <system:String x:Key="PasswordLength">Password 6-20 chars</system:String>
+    
+    <system:String x:Key="PatientManagement">Patient Management</system:String>
+    <system:String x:Key="PatientList">Patient List</system:String>
+    <system:String x:Key="PatientInfo">Patient Info</system:String>
+    <system:String x:Key="PatientName">Name</system:String>
+    <system:String x:Key="Gender">Gender</system:String>
+    <system:String x:Key="Male">Male</system:String>
+    <system:String x:Key="Female">Female</system:String>
+    <system:String x:Key="Age">Age</system:String>
+    <system:String x:Key="BirthDate">Birth Date</system:String>
+    <system:String x:Key="Phone">Phone</system:String>
+    <system:String x:Key="IdNumber">ID Number</system:String>
+    <system:String x:Key="Height">Height</system:String>
+    <system:String x:Key="HeightUnit">cm</system:String>
+    <system:String x:Key="Weight">Weight</system:String>
+    <system:String x:Key="WeightUnit">kg</system:String>
+    <system:String x:Key="Address">Address</system:String>
+    <system:String x:Key="MedicalHistory">Medical History</system:String>
+    <system:String x:Key="Remark">Remark</system:String>
+    <system:String x:Key="SelectPatient">Select Patient</system:String>
+    <system:String x:Key="AddPatient">Add Patient</system:String>
+    <system:String x:Key="EditPatient">Edit Patient</system:String>
+    <system:String x:Key="DeletePatient">Delete Patient</system:String>
+    <system:String x:Key="SearchPatient">Search Patient</system:String>
+    <system:String x:Key="PatientNameRequired">Name Required</system:String>
+    <system:String x:Key="PhoneRequired">Phone Required</system:String>
+    <system:String x:Key="PhoneExists">Phone Exists</system:String>
+    <system:String x:Key="ConfirmDeletePatient">Confirm Delete?</system:String>
+    <system:String x:Key="NoPatientSelected">No Patient Selected</system:String>
+    
+    <system:String x:Key="Measurement">Measurement</system:String>
+    <system:String x:Key="StartMeasurement">Start</system:String>
+    <system:String x:Key="StopMeasurement">Stop</system:String>
+    <system:String x:Key="MeasurementInProgress">Measuring...</system:String>
+    <system:String x:Key="MeasurementCompleted">Completed</system:String>
+    <system:String x:Key="MeasurementFailed">Failed</system:String>
+    <system:String x:Key="VideoPreview">Video Preview</system:String>
+    <system:String x:Key="GaitParameters">Parameters</system:String>
+    
+    <system:String x:Key="DataManagement">Data</system:String>
+    <system:String x:Key="MeasurementRecords">Records</system:String>
+    <system:String x:Key="MeasurementTime">Time</system:String>
+    <system:String x:Key="MeasurementStatus">Status</system:String>
+    <system:String x:Key="ViewDetails">Details</system:String>
+    <system:String x:Key="ExportData">Export</system:String>
+    <system:String x:Key="DateRange">Date Range</system:String>
+    <system:String x:Key="StartDate">Start Date</system:String>
+    <system:String x:Key="EndDate">End Date</system:String>
+    
+    <system:String x:Key="Report">Report</system:String>
+    <system:String x:Key="ReportList">Reports</system:String>
+    <system:String x:Key="GenerateReport">Generate</system:String>
+    <system:String x:Key="RegenerateReport">Regenerate</system:String>
+    <system:String x:Key="ReportPreview">Preview</system:String>
+    <system:String x:Key="DoctorOpinion">Opinion</system:String>
+    <system:String x:Key="ExportPDF">PDF</system:String>
+    <system:String x:Key="ReportTime">Time</system:String>
+    <system:String x:Key="ReportStatus">Status</system:String>
+    <system:String x:Key="ConfirmOverwriteReport">Overwrite?</system:String>
+    
+    <system:String x:Key="Settings">Settings</system:String>
+    <system:String x:Key="GeneralSettings">General</system:String>
+    <system:String x:Key="Language">Language</system:String>
+    <system:String x:Key="Theme">Theme</system:String>
+    <system:String x:Key="LightTheme">Light</system:String>
+    <system:String x:Key="DarkTheme">Dark</system:String>
+    <system:String x:Key="UserManagement">Users</system:String>
+    <system:String x:Key="DepartmentManagement">Departments</system:String>
+    <system:String x:Key="UnitSettings">Unit</system:String>
+    <system:String x:Key="UnitName">Unit Name</system:String>
+    <system:String x:Key="Logo">Logo</system:String>
+    <system:String x:Key="SelectLogo">Select Logo</system:String>
+    <system:String x:Key="BackupRestore">Backup/Restore</system:String>
+    <system:String x:Key="Backup">Backup</system:String>
+    <system:String x:Key="Restore">Restore</system:String>
+    <system:String x:Key="AutoBackup">Auto Backup</system:String>
+    <system:String x:Key="BackupNow">Backup Now</system:String>
+    <system:String x:Key="RestoreFromBackup">Restore</system:String>
+    <system:String x:Key="BackupFrequency">Frequency</system:String>
+    <system:String x:Key="BackupTime">Time</system:String>
+    <system:String x:Key="RetainCount">Retain</system:String>
+    <system:String x:Key="DeviceSettings">Device</system:String>
+    <system:String x:Key="DatabaseSettings">Database</system:String>
+    <system:String x:Key="AboutUs">About</system:String>
+    
+    <system:String x:Key="AddUser">Add User</system:String>
+    <system:String x:Key="EditUser">Edit User</system:String>
+    <system:String x:Key="DeleteUser">Delete User</system:String>
+    <system:String x:Key="ResetPassword">Reset Password</system:String>
+    <system:String x:Key="ChangePassword">Change Password</system:String>
+    <system:String x:Key="UserRole">Role</system:String>
+    <system:String x:Key="Administrator">Admin</system:String>
+    <system:String x:Key="Operator">Operator</system:String>
+    <system:String x:Key="Guest">Guest</system:String>
+    <system:String x:Key="UserStatus">Status</system:String>
+    <system:String x:Key="Enabled">Enabled</system:String>
+    <system:String x:Key="Disabled">Disabled</system:String>
+    <system:String x:Key="OldPassword">Old Password</system:String>
+    <system:String x:Key="NewPassword">New Password</system:String>
+    <system:String x:Key="ConfirmPassword">Confirm</system:String>
+    <system:String x:Key="PasswordMismatch">Mismatch</system:String>
+    <system:String x:Key="OldPasswordIncorrect">Incorrect</system:String>
+    <system:String x:Key="DefaultPassword">Default: 123456</system:String>
+    <system:String x:Key="ConfirmResetPassword">Reset?</system:String>
+    
+    <system:String x:Key="Department">Department</system:String>
+    <system:String x:Key="DepartmentName">Name</system:String>
+    <system:String x:Key="DepartmentPhone">Phone</system:String>
+    <system:String x:Key="AddDepartment">Add</system:String>
+    <system:String x:Key="EditDepartment">Edit</system:String>
+    <system:String x:Key="DeleteDepartment">Delete</system:String>
+    <system:String x:Key="DepartmentInUse">In Use</system:String>
+    
+    <system:String x:Key="DeviceStatus">Device Status</system:String>
+    <system:String x:Key="Disconnected">Disconnected</system:String>
+    <system:String x:Key="Connecting">Connecting</system:String>
+    <system:String x:Key="Connected">Connected</system:String>
+    <system:String x:Key="ConnectionFailed">Failed</system:String>
+    
+    <system:String x:Key="Success">Success</system:String>
+    <system:String x:Key="Failed">Failed</system:String>
+    <system:String x:Key="Warning">Warning</system:String>
+    <system:String x:Key="Error">Error</system:String>
+    <system:String x:Key="Information">Info</system:String>
+    <system:String x:Key="Loading">Loading...</system:String>
+    <system:String x:Key="Saving">Saving...</system:String>
+    <system:String x:Key="Processing">Processing...</system:String>
+    <system:String x:Key="SaveSuccess">Saved</system:String>
+    <system:String x:Key="SaveFailed">Save Failed</system:String>
+    <system:String x:Key="DeleteSuccess">Deleted</system:String>
+    <system:String x:Key="DeleteFailed">Delete Failed</system:String>
+    <system:String x:Key="OperationSuccess">Success</system:String>
+    <system:String x:Key="OperationFailed">Failed</system:String>
+    <system:String x:Key="NoData">No Data</system:String>
+    <system:String x:Key="NoSearchResults">No Results</system:String>
+    <system:String x:Key="ConfirmDelete">Convert Delete</system:String>
+    <system:String x:Key="ConfirmExit">Confirm Exit</system:String>
+    <system:String x:Key="ExitConfirmMessage">Exit?</system:String>
+    <system:String x:Key="UnsavedChanges">Unsaved Changes</system:String>
+    <system:String x:Key="ProgramAlreadyRunning">Running</system:String>
+    
+    <system:String x:Key="PageInfo">Page {0} of {1}</system:String>
+    <system:String x:Key="TotalRecords">Total: {0}</system:String>
+    <system:String x:Key="FirstPage">First</system:String>
+    <system:String x:Key="LastPage">Last</system:String>
+    <system:String x:Key="PreviousPage">Prev</system:String>
+    <system:String x:Key="NextPage">Next</system:String>
+    
+    <system:String x:Key="MainWindowTitle">Gait Analysis</system:String>
+    <system:String x:Key="LoginWindowTitle">Login</system:String>
+    <system:String x:Key="PatientSelectionTitle">Select Patient</system:String>
+    
+    <system:String x:Key="NavMeasurement">Measurement</system:String>
+    <system:String x:Key="NavDataManagement">Data</system:String>
+    <system:String x:Key="NavReport">Report</system:String>
+    <system:String x:Key="NavSettings">Settings</system:String>
+    
+    <system:String x:Key="Minimize">Minimize</system:String>
+    <system:String x:Key="Maximize">Maximize</system:String>
+    <system:String x:Key="RestoreDown">Restore</system:String>
+    <system:String x:Key="Fullscreen">Fullscreen</system:String>
+    <system:String x:Key="ExitFullscreen">Exit Fullscreen</system:String>
+    
+    <system:String x:Key="Daily">Daily</system:String>
+    <system:String x:Key="Weekly">Weekly</system:String>
+    <system:String x:Key="Monthly">Monthly</system:String>
+
+</ResourceDictionary>
