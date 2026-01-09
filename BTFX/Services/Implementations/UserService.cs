@@ -1,68 +1,156 @@
+using System.Security.Cryptography;
+using System.Text;
+using BTFX.Common;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
 
 namespace BTFX.Services.Implementations;
 
 /// <summary>
-/// 用户服务实现（占位实现，第四阶段完善）
+/// User service implementation (temporary with mock data for Phase 2 testing)
 /// </summary>
 public class UserService : IUserService
 {
-    // TODO: 注入数据库服务
+    // Temporary mock data for testing - use static to share across instances
+    private static readonly List<User> _mockUsers = InitializeMockUsers();
+    private static readonly object _lock = new object();
+
+    private static List<User> InitializeMockUsers()
+    {
+        // Use same hashing algorithm as AuthenticationService
+        using var sha256 = SHA256.Create();
+        var bytes = Encoding.UTF8.GetBytes(Constants.DEFAULT_PASSWORD);
+        var hash = sha256.ComputeHash(bytes);
+        var hashedPassword = Convert.ToBase64String(hash);
+
+        return new List<User>
+        {
+            new User
+            {
+                Id = 1,
+                Username = Constants.ADMIN_USERNAME,
+                Name = "Administrator",
+                PasswordHash = hashedPassword,
+                Role = UserRole.Administrator,
+                IsEnabled = true,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            },
+            new User
+            {
+                Id = 2,
+                Username = Constants.USER_USERNAME,
+                Name = "Operator",
+                PasswordHash = hashedPassword,
+                Role = UserRole.Operator,
+                IsEnabled = true,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            },
+            new User
+            {
+                Id = 3,
+                Username = Constants.GUEST_USERNAME,
+                Name = "Guest",
+                PasswordHash = string.Empty,
+                Role = UserRole.Guest,
+                IsEnabled = true,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            }
+        };
+    }
 
     /// <inheritdoc/>
     public Task<List<User>> GetAllUsersAsync()
     {
-        // TODO: 从数据库读取
-        return Task.FromResult(new List<User>());
+        lock (_lock)
+        {
+            return Task.FromResult(_mockUsers.ToList());
+        }
     }
 
     /// <inheritdoc/>
     public Task<User?> GetUserByIdAsync(int id)
     {
-        // TODO: 从数据库读取
-        return Task.FromResult<User?>(null);
+        lock (_lock)
+        {
+            var user = _mockUsers.FirstOrDefault(u => u.Id == id);
+            return Task.FromResult(user);
+        }
     }
 
     /// <inheritdoc/>
     public Task<User?> GetUserByUsernameAsync(string username)
     {
-        // TODO: 从数据库读取
-        return Task.FromResult<User?>(null);
+        lock (_lock)
+        {
+            var user = _mockUsers.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+            return Task.FromResult(user);
+        }
     }
 
     /// <inheritdoc/>
     public Task<int> AddUserAsync(User user)
     {
-        // TODO: 插入数据库
-        return Task.FromResult(0);
+        lock (_lock)
+        {
+            user.Id = _mockUsers.Any() ? _mockUsers.Max(u => u.Id) + 1 : 1;
+            user.CreatedAt = DateTime.Now;
+            user.UpdatedAt = DateTime.Now;
+            _mockUsers.Add(user);
+            return Task.FromResult(user.Id);
+        }
     }
 
     /// <inheritdoc/>
     public Task<bool> UpdateUserAsync(User user)
     {
-        // TODO: 更新数据库
-        return Task.FromResult(false);
+        lock (_lock)
+        {
+            var existing = _mockUsers.FirstOrDefault(u => u.Id == user.Id);
+            if (existing != null)
+            {
+                var index = _mockUsers.IndexOf(existing);
+                user.UpdatedAt = DateTime.Now;
+                _mockUsers[index] = user;
+                return Task.FromResult(true);
+            }
+            return Task.FromResult(false);
+        }
     }
 
     /// <inheritdoc/>
     public Task<bool> DeleteUserAsync(int id)
     {
-        // TODO: 删除数据库记录
-        return Task.FromResult(false);
+        lock (_lock)
+        {
+            var user = _mockUsers.FirstOrDefault(u => u.Id == id);
+            if (user != null)
+            {
+                _mockUsers.Remove(user);
+                return Task.FromResult(true);
+            }
+            return Task.FromResult(false);
+        }
     }
 
     /// <inheritdoc/>
     public Task<bool> IsUsernameExistsAsync(string username, int? excludeId = null)
     {
-        // TODO: 检查数据库
-        return Task.FromResult(false);
+        lock (_lock)
+        {
+            var exists = _mockUsers.Any(u => 
+                u.Username.Equals(username, StringComparison.OrdinalIgnoreCase) && 
+                (!excludeId.HasValue || u.Id != excludeId.Value));
+            return Task.FromResult(exists);
+        }
     }
 
     /// <inheritdoc/>
     public Task<bool> InitializeDefaultUsersAsync()
     {
-        // TODO: 初始化默认用户（admin, user, guest）
-        return Task.FromResult(false);
+        // Already initialized in static constructor
+        return Task.FromResult(true);
     }
 }

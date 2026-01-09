@@ -1,0 +1,262 @@
+<Window x:Class="BTFX.Views.Dialogs.PatientEditDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        Width="660"
+        Height="820"
+        Loaded="Window_Loaded">
+
+    <Border Background="{DynamicResource MaterialDesign.Brush.Background}"
+            CornerRadius="12"
+            Margin="16">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="24"
+                            Direction="270"
+                            Opacity="0.25"
+                            ShadowDepth="8"
+                            Color="#000000"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!--  Title Bar  -->
+            <Border Grid.Row="0"
+                    Background="{DynamicResource MaterialDesignPaper}"
+                    CornerRadius="12,12,0,0"
+                    Padding="24,16">
+                <Grid>
+                    <TextBlock Text="{Binding DialogTitle}"
+                              FontSize="20"
+                              FontWeight="Medium"
+                              Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                              VerticalAlignment="Center"/>
+                    <Button Style="{StaticResource MaterialDesignIconButton}"
+                            Command="{Binding CancelCommand}"
+                            HorizontalAlignment="Right"
+                            ToolTip="{DynamicResource Close}"
+                            Width="36"
+                            Height="36">
+                        <materialDesign:PackIcon Kind="Close" 
+                                                Width="20" 
+                                                Height="20"
+                                                Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!--  Form Content  -->
+            <ScrollViewer Grid.Row="1"
+                         Padding="24,8,24,16"
+                         VerticalScrollBarVisibility="Auto"
+                         HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+                    <!--  Basic Information Section  -->
+                    <TextBlock Text="{DynamicResource BasicInformation}"
+                              FontSize="14"
+                              FontWeight="SemiBold"
+                              Foreground="{DynamicResource PrimaryHueMidBrush}"
+                              Margin="0,8,0,16"/>
+
+                    <!--  Name and Gender  -->
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="120"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox Grid.Column="0"
+                                materialDesign:HintAssist.Hint="{DynamicResource PatientName}"
+                                materialDesign:HintAssist.IsFloating="True"
+                                materialDesign:TextFieldAssist.HasClearButton="True"
+                                materialDesign:TextFieldAssist.CharacterCounterVisibility="Collapsed"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                MaxLength="50"/>
+
+                        <ComboBox Grid.Column="2"
+                                 materialDesign:HintAssist.Hint="{DynamicResource Gender}"
+                                 materialDesign:HintAssist.IsFloating="True"
+                                 Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                 SelectedIndex="{Binding Gender, Converter={StaticResource EnumToIndexConverter}}">
+                            <ComboBoxItem Content="{DynamicResource Male}"/>
+                            <ComboBoxItem Content="{DynamicResource Female}"/>
+                        </ComboBox>
+                    </Grid>
+
+                    <!--  Birth Date and Phone  -->
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <DatePicker Grid.Column="0"
+                                   materialDesign:HintAssist.Hint="{DynamicResource BirthDate}"
+                                   materialDesign:HintAssist.IsFloating="True"
+                                   Style="{StaticResource MaterialDesignOutlinedDatePicker}"
+                                   SelectedDate="{Binding BirthDate}"/>
+
+                        <TextBox Grid.Column="2"
+                                materialDesign:HintAssist.Hint="{DynamicResource Phone}"
+                                materialDesign:HintAssist.IsFloating="True"
+                                materialDesign:TextFieldAssist.HasClearButton="True"
+                                materialDesign:TextFieldAssist.CharacterCounterVisibility="Collapsed"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}"
+                                MaxLength="20"/>
+                    </Grid>
+
+                    <!--  ID Number  -->
+                    <TextBox materialDesign:HintAssist.Hint="{DynamicResource IdNumber}"
+                            materialDesign:HintAssist.IsFloating="True"
+                            materialDesign:TextFieldAssist.HasClearButton="True"
+                            materialDesign:TextFieldAssist.CharacterCounterVisibility="Collapsed"
+                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                            Text="{Binding IdNumber, UpdateSourceTrigger=PropertyChanged}"
+                            MaxLength="18"
+                            Margin="0,0,0,8"/>
+
+                    <!--  Height and Weight  -->
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox Grid.Column="0"
+                                materialDesign:HintAssist.Hint="{DynamicResource Height}"
+                                materialDesign:HintAssist.IsFloating="True"
+                                materialDesign:TextFieldAssist.SuffixText="cm"
+                                materialDesign:TextFieldAssist.HasClearButton="True"
+                                materialDesign:TextFieldAssist.CharacterCounterVisibility="Collapsed"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                Text="{Binding Height, UpdateSourceTrigger=PropertyChanged}"/>
+
+                        <TextBox Grid.Column="2"
+                                materialDesign:HintAssist.Hint="{DynamicResource Weight}"
+                                materialDesign:HintAssist.IsFloating="True"
+                                materialDesign:TextFieldAssist.SuffixText="kg"
+                                materialDesign:TextFieldAssist.HasClearButton="True"
+                                materialDesign:TextFieldAssist.CharacterCounterVisibility="Collapsed"
+                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                Text="{Binding Weight, UpdateSourceTrigger=PropertyChanged}"/>
+                    </Grid>
+
+                    <!--  Separator  -->
+                    <Separator Margin="0,12,0,12" 
+                              Background="{DynamicResource MaterialDesignDivider}"/>
+
+                    <!--  Additional Information Section  -->
+                    <TextBlock Text="{DynamicResource AdditionalInformation}"
+                              FontSize="14"
+                              FontWeight="SemiBold"
+                              Foreground="{DynamicResource PrimaryHueMidBrush}"
+                              Margin="0,0,0,16"/>
+
+                    <!--  Address  -->
+                    <TextBox materialDesign:HintAssist.Hint="{DynamicResource Address}"
+                            materialDesign:HintAssist.IsFloating="True"
+                            materialDesign:TextFieldAssist.HasClearButton="True"
+                            materialDesign:TextFieldAssist.CharacterCounterVisibility="Collapsed"
+                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                            Text="{Binding Address, UpdateSourceTrigger=PropertyChanged}"
+                            MaxLength="200"
+                            Margin="0,0,0,8"/>
+
+                    <!--  Medical History  -->
+                    <TextBox materialDesign:HintAssist.Hint="{DynamicResource MedicalHistory}"
+                            materialDesign:HintAssist.IsFloating="True"
+                            materialDesign:TextFieldAssist.CharacterCounterVisibility="Collapsed"
+                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                            Text="{Binding MedicalHistory, UpdateSourceTrigger=PropertyChanged}"
+                            MaxLength="500"
+                            TextWrapping="Wrap"
+                            AcceptsReturn="True"
+                            VerticalScrollBarVisibility="Auto"
+                            MinHeight="72"
+                            MaxHeight="100"
+                            Margin="0,0,0,8"/>
+
+                    <!--  Remark  -->
+                    <TextBox materialDesign:HintAssist.Hint="{DynamicResource Remark}"
+                            materialDesign:HintAssist.IsFloating="True"
+                            materialDesign:TextFieldAssist.CharacterCounterVisibility="Collapsed"
+                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                            Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}"
+                            MaxLength="200"
+                            TextWrapping="Wrap"
+                            AcceptsReturn="True"
+                            VerticalScrollBarVisibility="Auto"
+                            MinHeight="56"
+                            MaxHeight="80"/>
+
+                    <!--  Error Message  -->
+                    <Border Background="{DynamicResource MaterialDesign.Brush.ValidationError}"
+                           CornerRadius="4"
+                           Padding="12,8"
+                           Margin="0,12,0,0"
+                           Visibility="{Binding ErrorMessage, Converter={StaticResource NullableToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="AlertCircle" 
+                                                    Width="18" 
+                                                    Height="18" 
+                                                    Foreground="White"
+                                                    VerticalAlignment="Center"
+                                                    Margin="0,0,8,0"/>
+                            <TextBlock Text="{Binding ErrorMessage}"
+                                      Foreground="White"
+                                      TextWrapping="Wrap"
+                                      VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!--  Bottom Button Area  -->
+            <Border Grid.Row="2"
+                    Background="{DynamicResource MaterialDesignPaper}"
+                    CornerRadius="0,0,12,12"
+                    Padding="24,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="1"
+                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                            Command="{Binding CancelCommand}"
+                            Content="{DynamicResource Cancel}"
+                            Width="100"
+                            Height="36"
+                            Margin="0,0,12,0"/>
+
+                    <Button Grid.Column="2"
+                            Style="{StaticResource MaterialDesignRaisedButton}"
+                            Command="{Binding SaveCommand}"
+                            Content="{DynamicResource Save}"
+                            Width="100"
+                            Height="36"
+                            IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

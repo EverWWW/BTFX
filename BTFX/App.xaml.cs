@@ -71,37 +71,80 @@ public partial class App : Application
         var localizationService = Services.GetRequiredService<ILocalizationService>();
         localizationService.ApplyLanguage(settingsService.CurrentSettings.Application.Language);
 
-        // 9. 显示主窗口
-        var mainWindow = Services.GetRequiredService<MainWindow>();
-        mainWindow.Show();
+            // 9. 显示主窗口
+            var mainWindow = Services.GetRequiredService<MainWindow>();
+            mainWindow.Show();
 
-        // 9. 导航到登录视图
-        var navigationService = Services.GetRequiredService<INavigationService>() as NavigationService;
-        // 暂时不导航，等创建LoginView后再启用
-        // navigationService?.NavigateTo<LoginViewModel>();
-    }
+                // 10. 注册视图映射
+                var navigationService = Services.GetRequiredService<INavigationService>() as NavigationService;
+                if (navigationService != null)
+                {
+                    navigationService.RegisterView<LoginViewModel, Views.LoginView>();
+                    navigationService.RegisterView<PatientSelectionViewModel, Views.PatientSelectionView>();
+                    // TODO: Register other views
+
+                    // Navigate to login view
+                    navigationService.NavigateTo<LoginViewModel>();
+                }
+            }
 
     /// <summary>
     /// 应用程序退出
     /// </summary>
     protected override void OnExit(ExitEventArgs e)
     {
-        // 记录关闭日志
-        _logHelper?.Information($"{Constants.APP_DISPLAY_NAME} 正在关闭");
+        try
+        {
+            // 记录关闭日志
+            _logHelper?.Information($"{Constants.APP_DISPLAY_NAME} 正在关闭");
 
-        // 保存配置
-        var settingsService = Services?.GetService<ISettingsService>();
-        settingsService?.SaveSettings();
+            // 保存配置
+            var settingsService = Services?.GetService<ISettingsService>();
+            settingsService?.SaveSettings();
 
-        // 释放资源
-        _logHelper?.FlushAsync().GetAwaiter().GetResult();
-        (_logHelper as IAsyncDisposable)?.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            // 释放日志资源（设置超时避免卡住）
+            try
+            {
+                var flushTask = _logHelper?.FlushAsync();
+                if (flushTask != null)
+                {
+                    if (!flushTask.Wait(TimeSpan.FromSeconds(2)))
+                    {
+                        System.Diagnostics.Debug.WriteLine("Log flush timeout");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Log flush error: {ex.Message}");
+            }
 
-        // 释放Mutex
-        _mutex?.ReleaseMutex();
-        _mutex?.Dispose();
+            // 释放Mutex
+            try
+            {
+                _mutex?.ReleaseMutex();
+            }
+            catch { }
 
-        base.OnExit(e);
+            _mutex?.Dispose();
+
+            // 强制释放服务提供者
+            if (Services is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"OnExit error: {ex.Message}");
+        }
+        finally
+        {
+            base.OnExit(e);
+
+            // 确保进程退出
+            Environment.Exit(0);
+        }
     }
 
     /// <summary>
@@ -263,18 +306,34 @@ public partial class App : Application
             /// </summary>
             private static void ConfigureServices(IServiceCollection services)
     {
-        // ========== Singleton 服务 ==========
-        services.AddSingleton<INavigationService, NavigationService>();
-        services.AddSingleton<ISessionService, SessionService>();
-        services.AddSingleton<ISettingsService, SettingsService>();
-        services.AddSingleton<ILocalizationService, LocalizationService>();
-        services.AddSingleton<IThemeService, ThemeService>();
+            // ========== Singleton 服务 ==========
+            services.AddSingleton<INavigationService, NavigationService>();
+            services.AddSingleton<ISessionService, SessionService>();
+            services.AddSingleton<ISettingsService, SettingsService>();
+            services.AddSingleton<ILocalizationService, LocalizationService>();
+            services.AddSingleton<IThemeService, ThemeService>();
+            services.AddSingleton<IAuthenticationService, AuthenticationService>();
+            services.AddSingleton<IBackupService, BackupService>();
 
-        // ========== ViewModel 注册 ==========
-        services.AddTransient<MainWindowViewModel>();
+            // ========== Transient 服务 ==========
+            services.AddTransient<IPatientService, PatientService>();
+            services.AddTransient<IMeasurementService, MeasurementService>();
+            services.AddTransient<IReportService, ReportService>();
+            services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IExportImportService, ExportImportService>();
+            services.AddTransient<IDepartmentService, DepartmentService>();
 
-        // ========== View 注册 ==========
-        services.AddTransient<MainWindow>();
-    }
+                    // ========== ViewModel 注册 ==========
+                    services.AddTransient<MainWindowViewModel>();
+                    services.AddTransient<LoginViewModel>();
+                    services.AddTransient<PatientSelectionViewModel>();
+                    services.AddTransient<PatientEditViewModel>();
+
+                    // ========== View 注册 ==========
+                    services.AddTransient<MainWindow>();
+                    services.AddTransient<Views.LoginView>();
+                    services.AddTransient<Views.PatientSelectionView>();
+                    services.AddTransient<Views.Dialogs.PatientEditDialog>();
+                }
 }
 

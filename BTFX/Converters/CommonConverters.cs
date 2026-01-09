@@ -132,3 +132,59 @@ public class EnumToDescriptionConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
+/// <summary>
+/// 布尔转值转换器（用于根据布尔值选择不同的值）
+/// </summary>
+public class BooleanToValueConverter : IValueConverter
+{
+    /// <summary>
+    /// 转换
+    /// </summary>
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is bool boolValue && parameter is string paramStr)
+        {
+            var values = paramStr.Split('|');
+            if (values.Length == 2)
+            {
+                return boolValue ? values[0] : values[1];
+            }
+        }
+        return value ?? string.Empty;
+    }
+
+    /// <summary>
+    /// 反转换
+    /// </summary>
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+
+/// <summary>
+/// Enum to ComboBox Index Converter
+/// </summary>
+public class EnumToIndexConverter : IValueConverter
+{
+    /// <summary>
+    /// Convert enum value to index
+    /// </summary>
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value == null) return 0;
+        return (int)value;
+    }
+
+    /// <summary>
+    /// Convert index back to enum value
+    /// </summary>
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value == null) return 0;
+        return Enum.ToObject(targetType, value);
+    }
+}
+

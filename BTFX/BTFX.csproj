@@ -21,6 +21,7 @@
     <!-- Material Design UI -->
     <PackageReference Include="MaterialDesignThemes" Version="5.1.0" />
     <PackageReference Include="MaterialDesignColors" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
 
     <!-- 图表库 -->
     <PackageReference Include="OxyPlot.Wpf" Version="2.2.0" />
@@ -40,14 +41,15 @@
     <Resource Include="Resources\Images\*.*" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Resources\Images\Device\deviceImage.jpeg" />
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="Behaviors\" />
     <Folder Include="Controls\" />
     <Folder Include="Resources\Themes\" />
     <Folder Include="Resources\Styles\" />
-    <Folder Include="Resources\Images\" />
     <Folder Include="Validators\" />
     <Folder Include="Extensions\" />
-    <Folder Include="Views\Dialogs\" />
     <Folder Include="Data\Database\" />
     <Folder Include="Data\Backups\" />
     <Folder Include="Data\Logs\" />
@@ -56,6 +58,14 @@
     <Folder Include="Data\Temp\" />
     <Folder Include="Data\Config\" />
     <Folder Include="Data\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\Device\deviceImage.jpeg" />
+    <Resource Include="Resources\Images\Logo\logo1.png" />
+    <Resource Include="Resources\Images\Logo\logo2.png" />
+    <Resource Include="Resources\Images\Logo\logo3.png" />
+    <Resource Include="Resources\Images\Logo\logo4.png" />
+    <Resource Include="Resources\Images\Logo\logo5.png" />
   </ItemGroup>
 
 </Project>

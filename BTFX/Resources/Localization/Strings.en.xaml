@@ -41,10 +41,17 @@
     <system:String x:Key="PleaseEnterPassword">Please enter password</system:String>
     <system:String x:Key="UsernameLength">Username must be between 3 and 20 characters</system:String>
     <system:String x:Key="PasswordLength">Password must be between 6 and 20 characters</system:String>
-    
+
     <system:String x:Key="PatientManagement">Patient Management</system:String>
     <system:String x:Key="PatientList">Patient List</system:String>
     <system:String x:Key="PatientInfo">Patient Information</system:String>
+    <system:String x:Key="PatientSelectionTitle">Patient Selection</system:String>
+    <system:String x:Key="PreviousPage">Previous Page</system:String>
+    <system:String x:Key="NextPage">Next Page</system:String>
+    <system:String x:Key="Id">ID</system:String>
+    <system:String x:Key="Actions">Actions</system:String>
+    <system:String x:Key="CreatedAt">Created At</system:String>
+    <system:String x:Key="ConfirmSelect">Confirm Selection</system:String>
     <system:String x:Key="PatientName">Name</system:String>
     <system:String x:Key="Gender">Gender</system:String>
     <system:String x:Key="Male">Male</system:String>
@@ -70,7 +77,16 @@
     <system:String x:Key="PhoneExists">Phone number already exists</system:String>
     <system:String x:Key="ConfirmDeletePatient">Are you sure you want to delete this record? This action cannot be undone.</system:String>
     <system:String x:Key="NoPatientSelected">Please select a patient first</system:String>
-    
+    <system:String x:Key="BasicInformation">Basic Information</system:String>
+    <system:String x:Key="AdditionalInformation">Additional Information</system:String>
+    <system:String x:Key="NameLengthError">Name must be between 2 and 50 characters</system:String>
+    <system:String x:Key="PhoneLengthError">Phone must be between 8 and 20 characters</system:String>
+    <system:String x:Key="IdNumberLengthError">ID number must be 15 or 18 characters</system:String>
+    <system:String x:Key="HeightRangeError">Height must be between 50 and 250 cm</system:String>
+    <system:String x:Key="WeightRangeError">Weight must be between 20 and 300 kg</system:String>
+    <system:String x:Key="SaveFailedError">Save failed: {0}</system:String>
+    <system:String x:Key="DeleteFailedError">Delete failed, please try again later</system:String>
+
     <system:String x:Key="Measurement">Measurement</system:String>
     <system:String x:Key="StartMeasurement">Start Measurement</system:String>
     <system:String x:Key="StopMeasurement">Stop Measurement</system:String>
@@ -186,12 +202,9 @@
     <system:String x:Key="TotalRecords">Total: {0} records</system:String>
     <system:String x:Key="FirstPage">First</system:String>
     <system:String x:Key="LastPage">Last</system:String>
-    <system:String x:Key="PreviousPage">Previous</system:String>
-    <system:String x:Key="NextPage">Next</system:String>
-    
+
     <system:String x:Key="MainWindowTitle">Gait Intelligent Analysis System</system:String>
     <system:String x:Key="LoginWindowTitle">Login</system:String>
-    <system:String x:Key="PatientSelectionTitle">Select Patient</system:String>
     
     <system:String x:Key="NavMeasurement">Measurement</system:String>
     <system:String x:Key="NavDataManagement">Data Management</system:String>

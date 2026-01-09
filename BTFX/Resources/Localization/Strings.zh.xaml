@@ -35,7 +35,8 @@
     <system:String x:Key="Username">用户名</system:String>
     <system:String x:Key="Password">密码</system:String>
     <system:String x:Key="RememberPassword">记住密码</system:String>
-    <system:String x:Key="GuestLogin">访客登录</system:String>
+    <system:String x:Key="TogglePasswordVisibility">切换密码显示</system:String>
+    <system:String x:Key="GuestLogin">游客登录</system:String>
     <system:String x:Key="LoginSuccess">登录成功</system:String>
     <system:String x:Key="LoginFailed">用户名或密码错误</system:String>
     <system:String x:Key="AccountDisabled">该账户已被禁用</system:String>
@@ -47,6 +48,13 @@
     <system:String x:Key="PatientManagement">患者管理</system:String>
     <system:String x:Key="PatientList">患者列表</system:String>
     <system:String x:Key="PatientInfo">患者信息</system:String>
+    <system:String x:Key="PatientSelectionTitle">患者选择</system:String>
+    <system:String x:Key="PreviousPage">上一页</system:String>
+    <system:String x:Key="NextPage">下一页</system:String>
+    <system:String x:Key="Id">编号</system:String>
+    <system:String x:Key="Actions">操作</system:String>
+    <system:String x:Key="CreatedAt">创建时间</system:String>
+    <system:String x:Key="ConfirmSelect">确认选择</system:String>
     <system:String x:Key="PatientName">姓名</system:String>
     <system:String x:Key="Gender">性别</system:String>
     <system:String x:Key="Male">男</system:String>
@@ -72,6 +80,15 @@
     <system:String x:Key="PhoneExists">电话号码已存在</system:String>
     <system:String x:Key="ConfirmDeletePatient">您确定要删除这条记录吗？此操作无法撤销。</system:String>
     <system:String x:Key="NoPatientSelected">请先选择一个患者</system:String>
+    <system:String x:Key="BasicInformation">基本信息</system:String>
+    <system:String x:Key="AdditionalInformation">附加信息</system:String>
+    <system:String x:Key="NameLengthError">姓名长度必须在2到50个字符之间</system:String>
+    <system:String x:Key="PhoneLengthError">电话长度必须在8到20个字符之间</system:String>
+    <system:String x:Key="IdNumberLengthError">身份证号必须是15位或18位</system:String>
+    <system:String x:Key="HeightRangeError">身高必须在50到250厘米之间</system:String>
+    <system:String x:Key="WeightRangeError">体重必须在20到300千克之间</system:String>
+    <system:String x:Key="SaveFailedError">保存失败：{0}</system:String>
+    <system:String x:Key="DeleteFailedError">删除失败，请稍后重试</system:String>
 
     <system:String x:Key="Measurement">测量评估</system:String>
     <system:String x:Key="StartMeasurement">开始测量</system:String>
@@ -188,12 +205,9 @@
     <system:String x:Key="TotalRecords">总计：{0} 条记录</system:String>
     <system:String x:Key="FirstPage">首页</system:String>
     <system:String x:Key="LastPage">末页</system:String>
-    <system:String x:Key="PreviousPage">上一页</system:String>
-    <system:String x:Key="NextPage">下一页</system:String>
 
     <system:String x:Key="MainWindowTitle">步态智能分析系统</system:String>
     <system:String x:Key="LoginWindowTitle">登录</system:String>
-    <system:String x:Key="PatientSelectionTitle">选择患者</system:String>
 
     <system:String x:Key="NavMeasurement">测量评估</system:String>
     <system:String x:Key="NavDataManagement">数据管理</system:String>
