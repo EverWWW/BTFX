@@ -30,6 +30,7 @@
             <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
             <converters:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter" />
             <converters:EnumToIndexConverter x:Key="EnumToIndexConverter" />
+            <converters:StringToColorBrushConverter x:Key="StringToColorBrushConverter" />
 
             <!--  字体资源  -->
             <FontFamily x:Key="AlibabaPuHuiTi">pack://application:,,,/Resources/Fonts/#Alibaba PuHuiTi</FontFamily>

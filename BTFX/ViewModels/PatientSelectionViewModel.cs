@@ -327,13 +327,13 @@ public partial class PatientSelectionViewModel : ObservableObject
         }
 
         // Set current patient
-        _sessionService.SetCurrentPatient(SelectedPatient);
+            _sessionService.SetCurrentPatient(SelectedPatient);
 
-        _logHelper?.Information($"Selected patient: {SelectedPatient.Name} (ID: {SelectedPatient.Id})");
+            _logHelper?.Information($"Selected patient: {SelectedPatient.Name} (ID: {SelectedPatient.Id})");
 
-        // Navigate to main container
-        _navigationService.NavigateTo("MainContainerView");
-    }
+            // Navigate to main container
+            _navigationService.NavigateTo("MainContainerViewModel");
+        }
 
     /// <summary>
     /// Back command

@@ -1,0 +1,62 @@
+﻿<UserControl x:Class="BTFX.Views.Dialogs.ConfirmDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:BTFX.Views.Dialogs"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" 
+             d:DesignWidth="400"
+             MinWidth="300"
+             MaxWidth="500">
+
+    <materialDesign:Card Padding="24" 
+                         UniformCornerRadius="8"
+                         materialDesign:ElevationAssist.Elevation="Dp8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <!-- 标题 -->
+                <RowDefinition Height="Auto" />
+                <!-- 消息内容 -->
+                <RowDefinition Height="Auto" />
+                <!-- 按钮区域 -->
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- 标题 -->
+            <TextBlock Grid.Row="0"
+                       Text="{Binding Title}"
+                       FontSize="18"
+                       FontWeight="Medium"
+                       Margin="0,0,0,16" />
+
+            <!-- 消息内容 -->
+            <TextBlock Grid.Row="1"
+                       Text="{Binding Message}"
+                       FontSize="14"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
+                       Margin="0,0,0,24" />
+
+            <!-- 按钮区域 -->
+            <StackPanel Grid.Row="2"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <!-- 取消按钮 -->
+                <Button Style="{StaticResource MaterialDesignFlatButton}"
+                        Content="否"
+                        Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                        CommandParameter="{x:Static local:ConfirmDialog.FalseValue}"
+                        Margin="0,0,8,0"
+                        MinWidth="80" />
+
+                <!-- 确认按钮 -->
+                <Button Style="{StaticResource MaterialDesignRaisedButton}"
+                        Content="是"
+                        Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                        CommandParameter="{x:Static local:ConfirmDialog.TrueValue}"
+                        MinWidth="80" />
+            </StackPanel>
+        </Grid>
+    </materialDesign:Card>
+</UserControl>

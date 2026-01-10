@@ -11,7 +11,7 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
-        <!-- 文本框图标样式 -->
+        <!--  文本框图标样式  -->
         <Style x:Key="InputIconStyle" TargetType="materialDesign:PackIcon">
             <Setter Property="Width" Value="20" />
             <Setter Property="Height" Value="20" />
@@ -20,15 +20,21 @@
             <Setter Property="Foreground" Value="#888888" />
         </Style>
 
-        <!-- 自定义文本框样式 -->
-        <Style x:Key="LoginTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignOutlinedTextBox}">
+        <!--  自定义文本框样式  -->
+        <Style
+            x:Key="LoginTextBoxStyle"
+            BasedOn="{StaticResource MaterialDesignOutlinedTextBox}"
+            TargetType="TextBox">
             <Setter Property="Height" Value="48" />
             <Setter Property="FontSize" Value="14" />
             <Setter Property="Padding" Value="40,12,12,12" />
         </Style>
 
-        <!-- 自定义密码框样式 -->
-        <Style x:Key="LoginPasswordBoxStyle" TargetType="PasswordBox" BasedOn="{StaticResource MaterialDesignOutlinedPasswordBox}">
+        <!--  自定义密码框样式  -->
+        <Style
+            x:Key="LoginPasswordBoxStyle"
+            BasedOn="{StaticResource MaterialDesignOutlinedPasswordBox}"
+            TargetType="PasswordBox">
             <Setter Property="Height" Value="48" />
             <Setter Property="FontSize" Value="14" />
             <Setter Property="Padding" Value="40,12,12,12" />
@@ -36,7 +42,7 @@
     </UserControl.Resources>
 
     <Grid>
-        <!-- 核心登录卡片 -->
+        <!--  核心登录卡片  -->
         <Border
             Width="1000"
             HorizontalAlignment="Center"
@@ -58,14 +64,14 @@
                     <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
 
-                <!-- 左侧：品牌与设备展示区 -->
+                <!--  左侧：品牌与设备展示区  -->
                 <Grid Grid.Column="0" Margin="50,40,30,40">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <!-- Logo 区域 -->
+                    <!--  Logo 区域  -->
                     <Image
                         Grid.Row="0"
                         Height="60"
@@ -73,7 +79,7 @@
                         Source="/Resources/Images/Logo/logo3.png"
                         Stretch="Uniform" />
 
-                    <!-- 设备主图区域 -->
+                    <!--  设备主图区域  -->
                     <Image
                         Grid.Row="1"
                         Margin="0,30,0,0"
@@ -83,10 +89,10 @@
                         Stretch="Uniform" />
                 </Grid>
 
-                <!-- 右侧：交互表单区 -->
+                <!--  右侧：交互表单区  -->
                 <Grid Grid.Column="1" Margin="30,40,50,40">
                     <StackPanel VerticalAlignment="Center">
-                        <!-- 系统标题 -->
+                        <!--  系统标题  -->
                         <TextBlock
                             FontSize="24"
                             FontWeight="Bold"
@@ -101,7 +107,7 @@
                             Text="Gait Intelligent Analysis System"
                             TextWrapping="Wrap" />
 
-                        <!-- 账号输入框 -->
+                        <!--  账号输入框  -->
                         <Grid Margin="0,32,0,0">
                             <TextBox
                                 x:Name="UsernameTextBox"
@@ -119,7 +125,7 @@
                                 Style="{StaticResource InputIconStyle}" />
                         </Grid>
 
-                        <!-- 密码输入框 -->
+                        <!--  密码输入框  -->
                         <Grid Margin="0,16,0,0">
                             <PasswordBox
                                 x:Name="PasswordBox"
@@ -137,7 +143,7 @@
                                 Style="{StaticResource InputIconStyle}" />
                         </Grid>
 
-                        <!-- 记住密码 -->
+                        <!--  记住密码  -->
                         <CheckBox
                             Margin="0,16,0,0"
                             HorizontalAlignment="Right"
@@ -146,7 +152,7 @@
                             Foreground="#666666"
                             IsChecked="{Binding RememberPassword}" />
 
-                        <!-- 错误信息 -->
+                        <!--  错误信息  -->
                         <TextBlock
                             Margin="0,12,0,0"
                             FontSize="13"
@@ -155,7 +161,7 @@
                             TextWrapping="Wrap"
                             Visibility="{Binding ErrorMessage, Converter={StaticResource NullableToVisibilityConverter}}" />
 
-                        <!-- 登录按钮 -->
+                        <!--  登录按钮  -->
                         <Button
                             Height="48"
                             Margin="0,20,0,0"
@@ -179,7 +185,7 @@
                             </StackPanel>
                         </Button>
 
-                        <!-- 游客登录 -->
+                        <!--  游客登录  -->
                         <Button
                             Margin="0,16,0,0"
                             HorizontalAlignment="Center"
@@ -195,7 +201,7 @@
             </Grid>
         </Border>
 
-        <!-- 版本信息 -->
+        <!--  版本信息  -->
         <TextBlock
             Margin="24"
             HorizontalAlignment="Right"

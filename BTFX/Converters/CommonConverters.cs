@@ -191,3 +191,37 @@ public class EnumToIndexConverter : IValueConverter
     }
 }
 
+/// <summary>
+/// 字符串颜色转SolidColorBrush转换器
+/// </summary>
+public class StringToColorBrushConverter : IValueConverter
+{
+    /// <summary>
+    /// 转换
+    /// </summary>
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is string colorString && !string.IsNullOrEmpty(colorString))
+        {
+            try
+            {
+                var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(colorString);
+                return new System.Windows.Media.SolidColorBrush(color);
+            }
+            catch
+            {
+                return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Gray);
+            }
+        }
+        return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Gray);
+    }
+
+    /// <summary>
+    /// 反转换
+    /// </summary>
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+

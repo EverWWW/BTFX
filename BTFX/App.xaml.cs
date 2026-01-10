@@ -81,7 +81,8 @@ public partial class App : Application
                 {
                     navigationService.RegisterView<LoginViewModel, Views.LoginView>();
                     navigationService.RegisterView<PatientSelectionViewModel, Views.PatientSelectionView>();
-                    // TODO: Register other views
+                    navigationService.RegisterView<MainContainerViewModel, Views.MainContainerView>();
+                    // TODO: Register other sub-views (Measurement, DataManagement, Report, Settings)
 
                     // Navigate to login view
                     navigationService.NavigateTo<LoginViewModel>();
@@ -302,38 +303,42 @@ public partial class App : Application
             }
 
             /// <summary>
-            /// 配置服务
-            /// </summary>
-            private static void ConfigureServices(IServiceCollection services)
-    {
-            // ========== Singleton 服务 ==========
-            services.AddSingleton<INavigationService, NavigationService>();
-            services.AddSingleton<ISessionService, SessionService>();
-            services.AddSingleton<ISettingsService, SettingsService>();
-            services.AddSingleton<ILocalizationService, LocalizationService>();
-            services.AddSingleton<IThemeService, ThemeService>();
-            services.AddSingleton<IAuthenticationService, AuthenticationService>();
-            services.AddSingleton<IBackupService, BackupService>();
+                        /// 配置服务
+                        /// </summary>
+                        private static void ConfigureServices(IServiceCollection services)
+                {
+                        // ========== Singleton 服务 ==========
+                        services.AddSingleton<INavigationService, NavigationService>();
+                        services.AddSingleton<ISessionService, SessionService>();
+                        services.AddSingleton<ISettingsService, SettingsService>();
+                        services.AddSingleton<ILocalizationService, LocalizationService>();
+                        services.AddSingleton<IThemeService, ThemeService>();
+                        services.AddSingleton<IAuthenticationService, AuthenticationService>();
+                        services.AddSingleton<IBackupService, BackupService>();
 
-            // ========== Transient 服务 ==========
-            services.AddTransient<IPatientService, PatientService>();
-            services.AddTransient<IMeasurementService, MeasurementService>();
-            services.AddTransient<IReportService, ReportService>();
-            services.AddTransient<IUserService, UserService>();
-            services.AddTransient<IExportImportService, ExportImportService>();
-            services.AddTransient<IDepartmentService, DepartmentService>();
+                        // ========== Transient 服务 ==========
+                        services.AddTransient<IPatientService, PatientService>();
+                        services.AddTransient<IMeasurementService, MeasurementService>();
+                        services.AddTransient<IReportService, ReportService>();
+                        services.AddTransient<IUserService, UserService>();
+                        services.AddTransient<IExportImportService, ExportImportService>();
+                        services.AddTransient<IDepartmentService, DepartmentService>();
 
-                    // ========== ViewModel 注册 ==========
-                    services.AddTransient<MainWindowViewModel>();
-                    services.AddTransient<LoginViewModel>();
-                    services.AddTransient<PatientSelectionViewModel>();
-                    services.AddTransient<PatientEditViewModel>();
+                                // ========== ViewModel 注册 ==========
+                                services.AddTransient<MainWindowViewModel>();
+                                services.AddTransient<LoginViewModel>();
+                                services.AddTransient<PatientSelectionViewModel>();
+                                services.AddTransient<PatientEditViewModel>();
+                                services.AddTransient<MainContainerViewModel>();
 
-                    // ========== View 注册 ==========
-                    services.AddTransient<MainWindow>();
-                    services.AddTransient<Views.LoginView>();
-                    services.AddTransient<Views.PatientSelectionView>();
-                    services.AddTransient<Views.Dialogs.PatientEditDialog>();
-                }
-}
+                                // ========== View 注册 ==========
+                                services.AddTransient<MainWindow>();
+                                services.AddTransient<Views.LoginView>();
+                                services.AddTransient<Views.PatientSelectionView>();
+                                services.AddTransient<Views.Dialogs.PatientEditDialog>();
+                                services.AddTransient<Views.MainContainerView>();
+                                services.AddTransient<Views.Dialogs.ConfirmDialog>();
+                                services.AddTransient<Views.Dialogs.AboutDialog>();
+                            }
+            }
 

@@ -180,8 +180,7 @@ public partial class LoginViewModel : ObservableObject
             _logHelper?.Information("游客登录成功");
 
             // 游客直接进入主界面，跳过患者选择
-            // TODO: 当 MainContainerView 创建后，改为导航到 MainContainerViewModel
-            _navigationService.NavigateTo("PatientSelectionViewModel");
+            _navigationService.NavigateTo("MainContainerViewModel");
         }
         catch (Exception ex)
         {

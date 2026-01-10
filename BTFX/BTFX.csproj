@@ -46,7 +46,6 @@
   <ItemGroup>
     <Folder Include="Controls\" />
     <Folder Include="Resources\Themes\" />
-    <Folder Include="Resources\Styles\" />
     <Folder Include="Validators\" />
     <Folder Include="Extensions\" />
     <Folder Include="Data\Database\" />
