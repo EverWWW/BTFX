@@ -346,8 +346,8 @@ public partial class PatientSelectionViewModel : ObservableObject
 
         _logHelper?.Information("Back to login");
 
-        // Navigate to login
-        _navigationService.NavigateTo("LoginView");
+        // Navigate to login using ViewModel type name
+        _navigationService.NavigateTo<LoginViewModel>();
     }
 
     /// <summary>

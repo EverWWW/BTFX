@@ -130,59 +130,70 @@ public partial class PatientEditViewModel : ObservableObject
         }
 
         /// <summary>
-        /// Real-time validation (clears error when input becomes valid)
+        /// Real-time validation (updates error message as user fixes issues)
         /// </summary>
         private void ValidateInputRealtime()
         {
-            // Only clear error messages, don't show new errors during typing
-            // Full validation happens on Save
-
-            // Clear error if fields become valid
+            // If there's an error message, check if we should update it
             if (!string.IsNullOrWhiteSpace(ErrorMessage))
             {
-                // Check if current error is about Name
-                if (ErrorMessage == _localizationService.GetString("PatientNameRequired") ||
-                    ErrorMessage == _localizationService.GetString("NameLengthError"))
-                {
-                    if (!string.IsNullOrWhiteSpace(Name) && Name.Length >= 2 && Name.Length <= 50)
-                    {
-                        ErrorMessage = string.Empty;
-                    }
-                }
-                // Check if current error is about Phone
-                else if (ErrorMessage == _localizationService.GetString("PhoneRequired") ||
-                         ErrorMessage == _localizationService.GetString("PhoneLengthError"))
-                {
-                    if (!string.IsNullOrWhiteSpace(Phone) && Phone.Length >= 8 && Phone.Length <= 20)
-                    {
-                        ErrorMessage = string.Empty;
-                    }
-                }
-                // Check if current error is about IdNumber
-                else if (ErrorMessage == _localizationService.GetString("IdNumberLengthError"))
-                {
-                    if (string.IsNullOrWhiteSpace(IdNumber) || IdNumber.Length == 18 || IdNumber.Length == 15)
-                    {
-                        ErrorMessage = string.Empty;
-                    }
-                }
-                // Check if current error is about Height
-                else if (ErrorMessage == _localizationService.GetString("HeightRangeError"))
-                {
-                    if (!Height.HasValue || (Height.Value >= 50 && Height.Value <= 250))
-                    {
-                        ErrorMessage = string.Empty;
-                    }
-                }
-                // Check if current error is about Weight
-                else if (ErrorMessage == _localizationService.GetString("WeightRangeError"))
-                {
-                    if (!Weight.HasValue || (Weight.Value >= 20 && Weight.Value <= 300))
-                    {
-                        ErrorMessage = string.Empty;
-                    }
-                }
+                // Try to find the first validation error
+                var newErrorMessage = GetFirstValidationError();
+
+                // Update error message
+                // - If no errors, clear it
+                // - If different error, update to show new error
+                ErrorMessage = newErrorMessage ?? string.Empty;
             }
+        }
+
+        /// <summary>
+        /// Get the first validation error (returns null if all valid)
+        /// </summary>
+        private string? GetFirstValidationError()
+        {
+            // Check Name
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                return _localizationService.GetString("PatientNameRequired");
+            }
+
+            if (Name.Length < 2 || Name.Length > 50)
+            {
+                return _localizationService.GetString("NameLengthError");
+            }
+
+            // Check Phone
+            if (string.IsNullOrWhiteSpace(Phone))
+            {
+                return _localizationService.GetString("PhoneRequired");
+            }
+
+            if (Phone.Length < 8 || Phone.Length > 20)
+            {
+                return _localizationService.GetString("PhoneLengthError");
+            }
+
+            // Check IdNumber (optional, but if present must be valid)
+            if (!string.IsNullOrWhiteSpace(IdNumber) && IdNumber.Length != 18 && IdNumber.Length != 15)
+            {
+                return _localizationService.GetString("IdNumberLengthError");
+            }
+
+            // Check Height (optional, but if present must be valid)
+            if (Height.HasValue && (Height.Value < 50 || Height.Value > 250))
+            {
+                return _localizationService.GetString("HeightRangeError");
+            }
+
+            // Check Weight (optional, but if present must be valid)
+            if (Weight.HasValue && (Weight.Value < 20 || Weight.Value > 300))
+            {
+                return _localizationService.GetString("WeightRangeError");
+            }
+
+            // All fields are valid
+            return null;
         }
 
     /// <summary>
@@ -214,6 +225,7 @@ public partial class PatientEditViewModel : ObservableObject
         Address = patient.Address ?? string.Empty;
         MedicalHistory = patient.MedicalHistory ?? string.Empty;
         Remark = patient.Remark ?? string.Empty;
+        ErrorMessage = string.Empty; // Clear any previous error messages
     }
 
     /// <summary>

@@ -100,8 +100,37 @@ public class NavigationService : ObservableObject, INavigationService
     /// <param name="viewKey">ÊÓÍ¼¼üÃû</param>
     public void NavigateTo(string viewKey)
     {
-        var viewModelType = _viewModelToViewMap.Keys
-            .FirstOrDefault(t => t.Name == viewKey || t.Name == $"{viewKey}ViewModel");
+        // Try different naming patterns to find the view
+        var viewModelType = _viewModelToViewMap.Keys.FirstOrDefault(t =>
+        {
+            var typeName = t.Name;
+
+            // Exact match
+            if (typeName.Equals(viewKey, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            // Match with "ViewModel" suffix
+            if (typeName.Equals($"{viewKey}ViewModel", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            // Match without "ViewModel" suffix
+            if (typeName.EndsWith("ViewModel", StringComparison.OrdinalIgnoreCase))
+            {
+                var nameWithoutSuffix = typeName.Substring(0, typeName.Length - "ViewModel".Length);
+                if (nameWithoutSuffix.Equals(viewKey, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            // Match with "View" suffix (e.g., "LoginView" matches "LoginViewModel")
+            if (viewKey.EndsWith("View", StringComparison.OrdinalIgnoreCase))
+            {
+                var keyWithoutView = viewKey.Substring(0, viewKey.Length - "View".Length);
+                if (typeName.Equals($"{keyWithoutView}ViewModel", StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            return false;
+        });
 
         if (viewModelType == null)
         {

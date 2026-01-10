@@ -15,15 +15,18 @@ public class NullableToVisibilityConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         var isInverse = parameter?.ToString()?.Equals("Inverse", StringComparison.OrdinalIgnoreCase) == true;
-        var isNull = value == null;
+
+        // Check for null, empty string, or whitespace
+        var isNullOrEmpty = value == null || 
+                           (value is string str && string.IsNullOrWhiteSpace(str));
 
         if (isInverse)
         {
-            return isNull ? Visibility.Visible : Visibility.Collapsed;
+            return isNullOrEmpty ? Visibility.Visible : Visibility.Collapsed;
         }
         else
         {
-            return isNull ? Visibility.Collapsed : Visibility.Visible;
+            return isNullOrEmpty ? Visibility.Collapsed : Visibility.Visible;
         }
     }
 

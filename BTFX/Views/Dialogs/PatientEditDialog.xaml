@@ -4,6 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:behaviors="clr-namespace:BTFX.Behaviors"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
@@ -118,7 +120,11 @@
                                 materialDesign:TextFieldAssist.CharacterCounterVisibility="Collapsed"
                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                 Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}"
-                                MaxLength="20"/>
+                                MaxLength="20">
+                            <i:Interaction.Behaviors>
+                                <behaviors:NumericTextBoxBehavior AllowDecimal="False"/>
+                            </i:Interaction.Behaviors>
+                        </TextBox>
                     </Grid>
 
                     <!--  ID Number  -->
@@ -129,7 +135,11 @@
                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
                             Text="{Binding IdNumber, UpdateSourceTrigger=PropertyChanged}"
                             MaxLength="18"
-                            Margin="0,0,0,8"/>
+                            Margin="0,0,0,8">
+                        <i:Interaction.Behaviors>
+                            <behaviors:NumericTextBoxBehavior AllowDecimal="False"/>
+                        </i:Interaction.Behaviors>
+                    </TextBox>
 
                     <!--  Height and Weight  -->
                     <Grid Margin="0,0,0,8">
@@ -146,7 +156,11 @@
                                 materialDesign:TextFieldAssist.HasClearButton="True"
                                 materialDesign:TextFieldAssist.CharacterCounterVisibility="Collapsed"
                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                Text="{Binding Height, UpdateSourceTrigger=PropertyChanged}"/>
+                                Text="{Binding Height, UpdateSourceTrigger=LostFocus, ValidatesOnExceptions=False, ValidatesOnDataErrors=False}">
+                            <i:Interaction.Behaviors>
+                                <behaviors:NumericTextBoxBehavior AllowDecimal="True" MaxDecimalPlaces="2"/>
+                            </i:Interaction.Behaviors>
+                        </TextBox>
 
                         <TextBox Grid.Column="2"
                                 materialDesign:HintAssist.Hint="{DynamicResource Weight}"
@@ -155,7 +169,11 @@
                                 materialDesign:TextFieldAssist.HasClearButton="True"
                                 materialDesign:TextFieldAssist.CharacterCounterVisibility="Collapsed"
                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                Text="{Binding Weight, UpdateSourceTrigger=PropertyChanged}"/>
+                                Text="{Binding Weight, UpdateSourceTrigger=LostFocus, ValidatesOnExceptions=False, ValidatesOnDataErrors=False}">
+                            <i:Interaction.Behaviors>
+                                <behaviors:NumericTextBoxBehavior AllowDecimal="True" MaxDecimalPlaces="2"/>
+                            </i:Interaction.Behaviors>
+                        </TextBox>
                     </Grid>
 
                     <!--  Separator  -->

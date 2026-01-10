@@ -44,7 +44,6 @@
     <None Remove="Resources\Images\Device\deviceImage.jpeg" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Behaviors\" />
     <Folder Include="Controls\" />
     <Folder Include="Resources\Themes\" />
     <Folder Include="Resources\Styles\" />
