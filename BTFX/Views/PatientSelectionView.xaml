@@ -121,7 +121,26 @@
                   GridLinesVisibility="Horizontal"
                   RowHeight="48"
                   ColumnHeaderHeight="56">
-            
+
+            <DataGrid.Resources>
+                <!--  Cell vertical alignment  -->
+                <Style BasedOn="{StaticResource {x:Type DataGridCell}}" TargetType="DataGridCell">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="DataGridCell">
+                                <Border
+                                    Padding="8,0"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}">
+                                    <ContentPresenter VerticalAlignment="Center" />
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.Resources>
+
             <DataGrid.Columns>
                 <DataGridTextColumn Header="{DynamicResource Id}" 
                                     Binding="{Binding Id}" 

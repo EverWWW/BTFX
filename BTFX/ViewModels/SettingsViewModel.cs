@@ -1,10 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace BTFX.ViewModels
+namespace BTFX.ViewModels;
+
+/// <summary>
+/// 设置视图模型（占位，后续完善）
+/// </summary>
+public partial class SettingsViewModel : ObservableObject
 {
-    internal class SettingsViewModel
+    public SettingsViewModel()
     {
     }
 }

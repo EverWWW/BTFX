@@ -5,8 +5,421 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:BTFX.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
+    xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:vm="clr-namespace:BTFX.ViewModels"
+    d:DataContext="{d:DesignInstance Type=vm:DataManagementViewModel}"
+    d:DesignHeight="700"
+    d:DesignWidth="1200"
     mc:Ignorable="d">
-    <Grid />
+
+    <UserControl.Resources>
+        <!--  状态颜色转换器  -->
+        <SolidColorBrush x:Key="PendingBrush" Color="#FF9800" />
+        <SolidColorBrush x:Key="InProgressBrush" Color="#2196F3" />
+        <SolidColorBrush x:Key="CompletedBrush" Color="#4CAF50" />
+        <SolidColorBrush x:Key="CancelledBrush" Color="#9E9E9E" />
+        <SolidColorBrush x:Key="FailedBrush" Color="#F44336" />
+    </UserControl.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <!--  顶部筛选区域  -->
+            <RowDefinition Height="Auto" />
+            <!--  中间数据列表  -->
+            <RowDefinition Height="*" />
+            <!--  底部分页和操作  -->
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--  顶部筛选区域  -->
+        <md:Card
+            Grid.Row="0"
+            Margin="0,0,0,16"
+            Padding="16">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!--  筛选条件  -->
+                <WrapPanel
+                    Grid.Row="0"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <!--  患者姓名  -->
+                    <StackPanel Margin="0,0,24,8" Orientation="Horizontal">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            Text="患者姓名：" />
+                        <TextBox
+                            Width="150"
+                            MaxLength="50"
+                            md:HintAssist.Hint="输入姓名搜索"
+                            Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                            Text="{Binding FilterPatientName, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+
+                    <!--  开始日期  -->
+                    <StackPanel Margin="0,0,24,8" Orientation="Horizontal">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            Text="开始日期：" />
+                        <DatePicker
+                            Width="140"
+                            md:HintAssist.Hint="选择日期"
+                            DisplayDateEnd="{Binding MaxDate, Mode=OneWay}"
+                            SelectedDate="{Binding FilterStartDate}"
+                            Style="{StaticResource MaterialDesignOutlinedDatePicker}" />
+                    </StackPanel>
+
+                    <!--  结束日期  -->
+                    <StackPanel Margin="0,0,24,8" Orientation="Horizontal">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            Text="结束日期：" />
+                        <DatePicker
+                            Width="140"
+                            md:HintAssist.Hint="选择日期"
+                            DisplayDateEnd="{Binding MaxDate, Mode=OneWay}"
+                            SelectedDate="{Binding FilterEndDate}"
+                            Style="{StaticResource MaterialDesignOutlinedDatePicker}" />
+                    </StackPanel>
+
+                    <!--  测量状态  -->
+                    <StackPanel Margin="0,0,24,8" Orientation="Horizontal">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            Text="测量状态：" />
+                        <ComboBox
+                            Width="120"
+                            DisplayMemberPath="Display"
+                            ItemsSource="{Binding StatusOptions}"
+                            SelectedItem="{Binding SelectedStatusOption}"
+                            Style="{StaticResource MaterialDesignOutlinedComboBox}" />
+                    </StackPanel>
+
+                    <!--  搜索和重置按钮  -->
+                    <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                        <Button
+                            Margin="0,0,8,0"
+                            Command="{Binding SearchCommand}"
+                            Content="搜索"
+                            Style="{StaticResource MaterialDesignRaisedButton}" />
+                        <Button
+                            Command="{Binding ResetFilterCommand}"
+                            Content="重置"
+                            Style="{StaticResource MaterialDesignOutlinedButton}" />
+                    </StackPanel>
+                </WrapPanel>
+            </Grid>
+        </md:Card>
+
+        <!--  中间数据列表  -->
+        <md:Card
+            Grid.Row="1"
+            Margin="0,0,0,16"
+            Padding="0">
+            <Grid>
+                <!--  数据列表  -->
+                <DataGrid
+                    AlternatingRowBackground="{DynamicResource MaterialDesignPaper}"
+                    AutoGenerateColumns="False"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    CanUserReorderColumns="False"
+                    HeadersVisibility="Column"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding MeasurementRecords}"
+                    RowBackground="{DynamicResource MaterialDesignCardBackground}"
+                    SelectedItem="{Binding SelectedRecord}"
+                    SelectionMode="Single"
+                    Style="{StaticResource MaterialDesignDataGrid}">
+
+                    <DataGrid.Resources>
+                        <!--  移除选中行的边框高亮  -->
+                        <Style BasedOn="{StaticResource {x:Type DataGridRow}}" TargetType="DataGridRow">
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                            <EventSetter Event="MouseDoubleClick" Handler="DataGridRow_MouseDoubleClick" />
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="BorderThickness" Value="0" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+
+                        <!--  移除单元格选中边框并确保文字垂直居中  -->
+                        <Style BasedOn="{StaticResource {x:Type DataGridCell}}" TargetType="DataGridCell">
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="DataGridCell">
+                                        <Border
+                                            Padding="8,0"
+                                            Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}">
+                                            <ContentPresenter VerticalAlignment="Center" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="BorderThickness" Value="0" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.Resources>
+
+                    <DataGrid.Columns>
+                        <!--  选择列  -->
+                        <DataGridTemplateColumn Width="50">
+                            <DataGridTemplateColumn.Header>
+                                <CheckBox 
+                                    IsChecked="{Binding DataContext.IsAllSelected, RelativeSource={RelativeSource AncestorType=DataGrid}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                    ToolTip="全选/取消全选"
+                                    Checked="AllSelectCheckBox_CheckedChanged"
+                                    Unchecked="AllSelectCheckBox_CheckedChanged" />
+                            </DataGridTemplateColumn.Header>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox 
+                                        HorizontalAlignment="Center" 
+                                        IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        Checked="ItemCheckBox_CheckedChanged"
+                                        Unchecked="ItemCheckBox_CheckedChanged" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!--  序号列  -->
+                        <DataGridTextColumn
+                            Width="60"
+                            Binding="{Binding RowNumber}"
+                            Header="序号" />
+
+                        <!--  患者姓名列  -->
+                        <DataGridTextColumn
+                            Width="120"
+                            Binding="{Binding PatientName}"
+                            Header="患者姓名" />
+
+                        <!--  性别列  -->
+                        <DataGridTextColumn
+                            Width="60"
+                            Binding="{Binding GenderDisplay}"
+                            Header="性别" />
+
+                        <!--  年龄列  -->
+                        <DataGridTextColumn
+                            Width="60"
+                            Binding="{Binding AgeDisplay}"
+                            Header="年龄" />
+
+                        <!--  测量日期列  -->
+                        <DataGridTextColumn
+                            Width="160"
+                            Binding="{Binding MeasurementDateDisplay}"
+                            Header="测量日期" />
+
+                        <!--  测量状态列  -->
+                        <DataGridTemplateColumn Width="100" Header="测量状态">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border
+                                        Padding="8,4"
+                                        HorizontalAlignment="Center"
+                                        Background="{Binding StatusColor}"
+                                        CornerRadius="4">
+                                        <TextBlock
+                                            FontSize="12"
+                                            Foreground="White"
+                                            Text="{Binding StatusDisplay}" />
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!--  操作列  -->
+                        <DataGridTemplateColumn Width="200" Header="操作">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                        <Button
+                                            Margin="0,0,4,0"
+                                            Command="{Binding DataContext.ViewDetailCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}"
+                                            Content="查看"
+                                            Style="{StaticResource MaterialDesignFlatButton}" />
+                                        <Button
+                                            Margin="0,0,4,0"
+                                            Command="{Binding DataContext.ExportSingleCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}"
+                                            Content="导出"
+                                            Style="{StaticResource MaterialDesignFlatButton}"
+                                            Visibility="{Binding DataContext.CanExport, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        <Button
+                                            Command="{Binding DataContext.DeleteSingleCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}"
+                                            Content="删除"
+                                            Foreground="{StaticResource FailedBrush}"
+                                            Style="{StaticResource MaterialDesignFlatButton}"
+                                            Visibility="{Binding DataContext.CanDelete, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!--  加载中遮罩  -->
+                <Border
+                    Background="#80000000"
+                    CornerRadius="4"
+                    Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <ProgressBar
+                            Width="24"
+                            Height="24"
+                            Margin="0,0,8,0"
+                            IsIndeterminate="True"
+                            Style="{StaticResource MaterialDesignCircularProgressBar}" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Foreground="White"
+                            Text="加载中..." />
+                    </StackPanel>
+                </Border>
+
+                        <!--  空数据提示  -->
+                        <Border
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Panel.ZIndex="-1">
+                            <TextBlock
+                                FontSize="16"
+                                Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                Text="暂无数据">
+                                <TextBlock.Visibility>
+                                    <MultiBinding Converter="{StaticResource EmptyDataVisibilityConverter}">
+                                        <Binding Path="MeasurementRecords.Count" />
+                                        <Binding Path="IsLoading" />
+                                    </MultiBinding>
+                                </TextBlock.Visibility>
+                            </TextBlock>
+                        </Border>
+                    </Grid>
+                </md:Card>
+
+        <!--  底部分页和操作区域  -->
+        <md:Card Grid.Row="2" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <!--  分页控件  -->
+                    <ColumnDefinition Width="Auto" />
+                    <!--  统计信息  -->
+                    <ColumnDefinition Width="*" />
+                    <!--  批量操作  -->
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!--  分页控件  -->
+                <StackPanel
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <Button
+                        Margin="0,0,8,0"
+                        Command="{Binding PreviousPageCommand}"
+                        Content="上一页"
+                        IsEnabled="{Binding CurrentPage, Converter={StaticResource GreaterThanOneConverter}}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}" />
+
+                    <TextBlock
+                        Margin="8,0"
+                        VerticalAlignment="Center"
+                        FontSize="14">
+                        <Run Text="第" />
+                        <Run FontWeight="Bold" Text="{Binding CurrentPage, Mode=OneWay}" />
+                        <Run Text="页 / 共" />
+                        <Run FontWeight="Bold" Text="{Binding TotalPages, Mode=OneWay}" />
+                        <Run Text="页" />
+                    </TextBlock>
+
+                    <Button
+                        Margin="8,0"
+                        Command="{Binding NextPageCommand}"
+                        Content="下一页"
+                        Style="{StaticResource MaterialDesignOutlinedButton}" />
+
+                    <TextBlock
+                        Margin="16,0,8,0"
+                        VerticalAlignment="Center"
+                        Text="跳转到" />
+                    <TextBox
+                        Width="50"
+                        VerticalContentAlignment="Center"
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                        Text="{Binding GoToPageInput, UpdateSourceTrigger=PropertyChanged}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding GoToPageCommand}" />
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <TextBlock
+                        Margin="8,0"
+                        VerticalAlignment="Center"
+                        Text="页" />
+                    <Button
+                        Command="{Binding GoToPageCommand}"
+                        Content="GO"
+                        Style="{StaticResource MaterialDesignFlatButton}" />
+                </StackPanel>
+
+                <!--  统计信息  -->
+                <TextBlock
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    Foreground="{DynamicResource MaterialDesignBodyLight}">
+                    <Run Text="共" />
+                    <Run FontWeight="Bold" Text="{Binding TotalRecords, Mode=OneWay}" />
+                    <Run Text="条记录，已选" />
+                    <Run FontWeight="Bold" Text="{Binding SelectedCount, Mode=OneWay}" />
+                    <Run Text="条" />
+                </TextBlock>
+
+                <!--  批量操作按钮  -->
+                <StackPanel
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Visibility="{Binding CanBatchOperation, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Button
+                        Margin="0,0,8,0"
+                        Command="{Binding BatchExportCommand}"
+                        Content="批量导出"
+                        Style="{StaticResource MaterialDesignRaisedButton}"
+                        Visibility="{Binding CanExport, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <Button
+                        Background="{StaticResource FailedBrush}"
+                        Command="{Binding BatchDeleteCommand}"
+                        Content="批量删除"
+                        Style="{StaticResource MaterialDesignRaisedButton}"
+                        Visibility="{Binding CanDelete, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                </StackPanel>
+            </Grid>
+        </md:Card>
+    </Grid>
 </UserControl>

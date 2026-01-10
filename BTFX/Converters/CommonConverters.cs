@@ -137,6 +137,36 @@ public class EnumToDescriptionConverter : IValueConverter
 }
 
 /// <summary>
+/// 空数据显示转换器（用于显示"暂无数据"）
+/// 当数据为空且不在加载时显示
+/// </summary>
+public class EmptyDataVisibilityConverter : IMultiValueConverter
+{
+    /// <summary>
+    /// 转换：values[0] = Count, values[1] = IsLoading
+    /// </summary>
+    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (values.Length >= 2 && 
+            values[0] is int count && 
+            values[1] is bool isLoading)
+        {
+            // 只有在数据为空且不在加载时才显示"暂无数据"
+            return (count == 0 && !isLoading) ? Visibility.Visible : Visibility.Collapsed;
+        }
+        return Visibility.Collapsed;
+    }
+
+    /// <summary>
+    /// 反转换
+    /// </summary>
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
 /// 布尔转值转换器（用于根据布尔值选择不同的值）
 /// </summary>
 public class BooleanToValueConverter : IValueConverter
@@ -214,6 +244,91 @@ public class StringToColorBrushConverter : IValueConverter
             }
         }
         return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Gray);
+    }
+
+    /// <summary>
+    /// 反转换
+    /// </summary>
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// 布尔取反转可见性转换器
+/// </summary>
+public class InverseBooleanToVisibilityConverter : IValueConverter
+{
+    /// <summary>
+    /// 转换
+    /// </summary>
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        var boolValue = value is bool b && b;
+        return boolValue ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    /// <summary>
+    /// 反转换
+    /// </summary>
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is Visibility visibility)
+        {
+            return visibility != Visibility.Visible;
+        }
+        return true;
+    }
+}
+
+/// <summary>
+/// 大于1转换器
+/// </summary>
+public class GreaterThanOneConverter : IValueConverter
+{
+    /// <summary>
+    /// 转换
+    /// </summary>
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is int intValue)
+        {
+            return intValue > 1;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 反转换
+    /// </summary>
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// 数量转可见性转换器（0时不可见）
+/// </summary>
+public class CountToVisibilityConverter : IValueConverter
+{
+    /// <summary>
+    /// 转换
+    /// </summary>
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        var isInverse = parameter?.ToString()?.Equals("Inverse", StringComparison.OrdinalIgnoreCase) == true;
+        var count = value is int c ? c : 0;
+
+        if (isInverse)
+        {
+            return count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+        else
+        {
+            return count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
     }
 
     /// <summary>

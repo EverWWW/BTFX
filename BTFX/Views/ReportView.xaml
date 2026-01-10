@@ -5,8 +5,34 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:BTFX.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
-    <Grid />
+    <Grid>
+        <md:Card
+            Margin="24"
+            Padding="24"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
+            <StackPanel HorizontalAlignment="Center">
+                <md:PackIcon
+                    Width="64"
+                    Height="64"
+                    HorizontalAlignment="Center"
+                    Foreground="{DynamicResource MaterialDesignBodyLight}"
+                    Kind="FileDocument" />
+                <TextBlock
+                    Margin="0,16,0,0"
+                    HorizontalAlignment="Center"
+                    FontSize="18"
+                    Text="报告模块" />
+                <TextBlock
+                    Margin="0,8,0,0"
+                    HorizontalAlignment="Center"
+                    Foreground="{DynamicResource MaterialDesignBodyLight}"
+                    Text="功能开发中..." />
+            </StackPanel>
+        </md:Card>
+    </Grid>
 </UserControl>

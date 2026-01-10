@@ -1,26 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using System.Windows;
+using BTFX.ViewModels;
 
-namespace BTFX.Views
+namespace BTFX.Views.Dialogs;
+
+/// <summary>
+/// MeasurementDetailDialog.xaml 的交互逻辑
+/// </summary>
+public partial class MeasurementDetailDialog : Window
 {
-    /// <summary>
-    /// MeasurementDetailDialog.xaml 的交互逻辑
-    /// </summary>
-    public partial class MeasurementDetailDialog : UserControl
+    public MeasurementDetailDialog()
     {
-        public MeasurementDetailDialog()
+        InitializeComponent();
+        DataContextChanged += OnDataContextChanged;
+    }
+
+    private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (e.OldValue is MeasurementDetailViewModel oldVm)
         {
-            InitializeComponent();
+            oldVm.CloseRequested -= OnCloseRequested;
         }
+
+        if (e.NewValue is MeasurementDetailViewModel newVm)
+        {
+            newVm.CloseRequested += OnCloseRequested;
+        }
+    }
+
+    private void OnCloseRequested()
+    {
+        DialogResult = true;
+        Close();
     }
 }

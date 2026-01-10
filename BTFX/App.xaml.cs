@@ -75,19 +75,21 @@ public partial class App : Application
             var mainWindow = Services.GetRequiredService<MainWindow>();
             mainWindow.Show();
 
-                // 10. 注册视图映射
-                var navigationService = Services.GetRequiredService<INavigationService>() as NavigationService;
-                if (navigationService != null)
-                {
-                    navigationService.RegisterView<LoginViewModel, Views.LoginView>();
-                    navigationService.RegisterView<PatientSelectionViewModel, Views.PatientSelectionView>();
-                    navigationService.RegisterView<MainContainerViewModel, Views.MainContainerView>();
-                    // TODO: Register other sub-views (Measurement, DataManagement, Report, Settings)
+                    // 10. 注册视图映射
+                    var navigationService = Services.GetRequiredService<INavigationService>() as NavigationService;
+                    if (navigationService != null)
+                    {
+                        navigationService.RegisterView<LoginViewModel, Views.LoginView>();
+                        navigationService.RegisterView<PatientSelectionViewModel, Views.PatientSelectionView>();
+                        navigationService.RegisterView<MainContainerViewModel, Views.MainContainerView>();
+                        navigationService.RegisterView<MeasurementViewModel, Views.MeasurementView>();
+                        navigationService.RegisterView<DataManagementViewModel, Views.DataManagementView>();
+                        // TODO: Register other sub-views (Report, Settings)
 
-                    // Navigate to login view
-                    navigationService.NavigateTo<LoginViewModel>();
+                        // Navigate to login view
+                        navigationService.NavigateTo<LoginViewModel>();
+                    }
                 }
-            }
 
     /// <summary>
     /// 应用程序退出
@@ -324,21 +326,31 @@ public partial class App : Application
                         services.AddTransient<IExportImportService, ExportImportService>();
                         services.AddTransient<IDepartmentService, DepartmentService>();
 
-                                // ========== ViewModel 注册 ==========
-                                services.AddTransient<MainWindowViewModel>();
-                                services.AddTransient<LoginViewModel>();
-                                services.AddTransient<PatientSelectionViewModel>();
-                                services.AddTransient<PatientEditViewModel>();
-                                services.AddTransient<MainContainerViewModel>();
+                                        // ========== ViewModel 注册 ==========
+                                        services.AddTransient<MainWindowViewModel>();
+                                        services.AddTransient<LoginViewModel>();
+                                        services.AddTransient<PatientSelectionViewModel>();
+                                        services.AddTransient<PatientEditViewModel>();
+                                        services.AddTransient<MainContainerViewModel>();
+                                        services.AddTransient<MeasurementViewModel>();
+                                        services.AddTransient<DataManagementViewModel>();
+                                        services.AddTransient<MeasurementDetailViewModel>();
+                                        services.AddTransient<ReportViewModel>();
+                                        services.AddTransient<SettingsViewModel>();
 
-                                // ========== View 注册 ==========
-                                services.AddTransient<MainWindow>();
-                                services.AddTransient<Views.LoginView>();
-                                services.AddTransient<Views.PatientSelectionView>();
-                                services.AddTransient<Views.Dialogs.PatientEditDialog>();
-                                services.AddTransient<Views.MainContainerView>();
-                                services.AddTransient<Views.Dialogs.ConfirmDialog>();
-                                services.AddTransient<Views.Dialogs.AboutDialog>();
-                            }
+                                        // ========== View 注册 ==========
+                                        services.AddTransient<MainWindow>();
+                                        services.AddTransient<Views.LoginView>();
+                                        services.AddTransient<Views.PatientSelectionView>();
+                                        services.AddTransient<Views.Dialogs.PatientEditDialog>();
+                                        services.AddTransient<Views.MainContainerView>();
+                                        services.AddTransient<Views.MeasurementView>();
+                                        services.AddTransient<Views.DataManagementView>();
+                                        services.AddTransient<Views.ReportView>();
+                                        services.AddTransient<Views.SettingsView>();
+                                        services.AddTransient<Views.Dialogs.MeasurementDetailDialog>();
+                                        services.AddTransient<Views.Dialogs.ConfirmDialog>();
+                                        services.AddTransient<Views.Dialogs.AboutDialog>();
+                                    }
             }
 

@@ -247,6 +247,8 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
         {
             SelectedNavigationItem = NavigationItems[0];
             SelectedNavigationItem.IsSelected = true;
+            // 加载默认子视图
+            LoadSubView(SelectedNavigationItem.ViewModelName);
         }
     }
 
@@ -350,8 +352,36 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
             newValue.IsSelected = true;
             _logHelper?.Information($"导航切换到: {newValue.Title}");
 
-            // TODO: 实际的子视图导航，等子视图创建后启用
-            // _navigationService.NavigateTo(newValue.ViewModelName);
+            // 加载对应的子视图
+            LoadSubView(newValue.ViewModelName);
+        }
+    }
+
+    /// <summary>
+    /// 加载子视图
+    /// </summary>
+    private void LoadSubView(string viewModelName)
+    {
+        try
+        {
+            object? view = viewModelName switch
+            {
+                "MeasurementViewModel" => App.Services?.GetService(typeof(Views.MeasurementView)),
+                "DataManagementViewModel" => App.Services?.GetService(typeof(Views.DataManagementView)),
+                "ReportViewModel" => App.Services?.GetService(typeof(Views.ReportView)),
+                "SettingsViewModel" => App.Services?.GetService(typeof(Views.SettingsView)),
+                _ => null
+            };
+
+            if (view != null)
+            {
+                CurrentContent = view;
+                _logHelper?.Information($"加载子视图: {viewModelName}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"加载子视图失败: {viewModelName}", ex);
         }
     }
 

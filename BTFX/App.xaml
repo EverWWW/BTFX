@@ -34,8 +34,12 @@
             <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
             <converters:EnumToDescriptionConverter x:Key="EnumToDescriptionConverter" />
+            <converters:EmptyDataVisibilityConverter x:Key="EmptyDataVisibilityConverter" />
             <converters:EnumToIndexConverter x:Key="EnumToIndexConverter" />
             <converters:StringToColorBrushConverter x:Key="StringToColorBrushConverter" />
+            <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
+            <converters:GreaterThanOneConverter x:Key="GreaterThanOneConverter" />
+            <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
 
             <!--  字体资源  -->
             <FontFamily x:Key="AlibabaPuHuiTi">pack://application:,,,/Resources/Fonts/#Alibaba PuHuiTi</FontFamily>
