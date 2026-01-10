@@ -53,14 +53,19 @@ public class Report
     public string? PresentIllness { get; set; }
 
     /// <summary>
-    /// 检查所见
+    /// 检查结果
     /// </summary>
     public string? Findings { get; set; }
 
     /// <summary>
-    /// 检查结论
+    /// 结论
     /// </summary>
     public string? Conclusion { get; set; }
+
+    /// <summary>
+    /// 医生意见
+    /// </summary>
+    public string? DoctorOpinion { get; set; }
 
     /// <summary>
     /// 医生建议
@@ -98,12 +103,12 @@ public class Report
     public string? PdfFilePath { get; set; }
 
     /// <summary>
-    /// 创建人ID
+    /// 创建者ID
     /// </summary>
     public int CreatedBy { get; set; }
 
     /// <summary>
-    /// 创建人
+    /// 创建者
     /// </summary>
     public User? CreatedByUser { get; set; }
 

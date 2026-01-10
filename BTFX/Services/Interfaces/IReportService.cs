@@ -1,3 +1,4 @@
+using BTFX.Common;
 using BTFX.Models;
 
 namespace BTFX.Services.Interfaces;
@@ -69,11 +70,28 @@ public interface IReportService
     /// <param name="reportId">报告ID</param>
     /// <param name="status">新状态</param>
     /// <returns>是否成功</returns>
-    Task<bool> UpdateReportStatusAsync(int reportId, Common.ReportStatus status);
+    Task<bool> UpdateReportStatusAsync(int reportId, ReportStatus status);
 
     /// <summary>
     /// 生成报告编号
     /// </summary>
     /// <returns>报告编号</returns>
     string GenerateReportNumber();
+
+    /// <summary>
+    /// 获取报告列表（带筛选）
+    /// </summary>
+    /// <param name="patientName">患者姓名（模糊搜索）</param>
+    /// <param name="startDate">开始日期</param>
+    /// <param name="endDate">结束日期</param>
+    /// <returns>报告列表</returns>
+    Task<List<Report>> GetReportsAsync(string? patientName, DateTime? startDate, DateTime? endDate);
+
+    /// <summary>
+    /// 生成报告
+    /// </summary>
+    /// <param name="measurementRecordId">测量记录ID</param>
+    /// <param name="operatorId">操作员ID</param>
+    /// <returns>生成的报告</returns>
+    Task<Report?> GenerateReportAsync(int measurementRecordId, int operatorId);
 }

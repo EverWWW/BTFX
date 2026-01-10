@@ -177,6 +177,11 @@ public static class Constants
     /// </summary>
     public const int DEFAULT_PAGE_SIZE = 20;
 
+    /// <summary>
+    /// 医生意见最大长度
+    /// </summary>
+    public const int DOCTOR_OPINION_MAX_LENGTH = 500;
+
     #endregion
 
     #region 文件路径

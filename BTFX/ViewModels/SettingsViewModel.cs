@@ -1,13 +1,921 @@
-Ôªøusing CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.ObjectModel;
+using BTFX.Common;
+using BTFX.Models;
+using BTFX.Services.Interfaces;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using ToolHelper.LoggingDiagnostics.Abstractions;
 
 namespace BTFX.ViewModels;
 
 /// <summary>
-/// ËÆæÁΩÆËßÜÂõæÊ®°ÂûãÔºàÂç†‰ΩçÔºåÂêéÁª≠ÂÆåÂñÑÔºâ
+/// …Ë÷√ ”Õºƒ£–Õ
 /// </summary>
 public partial class SettingsViewModel : ObservableObject
 {
-    public SettingsViewModel()
+    private readonly ISettingsService _settingsService;
+    private readonly ILocalizationService _localizationService;
+    private readonly IThemeService _themeService;
+    private readonly ISessionService _sessionService;
+    private readonly IUserService _userService;
+    private readonly IDepartmentService _departmentService;
+    private readonly IBackupService _backupService;
+    private readonly ILogHelper? _logHelper;
+
+    #region Tabœ‘ æøÿ÷∆
+
+    /// <summary>
+    /// µ±«∞—°÷–µƒTabÀ˜“˝
+    /// </summary>
+    [ObservableProperty]
+    private int _selectedTabIndex;
+
+    /// <summary>
+    ///  «∑Òœ‘ æ”√ªßπ‹¿ÌTab£®Ωˆπ‹¿Ì‘±£©
+    /// </summary>
+    [ObservableProperty]
+    private bool _showUserManagementTab;
+
+    /// <summary>
+    ///  «∑Òœ‘ æ ˝æ›π‹¿ÌTab£®Ωˆπ‹¿Ì‘±£©
+    /// </summary>
+    [ObservableProperty]
+    private bool _showDataManagementTab;
+
+    /// <summary>
+    ///  «∑Òœ‘ æµ•Œª…Ë÷√Tab£®Ωˆπ‹¿Ì‘±£©
+    /// </summary>
+    [ObservableProperty]
+    private bool _showUnitSettingsTab;
+
+    /// <summary>
+    ///  «∑Òœ‘ æø∆ “π‹¿ÌTab£®Ωˆπ‹¿Ì‘±£©
+    /// </summary>
+    [ObservableProperty]
+    private bool _showDepartmentTab;
+
+    /// <summary>
+    ///  «∑Òœ‘ æ…Ë±∏≈‰÷√Tab£®π‹¿Ì‘±∫Õ≤Ÿ◊˜‘±£©
+    /// </summary>
+    [ObservableProperty]
+    private bool _showDeviceConfigTab;
+
+    #endregion
+
+    #region Õ®”√…Ë÷√
+
+    /// <summary>
+    /// ”Ô—‘—°œÓ¡–±Ì
+    /// </summary>
+    public ObservableCollection<LanguageOption> LanguageOptions { get; } = new()
     {
+        new LanguageOption { Value = AppLanguage.ChineseSimplified, Display = "ºÚÃÂ÷–Œƒ" },
+        new LanguageOption { Value = AppLanguage.English, Display = "English" }
+    };
+
+    /// <summary>
+    /// —°÷–µƒ”Ô—‘
+    /// </summary>
+    [ObservableProperty]
+    private LanguageOption? _selectedLanguage;
+
+    /// <summary>
+    /// ÷˜Ã‚—°œÓ¡–±Ì
+    /// </summary>
+    public ObservableCollection<ThemeOption> ThemeOptions { get; } = new()
+    {
+        new ThemeOption { Value = AppTheme.Light, Display = "«≥…´÷˜Ã‚", IconKind = "WhiteBalanceSunny" },
+        new ThemeOption { Value = AppTheme.Dark, Display = "…Ó…´÷˜Ã‚", IconKind = "WeatherNight" }
+    };
+
+    /// <summary>
+    /// —°÷–µƒ÷˜Ã‚
+    /// </summary>
+    [ObservableProperty]
+    private ThemeOption? _selectedTheme;
+
+    #endregion
+
+    #region ”√ªßπ‹¿Ì
+
+    /// <summary>
+    /// ”√ªß¡–±Ì
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<UserItem> _users = new();
+
+    /// <summary>
+    /// —°÷–µƒ”√ªß
+    /// </summary>
+    [ObservableProperty]
+    private UserItem? _selectedUser;
+
+    #endregion
+
+    #region ø∆ “π‹¿Ì
+
+    /// <summary>
+    /// ø∆ “¡–±Ì
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<DepartmentItem> _departments = new();
+
+    /// <summary>
+    /// —°÷–µƒø∆ “
+    /// </summary>
+    [ObservableProperty]
+    private DepartmentItem? _selectedDepartment;
+
+    #endregion
+
+    #region µ•Œª…Ë÷√
+
+    /// <summary>
+    /// µ•Œª√˚≥∆
+    /// </summary>
+    [ObservableProperty]
+    private string _unitName = string.Empty;
+
+    /// <summary>
+    /// Logo¬∑æ∂
+    /// </summary>
+    [ObservableProperty]
+    private string _logoPath = string.Empty;
+
+    /// <summary>
+    ///  «∑Ò”–Logo
+    /// </summary>
+    public bool HasLogo => !string.IsNullOrEmpty(_logoPath) && System.IO.File.Exists(_logoPath);
+
+    #endregion
+
+    #region  ˝æ›π‹¿Ì
+
+    /// <summary>
+    /// ◊‘∂Ø±∏∑›∆Ù”√
+    /// </summary>
+    [ObservableProperty]
+    private bool _autoBackupEnabled;
+
+    /// <summary>
+    /// ±∏∑› ±º‰
+    /// </summary>
+    [ObservableProperty]
+    private string _backupTime = Constants.BACKUP_DEFAULT_TIME;
+
+    /// <summary>
+    /// ±£¡Ù±∏∑› ˝¡ø
+    /// </summary>
+    [ObservableProperty]
+    private int _backupRetainCount = Constants.BACKUP_DEFAULT_RETAIN_COUNT;
+
+    /// <summary>
+    /// ±∏∑›¿˙ ∑¡–±Ì
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<BackupHistoryItem> _backupHistory = new();
+
+    #endregion
+
+    #region œµÕ≥–≈œ¢
+
+    /// <summary>
+    /// ”¶”√∞Ê±æ
+    /// </summary>
+    public string AppVersion => Constants.VERSION_FULL;
+
+    /// <summary>
+    /// ”¶”√√˚≥∆
+    /// </summary>
+    public string AppName => Constants.APP_DISPLAY_NAME;
+
+    /// <summary>
+    ///  ˝æ›ø‚¬∑æ∂
+    /// </summary>
+    [ObservableProperty]
+    private string _databasePath = string.Empty;
+
+    /// <summary>
+    ///  ˝æ›ø‚¥Û–°
+    /// </summary>
+    [ObservableProperty]
+    private string _databaseSize = "--";
+
+    /// <summary>
+    /// »’÷æƒø¬º
+    /// </summary>
+    [ObservableProperty]
+    private string _logDirectory = string.Empty;
+
+    /// <summary>
+    /// µ±«∞”√ªß√˚
+    /// </summary>
+    [ObservableProperty]
+    private string _currentUsername = string.Empty;
+
+    /// <summary>
+    /// µ±«∞”√ªßΩ«…´
+    /// </summary>
+    [ObservableProperty]
+    private string _currentUserRole = string.Empty;
+
+    #endregion
+
+    #region º”‘ÿ◊¥Ã¨
+
+    /// <summary>
+    ///  «∑Ò’˝‘⁄º”‘ÿ
+    /// </summary>
+    [ObservableProperty]
+    private bool _isLoading;
+
+    /// <summary>
+    ///  «∑Ò’˝‘⁄±£¥Ê
+    /// </summary>
+    [ObservableProperty]
+    private bool _isSaving;
+
+    #endregion
+
+    /// <summary>
+    /// ππ‘Ï∫Ø ˝
+    /// </summary>
+    public SettingsViewModel(
+        ISettingsService settingsService,
+        ILocalizationService localizationService,
+        IThemeService themeService,
+        ISessionService sessionService,
+        IUserService userService,
+        IDepartmentService departmentService,
+        IBackupService backupService)
+    {
+        _settingsService = settingsService;
+        _localizationService = localizationService;
+        _themeService = themeService;
+        _sessionService = sessionService;
+        _userService = userService;
+        _departmentService = departmentService;
+        _backupService = backupService;
+
+        try
+        {
+            _logHelper = App.Services?.GetService(typeof(ILogHelper)) as ILogHelper;
+        }
+        catch { }
+
+        // ≥ı ºªØ»®œﬁ
+        InitializePermissions();
+
+        // º”‘ÿ…Ë÷√
+        LoadSettings();
+
+        // º”‘ÿœµÕ≥–≈œ¢
+        LoadSystemInfo();
+    }
+
+    /// <summary>
+    /// ≥ı ºªØ»®œﬁ
+    /// </summary>
+    private void InitializePermissions()
+    {
+        var isAdmin = _sessionService.HasPermission("manage_users");
+        var isOperator = _sessionService.HasPermission("edit");
+
+        ShowUserManagementTab = isAdmin;
+        ShowDataManagementTab = isAdmin;
+        ShowUnitSettingsTab = isAdmin;
+        ShowDepartmentTab = isAdmin;
+        ShowDeviceConfigTab = isAdmin || isOperator;
+    }
+
+    /// <summary>
+    /// º”‘ÿ…Ë÷√
+    /// </summary>
+    private void LoadSettings()
+    {
+        try
+        {
+            var settings = _settingsService.CurrentSettings;
+
+            // ”Ô—‘…Ë÷√
+            SelectedLanguage = LanguageOptions.FirstOrDefault(l => l.Value == settings.Application.Language)
+                ?? LanguageOptions.First();
+
+            // ÷˜Ã‚…Ë÷√
+            SelectedTheme = ThemeOptions.FirstOrDefault(t => t.Value == settings.Application.Theme)
+                ?? ThemeOptions.First();
+
+            // µ•Œª…Ë÷√
+            UnitName = settings.Unit.Name;
+            LogoPath = settings.Unit.LogoPath;
+
+            _logHelper?.Information("…Ë÷√º”‘ÿÕÍ≥…");
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("º”‘ÿ…Ë÷√ ß∞‹", ex);
+        }
+    }
+
+    /// <summary>
+    /// º”‘ÿœµÕ≥–≈œ¢
+    /// </summary>
+    private void LoadSystemInfo()
+    {
+        try
+        {
+            var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+
+            //  ˝æ›ø‚¬∑æ∂
+            DatabasePath = System.IO.Path.Combine(baseDir, Constants.DATABASE_DIRECTORY, Constants.DATABASE_FILENAME);
+            if (System.IO.File.Exists(DatabasePath))
+            {
+                var fileInfo = new System.IO.FileInfo(DatabasePath);
+                DatabaseSize = $"{fileInfo.Length / 1024.0:F2} KB";
+            }
+
+            // »’÷æƒø¬º
+            LogDirectory = System.IO.Path.Combine(baseDir, Constants.LOG_DIRECTORY);
+
+            // µ±«∞”√ªß
+            var user = _sessionService.CurrentUser;
+            CurrentUsername = user?.Username ?? "Œ¥µ«¬º";
+            CurrentUserRole = user?.Role switch
+            {
+                UserRole.Administrator => "π‹¿Ì‘±",
+                UserRole.Operator => "≤Ÿ◊˜‘±",
+                UserRole.Guest => "”ŒøÕ",
+                _ => "Œ¥÷™"
+            };
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("º”‘ÿœµÕ≥–≈œ¢ ß∞‹", ex);
+        }
+    }
+
+    #region  Ù–‘±‰ªØ¥¶¿Ì
+
+    partial void OnSelectedLanguageChanged(LanguageOption? value)
+    {
+        if (value != null)
+        {
+            _localizationService.ApplyLanguage(value.Value);
+            _settingsService.CurrentSettings.Application.Language = value.Value;
+            _settingsService.SaveSettings();
+            _logHelper?.Information($"«–ªª”Ô—‘: {value.Display}");
+        }
+    }
+
+    partial void OnSelectedThemeChanged(ThemeOption? value)
+    {
+        if (value != null)
+        {
+            _themeService.ApplyTheme(value.Value);
+            _settingsService.CurrentSettings.Application.Theme = value.Value;
+            _settingsService.SaveSettings();
+            _logHelper?.Information($"«–ªª÷˜Ã‚: {value.Display}");
+        }
+    }
+
+    partial void OnLogoPathChanged(string value)
+    {
+        OnPropertyChanged(nameof(HasLogo));
+    }
+
+    #endregion
+
+    #region Õ®”√…Ë÷√√¸¡Ó
+
+    /// <summary>
+    /// ±£¥ÊÕ®”√…Ë÷√
+    /// </summary>
+    [RelayCommand]
+    private void SaveGeneralSettings()
+    {
+        try
+        {
+            _settingsService.SaveSettings();
+            System.Windows.MessageBox.Show("…Ë÷√“—±£¥Ê£°", "Ã· æ",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            _logHelper?.Information("±£¥ÊÕ®”√…Ë÷√");
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("±£¥ÊÕ®”√…Ë÷√ ß∞‹", ex);
+            System.Windows.MessageBox.Show($"±£¥Ê ß∞‹£∫{ex.Message}", "¥ÌŒÛ",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        }
+    }
+
+    #endregion
+
+    #region ”√ªßπ‹¿Ì√¸¡Ó
+
+    /// <summary>
+    /// º”‘ÿ”√ªß¡–±Ì
+    /// </summary>
+    [RelayCommand]
+    private async Task LoadUsersAsync()
+    {
+        try
+        {
+            IsLoading = true;
+            var users = await _userService.GetAllUsersAsync();
+
+            Users.Clear();
+            int rowNumber = 1;
+            foreach (var user in users)
+            {
+                Users.Add(new UserItem(user, rowNumber++));
+            }
+
+            _logHelper?.Information($"º”‘ÿ”√ªß¡–±Ì£∫π≤{users.Count}∏ˆ");
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("º”‘ÿ”√ªß¡–±Ì ß∞‹", ex);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    /// <summary>
+    /// ÃÌº””√ªß
+    /// </summary>
+    [RelayCommand]
+    private void AddUser()
+    {
+        System.Windows.MessageBox.Show("”√ªßÃÌº”π¶ƒ‹ø™∑¢÷–...", "Ã· æ",
+            System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+    }
+
+    /// <summary>
+    /// ±‡º≠”√ªß
+    /// </summary>
+    [RelayCommand]
+    private void EditUser(UserItem? item)
+    {
+        if (item == null) return;
+        System.Windows.MessageBox.Show($"±‡º≠”√ªß {item.User.Username} π¶ƒ‹ø™∑¢÷–...", "Ã· æ",
+            System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+    }
+
+    /// <summary>
+    /// ÷ÿ÷√√‹¬Î
+    /// </summary>
+    [RelayCommand]
+    private void ResetPassword(UserItem? item)
+    {
+        if (item == null) return;
+
+        var result = System.Windows.MessageBox.Show(
+            $"»∑∂®“™÷ÿ÷√”√ªß {item.User.Username} µƒ√‹¬ÎŒ™ƒ¨»œ√‹¬Î {Constants.DEFAULT_PASSWORD} ¬£ø",
+            "»∑»œ÷ÿ÷√",
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Question);
+
+        if (result == System.Windows.MessageBoxResult.Yes)
+        {
+            System.Windows.MessageBox.Show("√‹¬Î÷ÿ÷√π¶ƒ‹ø™∑¢÷–...", "Ã· æ",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+        }
+    }
+
+    /// <summary>
+    /// «–ªª”√ªß◊¥Ã¨
+    /// </summary>
+    [RelayCommand]
+    private void ToggleUserStatus(UserItem? item)
+    {
+        if (item == null) return;
+        System.Windows.MessageBox.Show("”√ªß◊¥Ã¨«–ªªπ¶ƒ‹ø™∑¢÷–...", "Ã· æ",
+            System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+    }
+
+    #endregion
+
+    #region ø∆ “π‹¿Ì√¸¡Ó
+
+    /// <summary>
+    /// º”‘ÿø∆ “¡–±Ì
+    /// </summary>
+    [RelayCommand]
+    private async Task LoadDepartmentsAsync()
+    {
+        try
+        {
+            IsLoading = true;
+            var departments = await _departmentService.GetAllDepartmentsAsync();
+
+            Departments.Clear();
+            int rowNumber = 1;
+            foreach (var dept in departments)
+            {
+                Departments.Add(new DepartmentItem(dept, rowNumber++));
+            }
+
+            _logHelper?.Information($"º”‘ÿø∆ “¡–±Ì£∫π≤{departments.Count}∏ˆ");
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("º”‘ÿø∆ “¡–±Ì ß∞‹", ex);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    /// <summary>
+    /// ÃÌº”ø∆ “
+    /// </summary>
+    [RelayCommand]
+    private void AddDepartment()
+    {
+        System.Windows.MessageBox.Show("ø∆ “ÃÌº”π¶ƒ‹ø™∑¢÷–...", "Ã· æ",
+            System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+    }
+
+    /// <summary>
+    /// ±‡º≠ø∆ “
+    /// </summary>
+    [RelayCommand]
+    private void EditDepartment(DepartmentItem? item)
+    {
+        if (item == null) return;
+        System.Windows.MessageBox.Show($"±‡º≠ø∆ “ {item.Department.Name} π¶ƒ‹ø™∑¢÷–...", "Ã· æ",
+            System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+    }
+
+    /// <summary>
+    /// …æ≥˝ø∆ “
+    /// </summary>
+    [RelayCommand]
+    private async Task DeleteDepartmentAsync(DepartmentItem? item)
+    {
+        if (item == null) return;
+
+        var result = System.Windows.MessageBox.Show(
+            $"»∑∂®“™…æ≥˝ø∆ “ {item.Department.Name} ¬£ø¥À≤Ÿ◊˜≤ªø…ª÷∏¥£°",
+            "»∑»œ…æ≥˝",
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Warning);
+
+        if (result != System.Windows.MessageBoxResult.Yes) return;
+
+        try
+        {
+            var success = await _departmentService.DeleteDepartmentAsync(item.Department.Id);
+            if (success)
+            {
+                await LoadDepartmentsAsync();
+                _logHelper?.Information($"…æ≥˝ø∆ “£∫{item.Department.Name}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"…æ≥˝ø∆ “ ß∞‹£∫{item.Department.Name}", ex);
+            System.Windows.MessageBox.Show($"…æ≥˝ ß∞‹£∫{ex.Message}", "¥ÌŒÛ",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        }
+    }
+
+    #endregion
+
+    #region µ•Œª…Ë÷√√¸¡Ó
+
+    /// <summary>
+    /// —°‘ÒLogo
+    /// </summary>
+    [RelayCommand]
+    private void SelectLogo()
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "—°‘ÒLogoÕº∆¨",
+            Filter = "Õº∆¨Œƒº˛ (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg",
+            Multiselect = false
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            var fileInfo = new System.IO.FileInfo(dialog.FileName);
+            if (fileInfo.Length > Constants.LOGO_MAX_SIZE_KB * 1024)
+            {
+                System.Windows.MessageBox.Show(
+                    $"LogoŒƒº˛¥Û–°≤ªƒ‹≥¨π˝{Constants.LOGO_MAX_SIZE_KB}KB",
+                    "Ã· æ",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Warning);
+                return;
+            }
+
+            LogoPath = dialog.FileName;
+            _logHelper?.Information($"—°‘ÒLogo£∫{dialog.FileName}");
+        }
+    }
+
+    /// <summary>
+    /// «Â≥˝Logo
+    /// </summary>
+    [RelayCommand]
+    private void ClearLogo()
+    {
+        LogoPath = string.Empty;
+        _logHelper?.Information("«Â≥˝Logo");
+    }
+
+    /// <summary>
+    /// ±£¥Êµ•Œª…Ë÷√
+    /// </summary>
+    [RelayCommand]
+    private void SaveUnitSettings()
+    {
+        try
+        {
+            _settingsService.CurrentSettings.Unit.Name = UnitName;
+            _settingsService.CurrentSettings.Unit.LogoPath = LogoPath;
+            _settingsService.SaveSettings();
+
+            System.Windows.MessageBox.Show("µ•Œª…Ë÷√“—±£¥Ê£°", "Ã· æ",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            _logHelper?.Information("±£¥Êµ•Œª…Ë÷√");
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("±£¥Êµ•Œª…Ë÷√ ß∞‹", ex);
+            System.Windows.MessageBox.Show($"±£¥Ê ß∞‹£∫{ex.Message}", "¥ÌŒÛ",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        }
+    }
+
+    #endregion
+
+    #region  ˝æ›π‹¿Ì√¸¡Ó
+
+    /// <summary>
+    /// ¡¢º¥±∏∑›
+    /// </summary>
+    [RelayCommand]
+    private async Task BackupNowAsync()
+    {
+        try
+        {
+            IsSaving = true;
+            var filePath = await _backupService.CreateBackupAsync();
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                System.Windows.MessageBox.Show($"±∏∑›≥…π¶£°\nŒƒº˛£∫{filePath}", "Ã· æ",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                _logHelper?.Information($" ÷∂Ø±∏∑›≥…π¶£∫{filePath}");
+                await LoadBackupHistoryAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error(" ÷∂Ø±∏∑› ß∞‹", ex);
+            System.Windows.MessageBox.Show($"±∏∑› ß∞‹£∫{ex.Message}", "¥ÌŒÛ",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    /// <summary>
+    /// º”‘ÿ±∏∑›¿˙ ∑
+    /// </summary>
+    [RelayCommand]
+    private async Task LoadBackupHistoryAsync()
+    {
+        try
+        {
+            // TODO:  µœ÷±∏∑›¡–±ÌªÒ»°
+            BackupHistory.Clear();
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("º”‘ÿ±∏∑›¿˙ ∑ ß∞‹", ex);
+        }
+    }
+
+    /// <summary>
+    /// ª÷∏¥±∏∑›
+    /// </summary>
+    [RelayCommand]
+    private async Task RestoreBackupAsync(BackupHistoryItem? item)
+    {
+        if (item == null) return;
+
+        var result = System.Windows.MessageBox.Show(
+            "ª÷∏¥±∏∑›Ω´∏≤∏«µ±«∞ ˝æ›£¨¥À≤Ÿ◊˜≤ªø…≥∑œ˙£°»∑∂®“™ºÃ–¯¬£ø",
+            "»∑»œª÷∏¥",
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Warning);
+
+        if (result != System.Windows.MessageBoxResult.Yes) return;
+
+        try
+        {
+            IsSaving = true;
+            var success = await _backupService.RestoreBackupAsync(item.FilePath);
+            if (success)
+            {
+                System.Windows.MessageBox.Show("ª÷∏¥≥…π¶£°≥Ã–Ú–Ë“™÷ÿ∆Ù°£", "Ã· æ",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                _logHelper?.Information($"ª÷∏¥±∏∑›≥…π¶£∫{item.FilePath}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"ª÷∏¥±∏∑› ß∞‹£∫{item.FilePath}", ex);
+            System.Windows.MessageBox.Show($"ª÷∏¥ ß∞‹£∫{ex.Message}", "¥ÌŒÛ",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    /// <summary>
+    /// ±£¥Ê±∏∑›…Ë÷√
+    /// </summary>
+    [RelayCommand]
+    private void SaveBackupSettings()
+    {
+        try
+        {
+            // ±∏∑›…Ë÷√‘› ±¥Ê¥¢‘⁄ƒ⁄¥Ê÷–
+            System.Windows.MessageBox.Show("±∏∑›…Ë÷√“—±£¥Ê£°", "Ã· æ",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            _logHelper?.Information("±£¥Ê±∏∑›…Ë÷√");
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("±£¥Ê±∏∑›…Ë÷√ ß∞‹", ex);
+            System.Windows.MessageBox.Show($"±£¥Ê ß∞‹£∫{ex.Message}", "¥ÌŒÛ",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        }
+    }
+
+    #endregion
+
+    #region œµÕ≥–≈œ¢√¸¡Ó
+
+    /// <summary>
+    /// ¥Úø™»’÷æƒø¬º
+    /// </summary>
+    [RelayCommand]
+    private void OpenLogDirectory()
+    {
+        try
+        {
+            if (System.IO.Directory.Exists(LogDirectory))
+            {
+                System.Diagnostics.Process.Start("explorer.exe", LogDirectory);
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("»’÷æƒø¬º≤ª¥Ê‘⁄", "Ã· æ",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("¥Úø™»’÷æƒø¬º ß∞‹", ex);
+        }
+    }
+
+    /// <summary>
+    /// œ‘ æπÿ”⁄∂‘ª∞øÚ
+    /// </summary>
+    [RelayCommand]
+    private void ShowAbout()
+    {
+        System.Windows.MessageBox.Show(
+            $"{AppName}\n∞Ê±æ£∫{AppVersion}\n\n≤ΩÃ¨÷«ƒ‹∑÷ŒˆœµÕ≥",
+            "πÿ”⁄",
+            System.Windows.MessageBoxButton.OK,
+            System.Windows.MessageBoxImage.Information);
+    }
+
+    #endregion
+}
+
+#region ∏®÷˙¿‡
+
+/// <summary>
+/// ”Ô—‘—°œÓ
+/// </summary>
+public class LanguageOption
+{
+    public AppLanguage Value { get; set; }
+    public string Display { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// ÷˜Ã‚—°œÓ
+/// </summary>
+public class ThemeOption
+{
+    public AppTheme Value { get; set; }
+    public string Display { get; set; } = string.Empty;
+    public string IconKind { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// ”√ªß¡–±ÌœÓ
+/// </summary>
+public partial class UserItem : ObservableObject
+{
+    public User User { get; }
+    public int RowNumber { get; }
+
+    public string Username => User.Username;
+    public string Name => User.Name ?? "--";
+    public string RoleDisplay => User.Role switch
+    {
+        UserRole.Administrator => "π‹¿Ì‘±",
+        UserRole.Operator => "≤Ÿ◊˜‘±",
+        UserRole.Guest => "”ŒøÕ",
+        _ => "Œ¥÷™"
+    };
+    public string Phone => User.Phone ?? "--";
+    public string DepartmentName => "--"; // TODO: –Ë“™¥” ˝æ›ø‚º”‘ÿ
+    public string StatusDisplay => User.IsEnabled ? "∆Ù”√" : "Ω˚”√";
+    public string StatusColor => User.IsEnabled ? "#4CAF50" : "#9E9E9E";
+    public string CreatedAtDisplay => User.CreatedAt.ToString(Constants.DATETIME_LIST_FORMAT);
+    public string LastLoginDisplay => User.LastLoginAt?.ToString(Constants.DATETIME_LIST_FORMAT) ?? "¥”Œ¥µ«¬º";
+
+    public bool IsBuiltIn => User.Username == Constants.ADMIN_USERNAME ||
+                             User.Username == Constants.USER_USERNAME ||
+                             User.Username == Constants.GUEST_USERNAME;
+
+    public UserItem(User user, int rowNumber)
+    {
+        User = user;
+        RowNumber = rowNumber;
     }
 }
+
+/// <summary>
+/// ø∆ “¡–±ÌœÓ
+/// </summary>
+public partial class DepartmentItem : ObservableObject
+{
+    public Department Department { get; }
+    public int RowNumber { get; }
+
+    public string Name => Department.Name;
+    public string Description => Department.Description ?? "--";
+    public string CreatedAtDisplay => Department.CreatedAt.ToString(Constants.DATETIME_LIST_FORMAT);
+
+    public DepartmentItem(Department department, int rowNumber)
+    {
+        Department = department;
+        RowNumber = rowNumber;
+    }
+}
+
+/// <summary>
+/// ±∏∑›¿˙ ∑œÓ
+/// </summary>
+public partial class BackupHistoryItem : ObservableObject
+{
+    public string FilePath { get; }
+    public DateTime CreatedAt { get; }
+    public int RowNumber { get; }
+
+    public string FileName => System.IO.Path.GetFileName(FilePath);
+    public string CreatedAtDisplay => CreatedAt.ToString(Constants.DATETIME_FORMAT);
+    public string FileSizeDisplay
+    {
+        get
+        {
+            try
+            {
+                if (System.IO.File.Exists(FilePath))
+                {
+                    var fileInfo = new System.IO.FileInfo(FilePath);
+                    return $"{fileInfo.Length / 1024.0:F2} KB";
+                }
+            }
+            catch { }
+            return "--";
+        }
+    }
+
+    public BackupHistoryItem(string filePath, DateTime createdAt, int rowNumber)
+    {
+        FilePath = filePath;
+        CreatedAt = createdAt;
+        RowNumber = rowNumber;
+    }
+}
+
+#endregion
