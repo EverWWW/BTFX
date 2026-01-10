@@ -11,53 +11,58 @@ public class DataProcessingDemoRunner
     {
         Console.WriteLine("╔═══════════════════════════════════════════════════════════╗");
         Console.WriteLine("║   ToolHelper.DataProcessing 完整功能演示                  ║");
-        Console.WriteLine("║   包含: CSV, JSON, XML, INI, YAML, Excel, PDF            ║");
+        Console.WriteLine("║   包含: CSV, JSON, XML, INI, YAML, Excel, PDF, ZIP       ║");
         Console.WriteLine("╚═══════════════════════════════════════════════════════════╝\n");
 
         try
         {
             // CSV 示例
-            Console.WriteLine("【1/7】CSV 文件处理");
+            Console.WriteLine("【1/8】CSV 文件处理");
             Console.WriteLine("═".PadRight(60, '═'));
             await CsvExample.BasicReadWriteAsync();
             await CsvExample.StreamReadAsync();
             await CsvExample.DependencyInjectionAsync();
 
             // JSON 示例
-            Console.WriteLine("\n【2/7】JSON 处理");
+            Console.WriteLine("\n【2/8】JSON 处理");
             Console.WriteLine("═".PadRight(60, '═'));
             JsonExample.SerializeDeserialize();
             JsonExample.BeautifyMinify();
             await JsonExample.FileOperationsAsync();
 
             // XML 示例
-            Console.WriteLine("\n【3/7】XML 处理");
+            Console.WriteLine("\n【3/8】XML 处理");
             Console.WriteLine("═".PadRight(60, '═'));
             XmlExample.SerializeDeserialize();
             XmlExample.XPathQuery();
 
             // INI 示例
-            Console.WriteLine("\n【4/7】INI 配置文件");
+            Console.WriteLine("\n【4/8】INI 配置文件");
             Console.WriteLine("═".PadRight(60, '═'));
             await IniExample.ReadWriteAsync();
 
             // YAML 示例
-            Console.WriteLine("\n【5/7】YAML 配置文件");
+            Console.WriteLine("\n【5/8】YAML 配置文件");
             Console.WriteLine("═".PadRight(60, '═'));
             await YamlExample.SerializeDeserializeAsync();
 
             // Excel 示例
-            Console.WriteLine("\n【6/7】Excel 文件处理");
+            Console.WriteLine("\n【6/8】Excel 文件处理");
             Console.WriteLine("═".PadRight(60, '═'));
             await ExcelExample.BasicReadWriteAsync();
             await ExcelExample.StreamReadAsync();
 
             // PDF 示例
-            Console.WriteLine("\n【7/7】PDF 文件生成");
+            Console.WriteLine("\n【7/8】PDF 文件生成");
             Console.WriteLine("═".PadRight(60, '═'));
             await PdfExample.GenerateTextPdfAsync();
             await PdfExample.GenerateTablePdfAsync();
             await PdfExample.GenerateReportPdfAsync();
+
+            // ZIP 示例
+            Console.WriteLine("\n【8/8】ZIP 压缩处理");
+            Console.WriteLine("═".PadRight(60, '═'));
+            await ZipExample.RunAllExamplesAsync();
 
             Console.WriteLine("\n╔═══════════════════════════════════════════════════════════╗");
             Console.WriteLine("║   ? 所有示例执行完成！                                   ║");
@@ -71,6 +76,7 @@ public class DataProcessingDemoRunner
             Console.WriteLine("  ? YAML   - 配置序列化");
             Console.WriteLine("  ? Excel  - 读写、样式支持");
             Console.WriteLine("  ? PDF    - 文本、表格、报表生成");
+            Console.WriteLine("  ? ZIP    - 压缩、解压、归档管理");
 
         }
         catch (Exception ex)
