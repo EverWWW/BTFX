@@ -22,6 +22,11 @@
                 <!--  多语言资源 - 默认中文  -->
                 <ResourceDictionary Source="Resources/Localization/Strings.zh.xaml" />
 
+                <!--  自定义样式  -->
+                <ResourceDictionary Source="Resources/Styles/ButtonStyles.xaml" />
+                <ResourceDictionary Source="Resources/Styles/TextBoxStyles.xaml" />
+                <ResourceDictionary Source="Resources/Styles/DataGridStyles.xaml" />
+
             </ResourceDictionary.MergedDictionaries>
 
             <!--  Converters  -->
