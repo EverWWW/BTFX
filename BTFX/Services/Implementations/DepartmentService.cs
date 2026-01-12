@@ -1,4 +1,3 @@
-using BTFX.Common;
 using BTFX.Data;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
@@ -7,7 +6,7 @@ using ToolHelper.LoggingDiagnostics.Abstractions;
 namespace BTFX.Services.Implementations;
 
 /// <summary>
-/// 科室服务实现
+/// 科室服务实现（使用 SqlSugar）
 /// </summary>
 public class DepartmentService : IDepartmentService
 {
@@ -30,16 +29,8 @@ public class DepartmentService : IDepartmentService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
-
-            var departments = await db.QueryAsync<Department>(@"
-                SELECT Id, Name, Phone, CreatedAt, UpdatedAt 
-                FROM Departments 
-                ORDER BY Id
-            ");
-
-            return departments.ToList();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
+            return await db.GetListAsync<Department>(d => true);
         }
         catch (Exception ex)
         {
@@ -53,14 +44,8 @@ public class DepartmentService : IDepartmentService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
-
-            return await db.QueryFirstOrDefaultAsync<Department>(@"
-                SELECT Id, Name, Phone, CreatedAt, UpdatedAt 
-                FROM Departments 
-                WHERE Id = @Id
-            ", new { Id = id });
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
+            return await db.GetByIdAsync<Department>(id);
         }
         catch (Exception ex)
         {
@@ -74,21 +59,13 @@ public class DepartmentService : IDepartmentService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
-            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+            var now = DateTime.Now;
+            department.CreatedAt = now;
+            department.UpdatedAt = now;
 
-            var id = await db.InsertAndGetIdAsync(@"
-                INSERT INTO Departments (Name, Phone, CreatedAt, UpdatedAt)
-                VALUES (@Name, @Phone, @CreatedAt, @UpdatedAt)
-            ", new
-            {
-                department.Name,
-                Phone = department.Phone ?? "",
-                CreatedAt = now,
-                UpdatedAt = now
-            });
+            var id = await db.InsertReturnIdentityAsync(department);
 
             _logHelper?.Information($"添加科室成功: Id={id}, Name={department.Name}");
             return (int)id;
@@ -105,29 +82,18 @@ public class DepartmentService : IDepartmentService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
-            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+            department.UpdatedAt = DateTime.Now;
 
-            var affected = await db.ExecuteNonQueryAsync(@"
-                UPDATE Departments 
-                SET Name = @Name, Phone = @Phone, UpdatedAt = @UpdatedAt
-                WHERE Id = @Id
-            ", new
-            {
-                department.Id,
-                department.Name,
-                Phone = department.Phone ?? "",
-                UpdatedAt = now
-            });
+            var success = await db.UpdateAsync(department);
 
-            if (affected > 0)
+            if (success)
             {
                 _logHelper?.Information($"更新科室成功: Id={department.Id}");
             }
 
-            return affected > 0;
+            return success;
         }
         catch (Exception ex)
         {
@@ -141,26 +107,22 @@ public class DepartmentService : IDepartmentService
     {
         try
         {
-            // 先检查是否被引用
+            // 先检查是否被使用
             if (await IsDepartmentInUseAsync(id))
             {
-                _logHelper?.Warning($"科室被引用，无法删除: Id={id}");
+                _logHelper?.Warning($"科室被使用，无法删除: Id={id}");
                 return false;
             }
 
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
+            var success = await db.DeleteByIdAsync<Department>(id);
 
-            var affected = await db.ExecuteNonQueryAsync(@"
-                DELETE FROM Departments WHERE Id = @Id
-            ", new { Id = id });
-
-            if (affected > 0)
+            if (success)
             {
                 _logHelper?.Information($"删除科室成功: Id={id}");
             }
 
-            return affected > 0;
+            return success;
         }
         catch (Exception ex)
         {
@@ -174,18 +136,12 @@ public class DepartmentService : IDepartmentService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
-
-            var count = await db.ExecuteScalarAsync<int>(@"
-                SELECT COUNT(*) FROM Users WHERE DepartmentId = @Id
-            ", new { Id = id });
-
-            return count > 0;
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
+            return await db.AnyAsync<User>(u => u.DepartmentId == id);
         }
         catch (Exception ex)
         {
-            _logHelper?.Error($"检查科室引用失败: Id={id}", ex);
+            _logHelper?.Error($"检查科室使用失败: Id={id}", ex);
             return true; // 出错时返回 true，防止误删
         }
     }
@@ -195,29 +151,20 @@ public class DepartmentService : IDepartmentService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
-
-            string sql;
-            object parameters;
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
             if (excludeId.HasValue)
             {
-                sql = "SELECT COUNT(*) FROM Departments WHERE Name = @Name AND Id != @ExcludeId";
-                parameters = new { Name = name, ExcludeId = excludeId.Value };
+                return await db.AnyAsync<Department>(d => d.Name == name && d.Id != excludeId.Value);
             }
             else
             {
-                sql = "SELECT COUNT(*) FROM Departments WHERE Name = @Name";
-                parameters = new { Name = name };
+                return await db.AnyAsync<Department>(d => d.Name == name);
             }
-
-            var count = await db.ExecuteScalarAsync<int>(sql, parameters);
-            return count > 0;
         }
         catch (Exception ex)
         {
-            _logHelper?.Error($"检查科室名称失败: Name={name}", ex);
+            _logHelper?.Error($"检查名称重复失败: Name={name}", ex);
             return true; // 出错时返回 true，防止重复添加
         }
     }

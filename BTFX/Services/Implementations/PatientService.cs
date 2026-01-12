@@ -7,7 +7,7 @@ using ToolHelper.LoggingDiagnostics.Abstractions;
 namespace BTFX.Services.Implementations;
 
 /// <summary>
-/// 患者服务实现
+/// 患者服务实现（使用 SqlSugar）
 /// </summary>
 public class PatientService : IPatientService
 {
@@ -30,18 +30,8 @@ public class PatientService : IPatientService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
-
-            var patients = await db.QueryAsync<Patient>(@"
-                SELECT Id, Name, Gender, BirthDate, Phone, IdNumber, Height, Weight, 
-                       Address, MedicalHistory, Remark, Status, CreatedBy, CreatedAt, UpdatedAt 
-                FROM Patients 
-                WHERE Status = 0
-                ORDER BY CreatedAt DESC
-            ");
-
-            return patients.ToList();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
+            return await db.GetListAsync<Patient>(p => p.Status == PatientStatus.Active);
         }
         catch (Exception ex)
         {
@@ -56,43 +46,32 @@ public class PatientService : IPatientService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
-            // 构建查询条件
-            var whereClause = "WHERE Status = 0";
-            var parameters = new Dictionary<string, object>();
+            // 使用 SqlSugar 的分页查询
+            var query = db.Queryable<Patient>()
+                .Where(p => p.Status == PatientStatus.Active);
 
+            // 添加搜索条件
             if (!string.IsNullOrWhiteSpace(searchText))
             {
-                var search = $"%{searchText}%";
-                whereClause += " AND (Name LIKE @Search OR Phone LIKE @Search OR IdNumber LIKE @Search)";
-                parameters["Search"] = search;
+                query = query.Where(p => 
+                    p.Name.Contains(searchText) || 
+                    p.Phone.Contains(searchText) || 
+                    (p.IdNumber != null && p.IdNumber.Contains(searchText)));
             }
 
-            // 查询总数
-            var countSql = $"SELECT COUNT(*) FROM Patients {whereClause}";
-            var totalCount = await db.ExecuteScalarAsync<int>(countSql, parameters);
+            // 排序
+            query = query.OrderByDescending(p => p.CreatedAt);
 
-            // 计算偏移量（pageIndex 从 1 开始）
-            var offset = (pageIndex - 1) * pageSize;
+            // 分页查询
+            var totalCount = await query.CountAsync();
+            var patients = await query
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
-            // 查询数据
-            var dataSql = $@"
-                SELECT Id, Name, Gender, BirthDate, Phone, IdNumber, Height, Weight, 
-                       Address, MedicalHistory, Remark, Status, CreatedBy, CreatedAt, UpdatedAt 
-                FROM Patients 
-                {whereClause}
-                ORDER BY CreatedAt DESC
-                LIMIT @PageSize OFFSET @Offset
-            ";
-
-            parameters["PageSize"] = pageSize;
-            parameters["Offset"] = offset;
-
-            var patients = await db.QueryAsync<Patient>(dataSql, parameters);
-
-            return (patients.ToList(), totalCount);
+            return (patients, totalCount);
         }
         catch (Exception ex)
         {
@@ -106,15 +85,8 @@ public class PatientService : IPatientService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
-
-            return await db.QueryFirstOrDefaultAsync<Patient>(@"
-                SELECT Id, Name, Gender, BirthDate, Phone, IdNumber, Height, Weight, 
-                       Address, MedicalHistory, Remark, Status, CreatedBy, CreatedAt, UpdatedAt 
-                FROM Patients 
-                WHERE Id = @Id
-            ", new { Id = id });
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
+            return await db.GetByIdAsync<Patient>(id);
         }
         catch (Exception ex)
         {
@@ -128,34 +100,14 @@ public class PatientService : IPatientService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
-            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
-            var birthDate = patient.BirthDate?.ToString(Constants.DATE_FORMAT);
+            var now = DateTime.Now;
+            patient.Status = PatientStatus.Active;
+            patient.CreatedAt = now;
+            patient.UpdatedAt = now;
 
-            var id = await db.InsertAndGetIdAsync(@"
-                INSERT INTO Patients (Name, Gender, BirthDate, Phone, IdNumber, Height, Weight, 
-                                     Address, MedicalHistory, Remark, Status, CreatedBy, CreatedAt, UpdatedAt)
-                VALUES (@Name, @Gender, @BirthDate, @Phone, @IdNumber, @Height, @Weight, 
-                        @Address, @MedicalHistory, @Remark, @Status, @CreatedBy, @CreatedAt, @UpdatedAt)
-            ", new
-            {
-                patient.Name,
-                Gender = (int)patient.Gender,
-                BirthDate = birthDate,
-                patient.Phone,
-                patient.IdNumber,
-                patient.Height,
-                patient.Weight,
-                patient.Address,
-                patient.MedicalHistory,
-                patient.Remark,
-                Status = (int)PatientStatus.Active,
-                patient.CreatedBy,
-                CreatedAt = now,
-                UpdatedAt = now
-            });
+            var id = await db.InsertReturnIdentityAsync(patient);
 
             _logHelper?.Information($"添加患者成功: Id={id}, Name={patient.Name}");
             return (int)id;
@@ -172,40 +124,18 @@ public class PatientService : IPatientService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
-            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
-            var birthDate = patient.BirthDate?.ToString(Constants.DATE_FORMAT);
+            patient.UpdatedAt = DateTime.Now;
 
-            var affected = await db.ExecuteNonQueryAsync(@"
-                UPDATE Patients 
-                SET Name = @Name, Gender = @Gender, BirthDate = @BirthDate, Phone = @Phone, 
-                    IdNumber = @IdNumber, Height = @Height, Weight = @Weight, Address = @Address,
-                    MedicalHistory = @MedicalHistory, Remark = @Remark, UpdatedAt = @UpdatedAt
-                WHERE Id = @Id
-            ", new
-            {
-                patient.Id,
-                patient.Name,
-                Gender = (int)patient.Gender,
-                BirthDate = birthDate,
-                patient.Phone,
-                patient.IdNumber,
-                patient.Height,
-                patient.Weight,
-                patient.Address,
-                patient.MedicalHistory,
-                patient.Remark,
-                UpdatedAt = now
-            });
+            var success = await db.UpdateAsync(patient);
 
-            if (affected > 0)
+            if (success)
             {
                 _logHelper?.Information($"更新患者成功: Id={patient.Id}");
             }
 
-            return affected > 0;
+            return success;
         }
         catch (Exception ex)
         {
@@ -219,29 +149,25 @@ public class PatientService : IPatientService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
-            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+            var now = DateTime.Now;
 
-            // 逻辑删除：设置 Status = 1 (Deleted)
-            var affected = await db.ExecuteNonQueryAsync(@"
-                UPDATE Patients 
-                SET Status = @Status, UpdatedAt = @UpdatedAt
-                WHERE Id = @Id
-            ", new
-            {
-                Id = id,
-                Status = (int)PatientStatus.Deleted,
-                UpdatedAt = now
-            });
+            // 逻辑删除：设置 Status = Deleted
+            var count = await db.UpdateAsync<Patient>(
+                p => new Patient 
+                { 
+                    Status = PatientStatus.Deleted,
+                    UpdatedAt = now
+                },
+                p => p.Id == id);
 
-            if (affected > 0)
+            if (count > 0)
             {
                 _logHelper?.Information($"删除患者成功: Id={id}");
             }
 
-            return affected > 0;
+            return count > 0;
         }
         catch (Exception ex)
         {
@@ -260,21 +186,16 @@ public class PatientService : IPatientService
                 return await GetAllPatientsAsync();
             }
 
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
-            var search = $"%{searchText}%";
-
-            var patients = await db.QueryAsync<Patient>(@"
-                SELECT Id, Name, Gender, BirthDate, Phone, IdNumber, Height, Weight, 
-                       Address, MedicalHistory, Remark, Status, CreatedBy, CreatedAt, UpdatedAt 
-                FROM Patients 
-                WHERE Status = 0 
-                  AND (Name LIKE @Search OR Phone LIKE @Search OR IdNumber LIKE @Search)
-                ORDER BY CreatedAt DESC
-            ", new { Search = search });
-
-            return patients.ToList();
+            return await db.Queryable<Patient>()
+                .Where(p => p.Status == PatientStatus.Active)
+                .Where(p => 
+                    p.Name.Contains(searchText) || 
+                    p.Phone.Contains(searchText) || 
+                    (p.IdNumber != null && p.IdNumber.Contains(searchText)))
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
         }
         catch (Exception ex)
         {
@@ -288,25 +209,21 @@ public class PatientService : IPatientService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
-
-            string sql;
-            object parameters;
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
             if (excludeId.HasValue)
             {
-                sql = "SELECT COUNT(*) FROM Patients WHERE Phone = @Phone AND Status = 0 AND Id != @ExcludeId";
-                parameters = new { Phone = phone, ExcludeId = excludeId.Value };
+                return await db.AnyAsync<Patient>(p => 
+                    p.Phone == phone && 
+                    p.Status == PatientStatus.Active && 
+                    p.Id != excludeId.Value);
             }
             else
             {
-                sql = "SELECT COUNT(*) FROM Patients WHERE Phone = @Phone AND Status = 0";
-                parameters = new { Phone = phone };
+                return await db.AnyAsync<Patient>(p => 
+                    p.Phone == phone && 
+                    p.Status == PatientStatus.Active);
             }
-
-            var count = await db.ExecuteScalarAsync<int>(sql, parameters);
-            return count > 0;
         }
         catch (Exception ex)
         {

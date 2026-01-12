@@ -1,7 +1,7 @@
-ï»¿using System.IO;
+using System.IO;
 using BTFX.Common;
 using BTFX.Helpers;
-using Microsoft.Extensions.Options;
+using BTFX.Models;
 using ToolHelper.Database.Configuration;
 using ToolHelper.Database.Sqlite;
 using ToolHelper.LoggingDiagnostics.Abstractions;
@@ -9,13 +9,14 @@ using ToolHelper.LoggingDiagnostics.Abstractions;
 namespace BTFX.Data;
 
 /// <summary>
-/// æ•°æ®åº“åˆå§‹åŒ–å™¨
-/// è´Ÿè´£åˆ›å»ºæ•°æ®åº“ã€è¡¨ç»“æ„å’Œåˆå§‹æ•°æ®
+/// Êı¾İ¿â³õÊ¼»¯Æ÷
+/// ¸ºÔğ´´½¨Êı¾İ¿â¡¢±í½á¹¹ºÍ³õÊ¼Êı¾İ
+/// Ê¹ÓÃ SqlSugar ORM ½øĞĞÊı¾İ¿â²Ù×÷
 /// </summary>
 public class DatabaseInitializer
 {
     /// <summary>
-    /// å½“å‰æ•°æ®åº“ç‰ˆæœ¬
+    /// µ±Ç°Êı¾İ¿â°æ±¾
     /// </summary>
     public const int CurrentDatabaseVersion = 1;
 
@@ -23,18 +24,18 @@ public class DatabaseInitializer
     private readonly ILogHelper? _logHelper;
 
     /// <summary>
-    /// æ„é€ å‡½æ•°
+    /// ¹¹Ôìº¯Êı
     /// </summary>
-    /// <param name="logHelper">æ—¥å¿—åŠ©æ‰‹ï¼ˆå¯é€‰ï¼‰</param>
+    /// <param name="logHelper">ÈÕÖ¾ÖúÊÖ£¨¿ÉÑ¡£©</param>
     public DatabaseInitializer(ILogHelper? logHelper = null)
     {
         _logHelper = logHelper;
 
-        // æ•°æ®åº“è·¯å¾„
+        // Êı¾İ¿âÂ·¾¶
         var baseDir = AppDomain.CurrentDomain.BaseDirectory;
         var dbDir = Path.Combine(baseDir, Constants.DATABASE_DIRECTORY);
 
-        // ç¡®ä¿ç›®å½•å­˜åœ¨
+        // È·±£Ä¿Â¼´æÔÚ
         if (!Directory.Exists(dbDir))
         {
             Directory.CreateDirectory(dbDir);
@@ -44,88 +45,88 @@ public class DatabaseInitializer
     }
 
     /// <summary>
-    /// è·å–æ•°æ®åº“è·¯å¾„
+    /// »ñÈ¡Êı¾İ¿âÂ·¾¶
     /// </summary>
     public string DatabasePath => _databasePath;
 
     /// <summary>
-    /// åˆ›å»º SqliteHelper å®ä¾‹
+    /// ´´½¨ SqliteSugarHelper ÊµÀı
     /// </summary>
-    public SqliteHelper CreateSqliteHelper()
+    public SqliteSugarHelper CreateSqliteSugarHelper()
     {
-        var options = Options.Create(new SqliteOptions
+        var options = new SqliteSugarOptions
         {
             DatabasePath = _databasePath,
-            JournalMode = SqliteJournalMode.Wal,
-            SynchronousMode = SqliteSynchronousMode.Normal,
-            ForeignKeys = true,
-            EnableLogging = false
-        });
+            EnableSqlLog = false
+        };
 
-        return new SqliteHelper(options);
+        return new SqliteSugarHelper(options);
     }
 
     /// <summary>
-    /// åˆå§‹åŒ–æ•°æ®åº“
+    /// ³õÊ¼»¯Êı¾İ¿â
     /// </summary>
     public async Task InitializeAsync()
     {
-        _logHelper?.Information("å¼€å§‹åˆå§‹åŒ–æ•°æ®åº“...");
+        _logHelper?.Information("¿ªÊ¼³õÊ¼»¯Êı¾İ¿â...");
 
         Exception? firstException = null;
 
         try
         {
             await InitializeDatabaseCoreAsync();
-            return; // æˆåŠŸï¼Œç›´æ¥è¿”å›
+            return; // ³É¹¦£¬Ö±½Ó·µ»Ø
         }
         catch (Exception ex)
         {
             firstException = ex;
-            _logHelper?.Warning($"æ•°æ®åº“åˆå§‹åŒ–å¤±è´¥ï¼Œå‡†å¤‡é‡å»ºæ•°æ®åº“: {ex.Message}");
+            _logHelper?.Warning($"Êı¾İ¿â³õÊ¼»¯Ê§°Ü£¬×¼±¸ÖØ½¨Êı¾İ¿â: {ex.Message}");
         }
 
-        // å¼ºåˆ¶è¿›è¡Œåƒåœ¾å›æ”¶ï¼Œé‡Šæ”¾æ‰€æœ‰æ•°æ®åº“è¿æ¥
+        // Ç¿ÖÆ½øĞĞÀ¬»ø»ØÊÕ£¬ÊÍ·ÅËùÓĞÊı¾İ¿âÁ¬½Ó
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
 
-        // ç­‰å¾…ä¸€å°æ®µæ—¶é—´è®©æ–‡ä»¶å¥æŸ„å®Œå…¨é‡Šæ”¾
+        // µÈ´ıÒ»Ğ¡¶ÎÊ±¼äÈÃÎÄ¼ş¾ä±úÍêÈ«ÊÍ·Å
         await Task.Delay(500);
 
-        // å°è¯•åˆ é™¤æ•°æ®åº“å¹¶é‡æ–°åˆå§‹åŒ–
+        // ³¢ÊÔÉ¾³ıÊı¾İ¿â²¢ÖØĞÂ³õÊ¼»¯
         try
         {
             DeleteDatabaseSafe();
-            _logHelper?.Information("å·²åˆ é™¤æ—§æ•°æ®åº“ï¼Œé‡æ–°åˆå§‹åŒ–...");
+            _logHelper?.Information("ÒÑÉ¾³ı¾ÉÊı¾İ¿â£¬ÖØĞÂ³õÊ¼»¯...");
 
             await InitializeDatabaseCoreAsync();
-            _logHelper?.Information("æ•°æ®åº“é‡å»ºæˆåŠŸ");
+            _logHelper?.Information("Êı¾İ¿âÖØ½¨³É¹¦");
         }
         catch (Exception retryEx)
         {
-            // æ„å»ºè¯¦ç»†çš„é”™è¯¯ä¿¡æ¯
+            // ¹¹½¨ÏêÏ¸µÄ´íÎóĞÅÏ¢
             var fullMessage = retryEx.Message;
             var inner = retryEx.InnerException;
             while (inner != null)
             {
-                fullMessage += $"\nå†…éƒ¨å¼‚å¸¸: {inner.Message}";
+                fullMessage += $"\nÄÚ²¿Òì³£: {inner.Message}";
                 inner = inner.InnerException;
             }
 
-            _logHelper?.Error($"æ•°æ®åº“é‡å»ºå¤±è´¥: {fullMessage}\nå †æ ˆ: {retryEx.StackTrace}", retryEx);
+            _logHelper?.Error($"Êı¾İ¿âÖØ½¨Ê§°Ü: {fullMessage}\n¶ÑÕ»: {retryEx.StackTrace}", retryEx);
 
-            // å¦‚æœé‡å»ºä¹Ÿå¤±è´¥ï¼ŒæŠ›å‡ºåŸå§‹å¼‚å¸¸ï¼ˆæ›´æœ‰ä»·å€¼ï¼‰
+            // Èç¹ûÖØ½¨Ò²Ê§°Ü£¬Å×³öÔ­Ê¼Òì³££¨¸üÓĞ¼ÛÖµ£©
             var originalMessage = firstException?.Message ?? retryEx.Message;
-            throw new Exception($"æ•°æ®åº“åˆå§‹åŒ–å¤±è´¥: {originalMessage}", firstException ?? retryEx);
+            throw new Exception($"Êı¾İ¿â³õÊ¼»¯Ê§°Ü: {originalMessage}", firstException ?? retryEx);
         }
     }
 
     /// <summary>
-    /// å®‰å…¨åˆ é™¤æ•°æ®åº“ï¼ˆå¤„ç†æ–‡ä»¶è¢«å ç”¨çš„æƒ…å†µï¼‰
+    /// °²È«É¾³ıÊı¾İ¿â£¨´¦ÀíÎÄ¼ş±»Õ¼ÓÃµÄÇé¿ö£©
     /// </summary>
     private void DeleteDatabaseSafe()
     {
+        // ÇåÀí SQLite Á¬½Ó³Ø
+        Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+
         var files = new[]
         {
             _databasePath,
@@ -147,7 +148,7 @@ public class DatabaseInitializer
                 }
                 catch (IOException) when (retry < 4)
                 {
-                    // æ–‡ä»¶è¢«å ç”¨ï¼Œç­‰å¾…åé‡è¯•
+                    // ÎÄ¼ş±»Õ¼ÓÃ£¬µÈ´ıºóÖØÊÔ
                     Thread.Sleep(200 * (retry + 1));
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
@@ -157,72 +158,50 @@ public class DatabaseInitializer
     }
 
     /// <summary>
-    /// æ•°æ®åº“åˆå§‹åŒ–æ ¸å¿ƒé€»è¾‘
+    /// Êı¾İ¿â³õÊ¼»¯ºËĞÄÂß¼­
     /// </summary>
     private async Task InitializeDatabaseCoreAsync()
     {
-        SqliteHelper? db = null;
-        try
+        using var db = CreateSqliteSugarHelper();
+
+        // ¼ì²éÊı¾İ¿â°æ±¾
+        var version = GetDatabaseVersion(db);
+        _logHelper?.Information($"µ±Ç°Êı¾İ¿â°æ±¾: {version}");
+
+        if (version == 0)
         {
-            db = CreateSqliteHelper();
-            await db.InitializeAsync();
+            // ĞÂÊı¾İ¿â£¬´´½¨ËùÓĞ±íºÍ³õÊ¼Êı¾İ
+            _logHelper?.Information("´´½¨Êı¾İ¿â±í½á¹¹...");
+            await CreateTablesAsync(db);
 
-            // æ£€æŸ¥æ•°æ®åº“ç‰ˆæœ¬
-            var version = await GetDatabaseVersionAsync(db);
-            _logHelper?.Information($"å½“å‰æ•°æ®åº“ç‰ˆæœ¬: {version}");
-
-            if (version == 0)
-            {
-                // æ–°æ•°æ®åº“ï¼Œåˆ›å»ºæ‰€æœ‰è¡¨å’Œåˆå§‹æ•°æ®
-                _logHelper?.Information("åˆ›å»ºæ•°æ®åº“è¡¨ç»“æ„...");
-                await CreateTablesAsync(db);
-
-                _logHelper?.Information("åˆå§‹åŒ–å†…ç½®æ•°æ®...");
-                await SeedDataAsync(db);
-                await SetDatabaseVersionAsync(db, CurrentDatabaseVersion);
-                _logHelper?.Information($"æ•°æ®åº“åˆå§‹åŒ–å®Œæˆï¼Œç‰ˆæœ¬: {CurrentDatabaseVersion}");
-            }
-            else if (version < CurrentDatabaseVersion)
-            {
-                // éœ€è¦å‡çº§
-                _logHelper?.Information($"å‡çº§æ•°æ®åº“: {version} -> {CurrentDatabaseVersion}");
-                await UpgradeDatabaseAsync(db, version);
-                await SetDatabaseVersionAsync(db, CurrentDatabaseVersion);
-                _logHelper?.Information("æ•°æ®åº“å‡çº§å®Œæˆ");
-            }
-            else
-            {
-                _logHelper?.Information("æ•°æ®åº“å·²æ˜¯æœ€æ–°ç‰ˆæœ¬");
-            }
+            _logHelper?.Information("³õÊ¼»¯ÄÚÖÃÊı¾İ...");
+            await SeedDataAsync(db);
+            
+            SetDatabaseVersion(db, CurrentDatabaseVersion);
+            _logHelper?.Information($"Êı¾İ¿â³õÊ¼»¯Íê³É£¬°æ±¾: {CurrentDatabaseVersion}");
         }
-        finally
+        else if (version < CurrentDatabaseVersion)
         {
-            // ç¡®ä¿æ•°æ®åº“è¿æ¥è¢«å…³é—­å’Œé‡Šæ”¾
-            if (db != null)
-            {
-                try
-                {
-                    await db.CloseAsync();
-                }
-                catch { }
-
-                try
-                {
-                    db.Dispose();
-                }
-                catch { }
-            }
+            // ĞèÒªÉı¼¶
+            _logHelper?.Information($"Éı¼¶Êı¾İ¿â: {version} -> {CurrentDatabaseVersion}");
+            await UpgradeDatabaseAsync(db, version);
+            SetDatabaseVersion(db, CurrentDatabaseVersion);
+            _logHelper?.Information("Êı¾İ¿âÉı¼¶Íê³É");
+        }
+        else
+        {
+            _logHelper?.Information("Êı¾İ¿âÒÑÊÇ×îĞÂ°æ±¾");
         }
     }
 
     /// <summary>
-    /// è·å–æ•°æ®åº“ç‰ˆæœ¬
+    /// »ñÈ¡Êı¾İ¿â°æ±¾
     /// </summary>
-    private async Task<int> GetDatabaseVersionAsync(SqliteHelper db)
+    private int GetDatabaseVersion(SqliteSugarHelper db)
     {
         try
         {
-            var result = await db.ExecuteScalarAsync<int>("PRAGMA user_version;");
+            var result = db.SqlQueryScalar<int>("PRAGMA user_version;");
             return result;
         }
         catch
@@ -232,199 +211,96 @@ public class DatabaseInitializer
     }
 
     /// <summary>
-    /// è®¾ç½®æ•°æ®åº“ç‰ˆæœ¬
+    /// ÉèÖÃÊı¾İ¿â°æ±¾
     /// </summary>
-    private async Task SetDatabaseVersionAsync(SqliteHelper db, int version)
+    private void SetDatabaseVersion(SqliteSugarHelper db, int version)
     {
-        await db.ExecuteNonQueryAsync($"PRAGMA user_version = {version};");
+        db.ExecuteSql($"PRAGMA user_version = {version};");
     }
 
     /// <summary>
-    /// åˆ›å»ºæ‰€æœ‰è¡¨
+    /// ´´½¨ËùÓĞ±í£¨Ê¹ÓÃ CodeFirst£©
     /// </summary>
-    private async Task CreateTablesAsync(SqliteHelper db)
+    private Task CreateTablesAsync(SqliteSugarHelper db)
     {
-        // æŒ‰ä¾èµ–é¡ºåºåˆ›å»ºè¡¨
+        _logHelper?.Information("Ê¹ÓÃ CodeFirst ´´½¨±í½á¹¹...");
 
-        // 1. ç§‘å®¤è¡¨ï¼ˆæ— ä¾èµ–ï¼‰
-        await db.ExecuteNonQueryAsync(@"
-            CREATE TABLE IF NOT EXISTS Departments (
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                Name TEXT NOT NULL UNIQUE,
-                Phone TEXT,
-                CreatedAt TEXT NOT NULL,
-                UpdatedAt TEXT NOT NULL
-            );
-        ");
+        // °´ÒÀÀµË³Ğò´´½¨±í
+        db.CreateTables(
+            typeof(Department),
+            typeof(User),
+            typeof(Patient),
+            typeof(MeasurementRecord),
+            typeof(GaitParameters),
+            typeof(Report),
+            typeof(SystemSetting)
+        );
 
-        // 2. ç”¨æˆ·è¡¨ï¼ˆä¾èµ–ç§‘å®¤ï¼‰
-        await db.ExecuteNonQueryAsync(@"
-            CREATE TABLE IF NOT EXISTS Users (
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                Username TEXT NOT NULL UNIQUE,
-                PasswordHash TEXT NOT NULL,
-                PasswordSalt TEXT NOT NULL,
-                Name TEXT NOT NULL,
-                Phone TEXT NOT NULL DEFAULT '',
-                Role INTEGER NOT NULL DEFAULT 1,
-                DepartmentId INTEGER,
-                IsEnabled INTEGER NOT NULL DEFAULT 1,
-                IsBuiltIn INTEGER NOT NULL DEFAULT 0,
-                LastLoginAt TEXT,
-                CreatedAt TEXT NOT NULL,
-                UpdatedAt TEXT NOT NULL,
-                FOREIGN KEY (DepartmentId) REFERENCES Departments(Id)
-            );
-            CREATE INDEX IF NOT EXISTS IX_Users_Username ON Users(Username);
-            CREATE INDEX IF NOT EXISTS IX_Users_Phone ON Users(Phone);
-        ");
+        // ´´½¨Ë÷Òı£¨SqlSugar CodeFirst ²»×Ô¶¯´´½¨Ë÷Òı£¬ĞèÒªÊÖ¶¯Ö´ĞĞ£©
+        CreateIndexes(db);
 
-        // 3. æ‚£è€…è¡¨ï¼ˆä¾èµ–ç”¨æˆ·ï¼‰
-        await db.ExecuteNonQueryAsync(@"
-            CREATE TABLE IF NOT EXISTS Patients (
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                Name TEXT NOT NULL,
-                Gender INTEGER NOT NULL DEFAULT 0,
-                BirthDate TEXT,
-                Phone TEXT NOT NULL,
-                IdNumber TEXT,
-                Height REAL,
-                Weight REAL,
-                Address TEXT,
-                MedicalHistory TEXT,
-                Remark TEXT,
-                Status INTEGER NOT NULL DEFAULT 0,
-                CreatedBy INTEGER NOT NULL,
-                CreatedAt TEXT NOT NULL,
-                UpdatedAt TEXT NOT NULL,
-                FOREIGN KEY (CreatedBy) REFERENCES Users(Id)
-            );
-            CREATE INDEX IF NOT EXISTS IX_Patients_Name ON Patients(Name);
-            CREATE INDEX IF NOT EXISTS IX_Patients_Phone ON Patients(Phone);
-            CREATE INDEX IF NOT EXISTS IX_Patients_IdNumber ON Patients(IdNumber);
-            CREATE INDEX IF NOT EXISTS IX_Patients_Status ON Patients(Status);
-        ");
-
-        // 4. æµ‹é‡è®°å½•è¡¨ï¼ˆä¾èµ–æ‚£è€…ã€ç”¨æˆ·ï¼‰
-        await db.ExecuteNonQueryAsync(@"
-            CREATE TABLE IF NOT EXISTS MeasurementRecords (
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                PatientId INTEGER NOT NULL,
-                UserId INTEGER NOT NULL,
-                MeasurementDate TEXT NOT NULL,
-                Status INTEGER NOT NULL DEFAULT 0,
-                VideoPath TEXT,
-                Duration INTEGER,
-                Remark TEXT,
-                IsGuestData INTEGER NOT NULL DEFAULT 0,
-                CreatedAt TEXT NOT NULL,
-                UpdatedAt TEXT NOT NULL,
-                FOREIGN KEY (PatientId) REFERENCES Patients(Id),
-                FOREIGN KEY (UserId) REFERENCES Users(Id)
-            );
-            CREATE INDEX IF NOT EXISTS IX_MeasurementRecords_PatientId ON MeasurementRecords(PatientId);
-            CREATE INDEX IF NOT EXISTS IX_MeasurementRecords_MeasurementDate ON MeasurementRecords(MeasurementDate);
-            CREATE INDEX IF NOT EXISTS IX_MeasurementRecords_Status ON MeasurementRecords(Status);
-        ");
-
-        // 5. æ­¥æ€å‚æ•°è¡¨ï¼ˆä¾èµ–æµ‹é‡è®°å½•ï¼‰
-        await db.ExecuteNonQueryAsync(@"
-            CREATE TABLE IF NOT EXISTS GaitParameters (
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                MeasurementId INTEGER NOT NULL UNIQUE,
-                StrideLengthLeft REAL,
-                StrideLengthRight REAL,
-                StepLengthLeft REAL,
-                StepLengthRight REAL,
-                Cadence REAL,
-                Velocity REAL,
-                StancePhaseLeft REAL,
-                StancePhaseRight REAL,
-                SwingPhaseLeft REAL,
-                SwingPhaseRight REAL,
-                DoubleSupport REAL,
-                SingleSupport REAL,
-                SymmetryIndex REAL,
-                ParametersJson TEXT,
-                CreatedAt TEXT NOT NULL,
-                FOREIGN KEY (MeasurementId) REFERENCES MeasurementRecords(Id)
-            );
-        ");
-
-        // 6. æŠ¥å‘Šè¡¨ï¼ˆä¾èµ–æµ‹é‡è®°å½•ã€æ‚£è€…ã€ç”¨æˆ·ï¼‰
-        await db.ExecuteNonQueryAsync(@"
-            CREATE TABLE IF NOT EXISTS Reports (
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                MeasurementId INTEGER NOT NULL,
-                PatientId INTEGER NOT NULL,
-                UserId INTEGER NOT NULL,
-                ReportNumber TEXT NOT NULL UNIQUE,
-                ReportDate TEXT NOT NULL,
-                DoctorOpinion TEXT,
-                Status INTEGER NOT NULL DEFAULT 0,
-                FilePath TEXT,
-                CreatedAt TEXT NOT NULL,
-                UpdatedAt TEXT NOT NULL,
-                FOREIGN KEY (MeasurementId) REFERENCES MeasurementRecords(Id),
-                FOREIGN KEY (PatientId) REFERENCES Patients(Id),
-                FOREIGN KEY (UserId) REFERENCES Users(Id)
-            );
-            CREATE INDEX IF NOT EXISTS IX_Reports_ReportNumber ON Reports(ReportNumber);
-            CREATE INDEX IF NOT EXISTS IX_Reports_PatientId ON Reports(PatientId);
-            CREATE INDEX IF NOT EXISTS IX_Reports_ReportDate ON Reports(ReportDate);
-        ");
-
-        // 7. ç³»ç»Ÿè®¾ç½®è¡¨ï¼ˆæ— ä¾èµ–ï¼‰
-        await db.ExecuteNonQueryAsync(@"
-            CREATE TABLE IF NOT EXISTS SystemSettings (
-                Key TEXT PRIMARY KEY,
-                Value TEXT,
-                ValueType TEXT NOT NULL,
-                UpdatedAt TEXT NOT NULL
-            );
-        ");
-
-        // 8. æ“ä½œæ—¥å¿—è¡¨ï¼ˆæ— ä¾èµ–ï¼‰
-        await db.ExecuteNonQueryAsync(@"
-            CREATE TABLE IF NOT EXISTS OperationLogs (
-                Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                UserId INTEGER,
-                UserName TEXT,
-                Operation TEXT NOT NULL,
-                Module TEXT NOT NULL,
-                Description TEXT NOT NULL,
-                IpAddress TEXT,
-                Level INTEGER NOT NULL DEFAULT 0,
-                CreatedAt TEXT NOT NULL
-            );
-            CREATE INDEX IF NOT EXISTS IX_OperationLogs_UserId ON OperationLogs(UserId);
-            CREATE INDEX IF NOT EXISTS IX_OperationLogs_CreatedAt ON OperationLogs(CreatedAt);
-            CREATE INDEX IF NOT EXISTS IX_OperationLogs_Level ON OperationLogs(Level);
-        ");
+        return Task.CompletedTask;
     }
 
     /// <summary>
-    /// åˆå§‹åŒ–å†…ç½®æ•°æ®
+    /// ´´½¨Ë÷Òı
     /// </summary>
-    private async Task SeedDataAsync(SqliteHelper db)
+    private void CreateIndexes(SqliteSugarHelper db)
     {
-        var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+        _logHelper?.Information("´´½¨Êı¾İ¿âË÷Òı...");
 
-        // åˆ›å»ºé»˜è®¤ç§‘å®¤
+        // Users ±íË÷Òı
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Users_Username ON Users(Username);");
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Users_Phone ON Users(Phone);");
+
+        // Patients ±íË÷Òı
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Patients_Name ON Patients(Name);");
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Patients_Phone ON Patients(Phone);");
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Patients_IdNumber ON Patients(IdNumber);");
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Patients_Status ON Patients(Status);");
+
+        // MeasurementRecords ±íË÷Òı
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_MeasurementRecords_PatientId ON MeasurementRecords(PatientId);");
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_MeasurementRecords_MeasurementDate ON MeasurementRecords(MeasurementDate);");
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_MeasurementRecords_Status ON MeasurementRecords(Status);");
+
+        // Reports ±íË÷Òı
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Reports_ReportNumber ON Reports(ReportNumber);");
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Reports_PatientId ON Reports(PatientId);");
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Reports_ReportDate ON Reports(ReportDate);");
+    }
+
+    /// <summary>
+    /// ³õÊ¼»¯ÄÚÖÃÊı¾İ
+    /// </summary>
+    private async Task SeedDataAsync(SqliteSugarHelper db)
+    {
+        var now = DateTime.Now;
+
+        // ´´½¨Ä¬ÈÏ¿ÆÊÒ
         try
         {
-            _logHelper?.Information("Step 1: åˆ›å»ºé»˜è®¤ç§‘å®¤...");
-            await db.ExecuteNonQueryAsync(
-                "INSERT OR IGNORE INTO Departments (Name, Phone, CreatedAt, UpdatedAt) VALUES (@Name, @Phone, @CreatedAt, @UpdatedAt)",
-                new { Name = "é»˜è®¤ç§‘å®¤", Phone = "", CreatedAt = now, UpdatedAt = now });
-            _logHelper?.Information("Step 1: å®Œæˆ");
+            _logHelper?.Information("Step 1: ´´½¨Ä¬ÈÏ¿ÆÊÒ...");
+            
+            // ¼ì²éÊÇ·ñÒÑ´æÔÚ
+            if (!db.Any<Department>(d => d.Name == "Ä¬ÈÏ¿ÆÊÒ"))
+            {
+                await db.InsertAsync(new Department
+                {
+                    Name = "Ä¬ÈÏ¿ÆÊÒ",
+                    Phone = "",
+                    CreatedAt = now,
+                    UpdatedAt = now
+                });
+            }
+            _logHelper?.Information("Step 1: Íê³É");
         }
         catch (Exception ex)
         {
-            throw new Exception($"Step 1 å¤±è´¥ (Departments): {ex.Message}", ex);
+            throw new Exception($"Step 1 Ê§°Ü (Departments): {ex.Message}", ex);
         }
 
-        // åˆ›å»ºå†…ç½®ç”¨æˆ·
+        // ´´½¨ÄÚÖÃÓÃ»§
         var adminSalt = PasswordHelper.GenerateSalt();
         var adminHash = PasswordHelper.HashPassword(Constants.DEFAULT_PASSWORD, adminSalt);
         var userSalt = PasswordHelper.GenerateSalt();
@@ -432,109 +308,123 @@ public class DatabaseInitializer
 
         try
         {
-            _logHelper?.Information("Step 2: åˆ›å»º admin ç”¨æˆ·...");
-            await db.ExecuteNonQueryAsync(
-                "INSERT OR IGNORE INTO Users (Username, PasswordHash, PasswordSalt, Name, Phone, Role, IsEnabled, IsBuiltIn, CreatedAt, UpdatedAt) VALUES (@Username, @PasswordHash, @PasswordSalt, @Name, @Phone, @Role, @IsEnabled, @IsBuiltIn, @CreatedAt, @UpdatedAt)",
-                new
+            _logHelper?.Information("Step 2: ´´½¨ admin ÓÃ»§...");
+            
+            if (!await db.AnyAsync<User>(u => u.Username == Constants.ADMIN_USERNAME))
+            {
+                await db.InsertAsync(new User
                 {
                     Username = Constants.ADMIN_USERNAME,
                     PasswordHash = adminHash,
                     PasswordSalt = adminSalt,
-                    Name = "ç®¡ç†å‘˜",
+                    Name = "¹ÜÀíÔ±",
                     Phone = "",
-                    Role = (int)UserRole.Administrator,
-                    IsEnabled = 1,
-                    IsBuiltIn = 1,
+                    Role = UserRole.Administrator,
+                    IsEnabled = true,
+                    IsBuiltIn = true,
                     CreatedAt = now,
                     UpdatedAt = now
                 });
-            _logHelper?.Information("Step 2: å®Œæˆ");
+            }
+            _logHelper?.Information("Step 2: Íê³É");
         }
         catch (Exception ex)
         {
-            throw new Exception($"Step 2 å¤±è´¥ (admin): {ex.Message}", ex);
+            throw new Exception($"Step 2 Ê§°Ü (admin): {ex.Message}", ex);
         }
 
         try
         {
-            _logHelper?.Information("Step 3: åˆ›å»º user ç”¨æˆ·...");
-            await db.ExecuteNonQueryAsync(
-                "INSERT OR IGNORE INTO Users (Username, PasswordHash, PasswordSalt, Name, Phone, Role, IsEnabled, IsBuiltIn, CreatedAt, UpdatedAt) VALUES (@Username, @PasswordHash, @PasswordSalt, @Name, @Phone, @Role, @IsEnabled, @IsBuiltIn, @CreatedAt, @UpdatedAt)",
-                new
+            _logHelper?.Information("Step 3: ´´½¨ user ÓÃ»§...");
+            
+            if (!await db.AnyAsync<User>(u => u.Username == Constants.USER_USERNAME))
+            {
+                await db.InsertAsync(new User
                 {
                     Username = Constants.USER_USERNAME,
                     PasswordHash = userHash,
                     PasswordSalt = userSalt,
-                    Name = "æ“ä½œå‘˜",
+                    Name = "²Ù×÷Ô±",
                     Phone = "",
-                    Role = (int)UserRole.Operator,
-                    IsEnabled = 1,
-                    IsBuiltIn = 1,
+                    Role = UserRole.Operator,
+                    IsEnabled = true,
+                    IsBuiltIn = true,
                     CreatedAt = now,
                     UpdatedAt = now
                 });
-            _logHelper?.Information("Step 3: å®Œæˆ");
+            }
+            _logHelper?.Information("Step 3: Íê³É");
         }
         catch (Exception ex)
         {
-            throw new Exception($"Step 3 å¤±è´¥ (user): {ex.Message}", ex);
+            throw new Exception($"Step 3 Ê§°Ü (user): {ex.Message}", ex);
         }
 
-            // åˆå§‹åŒ–ç³»ç»Ÿè®¾ç½®
-            var settings = new (string SettingKey, string SettingValue, string SettingType)[]
-            {
-                ("UnitName", "", "string"),
-                ("LogoPath", "", "string"),
-                ("AutoBackupEnabled", "false", "bool"),
-                ("AutoBackupFrequency", "0", "int"),
-                ("AutoBackupTime", "02:00", "string"),
-                ("AutoBackupRetainCount", "7", "int")
-            };
-
-            for (int i = 0; i < settings.Length; i++)
-            {
-                var (settingKey, settingValue, settingType) = settings[i];
-                try
-                {
-                    _logHelper?.Information($"Step 4.{i + 1}: åˆ›å»ºè®¾ç½® {settingKey}...");
-                    await db.ExecuteNonQueryAsync(
-                        "INSERT OR IGNORE INTO SystemSettings ([Key], [Value], ValueType, UpdatedAt) VALUES (@SettingKey, @SettingValue, @SettingType, @UpdatedAt)",
-                        new { SettingKey = settingKey, SettingValue = settingValue, SettingType = settingType, UpdatedAt = now });
-                    _logHelper?.Information($"Step 4.{i + 1}: å®Œæˆ");
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception($"Step 4.{i + 1} å¤±è´¥ (è®¾ç½® {settingKey}): {ex.Message}", ex);
-                }
-            }
-        }
-
-    /// <summary>
-    /// å‡çº§æ•°æ®åº“
-    /// </summary>
-    private async Task UpgradeDatabaseAsync(SqliteHelper db, int fromVersion)
-    {
-        // æŒ‰ç‰ˆæœ¬å·æ‰§è¡Œå‡çº§è„šæœ¬
-        for (int version = fromVersion + 1; version <= CurrentDatabaseVersion; version++)
+        // ³õÊ¼»¯ÏµÍ³ÉèÖÃ
+        var settings = new (string Key, string Value, string Type)[]
         {
-            _logHelper?.Information($"æ‰§è¡Œå‡çº§è„šæœ¬ v{version}...");
+            ("UnitName", "", "string"),
+            ("LogoPath", "", "string"),
+            ("AutoBackupEnabled", "false", "bool"),
+            ("AutoBackupFrequency", "0", "int"),
+            ("AutoBackupTime", "02:00", "string"),
+            ("AutoBackupRetainCount", "7", "int")
+        };
 
-            switch (version)
+        for (int i = 0; i < settings.Length; i++)
+        {
+            var (key, value, type) = settings[i];
+            try
             {
-                case 1:
-                    // v0 -> v1: åˆå§‹ç‰ˆæœ¬ï¼Œæ— å‡çº§è„šæœ¬
-                    break;
-
-                // æœªæ¥ç‰ˆæœ¬å‡çº§åœ¨æ­¤æ·»åŠ 
-                // case 2:
-                //     await UpgradeToV2Async(db);
-                //     break;
+                _logHelper?.Information($"Step 4.{i + 1}: ´´½¨ÉèÖÃ {key}...");
+                
+                if (!await db.AnyAsync<SystemSetting>(s => s.SettingKey == key))
+                {
+                    await db.InsertAsync(new SystemSetting
+                    {
+                        SettingKey = key,
+                        SettingValue = value,
+                        ValueType = type,
+                        UpdatedAt = now
+                    });
+                }
+                _logHelper?.Information($"Step 4.{i + 1}: Íê³É");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Step 4.{i + 1} Ê§°Ü (ÉèÖÃ {key}): {ex.Message}", ex);
             }
         }
     }
 
     /// <summary>
-    /// æ£€æŸ¥æ•°æ®åº“æ˜¯å¦å­˜åœ¨
+    /// Éı¼¶Êı¾İ¿â
+    /// </summary>
+    private Task UpgradeDatabaseAsync(SqliteSugarHelper db, int fromVersion)
+    {
+        // °´°æ±¾ºÅÖ´ĞĞÉı¼¶½Å±¾
+        for (int version = fromVersion + 1; version <= CurrentDatabaseVersion; version++)
+        {
+            _logHelper?.Information($"Ö´ĞĞÉı¼¶½Å±¾ v{version}...");
+
+            switch (version)
+            {
+                case 1:
+                    // v0 -> v1: ³õÊ¼°æ±¾£¬ÎŞÉı¼¶½Å±¾
+                    break;
+
+                // Î´À´°æ±¾Éı¼¶ÔÚ´ËÌí¼Ó
+                // case 2:
+                //     UpgradeToV2(db);
+                //     break;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// ¼ì²éÊı¾İ¿âÊÇ·ñ´æÔÚ
     /// </summary>
     public bool DatabaseExists()
     {
@@ -542,16 +432,19 @@ public class DatabaseInitializer
     }
 
     /// <summary>
-    /// åˆ é™¤æ•°æ®åº“ï¼ˆä»…ç”¨äºæµ‹è¯•ï¼‰
+    /// É¾³ıÊı¾İ¿â£¨½öÓÃÓÚ²âÊÔ£©
     /// </summary>
     public void DeleteDatabase()
     {
+        // ÇåÀíÁ¬½Ó³Ø
+        Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+
         if (File.Exists(_databasePath))
         {
             File.Delete(_databasePath);
         }
 
-        // åŒæ—¶åˆ é™¤ WAL å’Œ SHM æ–‡ä»¶
+        // Í¬Ê±É¾³ı WAL ºÍ SHM ÎÄ¼ş
         var walPath = _databasePath + "-wal";
         var shmPath = _databasePath + "-shm";
 

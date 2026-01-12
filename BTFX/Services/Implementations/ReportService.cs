@@ -7,7 +7,7 @@ using ToolHelper.LoggingDiagnostics.Abstractions;
 namespace BTFX.Services.Implementations;
 
 /// <summary>
-/// 报告服务实现
+/// 报告服务实现（使用 SqlSugar）
 /// </summary>
 public class ReportService : IReportService
 {
@@ -35,28 +35,21 @@ public class ReportService : IReportService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
-            var reports = await db.QueryAsync<Report>(@"
-                SELECT r.Id, r.ReportNumber, r.MeasurementId AS MeasurementRecordId, r.PatientId, 
-                       r.UserId AS OperatorId, r.ReportDate, r.DoctorOpinion, r.Status, 
-                       r.FilePath AS PdfFilePath, r.CreatedAt, r.UpdatedAt
-                FROM Reports r
-                WHERE r.PatientId = @PatientId
-                ORDER BY r.CreatedAt DESC
-            ", new { PatientId = patientId });
-
-            var result = reports.ToList();
+            var reports = await db.Queryable<Report>()
+                .Where(r => r.PatientId == patientId)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
 
             // 加载关联数据
-            foreach (var report in result)
+            foreach (var report in reports)
             {
-                report.MeasurementRecord = await _measurementService.GetMeasurementByIdAsync(report.MeasurementRecordId);
+                report.MeasurementRecord = await _measurementService.GetMeasurementByIdAsync(report.MeasurementId);
                 report.Patient = report.MeasurementRecord?.Patient;
             }
 
-            return result;
+            return reports;
         }
         catch (Exception ex)
         {
@@ -70,20 +63,13 @@ public class ReportService : IReportService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
-            var report = await db.QueryFirstOrDefaultAsync<Report>(@"
-                SELECT Id, ReportNumber, MeasurementId AS MeasurementRecordId, PatientId, 
-                       UserId AS OperatorId, ReportDate, DoctorOpinion, Status, 
-                       FilePath AS PdfFilePath, CreatedAt, UpdatedAt
-                FROM Reports
-                WHERE MeasurementId = @MeasurementId
-            ", new { MeasurementId = measurementRecordId });
+            var report = await db.GetFirstAsync<Report>(r => r.MeasurementId == measurementRecordId);
 
             if (report != null)
             {
-                report.MeasurementRecord = await _measurementService.GetMeasurementByIdAsync(report.MeasurementRecordId);
+                report.MeasurementRecord = await _measurementService.GetMeasurementByIdAsync(report.MeasurementId);
                 report.Patient = report.MeasurementRecord?.Patient;
             }
 
@@ -101,20 +87,13 @@ public class ReportService : IReportService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
-            var report = await db.QueryFirstOrDefaultAsync<Report>(@"
-                SELECT Id, ReportNumber, MeasurementId AS MeasurementRecordId, PatientId, 
-                       UserId AS OperatorId, ReportDate, DoctorOpinion, Status, 
-                       FilePath AS PdfFilePath, CreatedAt, UpdatedAt
-                FROM Reports
-                WHERE Id = @Id
-            ", new { Id = id });
+            var report = await db.GetByIdAsync<Report>(id);
 
             if (report != null)
             {
-                report.MeasurementRecord = await _measurementService.GetMeasurementByIdAsync(report.MeasurementRecordId);
+                report.MeasurementRecord = await _measurementService.GetMeasurementByIdAsync(report.MeasurementId);
                 report.Patient = report.MeasurementRecord?.Patient;
             }
 
@@ -132,30 +111,14 @@ public class ReportService : IReportService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
-            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
-            var reportDate = DateTime.Now.ToString(Constants.DATE_FORMAT);
+            var now = DateTime.Now;
+            report.ReportDate = now;
+            report.CreatedAt = now;
+            report.UpdatedAt = now;
 
-            var id = await db.InsertAndGetIdAsync(@"
-                INSERT INTO Reports (ReportNumber, MeasurementId, PatientId, UserId, ReportDate, 
-                                    DoctorOpinion, Status, FilePath, CreatedAt, UpdatedAt)
-                VALUES (@ReportNumber, @MeasurementId, @PatientId, @UserId, @ReportDate, 
-                        @DoctorOpinion, @Status, @FilePath, @CreatedAt, @UpdatedAt)
-            ", new
-            {
-                report.ReportNumber,
-                MeasurementId = report.MeasurementRecordId,
-                report.PatientId,
-                UserId = report.MeasurementRecord?.OperatorId ?? 1,
-                ReportDate = reportDate,
-                report.DoctorOpinion,
-                Status = (int)report.Status,
-                FilePath = report.PdfFilePath,
-                CreatedAt = now,
-                UpdatedAt = now
-            });
+            var id = await db.InsertReturnIdentityAsync(report);
 
             _logHelper?.Information($"创建报告成功: Id={id}, Number={report.ReportNumber}");
             return (int)id;
@@ -172,25 +135,21 @@ public class ReportService : IReportService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
-            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+            report.UpdatedAt = DateTime.Now;
 
-            var affected = await db.ExecuteNonQueryAsync(@"
-                UPDATE Reports 
-                SET DoctorOpinion = @DoctorOpinion, Status = @Status, FilePath = @FilePath, UpdatedAt = @UpdatedAt
-                WHERE Id = @Id
-            ", new
-            {
-                report.Id,
-                report.DoctorOpinion,
-                Status = (int)report.Status,
-                FilePath = report.PdfFilePath,
-                UpdatedAt = now
-            });
+            var count = await db.UpdateAsync<Report>(
+                r => new Report
+                {
+                    DoctorOpinion = report.DoctorOpinion,
+                    Status = report.Status,
+                    PdfFilePath = report.PdfFilePath,
+                    UpdatedAt = report.UpdatedAt
+                },
+                r => r.Id == report.Id);
 
-            return affected > 0;
+            return count > 0;
         }
         catch (Exception ex)
         {
@@ -204,17 +163,16 @@ public class ReportService : IReportService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
-            var affected = await db.ExecuteNonQueryAsync("DELETE FROM Reports WHERE Id = @Id", new { Id = id });
+            var success = await db.DeleteByIdAsync<Report>(id);
 
-            if (affected > 0)
+            if (success)
             {
                 _logHelper?.Information($"删除报告成功: Id={id}");
             }
 
-            return affected > 0;
+            return success;
         }
         catch (Exception ex)
         {
@@ -231,13 +189,13 @@ public class ReportService : IReportService
 
         try
         {
-            // 使用 ReportPdfExporter 导出PDF
+            // 使用 ReportPdfExporter 生成PDF
             var settingsService = App.Services?.GetService(typeof(ISettingsService)) as ISettingsService;
             if (settingsService != null)
             {
                 var exporter = new Helpers.ReportPdfExporter(settingsService);
 
-                // 导出PDF到报告目录
+                // 创建PDF保存目录
                 var baseDir = AppDomain.CurrentDomain.BaseDirectory;
                 var reportDir = System.IO.Path.Combine(baseDir, Common.Constants.REPORT_DIRECTORY);
                 if (!System.IO.Directory.Exists(reportDir))
@@ -273,7 +231,7 @@ public class ReportService : IReportService
 
         try
         {
-            // 使用 ReportPreviewHelper 创建 FlowDocument
+            // 使用 ReportPreviewHelper 生成 FlowDocument
             var settingsService = App.Services?.GetService(typeof(ISettingsService)) as ISettingsService;
             var unitName = settingsService?.CurrentSettings?.Unit?.Name ?? Common.Constants.APP_DISPLAY_NAME;
 
@@ -304,23 +262,19 @@ public class ReportService : IReportService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
-            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+            var now = DateTime.Now;
 
-            var affected = await db.ExecuteNonQueryAsync(@"
-                UPDATE Reports 
-                SET Status = @Status, UpdatedAt = @UpdatedAt
-                WHERE Id = @Id
-            ", new
-            {
-                Id = reportId,
-                Status = (int)status,
-                UpdatedAt = now
-            });
+            var count = await db.UpdateAsync<Report>(
+                r => new Report
+                {
+                    Status = status,
+                    UpdatedAt = now
+                },
+                r => r.Id == reportId);
 
-            return affected > 0;
+            return count > 0;
         }
         catch (Exception ex)
         {
@@ -355,52 +309,51 @@ public class ReportService : IReportService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
-            // 构建查询条件
-            var whereClause = "WHERE 1=1";
-            var parameters = new Dictionary<string, object>();
+            var query = db.Queryable<Report>();
 
-            if (!string.IsNullOrWhiteSpace(patientName))
-            {
-                whereClause += " AND p.Name LIKE @PatientName";
-                parameters["PatientName"] = $"%{patientName}%";
-            }
-
+            // 添加日期筛选
             if (startDate.HasValue)
             {
-                whereClause += " AND r.ReportDate >= @StartDate";
-                parameters["StartDate"] = startDate.Value.ToString(Constants.DATE_FORMAT);
+                query = query.Where(r => r.ReportDate >= startDate.Value);
             }
 
             if (endDate.HasValue)
             {
-                whereClause += " AND r.ReportDate <= @EndDate";
-                parameters["EndDate"] = endDate.Value.ToString(Constants.DATE_FORMAT);
+                query = query.Where(r => r.ReportDate <= endDate.Value);
             }
 
-            var sql = $@"
-                SELECT r.Id, r.ReportNumber, r.MeasurementId AS MeasurementRecordId, r.PatientId, 
-                       r.UserId AS OperatorId, r.ReportDate, r.DoctorOpinion, r.Status, 
-                       r.FilePath AS PdfFilePath, r.CreatedAt, r.UpdatedAt
-                FROM Reports r
-                LEFT JOIN Patients p ON r.PatientId = p.Id
-                {whereClause}
-                ORDER BY r.CreatedAt DESC
-            ";
+            // 如果有患者名称筛选，需要关联查询
+            if (!string.IsNullOrWhiteSpace(patientName))
+            {
+                var patientIds = await db.Queryable<Patient>()
+                    .Where(p => p.Name.Contains(patientName))
+                    .Select(p => p.Id)
+                    .ToListAsync();
 
-            var reports = await db.QueryAsync<Report>(sql, parameters);
-            var result = reports.ToList();
+                if (patientIds.Any())
+                {
+                    query = query.Where(r => patientIds.Contains(r.PatientId));
+                }
+                else
+                {
+                    return new List<Report>();
+                }
+            }
+
+            var reports = await query
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
 
             // 加载关联数据
-            foreach (var report in result)
+            foreach (var report in reports)
             {
-                report.MeasurementRecord = await _measurementService.GetMeasurementByIdAsync(report.MeasurementRecordId);
+                report.MeasurementRecord = await _measurementService.GetMeasurementByIdAsync(report.MeasurementId);
                 report.Patient = report.MeasurementRecord?.Patient;
             }
 
-            return result;
+            return reports;
         }
         catch (Exception ex)
         {
@@ -427,7 +380,7 @@ public class ReportService : IReportService
 
         if (existing != null)
         {
-            // 覆盖现有报告
+            // 更新现有报告
             existing.Status = ReportStatus.Draft;
             existing.DoctorOpinion = string.Empty;
             await UpdateReportAsync(existing);
@@ -440,10 +393,11 @@ public class ReportService : IReportService
             var report = new Report
             {
                 ReportNumber = GenerateReportNumber(),
-                MeasurementRecordId = measurementRecordId,
+                MeasurementId = measurementRecordId,
                 MeasurementRecord = measurement,
                 PatientId = measurement.PatientId,
                 Patient = measurement.Patient,
+                CreatedBy = operatorId,
                 Status = ReportStatus.Draft,
                 DoctorOpinion = string.Empty,
                 CreatedAt = DateTime.Now,

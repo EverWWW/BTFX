@@ -8,7 +8,7 @@ using ToolHelper.LoggingDiagnostics.Abstractions;
 namespace BTFX.Services.Implementations;
 
 /// <summary>
-/// 用户服务实现
+/// 用户服务实现（使用 SqlSugar）
 /// </summary>
 public class UserService : IUserService
 {
@@ -31,17 +31,8 @@ public class UserService : IUserService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
-
-            var users = await db.QueryAsync<User>(@"
-                SELECT Id, Username, PasswordHash, PasswordSalt, Name, Phone, Role, 
-                       DepartmentId, IsEnabled, IsBuiltIn, LastLoginAt, CreatedAt, UpdatedAt 
-                FROM Users 
-                ORDER BY Id
-            ");
-
-            return users.ToList();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
+            return await db.GetListAsync<User>(u => true);
         }
         catch (Exception ex)
         {
@@ -55,15 +46,8 @@ public class UserService : IUserService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
-
-            return await db.QueryFirstOrDefaultAsync<User>(@"
-                SELECT Id, Username, PasswordHash, PasswordSalt, Name, Phone, Role, 
-                       DepartmentId, IsEnabled, IsBuiltIn, LastLoginAt, CreatedAt, UpdatedAt 
-                FROM Users 
-                WHERE Id = @Id
-            ", new { Id = id });
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
+            return await db.GetByIdAsync<User>(id);
         }
         catch (Exception ex)
         {
@@ -77,15 +61,9 @@ public class UserService : IUserService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
-
-            return await db.QueryFirstOrDefaultAsync<User>(@"
-                SELECT Id, Username, PasswordHash, PasswordSalt, Name, Phone, Role, 
-                       DepartmentId, IsEnabled, IsBuiltIn, LastLoginAt, CreatedAt, UpdatedAt 
-                FROM Users 
-                WHERE Username = @Username COLLATE NOCASE
-            ", new { Username = username });
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
+            // SqlSugar 默认不区分大小写（SQLite）
+            return await db.GetFirstAsync<User>(u => u.Username == username);
         }
         catch (Exception ex)
         {
@@ -99,10 +77,9 @@ public class UserService : IUserService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
-            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+            var now = DateTime.Now;
 
             // 生成盐值和密码哈希
             var salt = PasswordHelper.GenerateSalt();
@@ -110,25 +87,12 @@ public class UserService : IUserService
                 string.IsNullOrEmpty(user.PasswordHash) ? Constants.DEFAULT_PASSWORD : user.PasswordHash, 
                 salt);
 
-            var id = await db.InsertAndGetIdAsync(@"
-                INSERT INTO Users (Username, PasswordHash, PasswordSalt, Name, Phone, Role, 
-                                   DepartmentId, IsEnabled, IsBuiltIn, CreatedAt, UpdatedAt)
-                VALUES (@Username, @PasswordHash, @PasswordSalt, @Name, @Phone, @Role, 
-                        @DepartmentId, @IsEnabled, @IsBuiltIn, @CreatedAt, @UpdatedAt)
-            ", new
-            {
-                user.Username,
-                PasswordHash = passwordHash,
-                PasswordSalt = salt,
-                user.Name,
-                Phone = user.Phone ?? "",
-                Role = (int)user.Role,
-                user.DepartmentId,
-                IsEnabled = user.IsEnabled ? 1 : 0,
-                IsBuiltIn = user.IsBuiltIn ? 1 : 0,
-                CreatedAt = now,
-                UpdatedAt = now
-            });
+            user.PasswordHash = passwordHash;
+            user.PasswordSalt = salt;
+            user.CreatedAt = now;
+            user.UpdatedAt = now;
+
+            var id = await db.InsertReturnIdentityAsync(user);
 
             _logHelper?.Information($"添加用户成功: Id={id}, Username={user.Username}");
             return (int)id;
@@ -145,35 +109,30 @@ public class UserService : IUserService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
-            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
-            var lastLoginAt = user.LastLoginAt?.ToString(Constants.DATETIME_FORMAT);
+            user.UpdatedAt = DateTime.Now;
 
-            var affected = await db.ExecuteNonQueryAsync(@"
-                UPDATE Users 
-                SET Name = @Name, Phone = @Phone, Role = @Role, DepartmentId = @DepartmentId,
-                    IsEnabled = @IsEnabled, LastLoginAt = @LastLoginAt, UpdatedAt = @UpdatedAt
-                WHERE Id = @Id
-            ", new
-            {
-                user.Id,
-                user.Name,
-                Phone = user.Phone ?? "",
-                Role = (int)user.Role,
-                user.DepartmentId,
-                IsEnabled = user.IsEnabled ? 1 : 0,
-                LastLoginAt = lastLoginAt,
-                UpdatedAt = now
-            });
+            // 使用条件更新，不更新密码字段
+            var count = await db.UpdateAsync<User>(
+                u => new User 
+                { 
+                    Name = user.Name,
+                    Phone = user.Phone,
+                    Role = user.Role,
+                    DepartmentId = user.DepartmentId,
+                    IsEnabled = user.IsEnabled,
+                    LastLoginAt = user.LastLoginAt,
+                    UpdatedAt = user.UpdatedAt
+                },
+                u => u.Id == user.Id);
 
-            if (affected > 0)
+            if (count > 0)
             {
                 _logHelper?.Information($"更新用户成功: Id={user.Id}");
             }
 
-            return affected > 0;
+            return count > 0;
         }
         catch (Exception ex)
         {
@@ -200,19 +159,15 @@ public class UserService : IUserService
                 return false;
             }
 
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
+            var count = await db.DeleteAsync<User>(u => u.Id == id && !u.IsBuiltIn);
 
-            var affected = await db.ExecuteNonQueryAsync(@"
-                DELETE FROM Users WHERE Id = @Id AND IsBuiltIn = 0
-            ", new { Id = id });
-
-            if (affected > 0)
+            if (count > 0)
             {
                 _logHelper?.Information($"删除用户成功: Id={id}");
             }
 
-            return affected > 0;
+            return count > 0;
         }
         catch (Exception ex)
         {
@@ -226,25 +181,16 @@ public class UserService : IUserService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
-
-            string sql;
-            object parameters;
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
             if (excludeId.HasValue)
             {
-                sql = "SELECT COUNT(*) FROM Users WHERE Username = @Username COLLATE NOCASE AND Id != @ExcludeId";
-                parameters = new { Username = username, ExcludeId = excludeId.Value };
+                return await db.AnyAsync<User>(u => u.Username == username && u.Id != excludeId.Value);
             }
             else
             {
-                sql = "SELECT COUNT(*) FROM Users WHERE Username = @Username COLLATE NOCASE";
-                parameters = new { Username = username };
+                return await db.AnyAsync<User>(u => u.Username == username);
             }
-
-            var count = await db.ExecuteScalarAsync<int>(sql, parameters);
-            return count > 0;
         }
         catch (Exception ex)
         {
@@ -271,29 +217,25 @@ public class UserService : IUserService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteHelper();
-            await db.InitializeAsync();
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
-            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+            var now = DateTime.Now;
 
-            var affected = await db.ExecuteNonQueryAsync(@"
-                UPDATE Users 
-                SET PasswordHash = @PasswordHash, PasswordSalt = @PasswordSalt, UpdatedAt = @UpdatedAt
-                WHERE Id = @Id
-            ", new
-            {
-                Id = userId,
-                PasswordHash = newPasswordHash,
-                PasswordSalt = newSalt,
-                UpdatedAt = now
-            });
+            var count = await db.UpdateAsync<User>(
+                u => new User 
+                { 
+                    PasswordHash = newPasswordHash,
+                    PasswordSalt = newSalt,
+                    UpdatedAt = now
+                },
+                u => u.Id == userId);
 
-            if (affected > 0)
+            if (count > 0)
             {
                 _logHelper?.Information($"更新用户密码成功: Id={userId}");
             }
 
-            return affected > 0;
+            return count > 0;
         }
         catch (Exception ex)
         {

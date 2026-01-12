@@ -8,7 +8,7 @@ namespace BTFX.Data;
 
 /// <summary>
 /// 数据库工厂类
-/// 提供创建 SqliteHelper 实例的工厂方法
+/// 提供创建数据库帮助类实例的工厂方法
 /// </summary>
 public static class DatabaseFactory
 {
@@ -51,10 +51,27 @@ public static class DatabaseFactory
     }
 
     /// <summary>
-    /// 创建 SqliteHelper 实例
+    /// 创建 SqliteSugarHelper 实例（推荐使用）
+    /// 调用者负责 Dispose
+    /// </summary>
+    /// <returns>SqliteSugarHelper 实例</returns>
+    public static SqliteSugarHelper CreateSqliteSugarHelper()
+    {
+        var options = new SqliteSugarOptions
+        {
+            DatabasePath = DatabasePath,
+            EnableSqlLog = false
+        };
+
+        return new SqliteSugarHelper(options);
+    }
+
+    /// <summary>
+    /// 创建 SqliteHelper 实例（保留用于兼容）
     /// 调用者负责 Dispose
     /// </summary>
     /// <returns>SqliteHelper 实例</returns>
+    [Obsolete("推荐使用 CreateSqliteSugarHelper() 方法")]
     public static SqliteHelper CreateSqliteHelper()
     {
         var options = Options.Create(new SqliteOptions
@@ -70,10 +87,11 @@ public static class DatabaseFactory
     }
 
     /// <summary>
-    /// 创建已初始化的 SqliteHelper 实例
+    /// 创建已初始化的 SqliteHelper 实例（保留用于兼容）
     /// 调用者负责 Dispose
     /// </summary>
     /// <returns>已初始化的 SqliteHelper 实例</returns>
+    [Obsolete("推荐使用 CreateSqliteSugarHelper() 方法")]
     public static async Task<SqliteHelper> CreateAndInitializeSqliteHelperAsync()
     {
         var helper = CreateSqliteHelper();
