@@ -1,156 +1,304 @@
-using System.Security.Cryptography;
-using System.Text;
 using BTFX.Common;
+using BTFX.Data;
+using BTFX.Helpers;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
+using ToolHelper.LoggingDiagnostics.Abstractions;
 
 namespace BTFX.Services.Implementations;
 
 /// <summary>
-/// User service implementation (temporary with mock data for Phase 2 testing)
+/// 用户服务实现
 /// </summary>
 public class UserService : IUserService
 {
-    // Temporary mock data for testing - use static to share across instances
-    private static readonly List<User> _mockUsers = InitializeMockUsers();
-    private static readonly object _lock = new object();
+    private readonly ILogHelper? _logHelper;
 
-    private static List<User> InitializeMockUsers()
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    public UserService()
     {
-        // Use same hashing algorithm as AuthenticationService
-        using var sha256 = SHA256.Create();
-        var bytes = Encoding.UTF8.GetBytes(Constants.DEFAULT_PASSWORD);
-        var hash = sha256.ComputeHash(bytes);
-        var hashedPassword = Convert.ToBase64String(hash);
-
-        return new List<User>
+        try
         {
-            new User
+            _logHelper = App.Services?.GetService(typeof(ILogHelper)) as ILogHelper;
+        }
+        catch { }
+    }
+
+    /// <inheritdoc/>
+    public async Task<List<User>> GetAllUsersAsync()
+    {
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var users = await db.QueryAsync<User>(@"
+                SELECT Id, Username, PasswordHash, PasswordSalt, Name, Phone, Role, 
+                       DepartmentId, IsEnabled, IsBuiltIn, LastLoginAt, CreatedAt, UpdatedAt 
+                FROM Users 
+                ORDER BY Id
+            ");
+
+            return users.ToList();
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("获取用户列表失败", ex);
+            return new List<User>();
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<User?> GetUserByIdAsync(int id)
+    {
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            return await db.QueryFirstOrDefaultAsync<User>(@"
+                SELECT Id, Username, PasswordHash, PasswordSalt, Name, Phone, Role, 
+                       DepartmentId, IsEnabled, IsBuiltIn, LastLoginAt, CreatedAt, UpdatedAt 
+                FROM Users 
+                WHERE Id = @Id
+            ", new { Id = id });
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"获取用户失败: Id={id}", ex);
+            return null;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<User?> GetUserByUsernameAsync(string username)
+    {
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            return await db.QueryFirstOrDefaultAsync<User>(@"
+                SELECT Id, Username, PasswordHash, PasswordSalt, Name, Phone, Role, 
+                       DepartmentId, IsEnabled, IsBuiltIn, LastLoginAt, CreatedAt, UpdatedAt 
+                FROM Users 
+                WHERE Username = @Username COLLATE NOCASE
+            ", new { Username = username });
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"获取用户失败: Username={username}", ex);
+            return null;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> AddUserAsync(User user)
+    {
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+
+            // 生成盐值和密码哈希
+            var salt = PasswordHelper.GenerateSalt();
+            var passwordHash = PasswordHelper.HashPassword(
+                string.IsNullOrEmpty(user.PasswordHash) ? Constants.DEFAULT_PASSWORD : user.PasswordHash, 
+                salt);
+
+            var id = await db.InsertAndGetIdAsync(@"
+                INSERT INTO Users (Username, PasswordHash, PasswordSalt, Name, Phone, Role, 
+                                   DepartmentId, IsEnabled, IsBuiltIn, CreatedAt, UpdatedAt)
+                VALUES (@Username, @PasswordHash, @PasswordSalt, @Name, @Phone, @Role, 
+                        @DepartmentId, @IsEnabled, @IsBuiltIn, @CreatedAt, @UpdatedAt)
+            ", new
             {
-                Id = 1,
-                Username = Constants.ADMIN_USERNAME,
-                Name = "Administrator",
-                PasswordHash = hashedPassword,
-                Role = UserRole.Administrator,
-                IsEnabled = true,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
-            },
-            new User
+                user.Username,
+                PasswordHash = passwordHash,
+                PasswordSalt = salt,
+                user.Name,
+                Phone = user.Phone ?? "",
+                Role = (int)user.Role,
+                user.DepartmentId,
+                IsEnabled = user.IsEnabled ? 1 : 0,
+                IsBuiltIn = user.IsBuiltIn ? 1 : 0,
+                CreatedAt = now,
+                UpdatedAt = now
+            });
+
+            _logHelper?.Information($"添加用户成功: Id={id}, Username={user.Username}");
+            return (int)id;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"添加用户失败: Username={user.Username}", ex);
+            return 0;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> UpdateUserAsync(User user)
+    {
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+            var lastLoginAt = user.LastLoginAt?.ToString(Constants.DATETIME_FORMAT);
+
+            var affected = await db.ExecuteNonQueryAsync(@"
+                UPDATE Users 
+                SET Name = @Name, Phone = @Phone, Role = @Role, DepartmentId = @DepartmentId,
+                    IsEnabled = @IsEnabled, LastLoginAt = @LastLoginAt, UpdatedAt = @UpdatedAt
+                WHERE Id = @Id
+            ", new
             {
-                Id = 2,
-                Username = Constants.USER_USERNAME,
-                Name = "Operator",
-                PasswordHash = hashedPassword,
-                Role = UserRole.Operator,
-                IsEnabled = true,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
-            },
-            new User
+                user.Id,
+                user.Name,
+                Phone = user.Phone ?? "",
+                Role = (int)user.Role,
+                user.DepartmentId,
+                IsEnabled = user.IsEnabled ? 1 : 0,
+                LastLoginAt = lastLoginAt,
+                UpdatedAt = now
+            });
+
+            if (affected > 0)
             {
-                Id = 3,
-                Username = Constants.GUEST_USERNAME,
-                Name = "Guest",
-                PasswordHash = string.Empty,
-                Role = UserRole.Guest,
-                IsEnabled = true,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                _logHelper?.Information($"更新用户成功: Id={user.Id}");
             }
-        };
-    }
 
-    /// <inheritdoc/>
-    public Task<List<User>> GetAllUsersAsync()
-    {
-        lock (_lock)
+            return affected > 0;
+        }
+        catch (Exception ex)
         {
-            return Task.FromResult(_mockUsers.ToList());
+            _logHelper?.Error($"更新用户失败: Id={user.Id}", ex);
+            return false;
         }
     }
 
     /// <inheritdoc/>
-    public Task<User?> GetUserByIdAsync(int id)
+    public async Task<bool> DeleteUserAsync(int id)
     {
-        lock (_lock)
+        try
         {
-            var user = _mockUsers.FirstOrDefault(u => u.Id == id);
-            return Task.FromResult(user);
-        }
-    }
-
-    /// <inheritdoc/>
-    public Task<User?> GetUserByUsernameAsync(string username)
-    {
-        lock (_lock)
-        {
-            var user = _mockUsers.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
-            return Task.FromResult(user);
-        }
-    }
-
-    /// <inheritdoc/>
-    public Task<int> AddUserAsync(User user)
-    {
-        lock (_lock)
-        {
-            user.Id = _mockUsers.Any() ? _mockUsers.Max(u => u.Id) + 1 : 1;
-            user.CreatedAt = DateTime.Now;
-            user.UpdatedAt = DateTime.Now;
-            _mockUsers.Add(user);
-            return Task.FromResult(user.Id);
-        }
-    }
-
-    /// <inheritdoc/>
-    public Task<bool> UpdateUserAsync(User user)
-    {
-        lock (_lock)
-        {
-            var existing = _mockUsers.FirstOrDefault(u => u.Id == user.Id);
-            if (existing != null)
+            // 检查是否为内置账号
+            var user = await GetUserByIdAsync(id);
+            if (user == null)
             {
-                var index = _mockUsers.IndexOf(existing);
-                user.UpdatedAt = DateTime.Now;
-                _mockUsers[index] = user;
-                return Task.FromResult(true);
+                return false;
             }
-            return Task.FromResult(false);
-        }
-    }
 
-    /// <inheritdoc/>
-    public Task<bool> DeleteUserAsync(int id)
-    {
-        lock (_lock)
-        {
-            var user = _mockUsers.FirstOrDefault(u => u.Id == id);
-            if (user != null)
+            if (user.IsBuiltIn)
             {
-                _mockUsers.Remove(user);
-                return Task.FromResult(true);
+                _logHelper?.Warning($"无法删除内置账号: Id={id}, Username={user.Username}");
+                return false;
             }
-            return Task.FromResult(false);
+
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var affected = await db.ExecuteNonQueryAsync(@"
+                DELETE FROM Users WHERE Id = @Id AND IsBuiltIn = 0
+            ", new { Id = id });
+
+            if (affected > 0)
+            {
+                _logHelper?.Information($"删除用户成功: Id={id}");
+            }
+
+            return affected > 0;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"删除用户失败: Id={id}", ex);
+            return false;
         }
     }
 
     /// <inheritdoc/>
-    public Task<bool> IsUsernameExistsAsync(string username, int? excludeId = null)
+    public async Task<bool> IsUsernameExistsAsync(string username, int? excludeId = null)
     {
-        lock (_lock)
+        try
         {
-            var exists = _mockUsers.Any(u => 
-                u.Username.Equals(username, StringComparison.OrdinalIgnoreCase) && 
-                (!excludeId.HasValue || u.Id != excludeId.Value));
-            return Task.FromResult(exists);
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            string sql;
+            object parameters;
+
+            if (excludeId.HasValue)
+            {
+                sql = "SELECT COUNT(*) FROM Users WHERE Username = @Username COLLATE NOCASE AND Id != @ExcludeId";
+                parameters = new { Username = username, ExcludeId = excludeId.Value };
+            }
+            else
+            {
+                sql = "SELECT COUNT(*) FROM Users WHERE Username = @Username COLLATE NOCASE";
+                parameters = new { Username = username };
+            }
+
+            var count = await db.ExecuteScalarAsync<int>(sql, parameters);
+            return count > 0;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"检查用户名失败: Username={username}", ex);
+            return true; // 出错时返回 true，防止重复添加
         }
     }
 
     /// <inheritdoc/>
     public Task<bool> InitializeDefaultUsersAsync()
     {
-        // Already initialized in static constructor
+        // 数据库初始化时已经创建了内置用户
         return Task.FromResult(true);
+    }
+
+    /// <summary>
+    /// 更新用户密码
+    /// </summary>
+    /// <param name="userId">用户ID</param>
+    /// <param name="newPasswordHash">新密码哈希</param>
+    /// <param name="newSalt">新盐值</param>
+    /// <returns>是否成功</returns>
+    public async Task<bool> UpdatePasswordAsync(int userId, string newPasswordHash, string newSalt)
+    {
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+
+            var affected = await db.ExecuteNonQueryAsync(@"
+                UPDATE Users 
+                SET PasswordHash = @PasswordHash, PasswordSalt = @PasswordSalt, UpdatedAt = @UpdatedAt
+                WHERE Id = @Id
+            ", new
+            {
+                Id = userId,
+                PasswordHash = newPasswordHash,
+                PasswordSalt = newSalt,
+                UpdatedAt = now
+            });
+
+            if (affected > 0)
+            {
+                _logHelper?.Information($"更新用户密码成功: Id={userId}");
+            }
+
+            return affected > 0;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"更新用户密码失败: Id={userId}", ex);
+            return false;
+        }
     }
 }

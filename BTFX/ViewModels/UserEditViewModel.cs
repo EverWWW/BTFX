@@ -149,7 +149,7 @@ public class UserEditViewModel : ObservableObject
         {
             try
             {
-                var depts = await _departmentService.GetEnabledDepartmentsAsync();
+                var depts = await _departmentService.GetAllDepartmentsAsync();
 
                 Application.Current.Dispatcher.Invoke(() =>
                 {

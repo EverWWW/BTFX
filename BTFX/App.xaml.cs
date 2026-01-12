@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Threading;
 using BTFX.Common;
+using BTFX.Data;
 using BTFX.Services.Implementations;
 using BTFX.Services.Interfaces;
 using BTFX.ViewModels;
@@ -60,28 +61,31 @@ public partial class App : Application
         // 4. 初始化日志框架
         InitializeLogging();
 
-        // 5. 配置依赖注入
+        // 5. 初始化数据库
+        InitializeDatabase();
+
+        // 6. 配置依赖注入
         var services = new ServiceCollection();
         ConfigureServices(services);
         Services = services.BuildServiceProvider();
 
-        // 6. 加载配置
+        // 7. 加载配置
         var settingsService = Services.GetRequiredService<ISettingsService>();
         settingsService.LoadSettings();
 
-        // 7. 应用主题
+        // 8. 应用主题
         var themeService = Services.GetRequiredService<IThemeService>();
         themeService.ApplyTheme(settingsService.CurrentSettings.Application.Theme);
 
-        // 8. 应用语言
+        // 9. 应用语言
         var localizationService = Services.GetRequiredService<ILocalizationService>();
         localizationService.ApplyLanguage(settingsService.CurrentSettings.Application.Language);
 
-            // 9. 显示主窗口
+            // 10. 显示主窗口
             var mainWindow = Services.GetRequiredService<MainWindow>();
             mainWindow.Show();
 
-                    // 10. 注册视图映射
+                    // 11. 注册视图映射
                     var navigationService = Services.GetRequiredService<INavigationService>() as NavigationService;
                     if (navigationService != null)
                     {
@@ -411,6 +415,39 @@ public partial class App : Application
                     // 如果日志初始化失败，输出到调试窗口
                     System.Diagnostics.Debug.WriteLine($"日志初始化失败: {ex.Message}");
                     System.Diagnostics.Debug.WriteLine(ex.StackTrace);
+                }
+            }
+
+            /// <summary>
+            /// 初始化数据库
+            /// </summary>
+            private static void InitializeDatabase()
+            {
+                try
+                {
+                    _logHelper?.Information("开始初始化数据库...");
+
+                    var dbInitializer = new DatabaseInitializer(_logHelper);
+
+                    // 同步执行数据库初始化（启动时必须完成）
+                    dbInitializer.InitializeAsync().GetAwaiter().GetResult();
+
+                    _logHelper?.Information("数据库初始化完成");
+                }
+                catch (Exception ex)
+                {
+                    _logHelper?.Error("数据库初始化失败", ex);
+                    System.Diagnostics.Debug.WriteLine($"数据库初始化失败: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine(ex.StackTrace);
+
+                    // 数据库初始化失败是致命错误，显示错误并退出
+                    MessageBox.Show(
+                        $"数据库初始化失败：{ex.Message}\n\n应用程序将退出。",
+                        Constants.APP_DISPLAY_NAME,
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+
+                    Environment.Exit(1);
                 }
             }
 

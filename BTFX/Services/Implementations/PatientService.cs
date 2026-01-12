@@ -1,234 +1,317 @@
 using BTFX.Common;
+using BTFX.Data;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
+using ToolHelper.LoggingDiagnostics.Abstractions;
 
 namespace BTFX.Services.Implementations;
 
 /// <summary>
-/// Patient service implementation (temporary with mock data for Phase 2 testing)
+/// 患者服务实现
 /// </summary>
 public class PatientService : IPatientService
 {
-    // Temporary mock data for testing - use static to share across instances
-    private static readonly List<Patient> _mockPatients = InitializeMockPatients();
-    private static readonly object _lock = new object();
+    private readonly ILogHelper? _logHelper;
 
-    private static List<Patient> InitializeMockPatients()
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    public PatientService()
     {
-        return new List<Patient>
+        try
         {
-            new Patient
-            {
-                Id = 1,
-                Name = "Zhang San",
-                Gender = Gender.Male,
-                BirthDate = new DateTime(1980, 5, 15),
-                Phone = "13800138001",
-                IdNumber = "110101198005150011",
-                Height = 175,
-                Weight = 70,
-                Address = "Beijing Chaoyang District",
-                MedicalHistory = "None",
-                Status = PatientStatus.Active,
-                CreatedBy = 1,
-                CreatedAt = DateTime.Now.AddDays(-30),
-                UpdatedAt = DateTime.Now.AddDays(-30)
-            },
-            new Patient
-            {
-                Id = 2,
-                Name = "Li Si",
-                Gender = Gender.Female,
-                BirthDate = new DateTime(1992, 8, 20),
-                Phone = "13900139002",
-                IdNumber = "110101199208200022",
-                Height = 165,
-                Weight = 55,
-                Address = "Shanghai Pudong District",
-                MedicalHistory = "Hypertension",
-                Status = PatientStatus.Active,
-                CreatedBy = 1,
-                CreatedAt = DateTime.Now.AddDays(-25),
-                UpdatedAt = DateTime.Now.AddDays(-25)
-            },
-            new Patient
-            {
-                Id = 3,
-                Name = "Wang Wu",
-                Gender = Gender.Male,
-                BirthDate = new DateTime(1975, 3, 10),
-                Phone = "13700137003",
-                IdNumber = "110101197503100033",
-                Height = 180,
-                Weight = 85,
-                Address = "Guangzhou Tianhe District",
-                MedicalHistory = "Diabetes",
-                Status = PatientStatus.Active,
-                CreatedBy = 2,
-                CreatedAt = DateTime.Now.AddDays(-20),
-                UpdatedAt = DateTime.Now.AddDays(-20)
-            },
-            new Patient
-            {
-                Id = 4,
-                Name = "Zhao Liu",
-                Gender = Gender.Female,
-                BirthDate = new DateTime(1988, 11, 25),
-                Phone = "13600136004",
-                IdNumber = "110101198811250044",
-                Height = 160,
-                Weight = 50,
-                Address = "Shenzhen Nanshan District",
-                Status = PatientStatus.Active,
-                CreatedBy = 2,
-                CreatedAt = DateTime.Now.AddDays(-15),
-                UpdatedAt = DateTime.Now.AddDays(-15)
-            },
-            new Patient
-            {
-                Id = 5,
-                Name = "Chen Qi",
-                Gender = Gender.Male,
-                BirthDate = new DateTime(1995, 6, 30),
-                Phone = "13500135005",
-                IdNumber = "110101199506300055",
-                Height = 172,
-                Weight = 68,
-                Address = "Chengdu Jinjiang District",
-                Status = PatientStatus.Active,
-                CreatedBy = 1,
-                CreatedAt = DateTime.Now.AddDays(-10),
-                UpdatedAt = DateTime.Now.AddDays(-10)
-            }
-        };
+            _logHelper = App.Services?.GetService(typeof(ILogHelper)) as ILogHelper;
+        }
+        catch { }
     }
 
     /// <inheritdoc/>
-    public Task<List<Patient>> GetAllPatientsAsync()
+    public async Task<List<Patient>> GetAllPatientsAsync()
     {
-        lock (_lock)
+        try
         {
-            return Task.FromResult(_mockPatients.Where(p => p.Status == PatientStatus.Active).ToList());
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var patients = await db.QueryAsync<Patient>(@"
+                SELECT Id, Name, Gender, BirthDate, Phone, IdNumber, Height, Weight, 
+                       Address, MedicalHistory, Remark, Status, CreatedBy, CreatedAt, UpdatedAt 
+                FROM Patients 
+                WHERE Status = 0
+                ORDER BY CreatedAt DESC
+            ");
+
+            return patients.ToList();
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("获取患者列表失败", ex);
+            return new List<Patient>();
         }
     }
 
     /// <inheritdoc/>
-    public Task<(List<Patient> Patients, int TotalCount)> GetPatientsPagedAsync(int pageIndex, int pageSize, string? searchText = null)
+    public async Task<(List<Patient> Patients, int TotalCount)> GetPatientsPagedAsync(
+        int pageIndex, int pageSize, string? searchText = null)
     {
-        lock (_lock)
+        try
         {
-            var query = _mockPatients.Where(p => p.Status == PatientStatus.Active);
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            // 构建查询条件
+            var whereClause = "WHERE Status = 0";
+            var parameters = new Dictionary<string, object>();
 
             if (!string.IsNullOrWhiteSpace(searchText))
             {
-                var searchLower = searchText.ToLower();
-                query = query.Where(p =>
-                    p.Name.ToLower().Contains(searchLower) ||
-                    (p.Phone != null && p.Phone.Contains(searchLower)) ||
-                    (p.IdNumber != null && p.IdNumber.ToLower().Contains(searchLower)));
+                var search = $"%{searchText}%";
+                whereClause += " AND (Name LIKE @Search OR Phone LIKE @Search OR IdNumber LIKE @Search)";
+                parameters["Search"] = search;
             }
 
-            var totalCount = query.Count();
-            var patients = query
-                .OrderByDescending(p => p.CreatedAt)
-                .Skip((pageIndex - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
+            // 查询总数
+            var countSql = $"SELECT COUNT(*) FROM Patients {whereClause}";
+            var totalCount = await db.ExecuteScalarAsync<int>(countSql, parameters);
 
-            return Task.FromResult((patients, totalCount));
+            // 计算偏移量（pageIndex 从 1 开始）
+            var offset = (pageIndex - 1) * pageSize;
+
+            // 查询数据
+            var dataSql = $@"
+                SELECT Id, Name, Gender, BirthDate, Phone, IdNumber, Height, Weight, 
+                       Address, MedicalHistory, Remark, Status, CreatedBy, CreatedAt, UpdatedAt 
+                FROM Patients 
+                {whereClause}
+                ORDER BY CreatedAt DESC
+                LIMIT @PageSize OFFSET @Offset
+            ";
+
+            parameters["PageSize"] = pageSize;
+            parameters["Offset"] = offset;
+
+            var patients = await db.QueryAsync<Patient>(dataSql, parameters);
+
+            return (patients.ToList(), totalCount);
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("分页查询患者失败", ex);
+            return (new List<Patient>(), 0);
         }
     }
 
     /// <inheritdoc/>
-    public Task<Patient?> GetPatientByIdAsync(int id)
+    public async Task<Patient?> GetPatientByIdAsync(int id)
     {
-        lock (_lock)
+        try
         {
-            var patient = _mockPatients.FirstOrDefault(p => p.Id == id && p.Status == PatientStatus.Active);
-            return Task.FromResult(patient);
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            return await db.QueryFirstOrDefaultAsync<Patient>(@"
+                SELECT Id, Name, Gender, BirthDate, Phone, IdNumber, Height, Weight, 
+                       Address, MedicalHistory, Remark, Status, CreatedBy, CreatedAt, UpdatedAt 
+                FROM Patients 
+                WHERE Id = @Id
+            ", new { Id = id });
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"获取患者失败: Id={id}", ex);
+            return null;
         }
     }
 
     /// <inheritdoc/>
-    public Task<int> AddPatientAsync(Patient patient)
+    public async Task<int> AddPatientAsync(Patient patient)
     {
-        lock (_lock)
+        try
         {
-            patient.Id = _mockPatients.Any() ? _mockPatients.Max(p => p.Id) + 1 : 1;
-            patient.CreatedAt = DateTime.Now;
-            patient.UpdatedAt = DateTime.Now;
-            patient.Status = PatientStatus.Active;
-            _mockPatients.Add(patient);
-            return Task.FromResult(patient.Id);
-        }
-    }
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
 
-    /// <inheritdoc/>
-    public Task<bool> UpdatePatientAsync(Patient patient)
-    {
-        lock (_lock)
-        {
-            var existing = _mockPatients.FirstOrDefault(p => p.Id == patient.Id);
-            if (existing != null)
+            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+            var birthDate = patient.BirthDate?.ToString(Constants.DATE_FORMAT);
+
+            var id = await db.InsertAndGetIdAsync(@"
+                INSERT INTO Patients (Name, Gender, BirthDate, Phone, IdNumber, Height, Weight, 
+                                     Address, MedicalHistory, Remark, Status, CreatedBy, CreatedAt, UpdatedAt)
+                VALUES (@Name, @Gender, @BirthDate, @Phone, @IdNumber, @Height, @Weight, 
+                        @Address, @MedicalHistory, @Remark, @Status, @CreatedBy, @CreatedAt, @UpdatedAt)
+            ", new
             {
-                var index = _mockPatients.IndexOf(existing);
-                patient.UpdatedAt = DateTime.Now;
-                _mockPatients[index] = patient;
-                return Task.FromResult(true);
-            }
-            return Task.FromResult(false);
-        }
-    }
+                patient.Name,
+                Gender = (int)patient.Gender,
+                BirthDate = birthDate,
+                patient.Phone,
+                patient.IdNumber,
+                patient.Height,
+                patient.Weight,
+                patient.Address,
+                patient.MedicalHistory,
+                patient.Remark,
+                Status = (int)PatientStatus.Active,
+                patient.CreatedBy,
+                CreatedAt = now,
+                UpdatedAt = now
+            });
 
-    /// <inheritdoc/>
-    public Task<bool> DeletePatientAsync(int id)
-    {
-        lock (_lock)
+            _logHelper?.Information($"添加患者成功: Id={id}, Name={patient.Name}");
+            return (int)id;
+        }
+        catch (Exception ex)
         {
-            var patient = _mockPatients.FirstOrDefault(p => p.Id == id);
-            if (patient != null)
-            {
-                // Logical delete
-                patient.Status = PatientStatus.Deleted;
-                patient.UpdatedAt = DateTime.Now;
-                return Task.FromResult(true);
-            }
-            return Task.FromResult(false);
+            _logHelper?.Error($"添加患者失败: Name={patient.Name}", ex);
+            return 0;
         }
     }
 
     /// <inheritdoc/>
-    public Task<List<Patient>> SearchPatientsAsync(string searchText)
+    public async Task<bool> UpdatePatientAsync(Patient patient)
     {
-        lock (_lock)
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+            var birthDate = patient.BirthDate?.ToString(Constants.DATE_FORMAT);
+
+            var affected = await db.ExecuteNonQueryAsync(@"
+                UPDATE Patients 
+                SET Name = @Name, Gender = @Gender, BirthDate = @BirthDate, Phone = @Phone, 
+                    IdNumber = @IdNumber, Height = @Height, Weight = @Weight, Address = @Address,
+                    MedicalHistory = @MedicalHistory, Remark = @Remark, UpdatedAt = @UpdatedAt
+                WHERE Id = @Id
+            ", new
+            {
+                patient.Id,
+                patient.Name,
+                Gender = (int)patient.Gender,
+                BirthDate = birthDate,
+                patient.Phone,
+                patient.IdNumber,
+                patient.Height,
+                patient.Weight,
+                patient.Address,
+                patient.MedicalHistory,
+                patient.Remark,
+                UpdatedAt = now
+            });
+
+            if (affected > 0)
+            {
+                _logHelper?.Information($"更新患者成功: Id={patient.Id}");
+            }
+
+            return affected > 0;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"更新患者失败: Id={patient.Id}", ex);
+            return false;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> DeletePatientAsync(int id)
+    {
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+
+            // 逻辑删除：设置 Status = 1 (Deleted)
+            var affected = await db.ExecuteNonQueryAsync(@"
+                UPDATE Patients 
+                SET Status = @Status, UpdatedAt = @UpdatedAt
+                WHERE Id = @Id
+            ", new
+            {
+                Id = id,
+                Status = (int)PatientStatus.Deleted,
+                UpdatedAt = now
+            });
+
+            if (affected > 0)
+            {
+                _logHelper?.Information($"删除患者成功: Id={id}");
+            }
+
+            return affected > 0;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"删除患者失败: Id={id}", ex);
+            return false;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<List<Patient>> SearchPatientsAsync(string searchText)
+    {
+        try
         {
             if (string.IsNullOrWhiteSpace(searchText))
             {
-                return Task.FromResult(_mockPatients.Where(p => p.Status == PatientStatus.Active).ToList());
+                return await GetAllPatientsAsync();
             }
 
-            var searchLower = searchText.ToLower();
-            var results = _mockPatients.Where(p =>
-                p.Status == PatientStatus.Active &&
-                (p.Name.ToLower().Contains(searchLower) ||
-                 (p.Phone != null && p.Phone.Contains(searchLower)) ||
-                 (p.IdNumber != null && p.IdNumber.ToLower().Contains(searchLower))))
-                .ToList();
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
 
-            return Task.FromResult(results);
+            var search = $"%{searchText}%";
+
+            var patients = await db.QueryAsync<Patient>(@"
+                SELECT Id, Name, Gender, BirthDate, Phone, IdNumber, Height, Weight, 
+                       Address, MedicalHistory, Remark, Status, CreatedBy, CreatedAt, UpdatedAt 
+                FROM Patients 
+                WHERE Status = 0 
+                  AND (Name LIKE @Search OR Phone LIKE @Search OR IdNumber LIKE @Search)
+                ORDER BY CreatedAt DESC
+            ", new { Search = search });
+
+            return patients.ToList();
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"搜索患者失败: searchText={searchText}", ex);
+            return new List<Patient>();
         }
     }
 
     /// <inheritdoc/>
-    public Task<bool> IsPatientExistsAsync(string phone, int? excludeId = null)
+    public async Task<bool> IsPatientExistsAsync(string phone, int? excludeId = null)
     {
-        lock (_lock)
+        try
         {
-            var exists = _mockPatients.Any(p =>
-                p.Status == PatientStatus.Active &&
-                p.Phone == phone &&
-                (!excludeId.HasValue || p.Id != excludeId.Value));
-            return Task.FromResult(exists);
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            string sql;
+            object parameters;
+
+            if (excludeId.HasValue)
+            {
+                sql = "SELECT COUNT(*) FROM Patients WHERE Phone = @Phone AND Status = 0 AND Id != @ExcludeId";
+                parameters = new { Phone = phone, ExcludeId = excludeId.Value };
+            }
+            else
+            {
+                sql = "SELECT COUNT(*) FROM Patients WHERE Phone = @Phone AND Status = 0";
+                parameters = new { Phone = phone };
+            }
+
+            var count = await db.ExecuteScalarAsync<int>(sql, parameters);
+            return count > 0;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"检查患者电话失败: Phone={phone}", ex);
+            return true; // 出错时返回 true，防止重复添加
         }
     }
 }

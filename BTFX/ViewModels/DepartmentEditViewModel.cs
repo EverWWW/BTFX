@@ -38,44 +38,14 @@ public class DepartmentEditViewModel : ObservableObject
         set => SetProperty(ref _name, value);
     }
 
-    private string _code = string.Empty;
+    private string _phone = string.Empty;
     /// <summary>
-    /// 科室代码
+    /// 科室电话
     /// </summary>
-    public string Code
+    public string Phone
     {
-        get => _code;
-        set => SetProperty(ref _code, value);
-    }
-
-    private string _description = string.Empty;
-    /// <summary>
-    /// 科室描述
-    /// </summary>
-    public string Description
-    {
-        get => _description;
-        set => SetProperty(ref _description, value);
-    }
-
-    private int _sortOrder;
-    /// <summary>
-    /// 排序顺序
-    /// </summary>
-    public int SortOrder
-    {
-        get => _sortOrder;
-        set => SetProperty(ref _sortOrder, value);
-    }
-
-    private bool _isEnabled = true;
-    /// <summary>
-    /// 是否启用
-    /// </summary>
-    public bool IsEnabled
-    {
-        get => _isEnabled;
-        set => SetProperty(ref _isEnabled, value);
+        get => _phone;
+        set => SetProperty(ref _phone, value);
     }
 
     private string _validationError = string.Empty;
@@ -143,16 +113,7 @@ public class DepartmentEditViewModel : ObservableObject
         if (_originalDepartment != null)
         {
             Name = _originalDepartment.Name;
-            Code = _originalDepartment.Code ?? string.Empty;
-            Description = _originalDepartment.Description ?? string.Empty;
-            SortOrder = _originalDepartment.SortOrder;
-            IsEnabled = _originalDepartment.IsEnabled;
-        }
-        else
-        {
-            // 默认值
-            IsEnabled = true;
-            SortOrder = 0;
+            Phone = _originalDepartment.Phone ?? string.Empty;
         }
     }
 
@@ -171,17 +132,14 @@ public class DepartmentEditViewModel : ObservableObject
     {
         if (IsSaving) return;
 
-        if (!Validate()) return;
+        if (!await ValidateAsync()) return;
 
         IsSaving = true;
         try
         {
             var department = _originalDepartment ?? new Department();
             department.Name = Name.Trim();
-            department.Code = string.IsNullOrWhiteSpace(Code) ? null : Code.Trim();
-            department.Description = string.IsNullOrWhiteSpace(Description) ? null : Description.Trim();
-            department.SortOrder = SortOrder;
-            department.IsEnabled = IsEnabled;
+            department.Phone = string.IsNullOrWhiteSpace(Phone) ? null : Phone.Trim();
             department.UpdatedAt = DateTime.Now;
 
             bool success;
@@ -220,7 +178,7 @@ public class DepartmentEditViewModel : ObservableObject
     /// 验证输入
     /// </summary>
     /// <returns>验证是否通过</returns>
-    private bool Validate()
+    private async Task<bool> ValidateAsync()
     {
         ValidationError = string.Empty;
 
@@ -234,6 +192,27 @@ public class DepartmentEditViewModel : ObservableObject
         {
             ValidationError = $"科室名称不能超过{Constants.DEPARTMENT_NAME_MAX_LENGTH}个字符";
             return false;
+        }
+
+        // 检查名称是否已存在
+        var nameExists = await _departmentService.CheckNameExistsAsync(
+            Name.Trim(), 
+            _originalDepartment?.Id);
+        
+        if (nameExists)
+        {
+            ValidationError = "科室名称已存在";
+            return false;
+        }
+
+        // 验证电话
+        if (!string.IsNullOrWhiteSpace(Phone))
+        {
+            if (Phone.Length < Constants.PHONE_MIN_LENGTH || Phone.Length > Constants.PHONE_MAX_LENGTH)
+            {
+                ValidationError = $"电话号码长度应在{Constants.PHONE_MIN_LENGTH}-{Constants.PHONE_MAX_LENGTH}位之间";
+                return false;
+            }
         }
 
         return true;

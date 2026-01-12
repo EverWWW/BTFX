@@ -1,54 +1,224 @@
+using BTFX.Common;
+using BTFX.Data;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
+using ToolHelper.LoggingDiagnostics.Abstractions;
 
 namespace BTFX.Services.Implementations;
 
 /// <summary>
-/// 科室服务实现（占位实现，第四阶段完善）
+/// 科室服务实现
 /// </summary>
 public class DepartmentService : IDepartmentService
 {
-    // TODO: 注入数据库服务
+    private readonly ILogHelper? _logHelper;
 
-    /// <inheritdoc/>
-    public Task<List<Department>> GetAllDepartmentsAsync()
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    public DepartmentService()
     {
-        // TODO: 从数据库读取
-        return Task.FromResult(new List<Department>());
+        try
+        {
+            _logHelper = App.Services?.GetService(typeof(ILogHelper)) as ILogHelper;
+        }
+        catch { }
     }
 
     /// <inheritdoc/>
-    public Task<List<Department>> GetEnabledDepartmentsAsync()
+    public async Task<List<Department>> GetAllDepartmentsAsync()
     {
-        // TODO: 从数据库读取启用的科室
-        return Task.FromResult(new List<Department>());
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var departments = await db.QueryAsync<Department>(@"
+                SELECT Id, Name, Phone, CreatedAt, UpdatedAt 
+                FROM Departments 
+                ORDER BY Id
+            ");
+
+            return departments.ToList();
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("获取科室列表失败", ex);
+            return new List<Department>();
+        }
     }
 
     /// <inheritdoc/>
-    public Task<Department?> GetDepartmentByIdAsync(int id)
+    public async Task<Department?> GetDepartmentByIdAsync(int id)
     {
-        // TODO: 从数据库读取
-        return Task.FromResult<Department?>(null);
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            return await db.QueryFirstOrDefaultAsync<Department>(@"
+                SELECT Id, Name, Phone, CreatedAt, UpdatedAt 
+                FROM Departments 
+                WHERE Id = @Id
+            ", new { Id = id });
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"获取科室失败: Id={id}", ex);
+            return null;
+        }
     }
 
     /// <inheritdoc/>
-    public Task<int> AddDepartmentAsync(Department department)
+    public async Task<int> AddDepartmentAsync(Department department)
     {
-        // TODO: 插入数据库
-        return Task.FromResult(0);
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+
+            var id = await db.InsertAndGetIdAsync(@"
+                INSERT INTO Departments (Name, Phone, CreatedAt, UpdatedAt)
+                VALUES (@Name, @Phone, @CreatedAt, @UpdatedAt)
+            ", new
+            {
+                department.Name,
+                Phone = department.Phone ?? "",
+                CreatedAt = now,
+                UpdatedAt = now
+            });
+
+            _logHelper?.Information($"添加科室成功: Id={id}, Name={department.Name}");
+            return (int)id;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"添加科室失败: Name={department.Name}", ex);
+            return 0;
+        }
     }
 
     /// <inheritdoc/>
-    public Task<bool> UpdateDepartmentAsync(Department department)
+    public async Task<bool> UpdateDepartmentAsync(Department department)
     {
-        // TODO: 更新数据库
-        return Task.FromResult(false);
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+
+            var affected = await db.ExecuteNonQueryAsync(@"
+                UPDATE Departments 
+                SET Name = @Name, Phone = @Phone, UpdatedAt = @UpdatedAt
+                WHERE Id = @Id
+            ", new
+            {
+                department.Id,
+                department.Name,
+                Phone = department.Phone ?? "",
+                UpdatedAt = now
+            });
+
+            if (affected > 0)
+            {
+                _logHelper?.Information($"更新科室成功: Id={department.Id}");
+            }
+
+            return affected > 0;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"更新科室失败: Id={department.Id}", ex);
+            return false;
+        }
     }
 
     /// <inheritdoc/>
-    public Task<bool> DeleteDepartmentAsync(int id)
+    public async Task<bool> DeleteDepartmentAsync(int id)
     {
-        // TODO: 删除数据库记录
-        return Task.FromResult(false);
+        try
+        {
+            // 先检查是否被引用
+            if (await IsDepartmentInUseAsync(id))
+            {
+                _logHelper?.Warning($"科室被引用，无法删除: Id={id}");
+                return false;
+            }
+
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var affected = await db.ExecuteNonQueryAsync(@"
+                DELETE FROM Departments WHERE Id = @Id
+            ", new { Id = id });
+
+            if (affected > 0)
+            {
+                _logHelper?.Information($"删除科室成功: Id={id}");
+            }
+
+            return affected > 0;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"删除科室失败: Id={id}", ex);
+            return false;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> IsDepartmentInUseAsync(int id)
+    {
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var count = await db.ExecuteScalarAsync<int>(@"
+                SELECT COUNT(*) FROM Users WHERE DepartmentId = @Id
+            ", new { Id = id });
+
+            return count > 0;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"检查科室引用失败: Id={id}", ex);
+            return true; // 出错时返回 true，防止误删
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> CheckNameExistsAsync(string name, int? excludeId = null)
+    {
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            string sql;
+            object parameters;
+
+            if (excludeId.HasValue)
+            {
+                sql = "SELECT COUNT(*) FROM Departments WHERE Name = @Name AND Id != @ExcludeId";
+                parameters = new { Name = name, ExcludeId = excludeId.Value };
+            }
+            else
+            {
+                sql = "SELECT COUNT(*) FROM Departments WHERE Name = @Name";
+                parameters = new { Name = name };
+            }
+
+            var count = await db.ExecuteScalarAsync<int>(sql, parameters);
+            return count > 0;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"检查科室名称失败: Name={name}", ex);
+            return true; // 出错时返回 true，防止重复添加
+        }
     }
 }

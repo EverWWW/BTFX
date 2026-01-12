@@ -55,7 +55,6 @@
     <Folder Include="Data\Videos\" />
     <Folder Include="Data\Temp\" />
     <Folder Include="Data\Config\" />
-    <Folder Include="Data\" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Images\Device\deviceImage.jpeg" />

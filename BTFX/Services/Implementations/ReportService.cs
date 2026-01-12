@@ -1,4 +1,5 @@
 using BTFX.Common;
+using BTFX.Data;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
 using ToolHelper.LoggingDiagnostics.Abstractions;
@@ -13,10 +14,10 @@ public class ReportService : IReportService
     private readonly IMeasurementService _measurementService;
     private readonly ILogHelper? _logHelper;
 
-    // 模拟数据存储
-    private static readonly List<Report> _mockReports = new();
-    private static int _nextId = 1;
+    // 报告序号（每日重置）
     private static int _reportSequence = 1;
+    private static DateTime _lastSequenceDate = DateTime.Today;
+    private static readonly object _sequenceLock = new();
 
     public ReportService(IMeasurementService measurementService)
     {
@@ -27,222 +28,385 @@ public class ReportService : IReportService
             _logHelper = App.Services?.GetService(typeof(ILogHelper)) as ILogHelper;
         }
         catch { }
-
-        // 初始化一些模拟数据
-        if (_mockReports.Count == 0)
-        {
-            InitializeMockData();
-        }
     }
 
-    /// <summary>
-    /// 初始化模拟数据
-    /// </summary>
-    private void InitializeMockData()
+    /// <inheritdoc/>
+    public async Task<List<Report>> GetReportsByPatientIdAsync(int patientId)
     {
-        // 模拟一些报告数据（基于测量数据）
-        var measurements = _measurementService.GetAllMeasurementsAsync().Result;
-
-        foreach (var measurement in measurements.Take(3))
+        try
         {
-            var report = new Report
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var reports = await db.QueryAsync<Report>(@"
+                SELECT r.Id, r.ReportNumber, r.MeasurementId AS MeasurementRecordId, r.PatientId, 
+                       r.UserId AS OperatorId, r.ReportDate, r.DoctorOpinion, r.Status, 
+                       r.FilePath AS PdfFilePath, r.CreatedAt, r.UpdatedAt
+                FROM Reports r
+                WHERE r.PatientId = @PatientId
+                ORDER BY r.CreatedAt DESC
+            ", new { PatientId = patientId });
+
+            var result = reports.ToList();
+
+            // 加载关联数据
+            foreach (var report in result)
             {
-                Id = _nextId++,
-                ReportNumber = GenerateReportNumber(),
-                MeasurementRecordId = measurement.Id,
-                MeasurementRecord = measurement,
-                Status = ReportStatus.Completed,
-                DoctorOpinion = "患者步态基本正常，建议继续保持适量运动。",
-                CreatedAt = measurement.MeasurementDate.AddDays(1),
-                UpdatedAt = measurement.MeasurementDate.AddDays(1)
-            };
-            _mockReports.Add(report);
+                report.MeasurementRecord = await _measurementService.GetMeasurementByIdAsync(report.MeasurementRecordId);
+                report.Patient = report.MeasurementRecord?.Patient;
+            }
+
+            return result;
         }
-    }
-
-    /// <inheritdoc/>
-    public Task<List<Report>> GetReportsByPatientIdAsync(int patientId)
-    {
-        var reports = _mockReports
-            .Where(r => r.MeasurementRecord?.PatientId == patientId)
-            .OrderByDescending(r => r.CreatedAt)
-            .ToList();
-        return Task.FromResult(reports);
-    }
-
-    /// <inheritdoc/>
-    public Task<Report?> GetReportByMeasurementIdAsync(int measurementRecordId)
-    {
-        var report = _mockReports.FirstOrDefault(r => r.MeasurementRecordId == measurementRecordId);
-        return Task.FromResult(report);
-    }
-
-    /// <inheritdoc/>
-    public Task<Report?> GetReportByIdAsync(int id)
-    {
-        var report = _mockReports.FirstOrDefault(r => r.Id == id);
-        return Task.FromResult(report);
-    }
-
-    /// <inheritdoc/>
-    public Task<int> CreateReportAsync(Report report)
-    {
-        report.Id = _nextId++;
-        report.CreatedAt = DateTime.Now;
-        report.UpdatedAt = DateTime.Now;
-        _mockReports.Add(report);
-        return Task.FromResult(report.Id);
-    }
-
-    /// <inheritdoc/>
-    public Task<bool> UpdateReportAsync(Report report)
-    {
-        var existing = _mockReports.FirstOrDefault(r => r.Id == report.Id);
-        if (existing == null) return Task.FromResult(false);
-
-        existing.DoctorOpinion = report.DoctorOpinion;
-        existing.Status = report.Status;
-            existing.UpdatedAt = DateTime.Now;
-
-            return Task.FromResult(true);
-        }
-
-        /// <inheritdoc/>
-        public Task<bool> DeleteReportAsync(int id)
+        catch (Exception ex)
         {
-            var report = _mockReports.FirstOrDefault(r => r.Id == id);
-            if (report == null) return Task.FromResult(false);
-
-            _mockReports.Remove(report);
-            return Task.FromResult(true);
+            _logHelper?.Error($"获取患者报告列表失败: PatientId={patientId}", ex);
+            return new List<Report>();
         }
+    }
 
-        /// <inheritdoc/>
-        public Task<string> GeneratePdfAsync(int reportId)
+    /// <inheritdoc/>
+    public async Task<Report?> GetReportByMeasurementIdAsync(int measurementRecordId)
+    {
+        try
         {
-            var report = _mockReports.FirstOrDefault(r => r.Id == reportId);
-            if (report == null) return Task.FromResult(string.Empty);
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
 
-            try
+            var report = await db.QueryFirstOrDefaultAsync<Report>(@"
+                SELECT Id, ReportNumber, MeasurementId AS MeasurementRecordId, PatientId, 
+                       UserId AS OperatorId, ReportDate, DoctorOpinion, Status, 
+                       FilePath AS PdfFilePath, CreatedAt, UpdatedAt
+                FROM Reports
+                WHERE MeasurementId = @MeasurementId
+            ", new { MeasurementId = measurementRecordId });
+
+            if (report != null)
             {
-                // 使用 ReportPdfExporter 生成PDF
-                var settingsService = App.Services?.GetService(typeof(ISettingsService)) as ISettingsService;
-                if (settingsService != null)
+                report.MeasurementRecord = await _measurementService.GetMeasurementByIdAsync(report.MeasurementRecordId);
+                report.Patient = report.MeasurementRecord?.Patient;
+            }
+
+            return report;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"获取测量报告失败: MeasurementId={measurementRecordId}", ex);
+            return null;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<Report?> GetReportByIdAsync(int id)
+    {
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var report = await db.QueryFirstOrDefaultAsync<Report>(@"
+                SELECT Id, ReportNumber, MeasurementId AS MeasurementRecordId, PatientId, 
+                       UserId AS OperatorId, ReportDate, DoctorOpinion, Status, 
+                       FilePath AS PdfFilePath, CreatedAt, UpdatedAt
+                FROM Reports
+                WHERE Id = @Id
+            ", new { Id = id });
+
+            if (report != null)
+            {
+                report.MeasurementRecord = await _measurementService.GetMeasurementByIdAsync(report.MeasurementRecordId);
+                report.Patient = report.MeasurementRecord?.Patient;
+            }
+
+            return report;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"获取报告失败: Id={id}", ex);
+            return null;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<int> CreateReportAsync(Report report)
+    {
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+            var reportDate = DateTime.Now.ToString(Constants.DATE_FORMAT);
+
+            var id = await db.InsertAndGetIdAsync(@"
+                INSERT INTO Reports (ReportNumber, MeasurementId, PatientId, UserId, ReportDate, 
+                                    DoctorOpinion, Status, FilePath, CreatedAt, UpdatedAt)
+                VALUES (@ReportNumber, @MeasurementId, @PatientId, @UserId, @ReportDate, 
+                        @DoctorOpinion, @Status, @FilePath, @CreatedAt, @UpdatedAt)
+            ", new
+            {
+                report.ReportNumber,
+                MeasurementId = report.MeasurementRecordId,
+                report.PatientId,
+                UserId = report.MeasurementRecord?.OperatorId ?? 1,
+                ReportDate = reportDate,
+                report.DoctorOpinion,
+                Status = (int)report.Status,
+                FilePath = report.PdfFilePath,
+                CreatedAt = now,
+                UpdatedAt = now
+            });
+
+            _logHelper?.Information($"创建报告成功: Id={id}, Number={report.ReportNumber}");
+            return (int)id;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("创建报告失败", ex);
+            return 0;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> UpdateReportAsync(Report report)
+    {
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+
+            var affected = await db.ExecuteNonQueryAsync(@"
+                UPDATE Reports 
+                SET DoctorOpinion = @DoctorOpinion, Status = @Status, FilePath = @FilePath, UpdatedAt = @UpdatedAt
+                WHERE Id = @Id
+            ", new
+            {
+                report.Id,
+                report.DoctorOpinion,
+                Status = (int)report.Status,
+                FilePath = report.PdfFilePath,
+                UpdatedAt = now
+            });
+
+            return affected > 0;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"更新报告失败: Id={report.Id}", ex);
+            return false;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> DeleteReportAsync(int id)
+    {
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var affected = await db.ExecuteNonQueryAsync("DELETE FROM Reports WHERE Id = @Id", new { Id = id });
+
+            if (affected > 0)
+            {
+                _logHelper?.Information($"删除报告成功: Id={id}");
+            }
+
+            return affected > 0;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"删除报告失败: Id={id}", ex);
+            return false;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<string> GeneratePdfAsync(int reportId)
+    {
+        var report = await GetReportByIdAsync(reportId);
+        if (report == null) return string.Empty;
+
+        try
+        {
+            // 使用 ReportPdfExporter 导出PDF
+            var settingsService = App.Services?.GetService(typeof(ISettingsService)) as ISettingsService;
+            if (settingsService != null)
+            {
+                var exporter = new Helpers.ReportPdfExporter(settingsService);
+
+                // 导出PDF到报告目录
+                var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                var reportDir = System.IO.Path.Combine(baseDir, Common.Constants.REPORT_DIRECTORY);
+                if (!System.IO.Directory.Exists(reportDir))
                 {
-                    var exporter = new Helpers.ReportPdfExporter(settingsService);
+                    System.IO.Directory.CreateDirectory(reportDir);
+                }
 
-                    // 生成PDF到报告目录
-                    var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                    var reportDir = System.IO.Path.Combine(baseDir, Common.Constants.REPORT_DIRECTORY);
-                    if (!System.IO.Directory.Exists(reportDir))
-                    {
-                        System.IO.Directory.CreateDirectory(reportDir);
-                    }
+                var fileName = $"Report_{report.ReportNumber}_{DateTime.Now:yyyyMMddHHmmss}.pdf";
+                var filePath = System.IO.Path.Combine(reportDir, fileName);
 
-                    var fileName = $"Report_{report.ReportNumber}_{DateTime.Now:yyyyMMddHHmmss}.pdf";
-                    var filePath = System.IO.Path.Combine(reportDir, fileName);
-
-                    if (exporter.ExportToPdf(report, filePath))
-                    {
-                        report.PdfFilePath = filePath;
-                        report.UpdatedAt = DateTime.Now;
-                        _logHelper?.Information($"生成报告PDF成功：{filePath}");
-                        return Task.FromResult(filePath);
-                    }
+                if (exporter.ExportToPdf(report, filePath))
+                {
+                    report.PdfFilePath = filePath;
+                    await UpdateReportAsync(report);
+                    _logHelper?.Information($"生成报告PDF成功：{filePath}");
+                    return filePath;
                 }
             }
-            catch (Exception ex)
-            {
-                _logHelper?.Error($"生成报告PDF失败：ReportId={reportId}", ex);
-            }
-
-            return Task.FromResult(string.Empty);
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"生成报告PDF失败：ReportId={reportId}", ex);
         }
 
-        /// <inheritdoc/>
-        public Task<bool> PrintReportAsync(int reportId)
-        {
-            var report = _mockReports.FirstOrDefault(r => r.Id == reportId);
-            if (report == null) return Task.FromResult(false);
+        return string.Empty;
+    }
 
-            try
-            {
-                // 使用 ReportPreviewHelper 生成 FlowDocument
-                var settingsService = App.Services?.GetService(typeof(ISettingsService)) as ISettingsService;
-                var unitName = settingsService?.CurrentSettings?.Unit?.Name ?? Common.Constants.APP_DISPLAY_NAME;
-
-                var document = Helpers.ReportPreviewHelper.GenerateReportDocument(report, unitName);
-
-                // 使用 PrintHelper 打印
-                var success = Helpers.PrintHelper.PrintDocument(document, $"报告_{report.ReportNumber}", true);
-
-                if (success)
-                            {
-                                report.Status = ReportStatus.Printed;
-                                report.PrintedAt = DateTime.Now;
-                                report.UpdatedAt = DateTime.Now;
-                                _logHelper?.Information($"打印报告成功：ReportId={reportId}");
-                            }
-
-                            return Task.FromResult(success);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logHelper?.Error($"打印报告失败：ReportId={reportId}", ex);
-                            return Task.FromResult(false);
-                        }
-                    }
-
-                /// <inheritdoc/>
-                public Task<bool> UpdateReportStatusAsync(int reportId, ReportStatus status)
+    /// <inheritdoc/>
+    public async Task<bool> PrintReportAsync(int reportId)
     {
-        var report = _mockReports.FirstOrDefault(r => r.Id == reportId);
-        if (report == null) return Task.FromResult(false);
+        var report = await GetReportByIdAsync(reportId);
+        if (report == null) return false;
 
-        report.Status = status;
-        report.UpdatedAt = DateTime.Now;
+        try
+        {
+            // 使用 ReportPreviewHelper 创建 FlowDocument
+            var settingsService = App.Services?.GetService(typeof(ISettingsService)) as ISettingsService;
+            var unitName = settingsService?.CurrentSettings?.Unit?.Name ?? Common.Constants.APP_DISPLAY_NAME;
 
-        return Task.FromResult(true);
+            var document = Helpers.ReportPreviewHelper.GenerateReportDocument(report, unitName);
+
+            // 使用 PrintHelper 打印
+            var success = Helpers.PrintHelper.PrintDocument(document, $"报告_{report.ReportNumber}", true);
+
+            if (success)
+            {
+                report.Status = ReportStatus.Printed;
+                report.PrintedAt = DateTime.Now;
+                await UpdateReportAsync(report);
+                _logHelper?.Information($"打印报告成功：ReportId={reportId}");
+            }
+
+            return success;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"打印报告失败：ReportId={reportId}", ex);
+            return false;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> UpdateReportStatusAsync(int reportId, ReportStatus status)
+    {
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
+
+            var now = DateTime.Now.ToString(Constants.DATETIME_FORMAT);
+
+            var affected = await db.ExecuteNonQueryAsync(@"
+                UPDATE Reports 
+                SET Status = @Status, UpdatedAt = @UpdatedAt
+                WHERE Id = @Id
+            ", new
+            {
+                Id = reportId,
+                Status = (int)status,
+                UpdatedAt = now
+            });
+
+            return affected > 0;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"更新报告状态失败: Id={reportId}", ex);
+            return false;
+        }
     }
 
     /// <inheritdoc/>
     public string GenerateReportNumber()
     {
-        // 格式：RPT-YYYYMMDD-XXXX
-        var sequence = _reportSequence++;
-        return $"RPT-{DateTime.Now:yyyyMMdd}-{sequence:D4}";
+        lock (_sequenceLock)
+        {
+            // 检查是否需要重置序号（新的一天）
+            if (DateTime.Today > _lastSequenceDate)
+            {
+                _reportSequence = 1;
+                _lastSequenceDate = DateTime.Today;
+            }
+
+            // 格式：RPT-YYYYMMDD-XXXX
+            var number = $"RPT-{DateTime.Now:yyyyMMdd}-{_reportSequence:D4}";
+            _reportSequence++;
+            return number;
+        }
     }
 
     /// <summary>
     /// 获取报告列表（带筛选）
     /// </summary>
-    public Task<List<Report>> GetReportsAsync(string? patientName, DateTime? startDate, DateTime? endDate)
+    public async Task<List<Report>> GetReportsAsync(string? patientName, DateTime? startDate, DateTime? endDate)
     {
-        IEnumerable<Report> query = _mockReports;
-
-        // 按患者姓名筛选
-        if (!string.IsNullOrWhiteSpace(patientName))
+        try
         {
-            var nameLower = patientName.Trim().ToLower();
-            query = query.Where(r => r.MeasurementRecord?.Patient?.Name?.ToLower().Contains(nameLower) == true);
-        }
+            using var db = DatabaseFactory.CreateSqliteHelper();
+            await db.InitializeAsync();
 
-        // 按开始日期筛选
-        if (startDate.HasValue)
+            // 构建查询条件
+            var whereClause = "WHERE 1=1";
+            var parameters = new Dictionary<string, object>();
+
+            if (!string.IsNullOrWhiteSpace(patientName))
+            {
+                whereClause += " AND p.Name LIKE @PatientName";
+                parameters["PatientName"] = $"%{patientName}%";
+            }
+
+            if (startDate.HasValue)
+            {
+                whereClause += " AND r.ReportDate >= @StartDate";
+                parameters["StartDate"] = startDate.Value.ToString(Constants.DATE_FORMAT);
+            }
+
+            if (endDate.HasValue)
+            {
+                whereClause += " AND r.ReportDate <= @EndDate";
+                parameters["EndDate"] = endDate.Value.ToString(Constants.DATE_FORMAT);
+            }
+
+            var sql = $@"
+                SELECT r.Id, r.ReportNumber, r.MeasurementId AS MeasurementRecordId, r.PatientId, 
+                       r.UserId AS OperatorId, r.ReportDate, r.DoctorOpinion, r.Status, 
+                       r.FilePath AS PdfFilePath, r.CreatedAt, r.UpdatedAt
+                FROM Reports r
+                LEFT JOIN Patients p ON r.PatientId = p.Id
+                {whereClause}
+                ORDER BY r.CreatedAt DESC
+            ";
+
+            var reports = await db.QueryAsync<Report>(sql, parameters);
+            var result = reports.ToList();
+
+            // 加载关联数据
+            foreach (var report in result)
+            {
+                report.MeasurementRecord = await _measurementService.GetMeasurementByIdAsync(report.MeasurementRecordId);
+                report.Patient = report.MeasurementRecord?.Patient;
+            }
+
+            return result;
+        }
+        catch (Exception ex)
         {
-            var start = startDate.Value.Date;
-            query = query.Where(r => r.CreatedAt >= start);
+            _logHelper?.Error("获取报告列表失败", ex);
+            return new List<Report>();
         }
-
-        // 按结束日期筛选
-        if (endDate.HasValue)
-        {
-            var end = endDate.Value.Date.AddDays(1);
-            query = query.Where(r => r.CreatedAt < end);
-        }
-
-        var reports = query.OrderByDescending(r => r.CreatedAt).ToList();
-        return Task.FromResult(reports);
     }
 
     /// <summary>
@@ -252,7 +416,7 @@ public class ReportService : IReportService
     {
         // 检查是否已有报告
         var existing = await GetReportByMeasurementIdAsync(measurementRecordId);
-        
+
         // 获取测量记录
         var measurement = await _measurementService.GetMeasurementByIdAsync(measurementRecordId);
         if (measurement == null)
@@ -264,7 +428,6 @@ public class ReportService : IReportService
         if (existing != null)
         {
             // 覆盖现有报告
-            existing.UpdatedAt = DateTime.Now;
             existing.Status = ReportStatus.Draft;
             existing.DoctorOpinion = string.Empty;
             await UpdateReportAsync(existing);
@@ -279,13 +442,16 @@ public class ReportService : IReportService
                 ReportNumber = GenerateReportNumber(),
                 MeasurementRecordId = measurementRecordId,
                 MeasurementRecord = measurement,
+                PatientId = measurement.PatientId,
+                Patient = measurement.Patient,
                 Status = ReportStatus.Draft,
                 DoctorOpinion = string.Empty,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
             };
 
-            await CreateReportAsync(report);
+            var id = await CreateReportAsync(report);
+            report.Id = id;
             _logHelper?.Information($"创建报告：ID={report.Id}, Number={report.ReportNumber}");
             return report;
         }

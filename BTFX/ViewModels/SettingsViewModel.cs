@@ -1184,7 +1184,7 @@ public partial class DepartmentItem : ObservableObject
     public int RowNumber { get; }
 
     public string Name => Department.Name;
-    public string Description => Department.Description ?? "--";
+    public string Phone => Department.Phone ?? "--";
     public string CreatedAtDisplay => Department.CreatedAt.ToString(Constants.DATETIME_LIST_FORMAT);
 
     public DepartmentItem(Department department, int rowNumber)

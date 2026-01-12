@@ -1,7 +1,6 @@
+using BTFX.Helpers;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace BTFX.Services.Implementations;
 
@@ -26,7 +25,20 @@ public class AuthenticationService : IAuthenticationService
             return null;
         }
 
-        if (VerifyPassword(password, user.PasswordHash))
+        // 验证密码（支持带盐值的新格式）
+        bool passwordValid;
+        if (!string.IsNullOrEmpty(user.PasswordSalt))
+        {
+            // 新格式：使用盐值
+            passwordValid = PasswordHelper.VerifyPassword(password, user.PasswordHash, user.PasswordSalt);
+        }
+        else
+        {
+            // 旧格式：不使用盐值（兼容）
+            passwordValid = PasswordHelper.VerifyPasswordLegacy(password, user.PasswordHash);
+        }
+
+        if (passwordValid)
         {
             user.LastLoginAt = DateTime.Now;
             await _userService.UpdateUserAsync(user);
@@ -72,12 +84,35 @@ public class AuthenticationService : IAuthenticationService
             return false;
         }
 
-        if (!VerifyPassword(oldPassword, user.PasswordHash))
+        // 验证旧密码
+        bool oldPasswordValid;
+        if (!string.IsNullOrEmpty(user.PasswordSalt))
+        {
+            oldPasswordValid = PasswordHelper.VerifyPassword(oldPassword, user.PasswordHash, user.PasswordSalt);
+        }
+        else
+        {
+            oldPasswordValid = PasswordHelper.VerifyPasswordLegacy(oldPassword, user.PasswordHash);
+        }
+
+        if (!oldPasswordValid)
         {
             return false;
         }
 
-        user.PasswordHash = HashPassword(newPassword);
+        // 生成新的盐值和密码哈希
+        var newSalt = PasswordHelper.GenerateSalt();
+        var newHash = PasswordHelper.HashPassword(newPassword, newSalt);
+
+        // 使用 UserService 的密码更新方法
+        if (_userService is UserService userService)
+        {
+            return await userService.UpdatePasswordAsync(userId, newHash, newSalt);
+        }
+
+        // 备用方案：直接更新 User 对象
+        user.PasswordHash = newHash;
+        user.PasswordSalt = newSalt;
         user.UpdatedAt = DateTime.Now;
         return await _userService.UpdateUserAsync(user);
     }
@@ -91,7 +126,19 @@ public class AuthenticationService : IAuthenticationService
             return false;
         }
 
-        user.PasswordHash = HashPassword(newPassword);
+        // 生成新的盐值和密码哈希
+        var newSalt = PasswordHelper.GenerateSalt();
+        var newHash = PasswordHelper.HashPassword(newPassword, newSalt);
+
+        // 使用 UserService 的密码更新方法
+        if (_userService is UserService userService)
+        {
+            return await userService.UpdatePasswordAsync(userId, newHash, newSalt);
+        }
+
+        // 备用方案：直接更新 User 对象
+        user.PasswordHash = newHash;
+        user.PasswordSalt = newSalt;
         user.UpdatedAt = DateTime.Now;
         return await _userService.UpdateUserAsync(user);
     }
@@ -99,15 +146,14 @@ public class AuthenticationService : IAuthenticationService
     /// <inheritdoc/>
     public bool VerifyPassword(string password, string hashedPassword)
     {
-        return HashPassword(password) == hashedPassword;
+        // 旧格式兼容
+        return PasswordHelper.VerifyPasswordLegacy(password, hashedPassword);
     }
 
     /// <inheritdoc/>
     public string HashPassword(string password)
     {
-        using var sha256 = SHA256.Create();
-        var bytes = Encoding.UTF8.GetBytes(password);
-        var hash = sha256.ComputeHash(bytes);
-        return Convert.ToBase64String(hash);
+        // 旧格式兼容
+        return PasswordHelper.HashPasswordLegacy(password);
     }
 }

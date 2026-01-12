@@ -97,11 +97,207 @@ public class ExportImportService : IExportImportService
     }
 
     /// <inheritdoc/>
-    public Task<List<Patient>> ImportPatientsAsync(string filePath)
+    public async Task<List<Patient>> ImportPatientsAsync(string filePath)
     {
-        // TODO: 导入患者数据（第四阶段完善）
-        _logHelper?.Information($"导入患者数据：{filePath}");
-        return Task.FromResult(new List<Patient>());
+        var patients = new List<Patient>();
+
+        try
+        {
+            if (!File.Exists(filePath))
+            {
+                _logHelper?.Error($"导入文件不存在: {filePath}");
+                return patients;
+            }
+
+            var extension = Path.GetExtension(filePath).ToLowerInvariant();
+            _logHelper?.Information($"开始导入患者数据: {filePath}");
+
+            if (extension == ".csv")
+            {
+                patients = await ImportPatientsFromCsvAsync(filePath);
+            }
+            else if (extension == ".xlsx" || extension == ".xls")
+            {
+                // Excel 导入需要第三方库，暂时提示不支持
+                _logHelper?.Warning("暂不支持 Excel 格式导入，请使用 CSV 格式");
+            }
+            else
+            {
+                _logHelper?.Error($"不支持的文件格式: {extension}");
+            }
+
+            _logHelper?.Information($"导入完成，成功导入 {patients.Count} 条患者数据");
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("导入患者数据失败", ex);
+        }
+
+        return patients;
+    }
+
+    /// <summary>
+    /// 从 CSV 导入患者数据
+    /// </summary>
+    private async Task<List<Patient>> ImportPatientsFromCsvAsync(string filePath)
+    {
+        var patients = new List<Patient>();
+
+        try
+        {
+            var lines = await File.ReadAllLinesAsync(filePath, Encoding.UTF8);
+            if (lines.Length < 2)
+            {
+                _logHelper?.Warning("CSV 文件为空或只有表头");
+                return patients;
+            }
+
+            // 解析表头
+            var headers = ParseCsvLine(lines[0]);
+            var headerMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < headers.Length; i++)
+            {
+                headerMap[headers[i].Trim()] = i;
+            }
+
+            // 解析数据行
+            for (int lineIndex = 1; lineIndex < lines.Length; lineIndex++)
+            {
+                var line = lines[lineIndex];
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                try
+                {
+                    var values = ParseCsvLine(line);
+                    var patient = new Patient();
+
+                    // 姓名（必填）
+                    if (headerMap.TryGetValue("姓名", out var nameIndex) && nameIndex < values.Length)
+                    {
+                        patient.Name = values[nameIndex].Trim();
+                    }
+                    if (string.IsNullOrEmpty(patient.Name))
+                    {
+                        _logHelper?.Warning($"第 {lineIndex + 1} 行缺少姓名，跳过");
+                        continue;
+                    }
+
+                    // 性别
+                    if (headerMap.TryGetValue("性别", out var genderIndex) && genderIndex < values.Length)
+                    {
+                        var genderText = values[genderIndex].Trim();
+                        patient.Gender = genderText == "女" ? Gender.Female : Gender.Male;
+                    }
+
+                    // 电话（必填）
+                    if (headerMap.TryGetValue("电话", out var phoneIndex) && phoneIndex < values.Length)
+                    {
+                        patient.Phone = values[phoneIndex].Trim();
+                    }
+                    if (string.IsNullOrEmpty(patient.Phone))
+                    {
+                        _logHelper?.Warning($"第 {lineIndex + 1} 行缺少电话，跳过");
+                        continue;
+                    }
+
+                    // 证件号
+                    if (headerMap.TryGetValue("证件号", out var idIndex) && idIndex < values.Length)
+                    {
+                        patient.IdNumber = values[idIndex].Trim();
+                    }
+
+                    // 身高
+                    if (headerMap.TryGetValue("身高cm", out var heightIndex) && heightIndex < values.Length)
+                    {
+                        if (double.TryParse(values[heightIndex].Trim(), out var height))
+                        {
+                            patient.Height = height;
+                        }
+                    }
+
+                    // 体重
+                    if (headerMap.TryGetValue("体重kg", out var weightIndex) && weightIndex < values.Length)
+                    {
+                        if (double.TryParse(values[weightIndex].Trim(), out var weight))
+                        {
+                            patient.Weight = weight;
+                        }
+                    }
+
+                    // 设置默认值
+                    patient.Status = PatientStatus.Active;
+                    patient.CreatedAt = DateTime.Now;
+                    patient.UpdatedAt = DateTime.Now;
+
+                    patients.Add(patient);
+                }
+                catch (Exception ex)
+                {
+                    _logHelper?.Warning($"解析第 {lineIndex + 1} 行失败: {ex.Message}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("解析 CSV 文件失败", ex);
+        }
+
+        return patients;
+    }
+
+    /// <summary>
+    /// 解析 CSV 行
+    /// </summary>
+    private static string[] ParseCsvLine(string line)
+    {
+        var result = new List<string>();
+        var inQuotes = false;
+        var current = new StringBuilder();
+
+        for (int i = 0; i < line.Length; i++)
+        {
+            var c = line[i];
+
+            if (inQuotes)
+            {
+                if (c == '"')
+                {
+                    // 检查是否是转义的引号
+                    if (i + 1 < line.Length && line[i + 1] == '"')
+                    {
+                        current.Append('"');
+                        i++; // 跳过下一个引号
+                    }
+                    else
+                    {
+                        inQuotes = false;
+                    }
+                }
+                else
+                {
+                    current.Append(c);
+                }
+            }
+            else
+            {
+                if (c == '"')
+                {
+                    inQuotes = true;
+                }
+                else if (c == ',')
+                {
+                    result.Add(current.ToString());
+                    current.Clear();
+                }
+                else
+                {
+                    current.Append(c);
+                }
+            }
+        }
+
+        result.Add(current.ToString());
+        return result.ToArray();
     }
 
     /// <inheritdoc/>

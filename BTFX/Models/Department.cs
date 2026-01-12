@@ -16,24 +16,9 @@ public class Department
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// 科室代码
+    /// 科室电话
     /// </summary>
-    public string? Code { get; set; }
-
-    /// <summary>
-    /// 科室描述
-    /// </summary>
-    public string? Description { get; set; }
-
-    /// <summary>
-    /// 排序顺序
-    /// </summary>
-    public int SortOrder { get; set; }
-
-    /// <summary>
-    /// 是否启用
-    /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public string? Phone { get; set; }
 
     /// <summary>
     /// 创建时间
