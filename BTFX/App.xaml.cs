@@ -20,6 +20,12 @@ public partial class App : Application
 {
     private static Mutex? _mutex;
     private static ILogHelper? _logHelper;
+    private static volatile bool _isShuttingDown;
+
+    /// <summary>
+    /// 应用程序是否正在关闭
+    /// </summary>
+    public static bool IsShuttingDown => _isShuttingDown;
 
     /// <summary>
     /// 服务提供者
@@ -96,58 +102,88 @@ public partial class App : Application
     /// </summary>
     protected override void OnExit(ExitEventArgs e)
     {
+        // 立即设置关闭标志，这是最高优先级
+        _isShuttingDown = true;
+
         try
         {
+            // 处理 Dispatcher 中的待处理消息，防止关闭时触发新的 UI 操作
+            try
+            {
+                // 处理所有待处理的 Dispatcher 消息
+                if (Current?.Dispatcher != null && !Current.Dispatcher.HasShutdownStarted)
+                {
+                    Current.Dispatcher.Invoke(() => { }, DispatcherPriority.Background);
+                }
+            }
+            catch { }
+
+            // 等待异步操作检测到关闭标志
+            Thread.Sleep(100);
+
             // 记录关闭日志
-            _logHelper?.Information($"{Constants.APP_DISPLAY_NAME} 正在关闭");
+            try
+            {
+                _logHelper?.Information($"{Constants.APP_DISPLAY_NAME} 正在关闭");
+            }
+            catch { }
 
             // 保存配置
-            var settingsService = Services?.GetService<ISettingsService>();
-            settingsService?.SaveSettings();
+            try
+            {
+                var settingsService = Services?.GetService<ISettingsService>();
+                settingsService?.SaveSettings();
+            }
+            catch { }
 
             // 释放日志资源（设置超时避免卡住）
             try
             {
                 var flushTask = _logHelper?.FlushAsync();
-                if (flushTask != null)
-                {
-                    if (!flushTask.Wait(TimeSpan.FromSeconds(2)))
-                    {
-                        System.Diagnostics.Debug.WriteLine("Log flush timeout");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Log flush error: {ex.Message}");
-            }
-
-            // 释放Mutex
-            try
-            {
-                _mutex?.ReleaseMutex();
+                flushTask?.Wait(TimeSpan.FromSeconds(1));
             }
             catch { }
 
-            _mutex?.Dispose();
-
-            // 强制释放服务提供者
-            if (Services is IDisposable disposable)
+            // 释放 Mutex
+            try
             {
-                disposable.Dispose();
+                _mutex?.ReleaseMutex();
+                _mutex?.Dispose();
+                _mutex = null;
             }
+            catch { }
+
+            // 释放服务提供者 - 这会触发所有 IDisposable 服务的 Dispose
+            // 注意：这可能会触发 ViewModel 的属性变更
+            try
+            {
+                if (Services is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+            }
+            catch { }
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"OnExit error: {ex.Message}");
         }
-        finally
-        {
-            base.OnExit(e);
 
-            // 确保进程退出
-            Environment.Exit(0);
-        }
+        // 调用基类的 OnExit
+        base.OnExit(e);
+
+        // 不使用 Environment.Exit(0)，让应用程序自然退出
+        // 如果应用仍然无法退出，可能是因为有后台线程在运行
+        // 在这种情况下，可以考虑使用延迟的强制退出
+        Task.Run(async () =>
+        {
+            await Task.Delay(2000); // 等待 2 秒
+            if (!Environment.HasShutdownStarted)
+            {
+                // 如果 2 秒后应用仍未退出，强制退出
+                Environment.Exit(0);
+            }
+        });
     }
 
     /// <summary>
@@ -179,6 +215,12 @@ public partial class App : Application
     /// </summary>
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
+        // 如果应用正在关闭，标记异常已处理并返回
+        if (_isShuttingDown)
+        {
+            e.Handled = true;
+            return;
+        }
         HandleException(e.Exception, "UI线程异常");
         e.Handled = true;
     }
@@ -188,6 +230,9 @@ public partial class App : Application
     /// </summary>
     private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
+        // 如果应用正在关闭，不处理
+        if (_isShuttingDown) return;
+
         if (e.ExceptionObject is Exception ex)
         {
             HandleException(ex, "应用程序异常");
@@ -199,8 +244,20 @@ public partial class App : Application
     /// </summary>
     private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
     {
-        HandleException(e.Exception, "Task异常");
+        // 始终标记为已观察，防止应用崩溃
         e.SetObserved();
+
+        // 如果应用正在关闭，不处理
+        if (_isShuttingDown) return;
+
+        // 忽略取消异常
+        if (e.Exception?.InnerException is TaskCanceledException ||
+            e.Exception?.InnerException is OperationCanceledException)
+        {
+            return;
+        }
+
+        HandleException(e.Exception!, "Task异常");
     }
 
     /// <summary>
@@ -208,6 +265,46 @@ public partial class App : Application
     /// </summary>
     private static void HandleException(Exception ex, string source)
     {
+        // 如果应用正在关闭，不显示错误弹窗
+        if (_isShuttingDown)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"[Shutdown Exception] [{source}] {ex.GetType().Name}: {ex.Message}");
+            }
+            catch { }
+            return;
+        }
+
+        // 处理 TargetInvocationException，获取真实的内部异常
+        var actualException = ex;
+        if (ex is System.Reflection.TargetInvocationException tie && tie.InnerException != null)
+        {
+            actualException = tie.InnerException;
+        }
+
+        // 忽略取消操作产生的异常
+        if (actualException is TaskCanceledException || actualException is OperationCanceledException)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Cancelled] [{source}] {actualException.Message}");
+            return;
+        }
+
+        // 忽略跨线程访问异常（在关闭时常见）
+        if (actualException is InvalidOperationException ioe && 
+            ioe.Message.Contains("调用线程无法访问此对象"))
+        {
+            System.Diagnostics.Debug.WriteLine($"[Cross-thread] [{source}] {actualException.Message}");
+            return;
+        }
+
+        // 检查内部异常是否为取消异常
+        if (actualException.InnerException is TaskCanceledException || actualException.InnerException is OperationCanceledException)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Cancelled Inner] [{source}] {actualException.InnerException.Message}");
+            return;
+        }
+
         // 记录日志
         try
         {
@@ -220,17 +317,30 @@ public partial class App : Application
         }
         catch
         {
-            // 如果日志记录失败，回退到调试输出
             System.Diagnostics.Debug.WriteLine($"[{source}] {ex.Message}");
             System.Diagnostics.Debug.WriteLine(ex.StackTrace);
         }
 
         // 显示友好提示
-        MessageBox.Show(
-            $"应用程序发生错误，请联系技术支持。\n\n错误信息：{ex.Message}",
-            "错误",
-            MessageBoxButton.OK,
-            MessageBoxImage.Error);
+        try
+        {
+            // 再次检查关闭状态，防止竞态条件
+            if (_isShuttingDown) return;
+
+            var message = string.IsNullOrWhiteSpace(ex.Message)
+                ? "应用程序发生未知错误。"
+                : $"应用程序发生错误，请联系技术支持。\n\n错误信息：{ex.Message}";
+
+            MessageBox.Show(
+                message,
+                "错误",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+        catch
+        {
+            // 如果显示 MessageBox 失败，忽略
+        }
     }
 
     /// <summary>

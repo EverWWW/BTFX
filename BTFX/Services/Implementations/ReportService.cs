@@ -102,48 +102,99 @@ public class ReportService : IReportService
 
         existing.DoctorOpinion = report.DoctorOpinion;
         existing.Status = report.Status;
-        existing.UpdatedAt = DateTime.Now;
+            existing.UpdatedAt = DateTime.Now;
 
-        return Task.FromResult(true);
-    }
+            return Task.FromResult(true);
+        }
 
-    /// <inheritdoc/>
-    public Task<bool> DeleteReportAsync(int id)
-    {
-        var report = _mockReports.FirstOrDefault(r => r.Id == id);
-        if (report == null) return Task.FromResult(false);
+        /// <inheritdoc/>
+        public Task<bool> DeleteReportAsync(int id)
+        {
+            var report = _mockReports.FirstOrDefault(r => r.Id == id);
+            if (report == null) return Task.FromResult(false);
 
-        _mockReports.Remove(report);
-        return Task.FromResult(true);
-    }
+            _mockReports.Remove(report);
+            return Task.FromResult(true);
+        }
 
-    /// <inheritdoc/>
-    public Task<string> GeneratePdfAsync(int reportId)
-    {
-        // TODO: 使用 ToolHelper.DataProcessing.PdfHelper 生成PDF
-        var report = _mockReports.FirstOrDefault(r => r.Id == reportId);
-        if (report == null) return Task.FromResult(string.Empty);
+        /// <inheritdoc/>
+        public Task<string> GeneratePdfAsync(int reportId)
+        {
+            var report = _mockReports.FirstOrDefault(r => r.Id == reportId);
+            if (report == null) return Task.FromResult(string.Empty);
 
-        // 占位：返回临时文件路径
-        var tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"Report_{report.ReportNumber}.pdf");
-        return Task.FromResult(tempPath);
-    }
+            try
+            {
+                // 使用 ReportPdfExporter 生成PDF
+                var settingsService = App.Services?.GetService(typeof(ISettingsService)) as ISettingsService;
+                if (settingsService != null)
+                {
+                    var exporter = new Helpers.ReportPdfExporter(settingsService);
 
-    /// <inheritdoc/>
-    public Task<bool> PrintReportAsync(int reportId)
-    {
-        // TODO: 使用 PrintHelper 打印报告
-        var report = _mockReports.FirstOrDefault(r => r.Id == reportId);
-        if (report == null) return Task.FromResult(false);
+                    // 生成PDF到报告目录
+                    var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                    var reportDir = System.IO.Path.Combine(baseDir, Common.Constants.REPORT_DIRECTORY);
+                    if (!System.IO.Directory.Exists(reportDir))
+                    {
+                        System.IO.Directory.CreateDirectory(reportDir);
+                    }
 
-        report.Status = ReportStatus.Printed;
-        report.UpdatedAt = DateTime.Now;
+                    var fileName = $"Report_{report.ReportNumber}_{DateTime.Now:yyyyMMddHHmmss}.pdf";
+                    var filePath = System.IO.Path.Combine(reportDir, fileName);
 
-        return Task.FromResult(true);
-    }
+                    if (exporter.ExportToPdf(report, filePath))
+                    {
+                        report.PdfFilePath = filePath;
+                        report.UpdatedAt = DateTime.Now;
+                        _logHelper?.Information($"生成报告PDF成功：{filePath}");
+                        return Task.FromResult(filePath);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logHelper?.Error($"生成报告PDF失败：ReportId={reportId}", ex);
+            }
 
-    /// <inheritdoc/>
-    public Task<bool> UpdateReportStatusAsync(int reportId, ReportStatus status)
+            return Task.FromResult(string.Empty);
+        }
+
+        /// <inheritdoc/>
+        public Task<bool> PrintReportAsync(int reportId)
+        {
+            var report = _mockReports.FirstOrDefault(r => r.Id == reportId);
+            if (report == null) return Task.FromResult(false);
+
+            try
+            {
+                // 使用 ReportPreviewHelper 生成 FlowDocument
+                var settingsService = App.Services?.GetService(typeof(ISettingsService)) as ISettingsService;
+                var unitName = settingsService?.CurrentSettings?.Unit?.Name ?? Common.Constants.APP_DISPLAY_NAME;
+
+                var document = Helpers.ReportPreviewHelper.GenerateReportDocument(report, unitName);
+
+                // 使用 PrintHelper 打印
+                var success = Helpers.PrintHelper.PrintDocument(document, $"报告_{report.ReportNumber}", true);
+
+                if (success)
+                            {
+                                report.Status = ReportStatus.Printed;
+                                report.PrintedAt = DateTime.Now;
+                                report.UpdatedAt = DateTime.Now;
+                                _logHelper?.Information($"打印报告成功：ReportId={reportId}");
+                            }
+
+                            return Task.FromResult(success);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logHelper?.Error($"打印报告失败：ReportId={reportId}", ex);
+                            return Task.FromResult(false);
+                        }
+                    }
+
+                /// <inheritdoc/>
+                public Task<bool> UpdateReportStatusAsync(int reportId, ReportStatus status)
     {
         var report = _mockReports.FirstOrDefault(r => r.Id == reportId);
         if (report == null) return Task.FromResult(false);

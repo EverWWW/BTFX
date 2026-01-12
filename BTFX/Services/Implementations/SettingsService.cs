@@ -247,22 +247,105 @@ public class SettingsService : ISettingsService
 
         try
         {
-            using var aes = Aes.Create();
-            aes.Key = Key;
-            aes.IV = IV;
+                        using var aes = Aes.Create();
+                        aes.Key = Key;
+                        aes.IV = IV;
 
-            using var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-            using var ms = new MemoryStream(Convert.FromBase64String(encryptedPassword));
-            using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
-            using var sr = new StreamReader(cs);
+                        using var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+                        using var ms = new MemoryStream(Convert.FromBase64String(encryptedPassword));
+                        using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
+                        using var sr = new StreamReader(cs);
 
-            return sr.ReadToEnd();
-        }
-        catch
-        {
-            return string.Empty;
-        }
-    }
+                        return sr.ReadToEnd();
+                    }
+                    catch
+                    {
+                        return string.Empty;
+                    }
+                }
 
-    #endregion
-}
+                #endregion
+
+                #region 设置导入导出
+
+                /// <summary>
+                /// 导出设置模型（用于导出，不含敏感数据）
+                /// </summary>
+                private class ExportableSettings
+                {
+                    public ApplicationSettings? Application { get; set; }
+                    public UnitSettings? Unit { get; set; }
+                    public string ExportTime { get; set; } = string.Empty;
+                    public string AppVersion { get; set; } = string.Empty;
+                }
+
+                /// <summary>
+                /// 导出设置到文件
+                /// </summary>
+                public async Task<bool> ExportSettingsAsync(string filePath)
+                {
+                    try
+                    {
+                        // 创建可导出的设置（不含凭据等敏感信息）
+                        var exportableSettings = new ExportableSettings
+                        {
+                            Application = CurrentSettings.Application,
+                            Unit = CurrentSettings.Unit,
+                            ExportTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                            AppVersion = Constants.VERSION_FULL
+                        };
+
+                        var json = JsonSerializer.Serialize(exportableSettings, _jsonOptions);
+                        await File.WriteAllTextAsync(filePath, json);
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"导出设置失败: {ex.Message}");
+                        return false;
+                    }
+                }
+
+                /// <summary>
+                /// 从文件导入设置
+                /// </summary>
+                public async Task<bool> ImportSettingsAsync(string filePath)
+                {
+                    try
+                    {
+                        if (!File.Exists(filePath))
+                        {
+                            return false;
+                        }
+
+                        var json = await File.ReadAllTextAsync(filePath);
+                        var importedSettings = JsonSerializer.Deserialize<ExportableSettings>(json, _jsonOptions);
+
+                        if (importedSettings == null)
+                        {
+                            return false;
+                        }
+
+                        // 应用导入的设置（保留凭据信息）
+                        if (importedSettings.Application != null)
+                        {
+                            CurrentSettings.Application = importedSettings.Application;
+                        }
+
+                        if (importedSettings.Unit != null)
+                        {
+                            CurrentSettings.Unit = importedSettings.Unit;
+                        }
+
+                        SaveSettings();
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"导入设置失败: {ex.Message}");
+                        return false;
+                    }
+                }
+
+                #endregion
+            }

@@ -1,26 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using System.Windows.Controls;
+using BTFX.ViewModels;
 
-namespace BTFX.Views.Dialogs
+namespace BTFX.Views.Dialogs;
+
+/// <summary>
+/// UserEditDialog.xaml 的交互逻辑
+/// </summary>
+public partial class UserEditDialog : UserControl
 {
-    /// <summary>
-    /// UserEditDialog.xaml 的交互逻辑
-    /// </summary>
-    public partial class UserEditDialog : UserControl
+    public UserEditDialog()
     {
-        public UserEditDialog()
+        InitializeComponent();
+    }
+
+    public UserEditDialog(UserEditViewModel viewModel) : this()
+    {
+        DataContext = viewModel;
+    }
+
+    private void PasswordBox_PasswordChanged(object sender, System.Windows.RoutedEventArgs e)
+    {
+        if (DataContext is UserEditViewModel vm)
         {
-            InitializeComponent();
+            vm.Password = PasswordBox.Password;
+        }
+    }
+
+    private void ConfirmPasswordBox_PasswordChanged(object sender, System.Windows.RoutedEventArgs e)
+    {
+        if (DataContext is UserEditViewModel vm)
+        {
+            vm.ConfirmPassword = ConfirmPasswordBox.Password;
         }
     }
 }

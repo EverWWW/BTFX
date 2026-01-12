@@ -2,9 +2,12 @@ using System.Collections.ObjectModel;
 using BTFX.Common;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
+using BTFX.Views.Dialogs;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MaterialDesignThemes.Wpf;
 using ToolHelper.LoggingDiagnostics.Abstractions;
+using Constants = BTFX.Common.Constants;
 
 namespace BTFX.ViewModels;
 
@@ -161,7 +164,7 @@ public partial class SettingsViewModel : ObservableObject
     /// 备份时间
     /// </summary>
     [ObservableProperty]
-    private string _backupTime = Constants.BACKUP_DEFAULT_TIME;
+    private string _backupTime = BTFX.Common.Constants.BACKUP_DEFAULT_TIME;
 
     /// <summary>
     /// 保留备份数量
@@ -218,6 +221,18 @@ public partial class SettingsViewModel : ObservableObject
     /// </summary>
     [ObservableProperty]
     private string _currentUserRole = string.Empty;
+
+    /// <summary>
+    /// 日志统计信息
+    /// </summary>
+    [ObservableProperty]
+    private string _logStatistics = "正在加载...";
+
+    /// <summary>
+    /// 日志清理天数
+    /// </summary>
+    [ObservableProperty]
+    private int _logCleanupDays = 30;
 
     #endregion
 
@@ -408,6 +423,106 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// 导出设置
+    /// </summary>
+    [RelayCommand]
+    private async Task ExportSettingsAsync()
+    {
+        try
+        {
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "导出设置",
+                Filter = "JSON文件 (*.json)|*.json",
+                FileName = $"BTFX_Settings_{DateTime.Now:yyyyMMdd}",
+                DefaultExt = ".json"
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            IsSaving = true;
+            var success = await _settingsService.ExportSettingsAsync(dialog.FileName);
+
+            if (success)
+            {
+                System.Windows.MessageBox.Show($"设置导出成功！\n文件：{dialog.FileName}", "提示",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                _logHelper?.Information($"设置导出成功：{dialog.FileName}");
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("设置导出失败", "错误",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("设置导出失败", ex);
+            System.Windows.MessageBox.Show($"导出失败：{ex.Message}", "错误",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    /// <summary>
+    /// 导入设置
+    /// </summary>
+    [RelayCommand]
+    private async Task ImportSettingsAsync()
+    {
+        try
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "导入设置",
+                Filter = "JSON文件 (*.json)|*.json",
+                Multiselect = false
+            };
+
+            if (dialog.ShowDialog() != true) return;
+
+            var result = System.Windows.MessageBox.Show(
+                "导入设置将覆盖当前的通用设置和单位设置，是否继续？",
+                "确认导入",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Question);
+
+            if (result != System.Windows.MessageBoxResult.Yes) return;
+
+            IsSaving = true;
+            var success = await _settingsService.ImportSettingsAsync(dialog.FileName);
+
+            if (success)
+            {
+                // 重新加载设置到界面
+                LoadSettings();
+
+                System.Windows.MessageBox.Show("设置导入成功！\n部分设置可能需要重启应用后生效。", "提示",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                _logHelper?.Information($"设置导入成功：{dialog.FileName}");
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("设置导入失败，请检查文件格式", "错误",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("设置导入失败", ex);
+            System.Windows.MessageBox.Show($"导入失败：{ex.Message}", "错误",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
     #endregion
 
     #region 用户管理命令
@@ -446,41 +561,74 @@ public partial class SettingsViewModel : ObservableObject
     /// 添加用户
     /// </summary>
     [RelayCommand]
-    private void AddUser()
+    private async Task AddUserAsync()
     {
-        System.Windows.MessageBox.Show("用户添加功能开发中...", "提示",
-            System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+        var vm = new UserEditViewModel(_userService, _departmentService);
+        var dialog = new UserEditDialog(vm);
+
+        var result = await DialogHost.Show(dialog, "RootDialog");
+
+        if (result is true)
+        {
+            await LoadUsersAsync();
+            _logHelper?.Information("添加用户成功");
+        }
     }
 
     /// <summary>
     /// 编辑用户
     /// </summary>
     [RelayCommand]
-    private void EditUser(UserItem? item)
+    private async Task EditUserAsync(UserItem? item)
     {
         if (item == null) return;
-        System.Windows.MessageBox.Show($"编辑用户 {item.User.Username} 功能开发中...", "提示",
-            System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+
+        var vm = new UserEditViewModel(_userService, _departmentService, item.User);
+        var dialog = new UserEditDialog(vm);
+
+        var result = await DialogHost.Show(dialog, "RootDialog");
+
+        if (result is true)
+        {
+            await LoadUsersAsync();
+            _logHelper?.Information($"更新用户成功: {item.User.Username}");
+        }
     }
 
     /// <summary>
     /// 重置密码
     /// </summary>
     [RelayCommand]
-    private void ResetPassword(UserItem? item)
+    private async Task ResetPasswordAsync(UserItem? item)
     {
         if (item == null) return;
 
         var result = System.Windows.MessageBox.Show(
-            $"确定要重置用户 {item.User.Username} 的密码为默认密码 {Constants.DEFAULT_PASSWORD} 吗？",
+            $"确定要重置用户 {item.User.Username} 的密码为默认密码 {BTFX.Common.Constants.DEFAULT_PASSWORD} 吗？",
             "确认重置",
             System.Windows.MessageBoxButton.YesNo,
             System.Windows.MessageBoxImage.Question);
 
         if (result == System.Windows.MessageBoxResult.Yes)
         {
-            System.Windows.MessageBox.Show("密码重置功能开发中...", "提示",
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            try
+            {
+                item.User.PasswordHash = BTFX.Common.Constants.DEFAULT_PASSWORD;
+                var success = await _userService.UpdateUserAsync(item.User);
+                if (success)
+                {
+                    System.Windows.MessageBox.Show("密码重置成功", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    _logHelper?.Information($"重置用户密码: {item.User.Username}");
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show("密码重置失败", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"密码重置出错: {ex.Message}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
         }
     }
 
@@ -488,11 +636,40 @@ public partial class SettingsViewModel : ObservableObject
     /// 切换用户状态
     /// </summary>
     [RelayCommand]
-    private void ToggleUserStatus(UserItem? item)
+    private async Task ToggleUserStatusAsync(UserItem? item)
     {
         if (item == null) return;
-        System.Windows.MessageBox.Show("用户状态切换功能开发中...", "提示",
-            System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+
+        string action = item.User.IsEnabled ? "禁用" : "启用";
+        var result = System.Windows.MessageBox.Show(
+            $"确定要{action}用户 {item.User.Username} 吗？",
+            "确认操作",
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Question);
+
+        if (result == System.Windows.MessageBoxResult.Yes)
+        {
+            try
+            {
+                item.User.IsEnabled = !item.User.IsEnabled;
+                var success = await _userService.UpdateUserAsync(item.User);
+                if (success)
+                {
+                    await LoadUsersAsync();
+                    _logHelper?.Information($"{action}用户: {item.User.Username}");
+                }
+                else
+                {
+                    item.User.IsEnabled = !item.User.IsEnabled; // Revert
+                    System.Windows.MessageBox.Show($"{action}失败", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                item.User.IsEnabled = !item.User.IsEnabled; // Revert
+                System.Windows.MessageBox.Show($"{action}出错: {ex.Message}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+        }
     }
 
     #endregion
@@ -533,21 +710,38 @@ public partial class SettingsViewModel : ObservableObject
     /// 添加科室
     /// </summary>
     [RelayCommand]
-    private void AddDepartment()
+    private async Task AddDepartmentAsync()
     {
-        System.Windows.MessageBox.Show("科室添加功能开发中...", "提示",
-            System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+        var vm = new DepartmentEditViewModel(_departmentService);
+        var dialog = new DepartmentEditDialog(vm);
+
+        var result = await DialogHost.Show(dialog, "RootDialog");
+
+        if (result is true)
+        {
+            await LoadDepartmentsAsync();
+            _logHelper?.Information("添加科室成功");
+        }
     }
 
     /// <summary>
     /// 编辑科室
     /// </summary>
     [RelayCommand]
-    private void EditDepartment(DepartmentItem? item)
+    private async Task EditDepartmentAsync(DepartmentItem? item)
     {
         if (item == null) return;
-        System.Windows.MessageBox.Show($"编辑科室 {item.Department.Name} 功能开发中...", "提示",
-            System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+
+        var vm = new DepartmentEditViewModel(_departmentService, item.Department);
+        var dialog = new DepartmentEditDialog(vm);
+
+        var result = await DialogHost.Show(dialog, "RootDialog");
+
+        if (result is true)
+        {
+            await LoadDepartmentsAsync();
+            _logHelper?.Information($"编辑科室成功: {item.Department.Name}");
+        }
     }
 
     /// <summary>
@@ -763,49 +957,167 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    #endregion
+        #endregion
 
-    #region 系统信息命令
+        #region 系统信息命令
 
-    /// <summary>
-    /// 打开日志目录
-    /// </summary>
-    [RelayCommand]
-    private void OpenLogDirectory()
-    {
-        try
+        /// <summary>
+        /// 打开日志目录
+        /// </summary>
+        [RelayCommand]
+        private void OpenLogDirectory()
         {
-            if (System.IO.Directory.Exists(LogDirectory))
+            try
             {
-                System.Diagnostics.Process.Start("explorer.exe", LogDirectory);
+                if (System.IO.Directory.Exists(LogDirectory))
+                {
+                    System.Diagnostics.Process.Start("explorer.exe", LogDirectory);
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show("日志目录不存在", "提示",
+                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                System.Windows.MessageBox.Show("日志目录不存在", "提示",
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                _logHelper?.Error("打开日志目录失败", ex);
             }
         }
-        catch (Exception ex)
+
+        /// <summary>
+        /// 导出日志
+        /// </summary>
+        [RelayCommand]
+        private async Task ExportLogsAsync()
         {
-            _logHelper?.Error("打开日志目录失败", ex);
+            try
+            {
+                var dialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Title = "导出日志",
+                    Filter = "文本文件 (*.txt)|*.txt|CSV文件 (*.csv)|*.csv",
+                    FileName = $"BTFX_Logs_{DateTime.Now:yyyyMMdd_HHmmss}",
+                    DefaultExt = ".txt"
+                };
+
+                if (dialog.ShowDialog() != true) return;
+
+                IsSaving = true;
+
+                var logExportHelper = new ToolHelper.LoggingDiagnostics.Logging.LogExportHelper(LogDirectory);
+                var startDate = DateTime.Today.AddDays(-30);
+                var endDate = DateTime.Today.AddDays(1);
+
+                int exportedCount;
+                if (dialog.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                {
+                    exportedCount = await logExportHelper.ExportLogsToCsvAsync(dialog.FileName, startDate, endDate);
+                }
+                else
+                {
+                    exportedCount = await logExportHelper.ExportLogsAsync(dialog.FileName, startDate, endDate);
+                }
+
+                System.Windows.MessageBox.Show($"日志导出完成！\n共导出 {exportedCount} 条记录\n文件：{dialog.FileName}", "提示",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                _logHelper?.Information($"日志导出完成：{exportedCount} 条记录");
+            }
+            catch (Exception ex)
+            {
+                _logHelper?.Error("日志导出失败", ex);
+                System.Windows.MessageBox.Show($"日志导出失败：{ex.Message}", "错误",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsSaving = false;
+            }
         }
-    }
 
-    /// <summary>
-    /// 显示关于对话框
-    /// </summary>
-    [RelayCommand]
-    private void ShowAbout()
-    {
-        System.Windows.MessageBox.Show(
-            $"{AppName}\n版本：{AppVersion}\n\n步态智能分析系统",
-            "关于",
-            System.Windows.MessageBoxButton.OK,
-            System.Windows.MessageBoxImage.Information);
-    }
+        /// <summary>
+        /// 清理日志
+        /// </summary>
+        [RelayCommand]
+        private async Task CleanupLogsAsync()
+        {
+            var result = System.Windows.MessageBox.Show(
+                $"确定要清理 {LogCleanupDays} 天前的日志吗？\n此操作不可撤销！",
+                "确认清理",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Warning);
 
-    #endregion
-}
+            if (result != System.Windows.MessageBoxResult.Yes) return;
+
+            try
+            {
+                IsSaving = true;
+
+                var logExportHelper = new ToolHelper.LoggingDiagnostics.Logging.LogExportHelper(LogDirectory);
+                var deletedCount = await logExportHelper.CleanupOldLogsAsync(LogCleanupDays);
+
+                System.Windows.MessageBox.Show($"日志清理完成！\n共删除 {deletedCount} 个日志文件", "提示",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                _logHelper?.Information($"日志清理完成：删除 {deletedCount} 个文件");
+
+                // 刷新日志统计
+                await LoadLogStatisticsAsync();
+            }
+            catch (Exception ex)
+            {
+                _logHelper?.Error("日志清理失败", ex);
+                System.Windows.MessageBox.Show($"日志清理失败：{ex.Message}", "错误",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsSaving = false;
+            }
+        }
+
+        /// <summary>
+        /// 加载日志统计
+        /// </summary>
+        [RelayCommand]
+        private async Task LoadLogStatisticsAsync()
+        {
+            try
+            {
+                if (!System.IO.Directory.Exists(LogDirectory))
+                {
+                    LogStatistics = "日志目录不存在";
+                    return;
+                }
+
+                var logExportHelper = new ToolHelper.LoggingDiagnostics.Logging.LogExportHelper(LogDirectory);
+                var stats = await logExportHelper.GetStatisticsAsync(DateTime.Today.AddDays(-30), DateTime.Today.AddDays(1));
+
+                LogStatistics = $"近30天：共 {stats.TotalCount} 条日志\n" +
+                               $"信息: {stats.InformationCount}  警告: {stats.WarningCount}  错误: {stats.ErrorCount}\n" +
+                               $"日志文件: {stats.FileCount} 个，总大小: {stats.TotalSizeBytes / 1024.0:F1} KB";
+            }
+            catch (Exception ex)
+            {
+                LogStatistics = "加载统计失败";
+                _logHelper?.Error("加载日志统计失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 显示关于对话框
+        /// </summary>
+        [RelayCommand]
+        private void ShowAbout()
+        {
+            System.Windows.MessageBox.Show(
+                $"{AppName}\n版本：{AppVersion}\n\n步态智能分析系统",
+                "关于",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Information);
+        }
+
+        #endregion
+    }
 
 #region 辅助类
 

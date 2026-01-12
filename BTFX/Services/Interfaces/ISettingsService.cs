@@ -67,13 +67,27 @@ public interface ISettingsService
     /// </summary>
     void SetUnitName(string name);
 
-    /// <summary>
-    /// 获取Logo路径
-    /// </summary>
-    string? GetLogoPath();
+        /// <summary>
+        /// 获取Logo路径
+        /// </summary>
+        string? GetLogoPath();
 
-    /// <summary>
-    /// 设置Logo路径
-    /// </summary>
-    void SetLogoPath(string? path);
-}
+        /// <summary>
+        /// 设置Logo路径
+        /// </summary>
+        void SetLogoPath(string? path);
+
+        /// <summary>
+        /// 导出设置到文件
+        /// </summary>
+        /// <param name="filePath">导出文件路径</param>
+        /// <returns>是否成功</returns>
+        Task<bool> ExportSettingsAsync(string filePath);
+
+        /// <summary>
+        /// 从文件导入设置
+        /// </summary>
+        /// <param name="filePath">导入文件路径</param>
+        /// <returns>是否成功</returns>
+        Task<bool> ImportSettingsAsync(string filePath);
+    }

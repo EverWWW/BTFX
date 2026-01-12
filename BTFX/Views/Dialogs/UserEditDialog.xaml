@@ -2,11 +2,142 @@
     x:Class="BTFX.Views.Dialogs.UserEditDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:behaviors="clr-namespace:BTFX.Behaviors"
+    xmlns:common="clr-namespace:BTFX.Common"
+    xmlns:converters="clr-namespace:BTFX.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:BTFX.Views.Dialogs"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
+    xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:vm="clr-namespace:BTFX.ViewModels"
+    d:DataContext="{d:DesignInstance Type=vm:UserEditViewModel}"
+    d:DesignHeight="500"
+    d:DesignWidth="400"
     mc:Ignorable="d">
-    <Grid />
+
+    <UserControl.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
+
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--  表单  -->
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!--  账号  -->
+                <TextBox
+                    Margin="0,0,0,16"
+                    md:HintAssist.Hint="账号 *"
+                    md:HintAssist.IsFloating="True"
+                    IsEnabled="{Binding IsNewUser}"
+                    MaxLength="{x:Static common:Constants.USERNAME_MAX_LENGTH}"
+                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                    Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" />
+
+                <!--  姓名  -->
+                <TextBox
+                    Margin="0,0,0,16"
+                    md:HintAssist.Hint="姓名 *"
+                    md:HintAssist.IsFloating="True"
+                    MaxLength="{x:Static common:Constants.NAME_MAX_LENGTH}"
+                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                    Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+
+                <!--  角色  -->
+                <ComboBox
+                    Margin="0,0,0,16"
+                    md:HintAssist.Hint="角色 *"
+                    md:HintAssist.IsFloating="True"
+                    DisplayMemberPath="Display"
+                    ItemsSource="{Binding RoleOptions}"
+                    SelectedItem="{Binding SelectedRole}"
+                    Style="{StaticResource MaterialDesignOutlinedComboBox}" />
+
+                <!--  电话  -->
+                <TextBox
+                    Margin="0,0,0,16"
+                    md:HintAssist.Hint="电话"
+                    md:HintAssist.IsFloating="True"
+                    MaxLength="{x:Static common:Constants.PHONE_MAX_LENGTH}"
+                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                    Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:NumericTextBoxBehavior AllowDecimal="False"/>
+                    </i:Interaction.Behaviors>
+                </TextBox>
+
+                <!--  科室  -->
+                <ComboBox
+                    Margin="0,0,0,16"
+                    md:HintAssist.Hint="科室"
+                    md:HintAssist.IsFloating="True"
+                    DisplayMemberPath="Name"
+                    ItemsSource="{Binding Departments}"
+                    SelectedItem="{Binding SelectedDepartment}"
+                    Style="{StaticResource MaterialDesignOutlinedComboBox}" />
+
+                <!--  密码（新增时显示）  -->
+                <StackPanel Visibility="{Binding IsNewUser, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <PasswordBox
+                        x:Name="PasswordBox"
+                        Margin="0,0,0,16"
+                        md:HintAssist.Hint="密码 *"
+                        md:HintAssist.IsFloating="True"
+                        MaxLength="{x:Static common:Constants.PASSWORD_MAX_LENGTH}"
+                        PasswordChanged="PasswordBox_PasswordChanged"
+                        Style="{StaticResource MaterialDesignOutlinedPasswordBox}" />
+
+                    <PasswordBox
+                        x:Name="ConfirmPasswordBox"
+                        Margin="0,0,0,16"
+                        md:HintAssist.Hint="确认密码 *"
+                        md:HintAssist.IsFloating="True"
+                        MaxLength="{x:Static common:Constants.PASSWORD_MAX_LENGTH}"
+                        PasswordChanged="ConfirmPasswordBox_PasswordChanged"
+                        Style="{StaticResource MaterialDesignOutlinedPasswordBox}" />
+                </StackPanel>
+
+                <!--  启用状态  -->
+                <StackPanel
+                    Margin="0,8,0,0"
+                    Orientation="Horizontal"
+                    Visibility="{Binding ShowStatusToggle, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <ToggleButton IsChecked="{Binding IsEnabled}" Style="{StaticResource MaterialDesignSwitchToggleButton}" />
+                    <TextBlock
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center"
+                        Text="启用账号" />
+                </StackPanel>
+
+                <!--  验证提示  -->
+                <TextBlock
+                    Margin="0,16,0,0"
+                    Foreground="{DynamicResource MaterialDesign.Brush.ValidationError}"
+                    Text="{Binding ValidationError}"
+                    TextWrapping="Wrap"
+                    Visibility="{Binding HasValidationError, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <!--  按钮  -->
+        <StackPanel
+            Grid.Row="1"
+            Margin="0,16,0,0"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <Button
+                Margin="0,0,8,0"
+                Command="{Binding CancelCommand}"
+                Content="取消"
+                Style="{StaticResource MaterialDesignOutlinedButton}" />
+            <Button
+                Command="{Binding SaveCommand}"
+                Content="保存"
+                Style="{StaticResource MaterialDesignRaisedButton}" />
+        </StackPanel>
+    </Grid>
 </UserControl>

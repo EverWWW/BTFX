@@ -50,6 +50,12 @@ public partial class DataManagementView : UserControl
         {
             localizationService.LanguageChanged -= OnLanguageChanged;
         }
+
+        // Dispose ViewModel if it implements IDisposable
+        if (DataContext is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
     }
 
     private void OnLanguageChanged(object? sender, Common.AppLanguage language)

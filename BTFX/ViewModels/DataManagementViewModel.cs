@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Windows;
 using BTFX.Common;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
@@ -11,13 +12,15 @@ namespace BTFX.ViewModels;
 /// <summary>
 /// 数据管理视图模型
 /// </summary>
-public partial class DataManagementViewModel : ObservableObject
+public partial class DataManagementViewModel : ObservableObject, IDisposable
 {
     private readonly IMeasurementService _measurementService;
     private readonly ISessionService _sessionService;
     private readonly ILocalizationService _localizationService;
     private readonly IExportImportService _exportImportService;
     private readonly ILogHelper? _logHelper;
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private volatile bool _disposed;
 
     /// <summary>
     /// 全局选中的记录ID集合（跨页面持久化）
@@ -224,9 +227,11 @@ public partial class DataManagementViewModel : ObservableObject
     /// </summary>
     private async Task LoadDataAsync()
     {
+        if (_disposed) return;
+
         try
         {
-            IsLoading = true;
+            Application.Current?.Dispatcher?.Invoke(() => IsLoading = true);
 
             var (records, totalCount) = await _measurementService.GetMeasurementsPagedAsync(
                 FilterPatientName,
@@ -236,44 +241,69 @@ public partial class DataManagementViewModel : ObservableObject
                 CurrentPage,
                 PageSize);
 
-            TotalRecords = totalCount;
-            TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize);
-            if (TotalPages < 1) TotalPages = 1;
+            if (_cancellationTokenSource.Token.IsCancellationRequested) return;
 
-            // 确保当前页有效
-            if (CurrentPage > TotalPages)
+            // 在UI线程更新属性和集合
+            await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                CurrentPage = TotalPages;
-            }
+                if (_disposed) return;
 
-            // 转换为视图项
-            MeasurementRecords.Clear();
-            int rowNumber = (CurrentPage - 1) * PageSize + 1;
-            foreach (var record in records)
-            {
-                var item = new MeasurementRecordItem(record, rowNumber++);
+                TotalRecords = totalCount;
+                TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize);
+                if (TotalPages < 1) TotalPages = 1;
 
-                // 恢复之前的选中状态
-                if (_globalSelectedIds.Contains(record.Id))
+                // 确保当前页有效
+                if (CurrentPage > TotalPages)
                 {
-                    item.IsSelected = true;
+                    CurrentPage = TotalPages;
                 }
 
-                MeasurementRecords.Add(item);
-            }
+                // 转换为视图项
+                MeasurementRecords.Clear();
+                int rowNumber = (CurrentPage - 1) * PageSize + 1;
+                foreach (var record in records)
+                {
+                    var item = new MeasurementRecordItem(record, rowNumber++);
 
-            // 更新选中状态
-            UpdateSelectionState();
+                    // 恢复之前的选中状态
+                    if (_globalSelectedIds.Contains(record.Id))
+                    {
+                        item.IsSelected = true;
+                    }
+
+                    MeasurementRecords.Add(item);
+                }
+
+                // 更新选中状态
+                UpdateSelectionState();
+            });
 
             _logHelper?.Information($"加载测量数据：第{CurrentPage}页，共{TotalRecords}条，已选中{_globalSelectedIds.Count}条");
         }
+        catch (OperationCanceledException)
+        {
+            // 操作被取消，忽略
+        }
         catch (Exception ex)
         {
-            _logHelper?.Error("加载测量数据失败", ex);
+            if (!_disposed)
+            {
+                _logHelper?.Error("加载测量数据失败", ex);
+            }
         }
         finally
         {
-            IsLoading = false;
+            if (!_disposed)
+            {
+                try
+                {
+                    Application.Current?.Dispatcher?.Invoke(() => IsLoading = false);
+                }
+                catch
+                {
+                    // 忽略关闭时的异常
+                }
+            }
         }
     }
 
@@ -688,21 +718,39 @@ public partial class DataManagementViewModel : ObservableObject
         }
     }
 
-    /// <summary>
-    /// 刷新命令
-    /// </summary>
-    [RelayCommand]
-    private async Task RefreshAsync()
-    {
-        await LoadDataAsync();
+        /// <summary>
+        /// 刷新命令
+        /// </summary>
+        [RelayCommand]
+        private async Task RefreshAsync()
+        {
+            await LoadDataAsync();
+        }
+
+        #endregion
+
+        #region IDisposable
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Dispose()
+        {
+            if (_disposed) return;
+
+            _disposed = true;
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
+
+            _logHelper?.Information("DataManagementViewModel disposed");
+        }
+
+        #endregion
     }
 
-    #endregion
-}
-
-/// <summary>
-/// 测量记录项（包含行号和选中状态）
-/// </summary>
+    /// <summary>
+    /// 测量记录项（包含行号和选中状态）
+    /// </summary>
 public partial class MeasurementRecordItem : ObservableObject
 {
     /// <summary>

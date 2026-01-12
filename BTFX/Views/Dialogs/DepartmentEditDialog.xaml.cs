@@ -1,26 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using System.Windows.Controls;
+using BTFX.ViewModels;
 
-namespace BTFX.Views.Dialogs
+namespace BTFX.Views.Dialogs;
+
+/// <summary>
+/// DepartmentEditDialog.xaml 的交互逻辑
+/// </summary>
+public partial class DepartmentEditDialog : UserControl
 {
-    /// <summary>
-    /// DepartmentEditDialog.xaml 的交互逻辑
-    /// </summary>
-    public partial class DepartmentEditDialog : UserControl
+    public DepartmentEditDialog(DepartmentEditViewModel viewModel)
     {
-        public DepartmentEditDialog()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+        DataContext = viewModel;
     }
 }

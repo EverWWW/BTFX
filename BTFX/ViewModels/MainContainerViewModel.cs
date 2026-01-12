@@ -298,6 +298,7 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     /// </summary>
     private void OnTimeUpdateTick(object? sender, EventArgs e)
     {
+        if (_disposed || App.IsShuttingDown) return;
         UpdateCurrentTime();
     }
 
@@ -326,6 +327,7 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     /// </summary>
     private void OnCurrentPatientChanged(object? sender, Patient? patient)
     {
+        if (_disposed || App.IsShuttingDown) return;
         UpdatePatientInfo();
     }
 
@@ -334,6 +336,7 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     /// </summary>
     private void OnCurrentUserChanged(object? sender, User? user)
     {
+        if (_disposed || App.IsShuttingDown) return;
         UpdateUserInfo();
     }
 
@@ -342,6 +345,9 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     /// </summary>
     partial void OnSelectedNavigationItemChanged(NavigationItem? oldValue, NavigationItem? newValue)
     {
+        // 如果应用正在关闭或已释放，不执行任何操作
+        if (_disposed || App.IsShuttingDown) return;
+
         if (oldValue != null)
         {
             oldValue.IsSelected = false;
@@ -362,6 +368,9 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     /// </summary>
     private void LoadSubView(string viewModelName)
     {
+        // 如果应用正在关闭或已释放，不加载视图
+        if (_disposed || App.IsShuttingDown) return;
+
         try
         {
             object? view = viewModelName switch
@@ -373,7 +382,7 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
                 _ => null
             };
 
-            if (view != null)
+            if (view != null && !_disposed && !App.IsShuttingDown)
             {
                 CurrentContent = view;
                 _logHelper?.Information($"加载子视图: {viewModelName}");
@@ -381,7 +390,10 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            _logHelper?.Error($"加载子视图失败: {viewModelName}", ex);
+            if (!App.IsShuttingDown)
+            {
+                _logHelper?.Error($"加载子视图失败: {viewModelName}", ex);
+            }
         }
     }
 

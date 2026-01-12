@@ -30,27 +30,53 @@ public partial class ReportView : UserControl
 
     private void ReportView_Loaded(object sender, System.Windows.RoutedEventArgs e)
     {
+        // 如果应用正在关闭，不执行任何操作
+        if (App.IsShuttingDown) return;
+
         // Set DatePicker language based on current culture
         SetDatePickerLanguage();
 
         // Subscribe to language changes if localization service is available
-        if (App.Services?.GetService(typeof(ILocalizationService)) is ILocalizationService localizationService)
+        try
         {
-            localizationService.LanguageChanged += OnLanguageChanged;
+            if (App.Services?.GetService(typeof(ILocalizationService)) is ILocalizationService localizationService)
+            {
+                localizationService.LanguageChanged += OnLanguageChanged;
+            }
+        }
+        catch
+        {
+            // 忽略关闭时的异常
         }
     }
 
     private void ReportView_Unloaded(object sender, System.Windows.RoutedEventArgs e)
     {
+        // 如果应用正在关闭，不执行任何操作
+        if (App.IsShuttingDown) return;
+
         // Unsubscribe from language changes
-        if (App.Services?.GetService(typeof(ILocalizationService)) is ILocalizationService localizationService)
+        try
         {
-            localizationService.LanguageChanged -= OnLanguageChanged;
+            if (App.Services?.GetService(typeof(ILocalizationService)) is ILocalizationService localizationService)
+            {
+                localizationService.LanguageChanged -= OnLanguageChanged;
+            }
         }
+        catch
+        {
+            // 忽略关闭时的异常
+        }
+
+        // 注意：不在这里调用 Dispose，因为 Unloaded 在导航时也会触发
+        // ViewModel 的生命周期应由 DI 容器或应用程序关闭时统一管理
+        // Dispose 会在应用程序退出时通过 App.OnExit 进行处理
     }
 
     private void OnLanguageChanged(object? sender, Common.AppLanguage language)
     {
+        // 如果应用正在关闭，不执行任何操作
+        if (App.IsShuttingDown) return;
         SetDatePickerLanguage();
     }
 
