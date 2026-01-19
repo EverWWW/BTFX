@@ -39,7 +39,7 @@
                     Style="{StaticResource MaterialDesignFilledTabControl}">
 
                     <!--  报告列表Tab  -->
-                    <TabItem Header="报告列表">
+                    <TabItem Header="{DynamicResource ReportList}">
                         <Grid Margin="16">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -50,16 +50,17 @@
                             <StackPanel Grid.Row="0" Margin="0,0,0,16">
                                 <WrapPanel Orientation="Horizontal">
                                     <StackPanel Margin="0,0,16,8" Orientation="Horizontal">
-                                        <TextBlock VerticalAlignment="Center" Text="患者姓名：" />
+                                        <TextBlock VerticalAlignment="Center" Text="{DynamicResource FilterPatientName}" />
                                         <TextBox
                                             Width="120"
+                                            md:HintAssist.Hint="{DynamicResource EnterName}"
                                             MaxLength="50"
-                                            md:HintAssist.Hint="输入姓名"
                                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                             Text="{Binding ReportFilterPatientName, UpdateSourceTrigger=PropertyChanged}" />
                                     </StackPanel>
                                     <StackPanel Margin="0,0,16,8" Orientation="Horizontal">
-                                        <TextBlock VerticalAlignment="Center" Text="开始日期：" />
+                                        <TextBlock VerticalAlignment="Center" Text="{DynamicResource StartDate}" />
+                                        <TextBlock VerticalAlignment="Center" Text="：" />
                                         <DatePicker
                                             Width="130"
                                             DisplayDateEnd="{Binding MaxDate, Mode=OneWay}"
@@ -67,7 +68,8 @@
                                             Style="{StaticResource MaterialDesignOutlinedDatePicker}" />
                                     </StackPanel>
                                     <StackPanel Margin="0,0,16,8" Orientation="Horizontal">
-                                        <TextBlock VerticalAlignment="Center" Text="结束日期：" />
+                                        <TextBlock VerticalAlignment="Center" Text="{DynamicResource EndDate}" />
+                                        <TextBlock VerticalAlignment="Center" Text="：" />
                                         <DatePicker
                                             Width="130"
                                             DisplayDateEnd="{Binding MaxDate, Mode=OneWay}"
@@ -82,11 +84,11 @@
                                     <Button
                                         Margin="0,0,8,0"
                                         Command="{Binding SearchReportsCommand}"
-                                        Content="搜索"
+                                        Content="{DynamicResource SearchReports}"
                                         Style="{StaticResource MaterialDesignRaisedButton}" />
                                     <Button
                                         Command="{Binding ResetReportFilterCommand}"
-                                        Content="重置"
+                                        Content="{DynamicResource ResetFilter}"
                                         Style="{StaticResource MaterialDesignOutlinedButton}" />
                                 </StackPanel>
                             </StackPanel>
@@ -106,22 +108,22 @@
                                 Style="{StaticResource MaterialDesignDataGrid}">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn
-                                        Width="50"
+                                        Width="80"
                                         Binding="{Binding RowNumber}"
-                                        Header="序号" />
+                                        Header="{DynamicResource RowNumber}" />
                                     <DataGridTextColumn
                                         Width="140"
                                         Binding="{Binding ReportNumber}"
-                                        Header="报告编号" />
+                                        Header="{DynamicResource ReportNumber}" />
                                     <DataGridTextColumn
                                         Width="100"
                                         Binding="{Binding PatientName}"
-                                        Header="患者姓名" />
+                                        Header="{DynamicResource PatientName}" />
                                     <DataGridTextColumn
                                         Width="140"
                                         Binding="{Binding GeneratedDateDisplay}"
-                                        Header="生成日期" />
-                                    <DataGridTemplateColumn Width="80" Header="状态">
+                                        Header="{DynamicResource MeasurementDate}" />
+                                    <DataGridTemplateColumn Width="80"  Header="{DynamicResource Status}">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <Border
@@ -137,25 +139,25 @@
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
-                                    <DataGridTemplateColumn Width="*" Header="操作">
+                                    <DataGridTemplateColumn Width="*" Header="{DynamicResource Operation}">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                                                     <Button
                                                         Command="{Binding DataContext.ViewReportCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                         CommandParameter="{Binding}"
-                                                        Content="查看"
+                                                        Content="{DynamicResource View}"
                                                         Style="{StaticResource MaterialDesignFlatButton}" />
                                                     <Button
                                                         Command="{Binding DataContext.EditReportCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                         CommandParameter="{Binding}"
-                                                        Content="编辑"
+                                                        Content="{DynamicResource Edit}"
                                                         Style="{StaticResource MaterialDesignFlatButton}"
                                                         Visibility="{Binding DataContext.CanEditReport, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                                     <Button
                                                         Command="{Binding DataContext.DeleteReportCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                         CommandParameter="{Binding}"
-                                                        Content="删除"
+                                                        Content="{DynamicResource Delete}"
                                                         Foreground="{DynamicResource MaterialDesign.Brush.ValidationError}"
                                                         Style="{StaticResource MaterialDesignFlatButton}"
                                                         Visibility="{Binding DataContext.CanDeleteReport, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}" />
@@ -180,14 +182,14 @@
                                     <TextBlock
                                         Margin="0,8,0,0"
                                         Foreground="White"
-                                        Text="加载中..." />
+                                        Text="{DynamicResource Loading}" />
                                 </StackPanel>
                             </Border>
                         </Grid>
                     </TabItem>
 
                     <!--  生成报告Tab  -->
-                    <TabItem Header="生成报告">
+                    <TabItem Header="{DynamicResource GenerateReport}">
                         <Grid Margin="16">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -201,19 +203,19 @@
                                     Margin="0,0,0,8"
                                     FontSize="14"
                                     FontWeight="Medium"
-                                    Text="选择测量数据" />
+                                    Text="{DynamicResource SelectMeasurementData}" />
                                 <WrapPanel Orientation="Horizontal">
                                     <StackPanel Margin="0,0,16,8" Orientation="Horizontal">
-                                        <TextBlock VerticalAlignment="Center" Text="患者姓名：" />
+                                        <TextBlock VerticalAlignment="Center" Text="{DynamicResource PatientName}" />
                                         <TextBox
                                             Width="120"
+                                            md:HintAssist.Hint="{DynamicResource EnterName}"
                                             MaxLength="50"
-                                            md:HintAssist.Hint="输入姓名"
                                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
                                             Text="{Binding MeasurementFilterPatientName, UpdateSourceTrigger=PropertyChanged}" />
                                     </StackPanel>
                                     <StackPanel Margin="0,0,16,8" Orientation="Horizontal">
-                                        <TextBlock VerticalAlignment="Center" Text="开始日期：" />
+                                        <TextBlock VerticalAlignment="Center" Text="{DynamicResource StartDate}" />
                                         <DatePicker
                                             Width="130"
                                             DisplayDateEnd="{Binding MaxDate, Mode=OneWay}"
@@ -221,7 +223,7 @@
                                             Style="{StaticResource MaterialDesignOutlinedDatePicker}" />
                                     </StackPanel>
                                     <StackPanel Margin="0,0,8,8" Orientation="Horizontal">
-                                        <TextBlock VerticalAlignment="Center" Text="结束日期：" />
+                                        <TextBlock VerticalAlignment="Center" Text="{DynamicResource EndDate}" />
                                         <DatePicker
                                             Width="130"
                                             DisplayDateEnd="{Binding MaxDate, Mode=OneWay}"
@@ -236,11 +238,11 @@
                                     <Button
                                         Margin="0,0,8,0"
                                         Command="{Binding SearchMeasurementsCommand}"
-                                        Content="搜索"
+                                        Content="{DynamicResource Search}"
                                         Style="{StaticResource MaterialDesignRaisedButton}" />
                                     <Button
                                         Command="{Binding ResetMeasurementFilterCommand}"
-                                        Content="重置"
+                                        Content="{DynamicResource Reset}"
                                         Style="{StaticResource MaterialDesignOutlinedButton}" />
                                 </StackPanel>
                             </StackPanel>
@@ -262,23 +264,23 @@
                                     <DataGridTextColumn
                                         Width="50"
                                         Binding="{Binding RowNumber}"
-                                        Header="序号" />
+                                        Header="{DynamicResource RowNumber}" />
                                     <DataGridTextColumn
                                         Width="100"
                                         Binding="{Binding PatientName}"
-                                        Header="患者姓名" />
+                                        Header="{DynamicResource PatientName}" />
                                     <DataGridTextColumn
                                         Width="60"
                                         Binding="{Binding GenderDisplay}"
-                                        Header="性别" />
+                                        Header="{DynamicResource Gender}" />
                                     <DataGridTextColumn
                                         Width="60"
                                         Binding="{Binding AgeDisplay}"
-                                        Header="年龄" />
+                                        Header="{DynamicResource Age}" />
                                     <DataGridTextColumn
                                         Width="*"
                                         Binding="{Binding MeasurementDateDisplay}"
-                                        Header="测量日期" />
+                                        Header="{DynamicResource MeasurementDate}" />
                                 </DataGrid.Columns>
                             </DataGrid>
 
@@ -292,7 +294,7 @@
                                 <Button
                                     HorizontalAlignment="Right"
                                     Command="{Binding GenerateReportCommand}"
-                                    Content="生成报告"
+                                    Content="{DynamicResource GenerateReport}"
                                     IsEnabled="{Binding SelectedMeasurement, Converter={StaticResource NullableToVisibilityConverter}}"
                                     Style="{StaticResource MaterialDesignRaisedButton}"
                                     Visibility="{Binding CanGenerateReport, Converter={StaticResource BooleanToVisibilityConverter}}" />
@@ -313,7 +315,7 @@
                                     <TextBlock
                                         Margin="0,8,0,0"
                                         Foreground="White"
-                                        Text="正在生成报告..." />
+                                        Text="{DynamicResource GeneratingReport}" />
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -338,7 +340,7 @@
                     Margin="0,0,0,16"
                     FontSize="16"
                     FontWeight="Medium"
-                    Text="报告预览" />
+                    Text="{DynamicResource ReportPreview}" />
 
                 <!--  预览内容  -->
                 <Border
@@ -364,7 +366,7 @@
                     VerticalAlignment="Center"
                     FontSize="14"
                     Foreground="{DynamicResource MaterialDesignBodyLight}"
-                    Text="请在左侧选择一份报告查看">
+                    Text="{DynamicResource SelectReportFromLeft}">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
                             <Setter Property="Visibility" Value="Collapsed" />
@@ -390,7 +392,7 @@
                         <TextBlock
                             Grid.Column="0"
                             FontWeight="Medium"
-                            Text="医生意见" />
+                            Text="{DynamicResource DoctorOpinion}" />
                         <TextBlock Grid.Column="1" Foreground="{DynamicResource MaterialDesignBodyLight}">
                             <Run Text="{Binding DoctorOpinionLength, Mode=OneWay}" />
                             <Run Text="/" />
@@ -419,17 +421,17 @@
                     <Button
                         Margin="0,0,8,0"
                         Command="{Binding SaveReportCommand}"
-                        Content="保存"
+                        Content="{DynamicResource Save}"
                         Style="{StaticResource MaterialDesignRaisedButton}"
                         Visibility="{Binding CanEditReport, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     <Button
                         Margin="0,0,8,0"
                         Command="{Binding PrintReportCommand}"
-                        Content="打印"
+                        Content="{DynamicResource Print}"
                         Style="{StaticResource MaterialDesignOutlinedButton}" />
                     <Button
                         Command="{Binding ExportPdfCommand}"
-                        Content="导出PDF"
+                        Content="{DynamicResource ExportPdf}"
                         Style="{StaticResource MaterialDesignOutlinedButton}"
                         Visibility="{Binding CanExportReport, Converter={StaticResource BooleanToVisibilityConverter}}" />
                 </StackPanel>

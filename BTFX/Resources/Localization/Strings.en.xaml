@@ -1,10 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
 
     <system:String x:Key="AppName">Gait Intelligent Analysis System</system:String>
     <system:String x:Key="AppNameShort">BTFX</system:String>
-    
+
     <system:String x:Key="OK">OK</system:String>
     <system:String x:Key="Cancel">Cancel</system:String>
     <system:String x:Key="Save">Save</system:String>
@@ -27,12 +28,29 @@
     <system:String x:Key="Clear">Clear</system:String>
     <system:String x:Key="Yes">Yes</system:String>
     <system:String x:Key="No">No</system:String>
-    
+
+    <!--  MainContainerView  -->
+    <system:String x:Key="ToggleMenu">Toggle Menu</system:String>
+    <system:String x:Key="GuestModeWarning">Guest Mode - Limited Access</system:String>
+    <system:String x:Key="SwitchPatient">Switch Patient</system:String>
+    <system:String x:Key="YearsOld">years old</system:String>
+    <system:String x:Key="SelectMenuToStart">Please select a menu on the left to start</system:String>
+
+    <!-- Days of Week -->
+    <system:String x:Key="Monday">Monday</system:String>
+    <system:String x:Key="Tuesday">Tuesday</system:String>
+    <system:String x:Key="Wednesday">Wednesday</system:String>
+    <system:String x:Key="Thursday">Thursday</system:String>
+    <system:String x:Key="Friday">Friday</system:String>
+    <system:String x:Key="Saturday">Saturday</system:String>
+    <system:String x:Key="Sunday">Sunday</system:String>
+
     <system:String x:Key="Login">Login</system:String>
     <system:String x:Key="Logout">Logout</system:String>
     <system:String x:Key="Username">Username</system:String>
     <system:String x:Key="Password">Password</system:String>
     <system:String x:Key="RememberPassword">Remember Password</system:String>
+    <system:String x:Key="TogglePasswordVisibility">Toggle Password Visibility</system:String>
     <system:String x:Key="GuestLogin">Guest Login</system:String>
     <system:String x:Key="LoginSuccess">Login Successful</system:String>
     <system:String x:Key="LoginFailed">Invalid username or password</system:String>
@@ -48,6 +66,7 @@
     <system:String x:Key="PatientSelectionTitle">Patient Selection</system:String>
     <system:String x:Key="PreviousPage">Previous Page</system:String>
     <system:String x:Key="NextPage">Next Page</system:String>
+    <system:String x:Key="Page">Page</system:String>
     <system:String x:Key="Id">ID</system:String>
     <system:String x:Key="Actions">Actions</system:String>
     <system:String x:Key="CreatedAt">Created At</system:String>
@@ -95,7 +114,32 @@
     <system:String x:Key="MeasurementFailed">Measurement Failed</system:String>
     <system:String x:Key="VideoPreview">Video Preview</system:String>
     <system:String x:Key="GaitParameters">Gait Parameters</system:String>
-    
+
+    <!--  Measurement View  -->
+    <system:String x:Key="VideoPreviewPlaceholder">Video Preview Area (Placeholder)</system:String>
+    <system:String x:Key="MeasurementControl">Measurement Control</system:String>
+    <system:String x:Key="SelectDevice">Select Device</system:String>
+    <system:String x:Key="Status">Status</system:String>
+    <system:String x:Key="Connect">Connect</system:String>
+    <system:String x:Key="Disconnect">Disconnect</system:String>
+    <system:String x:Key="StartRecording">Start Recording</system:String>
+    <system:String x:Key="StopRecording">Stop Recording</system:String>
+    <system:String x:Key="RealTimeData">Real-time Data</system:String>
+    <system:String x:Key="Cadence">Cadence (steps/min)</system:String>
+    <system:String x:Key="Speed">Speed (m/s)</system:String>
+
+    <!-- Navigation Menu -->
+    <system:String x:Key="NavMeasurement">Measurement</system:String>
+    <system:String x:Key="NavDataManagement">Data Management</system:String>
+    <system:String x:Key="NavReport">Reports</system:String>
+    <system:String x:Key="NavSettings">Settings</system:String>
+
+    <!-- Device Status -->
+    <system:String x:Key="DeviceConnected">Connected</system:String>
+    <system:String x:Key="DeviceConnecting">Connecting...</system:String>
+    <system:String x:Key="DeviceDisconnected">Disconnected</system:String>
+    <system:String x:Key="DeviceConnectionFailed">Connection Failed</system:String>
+
     <system:String x:Key="DataManagement">Data Management</system:String>
     <system:String x:Key="MeasurementRecords">Measurement Records</system:String>
     <system:String x:Key="MeasurementTime">Measurement Time</system:String>
@@ -105,7 +149,7 @@
     <system:String x:Key="DateRange">Date Range</system:String>
     <system:String x:Key="StartDate">Start Date</system:String>
     <system:String x:Key="EndDate">End Date</system:String>
-    
+
     <system:String x:Key="Report">Report</system:String>
     <system:String x:Key="ReportList">Report List</system:String>
     <system:String x:Key="GenerateReport">Generate Report</system:String>
@@ -116,7 +160,19 @@
     <system:String x:Key="ReportTime">Report Time</system:String>
     <system:String x:Key="ReportStatus">Report Status</system:String>
     <system:String x:Key="ConfirmOverwriteReport">A report already exists for this measurement. Do you want to overwrite it?</system:String>
+
+    <!--  Report View  -->
+    <system:String x:Key="EnterName">Enter name</system:String>
+    <system:String x:Key="SearchReports">Search</system:String>
+    <system:String x:Key="ResetFilter">Reset</system:String>
+    <system:String x:Key="SelectMeasurementData">Select Measurement Data</system:String>
+    <system:String x:Key="GenerateDate">Generate Date</system:String>
+    <system:String x:Key="Operation">Operation</system:String>
+    <system:String x:Key="GeneratingReport">Generating Report...</system:String>
+    <system:String x:Key="SelectReportFromLeft">Please select a report on the left to view</system:String>
+    <system:String x:Key="MeasurementDate">Measurement Date</system:String>
     
+
     <system:String x:Key="Settings">Settings</system:String>
     <system:String x:Key="GeneralSettings">General Settings</system:String>
     <system:String x:Key="Language">Language</system:String>
@@ -141,7 +197,7 @@
     <system:String x:Key="DeviceSettings">Device Settings</system:String>
     <system:String x:Key="DatabaseSettings">Database Settings</system:String>
     <system:String x:Key="AboutUs">About Us</system:String>
-    
+
     <system:String x:Key="AddUser">Add User</system:String>
     <system:String x:Key="EditUser">Edit User</system:String>
     <system:String x:Key="DeleteUser">Delete User</system:String>
@@ -161,7 +217,7 @@
     <system:String x:Key="OldPasswordIncorrect">Incorrect old password</system:String>
     <system:String x:Key="DefaultPassword">Default password is: 123456</system:String>
     <system:String x:Key="ConfirmResetPassword">Are you sure you want to reset the password to default?</system:String>
-    
+
     <system:String x:Key="Department">Department</system:String>
     <system:String x:Key="DepartmentName">Department Name</system:String>
     <system:String x:Key="DepartmentPhone">Phone</system:String>
@@ -169,13 +225,13 @@
     <system:String x:Key="EditDepartment">Edit Department</system:String>
     <system:String x:Key="DeleteDepartment">Delete Department</system:String>
     <system:String x:Key="DepartmentInUse">This department is in use and cannot be deleted</system:String>
-    
+
     <system:String x:Key="DeviceStatus">Device Status</system:String>
     <system:String x:Key="Disconnected">Disconnected</system:String>
     <system:String x:Key="Connecting">Connecting</system:String>
     <system:String x:Key="Connected">Connected</system:String>
     <system:String x:Key="ConnectionFailed">Connection Failed</system:String>
-    
+
     <system:String x:Key="Success">Success</system:String>
     <system:String x:Key="Failed">Failed</system:String>
     <system:String x:Key="Warning">Warning</system:String>
@@ -197,7 +253,28 @@
     <system:String x:Key="ExitConfirmMessage">Are you sure you want to exit?</system:String>
     <system:String x:Key="UnsavedChanges">You have unsaved changes. Do you want to save?</system:String>
     <system:String x:Key="ProgramAlreadyRunning">The program is already running.</system:String>
-    
+
+    <!--  Confirm Dialog Related  -->
+    <system:String x:Key="ConfirmImportSettings">Importing settings will overwrite current general and unit settings. Continue?</system:String>
+    <system:String x:Key="ConfirmDeleteUser">Are you sure you want to delete user {0}? This action cannot be undone.</system:String>
+    <system:String x:Key="ConfirmToggleUserStatus">Are you sure you want to {0} user {1}?</system:String>
+    <system:String x:Key="ConfirmDeleteDepartment">Are you sure you want to delete department {0}? This action cannot be undone.</system:String>
+    <system:String x:Key="ConfirmRestoreBackup">Restoring backup will overwrite current data. This action cannot be undone! Continue?</system:String>
+    <system:String x:Key="ConfirmCleanupLogs">Are you sure you want to cleanup logs older than {0} days? This action cannot be undone!</system:String>
+    <system:String x:Key="DisableUser">disable</system:String>
+    <system:String x:Key="InternalVersionLabel">Internal Version:</system:String>
+
+    <!--  DataManagement Related  -->
+    <system:String x:Key="ToggleSelectAll">Select All/Deselect All</system:String>
+    <system:String x:Key="BatchExport">Batch Export</system:String>
+    <system:String x:Key="BatchDelete">Batch Delete</system:String>
+    <system:String x:Key="Total">Total</system:String>
+    <system:String x:Key="RecordsSelected">records, selected</system:String>
+    <system:String x:Key="Items">items</system:String>
+    <system:String x:Key="Pages">pages</system:String>
+    <system:String x:Key="GoToPage">Go to page</system:String>
+    <system:String x:Key="Go">Go</system:String>
+
     <system:String x:Key="PageInfo">Page {0} of {1}</system:String>
     <system:String x:Key="TotalRecords">Total: {0} records</system:String>
     <system:String x:Key="FirstPage">First</system:String>
@@ -205,20 +282,82 @@
 
     <system:String x:Key="MainWindowTitle">Gait Intelligent Analysis System</system:String>
     <system:String x:Key="LoginWindowTitle">Login</system:String>
-    
-    <system:String x:Key="NavMeasurement">Measurement</system:String>
-    <system:String x:Key="NavDataManagement">Data Management</system:String>
-    <system:String x:Key="NavReport">Report</system:String>
-    <system:String x:Key="NavSettings">Settings</system:String>
-    
+
     <system:String x:Key="Minimize">Minimize</system:String>
     <system:String x:Key="Maximize">Maximize</system:String>
     <system:String x:Key="RestoreDown">Restore Down</system:String>
     <system:String x:Key="Fullscreen">Fullscreen</system:String>
     <system:String x:Key="ExitFullscreen">Exit Fullscreen</system:String>
-    
+
     <system:String x:Key="Daily">Daily</system:String>
     <system:String x:Key="Weekly">Weekly</system:String>
     <system:String x:Key="Monthly">Monthly</system:String>
+
+    <!-- Settings Page -->
+    <system:String x:Key="SettingsTitle">Settings</system:String>
+    <system:String x:Key="GeneralSettingsTab">General</system:String>
+    <system:String x:Key="DeviceConfigTab">Device Config</system:String>
+    <system:String x:Key="DataManagementTab">Data Management</system:String>
+    <system:String x:Key="SystemInfoTab">System Info</system:String>
+
+    <!-- General Settings -->
+    <system:String x:Key="LanguageSettings">Language Settings</system:String>
+    <system:String x:Key="SelectLanguage">Select Language</system:String>
+    <system:String x:Key="ThemeSettings">Theme Settings</system:String>
+    <system:String x:Key="SaveSettings">Save Settings</system:String>
+    <system:String x:Key="SettingsExportImport">Import/Export Settings</system:String>
+    <system:String x:Key="ExportSettings">Export Settings</system:String>
+    <system:String x:Key="ImportSettings">Import Settings</system:String>
+    <system:String x:Key="SettingsExportImportHint">Export will save general and organization settings (excluding user data)</system:String>
+
+    <!-- Device Config -->
+    <system:String x:Key="DeviceConfigDeveloping">Device configuration is under development...</system:String>
+
+    <!-- User Management -->
+    <system:String x:Key="RowNumber">No.</system:String>
+    <system:String x:Key="Account">Account</system:String>
+    <system:String x:Key="RealName">Name</system:String>
+    <system:String x:Key="Role">Role</system:String>
+    <system:String x:Key="LastLogin">Last Login</system:String>
+    <system:String x:Key="NeverLoggedIn">Never logged in</system:String>
+    <system:String x:Key="Operations">Operations</system:String>
+    <system:String x:Key="EnableUser">Enable</system:String>
+    <system:String x:Key="Description">Description</system:String>
+
+    <!-- Unit Settings -->
+    <system:String x:Key="EnterUnitName">Enter organization name</system:String>
+    <system:String x:Key="UnitLogo">Organization Logo</system:String>
+    <system:String x:Key="SelectImage">Select Image</system:String>
+    <system:String x:Key="ClearLogo">Clear Logo</system:String>
+    <system:String x:Key="NoLogo">No Logo</system:String>
+    <system:String x:Key="LogoSizeHint">PNG/JPG format, max 300KB</system:String>
+
+    <!-- Data Management -->
+    <system:String x:Key="AutoBackupSettings">Auto Backup</system:String>
+    <system:String x:Key="EnableAutoBackup">Enable auto backup</system:String>
+    <system:String x:Key="SaveBackupSettings">Save Backup Settings</system:String>
+    <system:String x:Key="ManualBackup">Manual Backup</system:String>
+    <system:String x:Key="BackupHistory">Backup History</system:String>
+    <system:String x:Key="FileName">File Name</system:String>
+    <system:String x:Key="Size">Size</system:String>
+    <system:String x:Key="RefreshList">Refresh List</system:String>
+
+    <!-- System Info -->
+    <system:String x:Key="AppInfo">Application Info</system:String>
+    <system:String x:Key="AppNameLabel">App Name:</system:String>
+    <system:String x:Key="VersionLabel">Version:</system:String>
+    <system:String x:Key="CurrentUserLabel">Current User:</system:String>
+    <system:String x:Key="UserRoleLabel">User Role:</system:String>
+    <system:String x:Key="DataInfo">Data Info</system:String>
+    <system:String x:Key="DatabaseSizeLabel">Database Size:</system:String>
+    <system:String x:Key="LogDirectoryLabel">Log Directory:</system:String>
+    <system:String x:Key="Open">Open</system:String>
+    <system:String x:Key="LogManagement">Log Management</system:String>
+    <system:String x:Key="LogStatistics">Log Statistics</system:String>
+    <system:String x:Key="RefreshStatistics">Refresh Statistics</system:String>
+    <system:String x:Key="ExportLogs">Export Logs</system:String>
+    <system:String x:Key="Cleanup">Cleanup</system:String>
+    <system:String x:Key="DaysAgoLogs">days ago</system:String>
+    <system:String x:Key="AllRightsReserved">All Rights Reserved</system:String>
 
 </ResourceDictionary>

@@ -28,19 +28,34 @@ public partial class LoginView : UserControl
     /// </summary>
     private void LoginView_Loaded(object sender, RoutedEventArgs e)
     {
-        // 自动聚焦到账号输入框（如果没有记住密码）
-        // 或密码输入框（如果已记住密码）
         if (DataContext is LoginViewModel vm)
         {
+            // 如果 ViewModel 中有记住的密码，同步到 PasswordBox
+            if (!string.IsNullOrEmpty(vm.Password))
+            {
+                PasswordBox.Password = vm.Password;
+            }
+
+            // 监听密码可见性变化
+            vm.PropertyChanged += (s, args) =>
+            {
+                if (args.PropertyName == nameof(LoginViewModel.IsPasswordHidden))
+                {
+                    // 当从明文切换到密码模式时，同步密码到 PasswordBox
+                    if (vm.IsPasswordHidden && !string.IsNullOrEmpty(vm.Password))
+                    {
+                        PasswordBox.Password = vm.Password;
+                    }
+                }
+            };
+
+            // 焦点逻辑
             if (string.IsNullOrEmpty(vm.Username))
             {
-                // 聚焦账号输入框
-                var usernameTextBox = FindName("UsernameTextBox") as TextBox;
-                usernameTextBox?.Focus();
+                UsernameTextBox?.Focus();
             }
             else if (vm.IsPasswordHidden)
             {
-                // 聚焦密码框
                 PasswordBox.Focus();
             }
         }

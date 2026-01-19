@@ -41,6 +41,24 @@ public class ThemeService : IThemeService
 
         // 触发事件
         ThemeChanged?.Invoke(this, theme);
+
+        // 强制刷新所有打开的窗口
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            foreach (Window window in Application.Current.Windows)
+            {
+                try
+                {
+                    // 触发资源更新
+                    window.UpdateLayout();
+                    window.InvalidateVisual();
+                }
+                catch
+                {
+                    // 忽略单个窗口刷新失败
+                }
+            }
+        });
     }
 
     /// <summary>

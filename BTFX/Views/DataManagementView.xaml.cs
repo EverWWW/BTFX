@@ -184,4 +184,9 @@ public partial class DataManagementView : UserControl
         // 标记事件已处理，防止其他事件触发
         e.Handled = true;
     }
+
+    private void Button_Click()
+    {
+
+    }
 }

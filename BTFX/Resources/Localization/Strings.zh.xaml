@@ -30,6 +30,23 @@
     <system:String x:Key="Yes">是</system:String>
     <system:String x:Key="No">否</system:String>
 
+    <!--  MainContainerView  -->
+    <system:String x:Key="ToggleMenu">展开/折叠菜单</system:String>
+    <system:String x:Key="GuestModeWarning">游客模式 - 功能受限</system:String>
+    <system:String x:Key="SwitchPatient">切换患者</system:String>
+    <system:String x:Key="YearsOld">岁</system:String>
+    <system:String x:Key="SelectMenuToStart">请选择左侧菜单开始操作</system:String>
+
+    <!-- 星期几 -->
+    <system:String x:Key="Monday">星期一</system:String>
+    <system:String x:Key="Tuesday">星期二</system:String>
+    <system:String x:Key="Wednesday">星期三</system:String>
+    <system:String x:Key="Thursday">星期四</system:String>
+    <system:String x:Key="Friday">星期五</system:String>
+    <system:String x:Key="Saturday">星期六</system:String>
+    <system:String x:Key="Sunday">星期日</system:String>
+
+    <!--  Login  -->
     <system:String x:Key="Login">登录</system:String>
     <system:String x:Key="Logout">退出登录</system:String>
     <system:String x:Key="Username">用户名</system:String>
@@ -51,6 +68,7 @@
     <system:String x:Key="PatientSelectionTitle">患者选择</system:String>
     <system:String x:Key="PreviousPage">上一页</system:String>
     <system:String x:Key="NextPage">下一页</system:String>
+    <system:String x:Key="Page">页</system:String>
     <system:String x:Key="Id">编号</system:String>
     <system:String x:Key="Actions">操作</system:String>
     <system:String x:Key="CreatedAt">创建时间</system:String>
@@ -99,6 +117,31 @@
     <system:String x:Key="VideoPreview">视频预览</system:String>
     <system:String x:Key="GaitParameters">步态参数</system:String>
 
+    <!--  Measurement View  -->
+    <system:String x:Key="VideoPreviewPlaceholder">视频预览区域 (Placeholder)</system:String>
+    <system:String x:Key="MeasurementControl">测量控制</system:String>
+    <system:String x:Key="SelectDevice">选择设备</system:String>
+    <system:String x:Key="Status">状态</system:String>
+    <system:String x:Key="Connect">连接</system:String>
+    <system:String x:Key="Disconnect">断开</system:String>
+    <system:String x:Key="StartRecording">开始录制</system:String>
+    <system:String x:Key="StopRecording">停止录制</system:String>
+    <system:String x:Key="RealTimeData">实时数据</system:String>
+    <system:String x:Key="Cadence">步频 (steps/min)</system:String>
+    <system:String x:Key="Speed">速度 (m/s)</system:String>
+
+    <!--  导航菜单  -->
+    <system:String x:Key="NavMeasurement">测量评估</system:String>
+    <system:String x:Key="NavDataManagement">数据管理</system:String>
+    <system:String x:Key="NavReport">报告</system:String>
+    <system:String x:Key="NavSettings">系统设置</system:String>
+
+    <!--  设备状态  -->
+    <system:String x:Key="DeviceConnected">已连接</system:String>
+    <system:String x:Key="DeviceConnecting">连接中...</system:String>
+    <system:String x:Key="DeviceDisconnected">未连接</system:String>
+    <system:String x:Key="DeviceConnectionFailed">连接失败</system:String>
+
     <system:String x:Key="DataManagement">数据管理</system:String>
     <system:String x:Key="MeasurementRecords">测量记录</system:String>
     <system:String x:Key="MeasurementTime">测量时间</system:String>
@@ -119,6 +162,18 @@
     <system:String x:Key="ReportTime">报告时间</system:String>
     <system:String x:Key="ReportStatus">报告状态</system:String>
     <system:String x:Key="ConfirmOverwriteReport">此测量已有报告，是否覆盖？</system:String>
+
+    <!--  Report View  -->
+    <system:String x:Key="EnterName">输入姓名</system:String>
+    <system:String x:Key="SearchReports">搜索</system:String>
+    <system:String x:Key="ResetFilter">重置</system:String>
+    <system:String x:Key="SelectMeasurementData">选择测量数据</system:String>
+    <system:String x:Key="GenerateDate">生成日期</system:String>
+    <system:String x:Key="Operation">操作</system:String>
+    <system:String x:Key="GeneratingReport">正在生成报告...</system:String>
+    <system:String x:Key="SelectReportFromLeft">请在左侧选择一份报告查看</system:String>
+    <system:String x:Key="MeasurementDate">测量日期</system:String>
+
 
     <system:String x:Key="Settings">系统设置</system:String>
     <system:String x:Key="GeneralSettings">常规设置</system:String>
@@ -201,18 +256,33 @@
     <system:String x:Key="UnsavedChanges">您有未保存的更改，是否保存？</system:String>
     <system:String x:Key="ProgramAlreadyRunning">程序已在运行中。</system:String>
 
+    <!--  确认对话框相关  -->
+    <system:String x:Key="ConfirmImportSettings">导入设置将覆盖当前的通用设置和单位设置，是否继续？</system:String>
+    <system:String x:Key="ConfirmDeleteUser">确定要删除用户 {0} 吗？此操作无法撤销。</system:String>
+    <system:String x:Key="ConfirmToggleUserStatus">确定要{0}用户 {1} 吗？</system:String>
+    <system:String x:Key="ConfirmDeleteDepartment">确定要删除科室 {0} 吗？此操作无法撤销。</system:String>
+    <system:String x:Key="ConfirmRestoreBackup">恢复备份将覆盖当前数据，此操作不可撤销！确定要继续吗？</system:String>
+    <system:String x:Key="ConfirmCleanupLogs">确定要清理 {0} 天前的日志吗？此操作不可撤销！</system:String>
+    <system:String x:Key="DisableUser">禁用</system:String>
+    <system:String x:Key="InternalVersionLabel">内部版本：</system:String>
+
+    <!--  DataManagement 相关  -->
+    <system:String x:Key="ToggleSelectAll">全选/取消全选</system:String>
+    <system:String x:Key="BatchExport">批量导出</system:String>
+    <system:String x:Key="BatchDelete">批量删除</system:String>
+    <system:String x:Key="Total">共</system:String>
+    <system:String x:Key="RecordsSelected">条，已选</system:String>
+    <system:String x:Key="Items">项</system:String>
+    <system:String x:Key="Pages">页</system:String>
+    <system:String x:Key="GoToPage">跳转到</system:String>
+    <system:String x:Key="Go">跳转</system:String>
+
     <system:String x:Key="PageInfo">第 {0} 页，共 {1} 页</system:String>
     <system:String x:Key="TotalRecords">总计：{0} 条记录</system:String>
     <system:String x:Key="FirstPage">首页</system:String>
     <system:String x:Key="LastPage">末页</system:String>
-
     <system:String x:Key="MainWindowTitle">步态智能分析系统</system:String>
     <system:String x:Key="LoginWindowTitle">登录</system:String>
-
-    <system:String x:Key="NavMeasurement">测量评估</system:String>
-    <system:String x:Key="NavDataManagement">数据管理</system:String>
-    <system:String x:Key="NavReport">报告</system:String>
-    <system:String x:Key="NavSettings">系统设置</system:String>
 
     <system:String x:Key="Minimize">最小化</system:String>
     <system:String x:Key="Maximize">最大化</system:String>
@@ -223,5 +293,73 @@
     <system:String x:Key="Daily">每天</system:String>
     <system:String x:Key="Weekly">每周</system:String>
     <system:String x:Key="Monthly">每月</system:String>
+
+    <!--  Settings Page  -->
+    <system:String x:Key="SettingsTitle">系统设置</system:String>
+    <system:String x:Key="GeneralSettingsTab">通用设置</system:String>
+    <system:String x:Key="DeviceConfigTab">设备配置</system:String>
+    <system:String x:Key="DataManagementTab">数据管理</system:String>
+    <system:String x:Key="SystemInfoTab">系统信息</system:String>
+
+    <!--  General Settings  -->
+    <system:String x:Key="LanguageSettings">语言设置</system:String>
+    <system:String x:Key="SelectLanguage">选择语言</system:String>
+    <system:String x:Key="ThemeSettings">主题设置</system:String>
+    <system:String x:Key="SaveSettings">保存设置</system:String>
+    <system:String x:Key="SettingsExportImport">设置导入导出</system:String>
+    <system:String x:Key="ExportSettings">导出设置</system:String>
+    <system:String x:Key="ImportSettings">导入设置</system:String>
+    <system:String x:Key="SettingsExportImportHint">导出设置将保存通用设置和单位设置（不含用户数据）</system:String>
+
+    <!--  Device Config  -->
+    <system:String x:Key="DeviceConfigDeveloping">设备配置功能开发中...</system:String>
+
+    <!--  User Management  -->
+    <system:String x:Key="RowNumber">序号</system:String>
+    <system:String x:Key="Account">账号</system:String>
+    <system:String x:Key="RealName">姓名</system:String>
+    <system:String x:Key="Role">角色</system:String>
+    <system:String x:Key="LastLogin">最后登录</system:String>
+    <system:String x:Key="NeverLoggedIn">从未登录</system:String>
+    <system:String x:Key="Operations">操作</system:String>
+    <system:String x:Key="EnableUser">启用</system:String>
+    <system:String x:Key="Description">描述</system:String>
+
+    <!--  Unit Settings  -->
+    <system:String x:Key="EnterUnitName">请输入单位名称</system:String>
+    <system:String x:Key="UnitLogo">单位Logo</system:String>
+    <system:String x:Key="SelectImage">选择图片</system:String>
+    <system:String x:Key="ClearLogo">清除Logo</system:String>
+    <system:String x:Key="NoLogo">无Logo</system:String>
+    <system:String x:Key="LogoSizeHint">支持 PNG/JPG 格式，最大 300KB</system:String>
+
+    <!--  Data Management  -->
+    <system:String x:Key="AutoBackupSettings">自动备份</system:String>
+    <system:String x:Key="EnableAutoBackup">启用自动备份</system:String>
+    <system:String x:Key="SaveBackupSettings">保存备份设置</system:String>
+    <system:String x:Key="ManualBackup">手动备份</system:String>
+    <system:String x:Key="BackupHistory">备份历史</system:String>
+    <system:String x:Key="FileName">文件名</system:String>
+    <system:String x:Key="Size">大小</system:String>
+    <system:String x:Key="RefreshList">刷新列表</system:String>
+
+    <!--  System Info  -->
+    <system:String x:Key="AppInfo">应用信息</system:String>
+    <system:String x:Key="AppNameLabel">应用名称：</system:String>
+    <system:String x:Key="VersionLabel">版本号：</system:String>
+    <system:String x:Key="CurrentUserLabel">当前用户：</system:String>
+    <system:String x:Key="UserRoleLabel">用户角色：</system:String>
+    <system:String x:Key="DataInfo">数据信息</system:String>
+    <system:String x:Key="DatabaseSizeLabel">数据库大小：</system:String>
+    <system:String x:Key="LogDirectoryLabel">日志目录：</system:String>
+    <system:String x:Key="Open">打开</system:String>
+    <system:String x:Key="LogManagement">日志管理</system:String>
+    <system:String x:Key="LogStatistics">日志统计</system:String>
+    <system:String x:Key="RefreshStatistics">刷新统计</system:String>
+    <system:String x:Key="ExportLogs">导出日志</system:String>
+    <system:String x:Key="Cleanup">清理</system:String>
+    <system:String x:Key="DaysAgoLogs">天前的日志</system:String>
+    <system:String x:Key="AllRightsReserved">版权所有</system:String>
+    
 
 </ResourceDictionary>

@@ -18,6 +18,11 @@ public static class Constants
     public const string VERSION_FULL = "V1.0.0.1";
 
     /// <summary>
+    /// 版权声明（显示在"关于我们"界面）
+    /// </summary>
+    public const string ALLRIGHTSRESERVED = "Copyright \u00A9 2024-2026";
+
+    /// <summary>
     /// 内部版本号（用于开发测试）
     /// </summary>
     public const string VERSION_INTERNAL = "V1.0.0.20260108_alpha01";

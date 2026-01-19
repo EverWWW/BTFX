@@ -13,6 +13,9 @@ namespace BTFX.ViewModels;
 /// </summary>
 public partial class PatientSelectionViewModel : ObservableObject
 {
+    /// <summary>
+    /// 服务
+    /// </summary>
     private readonly IPatientService _patientService;
     private readonly INavigationService _navigationService;
     private readonly ISessionService _sessionService;
@@ -86,7 +89,7 @@ public partial class PatientSelectionViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Load patients
+    /// Load patients加载患者
     /// </summary>
     private async Task LoadPatientsAsync()
     {
@@ -112,21 +115,21 @@ public partial class PatientSelectionViewModel : ObservableObject
     /// </summary>
     private void ApplySearchFilter()
     {
-        IEnumerable<Patient> filtered = _allPatients;
+        IEnumerable<Patient> filtered = _allPatients;//开始时，过滤集合是所有患者
 
-        // Apply search
+        // Apply search//如果搜索框输入不为空，则进行过滤
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
-            var searchLower = SearchText.Trim().ToLower();
+            var searchLower = SearchText.Trim().ToLower();//将搜索文本转换为小写以进行不区分大小写的比较
             filtered = filtered.Where(p =>
                 p.Name.ToLower().Contains(searchLower) ||
                 (p.Phone != null && p.Phone.Contains(searchLower)) ||
-                (p.IdNumber != null && p.IdNumber.ToLower().Contains(searchLower)));
+                (p.IdNumber != null && p.IdNumber.ToLower().Contains(searchLower)));//过滤患者列表，保留名称、电话或身份证号包含搜索文本的患者
         }
 
-        var filteredList = filtered.ToList();
+        var filteredList = filtered.ToList();//将过滤后的结果转换为列表以便后续处理
         TotalRecords = filteredList.Count;
-        TotalPages = (int)Math.Ceiling(TotalRecords / (double)PageSize);
+        TotalPages = (int)Math.Ceiling(TotalRecords / (double)PageSize);//计算总页数
 
         // Ensure current page is valid
         if (CurrentPage > TotalPages && TotalPages > 0)
@@ -142,7 +145,7 @@ public partial class PatientSelectionViewModel : ObservableObject
         var pageData = filteredList
             .Skip((CurrentPage - 1) * PageSize)
             .Take(PageSize)
-            .ToList();
+            .ToList();//使用Skip和Take方法获取当前页的数据
 
         Patients.Clear();
         foreach (var patient in pageData)
@@ -398,8 +401,8 @@ public partial class PatientSelectionViewModel : ObservableObject
         {
             UserRole.Administrator => "管理员",
             UserRole.Operator => "操作员",
-                        UserRole.Guest => "游客",
-                        _ => "未知"
-                    };
-                }
-            }
+            UserRole.Guest => "游客",
+            _ => "未知"
+        };
+    }
+}

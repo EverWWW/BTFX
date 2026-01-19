@@ -31,36 +31,54 @@
                 <!--  账号  -->
                 <TextBox
                     Margin="0,0,0,16"
-                    md:HintAssist.Hint="账号 *"
                     md:HintAssist.IsFloating="True"
                     IsEnabled="{Binding IsNewUser}"
                     MaxLength="{x:Static common:Constants.USERNAME_MAX_LENGTH}"
                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                    Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" />
+                    Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" >
+                    <md:HintAssist.Hint>
+                        <TextBlock>
+                            <Run Text="{DynamicResource Account}" />
+                            <Run Text=" *" />   
+                        </TextBlock>
+                    </md:HintAssist.Hint>
+                </TextBox>
 
                 <!--  姓名  -->
                 <TextBox
                     Margin="0,0,0,16"
-                    md:HintAssist.Hint="姓名 *"
                     md:HintAssist.IsFloating="True"
                     MaxLength="{x:Static common:Constants.NAME_MAX_LENGTH}"
                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                    Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+                    Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" >
+                    <md:HintAssist.Hint>
+                        <TextBlock>
+                            <Run Text="{DynamicResource PatientName}" />
+                            <Run Text=" *" />
+                        </TextBlock>
+                    </md:HintAssist.Hint>
+                </TextBox>
 
                 <!--  角色  -->
                 <ComboBox
                     Margin="0,0,0,16"
-                    md:HintAssist.Hint="角色 *"
                     md:HintAssist.IsFloating="True"
                     DisplayMemberPath="Display"
                     ItemsSource="{Binding RoleOptions}"
                     SelectedItem="{Binding SelectedRole}"
-                    Style="{StaticResource MaterialDesignOutlinedComboBox}" />
+                    Style="{StaticResource MaterialDesignOutlinedComboBox}" >
+                    <md:HintAssist.Hint>
+                        <TextBlock>
+                             <Run Text="{DynamicResource Role}" />
+                             <Run Text=" *" />
+                        </TextBlock>
+                    </md:HintAssist.Hint>
+                </ComboBox>
 
                 <!--  电话  -->
                 <TextBox
                     Margin="0,0,0,16"
-                    md:HintAssist.Hint="电话"
+                    md:HintAssist.Hint="{DynamicResource Phone}"
                     md:HintAssist.IsFloating="True"
                     MaxLength="{x:Static common:Constants.PHONE_MAX_LENGTH}"
                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
@@ -73,7 +91,7 @@
                 <!--  科室  -->
                 <ComboBox
                     Margin="0,0,0,16"
-                    md:HintAssist.Hint="科室"
+                    md:HintAssist.Hint="{DynamicResource Department}"
                     md:HintAssist.IsFloating="True"
                     DisplayMemberPath="Name"
                     ItemsSource="{Binding Departments}"
@@ -85,33 +103,48 @@
                     <PasswordBox
                         x:Name="PasswordBox"
                         Margin="0,0,0,16"
-                        md:HintAssist.Hint="密码 *"
+                        
                         md:HintAssist.IsFloating="True"
                         MaxLength="{x:Static common:Constants.PASSWORD_MAX_LENGTH}"
                         PasswordChanged="PasswordBox_PasswordChanged"
-                        Style="{StaticResource MaterialDesignOutlinedPasswordBox}" />
+                        Style="{StaticResource MaterialDesignOutlinedPasswordBox}" >
+                        <md:HintAssist.Hint>
+                            <TextBlock>
+                                <Run Text="{DynamicResource Password}" />
+                                <Run Text=" *" />
+                            </TextBlock>
+                        </md:HintAssist.Hint>
+                    </PasswordBox>
+                </StackPanel>
 
-                    <PasswordBox
+                <PasswordBox
                         x:Name="ConfirmPasswordBox"
                         Margin="0,0,0,16"
-                        md:HintAssist.Hint="确认密码 *"
                         md:HintAssist.IsFloating="True"
                         MaxLength="{x:Static common:Constants.PASSWORD_MAX_LENGTH}"
                         PasswordChanged="ConfirmPasswordBox_PasswordChanged"
-                        Style="{StaticResource MaterialDesignOutlinedPasswordBox}" />
-                </StackPanel>
+                        Style="{StaticResource MaterialDesignOutlinedPasswordBox}" >
+                        <md:HintAssist.Hint>
+                            <TextBlock>
+                                <Run Text="{DynamicResource ConfirmPassword}" />
+                                <Run Text=" *" />
+                            </TextBlock>
+                        </md:HintAssist.Hint>
+                    </PasswordBox>
 
-                <!--  启用状态  -->
+                    <!--  启用状态  -->
                 <StackPanel
                     Margin="0,8,0,0"
                     Orientation="Horizontal"
                     Visibility="{Binding ShowStatusToggle, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <ToggleButton IsChecked="{Binding IsEnabled}" Style="{StaticResource MaterialDesignSwitchToggleButton}" />
-                    <TextBlock
+                        <TextBlock
                         Margin="8,0,0,0"
-                        VerticalAlignment="Center"
-                        Text="启用账号" />
-                </StackPanel>
+                        VerticalAlignment="Center">
+                            <Run Text="{DynamicResource Enabled}" />
+                            <Run Text="{DynamicResource Account}" />
+                        </TextBlock>
+                    </StackPanel>
 
                 <!--  验证提示  -->
                 <TextBlock
@@ -132,11 +165,11 @@
             <Button
                 Margin="0,0,8,0"
                 Command="{Binding CancelCommand}"
-                Content="取消"
+                Content="{DynamicResource Cancel}"
                 Style="{StaticResource MaterialDesignOutlinedButton}" />
             <Button
                 Command="{Binding SaveCommand}"
-                Content="保存"
+                Content="{DynamicResource Save}"
                 Style="{StaticResource MaterialDesignRaisedButton}" />
         </StackPanel>
     </Grid>

@@ -81,25 +81,25 @@ public partial class App : Application
         var localizationService = Services.GetRequiredService<ILocalizationService>();
         localizationService.ApplyLanguage(settingsService.CurrentSettings.Application.Language);
 
-            // 10. 显示主窗口
-            var mainWindow = Services.GetRequiredService<MainWindow>();
-            mainWindow.Show();
+        // 10. 显示主窗口
+        var mainWindow = Services.GetRequiredService<MainWindow>();
+        mainWindow.Show();
 
-                    // 11. 注册视图映射
-                    var navigationService = Services.GetRequiredService<INavigationService>() as NavigationService;
-                    if (navigationService != null)
-                    {
-                        navigationService.RegisterView<LoginViewModel, Views.LoginView>();
-                        navigationService.RegisterView<PatientSelectionViewModel, Views.PatientSelectionView>();
-                        navigationService.RegisterView<MainContainerViewModel, Views.MainContainerView>();
-                        navigationService.RegisterView<MeasurementViewModel, Views.MeasurementView>();
-                        navigationService.RegisterView<DataManagementViewModel, Views.DataManagementView>();
-                        // TODO: Register other sub-views (Report, Settings)
+        // 11. 注册视图映射
+        var navigationService = Services.GetRequiredService<INavigationService>() as NavigationService;
+        if (navigationService != null)
+        {
+            navigationService.RegisterView<LoginViewModel, Views.LoginView>();
+            navigationService.RegisterView<PatientSelectionViewModel, Views.PatientSelectionView>();
+            navigationService.RegisterView<MainContainerViewModel, Views.MainContainerView>();
+            navigationService.RegisterView<MeasurementViewModel, Views.MeasurementView>();
+            navigationService.RegisterView<DataManagementViewModel, Views.DataManagementView>();
+            // TODO: Register other sub-views (Report, Settings)
 
-                        // Navigate to login view
-                        navigationService.NavigateTo<LoginViewModel>();
-                    }
-                }
+            // Navigate to login view
+            navigationService.NavigateTo<LoginViewModel>();
+        }
+    }
 
     /// <summary>
     /// 应用程序退出
@@ -235,7 +235,8 @@ public partial class App : Application
     private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         // 如果应用正在关闭，不处理
-        if (_isShuttingDown) return;
+        if (_isShuttingDown) 
+            return;
 
         if (e.ExceptionObject is Exception ex)
         {
@@ -371,133 +372,143 @@ public partial class App : Application
             {
                 Directory.CreateDirectory(fullPath);
             }
-                }
-            }
+        }
+    }
 
-            /// <summary>
-            /// 初始化日志框架
-            /// </summary>
-            private static void InitializeLogging()
+    /// <summary>
+    /// 初始化日志框架
+    /// </summary>
+    private static void InitializeLogging()
+    {
+        try
+        {
+            var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            var logDirectory = Path.Combine(baseDir, Constants.LOG_DIRECTORY);
+
+            // 配置日志选项
+            var logOptions = Options.Create(new LogOptions
             {
-                try
-                {
-                    var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                    var logDirectory = Path.Combine(baseDir, Constants.LOG_DIRECTORY);
+                MinimumLevel = ToolHelper.LoggingDiagnostics.Abstractions.LogLevel.Information,
+                LogDirectory = logDirectory,
+                EnableConsoleOutput = false, // WPF应用不需要控制台输出
+                SeparateFileByLevel = true,  // 按日志级别分文件
+                EnableAsyncWrite = true,     // 启用异步写入
+                BufferSize = 100,            // 缓冲区大小
+                FlushIntervalMs = 1000,      // 刷新间隔1秒
+                ArchiveAfterDays = Constants.LOG_RETENTION_DAYS,
+                //MessageTemplate = "[{timestamp:yyyy-MM-dd HH:mm:ss.fff}] [{level}] {message}"
+                MessageTemplate = "[{timestamp}] [{level}] {message}",
+                TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff"
+            });
 
-                    // 配置日志选项
-                    var logOptions = Options.Create(new LogOptions
-                    {
-                        MinimumLevel = ToolHelper.LoggingDiagnostics.Abstractions.LogLevel.Information,
-                        LogDirectory = logDirectory,
-                        EnableConsoleOutput = false, // WPF应用不需要控制台输出
-                        SeparateFileByLevel = true,  // 按日志级别分文件
-                        EnableAsyncWrite = true,     // 启用异步写入
-                        BufferSize = 100,            // 缓冲区大小
-                        FlushIntervalMs = 1000,      // 刷新间隔1秒
-                        ArchiveAfterDays = Constants.LOG_RETENTION_DAYS,
-                        MessageTemplate = "[{timestamp:yyyy-MM-dd HH:mm:ss.fff}] [{level}] {message}"
-                    });
+            // 创建 LogHelper 实例
+            _logHelper = new LogHelper(logOptions, Constants.APP_NAME);
 
-                    // 创建 LogHelper 实例
-                    _logHelper = new LogHelper(logOptions, Constants.APP_NAME);
-
-                    // 记录启动日志
-                    _logHelper.Information($"{Constants.APP_DISPLAY_NAME} {Constants.VERSION_FULL} 启动", new Dictionary<string, object>
-                    {
-                        ["Version"] = Constants.VERSION_FULL,
-                        ["StartTime"] = DateTime.Now,
-                        ["OSVersion"] = Environment.OSVersion.ToString(),
-                        ["MachineName"] = Environment.MachineName
-                    });
-                }
-                catch (Exception ex)
-                {
-                    // 如果日志初始化失败，输出到调试窗口
-                    System.Diagnostics.Debug.WriteLine($"日志初始化失败: {ex.Message}");
-                    System.Diagnostics.Debug.WriteLine(ex.StackTrace);
-                }
-            }
-
-            /// <summary>
-            /// 初始化数据库
-            /// </summary>
-            private static void InitializeDatabase()
+            // 记录启动日志
+            _logHelper.Information($"{Constants.APP_DISPLAY_NAME} {Constants.VERSION_FULL} 启动", new Dictionary<string, object>
             {
-                try
-                {
-                    _logHelper?.Information("开始初始化数据库...");
+                ["Version"] = Constants.VERSION_FULL,
+                ["StartTime"] = DateTime.Now,
+                ["OSVersion"] = Environment.OSVersion.ToString(),
+                ["MachineName"] = Environment.MachineName
+            });
+        }
+        catch (Exception ex)
+        {
+            // 如果日志初始化失败，输出到调试窗口
+            System.Diagnostics.Debug.WriteLine($"日志初始化失败: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine(ex.StackTrace);
+        }
+    }
 
-                    var dbInitializer = new DatabaseInitializer(_logHelper);
+    /// <summary>
+    /// 初始化数据库
+    /// </summary>
+    private static void InitializeDatabase()
+    {
+        try
+        {
+            _logHelper?.Information("开始初始化数据库...");
 
-                    // 同步执行数据库初始化（启动时必须完成）
-                    dbInitializer.InitializeAsync().GetAwaiter().GetResult();
+            var dbInitializer = new DatabaseInitializer(_logHelper);
 
-                    _logHelper?.Information("数据库初始化完成");
-                }
-                catch (Exception ex)
-                {
-                    _logHelper?.Error("数据库初始化失败", ex);
-                    System.Diagnostics.Debug.WriteLine($"数据库初始化失败: {ex.Message}");
-                    System.Diagnostics.Debug.WriteLine(ex.StackTrace);
+            // 同步执行数据库初始化（启动时必须完成）
+            dbInitializer.InitializeAsync().GetAwaiter().GetResult();
 
-                    // 数据库初始化失败是致命错误，显示错误并退出
-                    MessageBox.Show(
-                        $"数据库初始化失败：{ex.Message}\n\n应用程序将退出。",
-                        Constants.APP_DISPLAY_NAME,
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
+            _logHelper?.Information("数据库初始化完成");
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("数据库初始化失败", ex);
+            System.Diagnostics.Debug.WriteLine($"数据库初始化失败: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine(ex.StackTrace);
 
-                    Environment.Exit(1);
-                }
-            }
+            // 数据库初始化失败是致命错误，显示错误并退出
+            MessageBox.Show(
+                $"数据库初始化失败：{ex.Message}\n\n应用程序将退出。",
+                Constants.APP_DISPLAY_NAME,
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
 
-            /// <summary>
-                        /// 配置服务
-                        /// </summary>
-                        private static void ConfigureServices(IServiceCollection services)
-                {
-                        // ========== Singleton 服务 ==========
-                        services.AddSingleton<INavigationService, NavigationService>();
-                        services.AddSingleton<ISessionService, SessionService>();
-                        services.AddSingleton<ISettingsService, SettingsService>();
-                        services.AddSingleton<ILocalizationService, LocalizationService>();
-                        services.AddSingleton<IThemeService, ThemeService>();
-                        services.AddSingleton<IAuthenticationService, AuthenticationService>();
-                        services.AddSingleton<IBackupService, BackupService>();
+            Environment.Exit(1);
+        }
+    }
 
-                        // ========== Transient 服务 ==========
-                        services.AddTransient<IPatientService, PatientService>();
-                        services.AddTransient<IMeasurementService, MeasurementService>();
-                        services.AddTransient<IReportService, ReportService>();
-                        services.AddTransient<IUserService, UserService>();
-                        services.AddTransient<IExportImportService, ExportImportService>();
-                        services.AddTransient<IDepartmentService, DepartmentService>();
+    /// <summary>
+    /// 配置服务
+    /// </summary>
+    private static void ConfigureServices(IServiceCollection services)
+    {
+        // ========== Singleton 服务 ==========
+        services.AddSingleton<INavigationService, NavigationService>();
+        services.AddSingleton<ISessionService, SessionService>();
+        services.AddSingleton<ISettingsService, SettingsService>();
+        services.AddSingleton<ILocalizationService, LocalizationService>();
+        services.AddSingleton<IThemeService, ThemeService>();
+        services.AddSingleton<IAuthenticationService, AuthenticationService>();
+        services.AddSingleton<IBackupService, BackupService>();
 
-                                        // ========== ViewModel 注册 ==========
-                                        services.AddTransient<MainWindowViewModel>();
-                                        services.AddTransient<LoginViewModel>();
-                                        services.AddTransient<PatientSelectionViewModel>();
-                                        services.AddTransient<PatientEditViewModel>();
-                                        services.AddTransient<MainContainerViewModel>();
-                                        services.AddTransient<MeasurementViewModel>();
-                                        services.AddTransient<DataManagementViewModel>();
-                                        services.AddTransient<MeasurementDetailViewModel>();
-                                        services.AddTransient<ReportViewModel>();
-                                        services.AddTransient<SettingsViewModel>();
+        // ========== Transient 服务 ==========
+        services.AddTransient<IPatientService, PatientService>();
+        services.AddTransient<IMeasurementService, MeasurementService>();
+        services.AddTransient<IReportService, ReportService>();
+        services.AddTransient<IUserService, UserService>();
+        services.AddTransient<IExportImportService, ExportImportService>();
+        services.AddTransient<IDepartmentService, DepartmentService>();
 
-                                        // ========== View 注册 ==========
-                                        services.AddTransient<MainWindow>();
-                                        services.AddTransient<Views.LoginView>();
-                                        services.AddTransient<Views.PatientSelectionView>();
-                                        services.AddTransient<Views.Dialogs.PatientEditDialog>();
-                                        services.AddTransient<Views.MainContainerView>();
-                                        services.AddTransient<Views.MeasurementView>();
-                                        services.AddTransient<Views.DataManagementView>();
-                                        services.AddTransient<Views.ReportView>();
-                                        services.AddTransient<Views.SettingsView>();
-                                        services.AddTransient<Views.Dialogs.MeasurementDetailDialog>();
-                                        services.AddTransient<Views.Dialogs.ConfirmDialog>();
-                                        services.AddTransient<Views.Dialogs.AboutDialog>();
-                                    }
-            }
+        // ========== ViewModel 注册 ==========
+        services.AddTransient<MainWindowViewModel>();
+        services.AddTransient<LoginViewModel>();
+        services.AddTransient<PatientSelectionViewModel>();
+        services.AddTransient<PatientEditViewModel>();
+        services.AddTransient<MainContainerViewModel>();
+        services.AddTransient<MeasurementViewModel>();
+        services.AddTransient<DataManagementViewModel>();
+        services.AddTransient<MeasurementDetailViewModel>();
+        services.AddTransient<ReportViewModel>();
+        services.AddTransient<SettingsViewModel>();
+
+        // Settings 子 ViewModel
+        services.AddTransient<ViewModels.Settings.GeneralSettingsViewModel>();
+        services.AddTransient<ViewModels.Settings.UserManagementViewModel>();
+        services.AddTransient<ViewModels.Settings.DepartmentManagementViewModel>();
+        services.AddTransient<ViewModels.Settings.UnitSettingsViewModel>();
+        services.AddTransient<ViewModels.Settings.DataManagementSettingsViewModel>();
+        services.AddTransient<ViewModels.Settings.SystemInfoViewModel>();
+
+        // ========== View 注册 ==========
+        services.AddTransient<MainWindow>();
+        services.AddTransient<Views.LoginView>();
+        services.AddTransient<Views.PatientSelectionView>();
+        services.AddTransient<Views.Dialogs.PatientEditDialog>();
+        services.AddTransient<Views.MainContainerView>();
+        services.AddTransient<Views.MeasurementView>();
+        services.AddTransient<Views.DataManagementView>();
+        services.AddTransient<Views.ReportView>();
+        services.AddTransient<Views.SettingsView>();
+        services.AddTransient<Views.Dialogs.MeasurementDetailDialog>();
+        services.AddTransient<Views.Dialogs.ConfirmDialog>();
+        services.AddTransient<Views.Dialogs.AboutDialog>();
+    }
+}
 

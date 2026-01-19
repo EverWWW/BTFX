@@ -93,12 +93,15 @@ public class MainWindowViewModel : ObservableObject
             };
         }
 
-        // 监听语言变化，更新标题
-        _localizationService.LanguageChanged += (s, e) =>
-        {
+            // 监听语言变化，更新标题
+            _localizationService.LanguageChanged += (s, e) =>
+            {
+                Title = _localizationService.GetString("AppName");
+            };
+
+            // 初始化时立即应用当前语言的标题
             Title = _localizationService.GetString("AppName");
-        };
-    }
+        }
 
     /// <summary>
     /// 切换全屏

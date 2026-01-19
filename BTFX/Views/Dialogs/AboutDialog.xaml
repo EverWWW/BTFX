@@ -76,7 +76,7 @@
                 Margin="0,0,0,16"
                 HorizontalAlignment="Center">
                 <TextBlock HorizontalAlignment="Center" FontSize="14">
-                    <Run Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}" Text="版本: " />
+                    <Run Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}" Text="{DynamicResource VersionLabel}" />
                     <Run FontWeight="Medium" Text="{x:Static common:Constants.VERSION_FULL}" />
                 </TextBlock>
                 <TextBlock
@@ -84,7 +84,7 @@
                     HorizontalAlignment="Center"
                     FontSize="12"
                     Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}">
-                    <Run Text="内部版本: " />
+                    <Run Text="{DynamicResource InternalVersionLabel}" />
                     <Run Text="{x:Static common:Constants.VERSION_INTERNAL}" />
                 </TextBlock>
             </StackPanel>
@@ -101,13 +101,13 @@
                     HorizontalAlignment="Center"
                     FontSize="12"
                     Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
-                    Text="Copyright © 2024-2026" />
+                    Text="{x:Static common:Constants.ALLRIGHTSRESERVED}" />
                 <TextBlock
                     Margin="0,4,0,0"
                     HorizontalAlignment="Center"
                     FontSize="12"
                     Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
-                    Text="All Rights Reserved" />
+                    Text="{DynamicResource AllRightsReserved}" />
             </StackPanel>
 
             <!--  关闭按钮  -->
@@ -116,7 +116,7 @@
                 MinWidth="120"
                 HorizontalAlignment="Center"
                 Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
-                Content="关闭"
+                Content="{DynamicResource Close}"
                 Style="{StaticResource MaterialDesignRaisedButton}" />
         </Grid>
     </materialDesign:Card>

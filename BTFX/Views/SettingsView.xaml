@@ -6,7 +6,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:settings="clr-namespace:BTFX.Views.Settings"
+     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:vm="clr-namespace:BTFX.ViewModels"
+    xmlns:vmSettings="clr-namespace:BTFX.ViewModels.Settings"
     d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
     d:DesignHeight="600"
     d:DesignWidth="900"
@@ -14,788 +17,202 @@
 
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <sys:Double x:Key="TabHeaderWidth">100</sys:Double>
+        <sys:Double x:Key="TabHeaderHeight">70</sys:Double>
+
+        <!-- 左侧导航栏宽度（这个才是关键） -->
+        <sys:Double x:Key="SettingsTabPanelWidth">70</sys:Double>
+
+        <!-- 自定义 TabItem 样式 - 控制宽度、居中和选中背景色 -->
+        <Style x:Key="SettingsTabItemStyle" TargetType="TabItem" BasedOn="{StaticResource MaterialDesignNavigationRailTabItem}">
+            <Setter Property="Width" Value="{StaticResource TabHeaderWidth}" />
+            <Setter Property="Height" Value="{StaticResource TabHeaderHeight}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="mainBorder"
+                                Width="{TemplateBinding Width}"
+                                Height="{TemplateBinding Height}"
+                                Background="Transparent"
+                                CornerRadius="4"
+                                Margin="0,2">
+                            <ContentPresenter 
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                ContentSource="Header" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="mainBorder" Property="Background" Value="{DynamicResource MaterialDesign.Brush.Card.Background}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="mainBorder" Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
+                                <Setter TargetName="mainBorder" Property="Opacity" Value="0.1" />
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True" />
+                                    <Condition Property="IsMouseOver" Value="True" />
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="mainBorder" Property="Background" Value="{DynamicResource MaterialDesign.Brush.Card.Background}" />
+                                <Setter TargetName="mainBorder" Property="Opacity" Value="1" />
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 自定义 NavigationRail TabControl 样式 - 控制左侧导航栏宽度 -->
+        <Style x:Key="SettingsTabControlStyle" TargetType="TabControl" BasedOn="{StaticResource MaterialDesignNavigationRailTabControl}">
+            <Setter Property="ItemContainerStyle" Value="{StaticResource SettingsTabItemStyle}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid KeyboardNavigation.TabNavigation="Local">
+                            <Grid.ColumnDefinitions>
+                                <!-- 左侧导航栏宽度在这里控制 -->
+                                <ColumnDefinition Width="100" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <!-- TabPanel（左侧导航按钮所在区域） -->
+                            <Border Grid.Column="0" 
+                                    Background="{DynamicResource MaterialDesign.Brush.Background}">
+                                <TabPanel 
+                                    HorizontalAlignment="Center"
+                                    x:Name="HeaderPanel"
+                                    Panel.ZIndex="1"
+                                    IsItemsHost="True"
+                                    KeyboardNavigation.TabIndex="1" />
+                            </Border>
+                            <!-- 右侧内容区域 -->
+                            <Border 
+                                 Grid.Column="1"
+                                 x:Name="ContentPanel"
+                                 KeyboardNavigation.TabIndex="2"
+                                VerticalAlignment="Top"
+                                 Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
+                                <ContentPresenter 
+                                     x:Name="PART_SelectedContentHost"
+                                     Margin="{TemplateBinding Padding}"
+                                     ContentSource="SelectedContent"
+                                     SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- Tab Header StackPanel 样式 -->
+        <Style x:Key="TabHeaderStackPanelStyle" TargetType="StackPanel">
+            <Setter Property="Width" Value="{StaticResource TabHeaderWidth}" />
+            <Setter Property="Height" Value="{StaticResource TabHeaderHeight}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <!-- Tab Header PackIcon 样式 -->
+        <Style x:Key="TabHeaderIconStyle" TargetType="md:PackIcon">
+            <Setter Property="Margin" Value="0,10,0,0" />
+            <Setter Property="Width" Value="24" />
+            <Setter Property="Height" Value="24" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <!-- Tab Header TextBlock 样式 -->
+        <Style x:Key="TabHeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="Margin" Value="4,4,4,0" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
     </UserControl.Resources>
 
     <Grid Margin="16">
         <md:Card Padding="0">
-            <TabControl
-                SelectedIndex="{Binding SelectedTabIndex}"
-                Style="{StaticResource MaterialDesignNavigationRailTabControl}">
-
+            <TabControl    SelectedIndex="{Binding SelectedTabIndex}" Style="{StaticResource SettingsTabControlStyle}">
                 <!--  通用设置Tab  -->
-                <TabItem Header="通用设置">
-                    <TabItem.HeaderTemplate>
-                        <DataTemplate>
-                            <StackPanel Width="80" Height="60">
-                                <md:PackIcon
-                                    Width="24"
-                                    Height="24"
-                                    HorizontalAlignment="Center"
-                                    Kind="Cog" />
-                                <TextBlock
-                                    Margin="0,4,0,0"
-                                    HorizontalAlignment="Center"
-                                    Text="通用设置" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </TabItem.HeaderTemplate>
-                    <ScrollViewer Padding="24" VerticalScrollBarVisibility="Auto">
-                        <StackPanel MaxWidth="500">
-                            <!--  语言设置  -->
-                            <TextBlock
-                                Margin="0,0,0,16"
-                                FontSize="16"
-                                FontWeight="Medium"
-                                Text="语言设置" />
-                            <ComboBox
-                                Width="200"
-                                HorizontalAlignment="Left"
-                                md:HintAssist.Hint="选择语言"
-                                DisplayMemberPath="Display"
-                                ItemsSource="{Binding LanguageOptions}"
-                                SelectedItem="{Binding SelectedLanguage}"
-                                Style="{StaticResource MaterialDesignOutlinedComboBox}" />
-
-                            <!--  主题设置  -->
-                            <TextBlock
-                                Margin="0,32,0,16"
-                                FontSize="16"
-                                FontWeight="Medium"
-                                Text="主题设置" />
-                            <StackPanel Orientation="Horizontal">
-                                <ItemsControl ItemsSource="{Binding ThemeOptions}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Horizontal" />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <RadioButton
-                                                Margin="0,0,16,0"
-                                                GroupName="ThemeGroup"
-                                                IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                                Style="{StaticResource MaterialDesignChoiceChipOutlineRadioButton}">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <md:PackIcon
-                                                        Margin="0,0,8,0"
-                                                        VerticalAlignment="Center"
-                                                        Kind="{Binding IconKind}" />
-                                                    <TextBlock VerticalAlignment="Center" Text="{Binding Display}" />
-                                                                                </StackPanel>
-                                                                            </RadioButton>
-                                                                        </DataTemplate>
-                                                                    </ItemsControl.ItemTemplate>
-                                                                </ItemsControl>
-                                                            </StackPanel>
-
-                                                            <!--  保存按钮  -->
-                                                            <Button
-                                                                Margin="0,32,0,0"
-                                                                HorizontalAlignment="Left"
-                                                                Command="{Binding SaveGeneralSettingsCommand}"
-                                                                Content="保存设置"
-                                                                Style="{StaticResource MaterialDesignRaisedButton}" />
-
-                                                            <!--  设置导入导出  -->
-                                                            <TextBlock
-                                                                Margin="0,32,0,16"
-                                                                FontSize="16"
-                                                                FontWeight="Medium"
-                                                                Text="设置导入导出" />
-                                                            <StackPanel Orientation="Horizontal">
-                                                                <Button
-                                                                    Margin="0,0,8,0"
-                                                                    Command="{Binding ExportSettingsCommand}"
-                                                                    Content="导出设置"
-                                                                    IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
-                                                                    Style="{StaticResource MaterialDesignOutlinedButton}" />
-                                                                <Button
-                                                                    Command="{Binding ImportSettingsCommand}"
-                                                                    Content="导入设置"
-                                                                    IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
-                                                                    Style="{StaticResource MaterialDesignOutlinedButton}" />
-                                                            </StackPanel>
-                                                            <TextBlock
-                                                                Margin="0,8,0,0"
-                                                                FontSize="12"
-                                                                Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                                                Text="导出设置将保存通用设置和单位设置（不含用户数据）" />
-                                                        </StackPanel>
-                                                    </ScrollViewer>
-                                                </TabItem>
-
-                                                <!--  设备配置Tab  -->
-                                                <TabItem Visibility="{Binding ShowDeviceConfigTab, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                                    <TabItem.Header>
-                                                        <StackPanel Width="80" Height="60">
-                                                            <md:PackIcon
-                                                                Width="24"
-                                                                Height="24"
-                                                                HorizontalAlignment="Center"
-                                Kind="Video" />
-                            <TextBlock
-                                Margin="0,4,0,0"
-                                HorizontalAlignment="Center"
-                                Text="设备配置" />
+                <TabItem>
+                    <TabItem.Header >
+                        <StackPanel  Style="{StaticResource TabHeaderStackPanelStyle}">
+                            <md:PackIcon Kind="Cog" Style="{StaticResource TabHeaderIconStyle}" />
+                            <TextBlock Text="{DynamicResource GeneralSettingsTab}" Style="{StaticResource TabHeaderTextStyle}" />
                         </StackPanel>
                     </TabItem.Header>
-                    <Grid Margin="24">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <md:PackIcon
-                                Width="48"
-                                Height="48"
-                                HorizontalAlignment="Center"
-                                Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                Kind="Video" />
-                            <TextBlock
-                                Margin="0,16,0,0"
-                                HorizontalAlignment="Center"
-                                FontSize="16"
-                                Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                Text="设备配置功能开发中..." />
+                    <settings:GeneralSettingsView DataContext="{Binding GeneralSettingsViewModel}" />
+                </TabItem>
+
+                <!--  设备配置Tab  -->
+                <TabItem Visibility="{Binding ShowDeviceConfigTab, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TabItem.Header>
+                        <StackPanel Style="{StaticResource TabHeaderStackPanelStyle}">
+                            <md:PackIcon Kind="Video" Style="{StaticResource TabHeaderIconStyle}" />
+                            <TextBlock Text="{DynamicResource DeviceConfigTab}" Style="{StaticResource TabHeaderTextStyle}" />
                         </StackPanel>
-                    </Grid>
+                    </TabItem.Header>
+                    <settings:DeviceConfigView DataContext="{Binding}" />
                 </TabItem>
 
                 <!--  用户管理Tab  -->
                 <TabItem Visibility="{Binding ShowUserManagementTab, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TabItem.Header>
-                        <StackPanel Width="80" Height="60">
-                            <md:PackIcon
-                                Width="24"
-                                Height="24"
-                                HorizontalAlignment="Center"
-                                Kind="AccountMultiple" />
-                            <TextBlock
-                                Margin="0,4,0,0"
-                                HorizontalAlignment="Center"
-                                Text="用户管理" />
+                        <StackPanel Style="{StaticResource TabHeaderStackPanelStyle}">
+                            <md:PackIcon Style="{StaticResource TabHeaderIconStyle}" Kind="AccountMultiple" />
+                            <TextBlock Text="{DynamicResource UserManagement}"  Style="{StaticResource TabHeaderTextStyle }"/>
                         </StackPanel>
                     </TabItem.Header>
-                    <Grid Margin="24">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-
-                        <!--  工具栏  -->
-                        <StackPanel
-                            Grid.Row="0"
-                            Margin="0,0,0,16"
-                            Orientation="Horizontal">
-                            <Button
-                                Margin="0,0,8,0"
-                                Command="{Binding AddUserCommand}"
-                                Content="添加用户"
-                                Style="{StaticResource MaterialDesignRaisedButton}" />
-                            <Button
-                                Command="{Binding LoadUsersCommand}"
-                                Content="刷新"
-                                Style="{StaticResource MaterialDesignOutlinedButton}" />
-                        </StackPanel>
-
-                        <!--  用户列表  -->
-                        <DataGrid
-                            Grid.Row="1"
-                            AutoGenerateColumns="False"
-                            CanUserAddRows="False"
-                            CanUserDeleteRows="False"
-                            HeadersVisibility="Column"
-                            IsReadOnly="True"
-                            ItemsSource="{Binding Users}"
-                            RowHeight="44"
-                            SelectedItem="{Binding SelectedUser}"
-                            SelectionMode="Single"
-                            Style="{StaticResource MaterialDesignDataGrid}">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn
-                                    Width="50"
-                                    Binding="{Binding RowNumber}"
-                                    Header="序号" />
-                                <DataGridTextColumn
-                                    Width="100"
-                                    Binding="{Binding Username}"
-                                    Header="账号" />
-                                <DataGridTextColumn
-                                    Width="100"
-                                    Binding="{Binding Name}"
-                                    Header="姓名" />
-                                <DataGridTextColumn
-                                    Width="80"
-                                    Binding="{Binding RoleDisplay}"
-                                    Header="角色" />
-                                <DataGridTextColumn
-                                    Width="100"
-                                    Binding="{Binding DepartmentName}"
-                                    Header="科室" />
-                                <DataGridTemplateColumn Width="70" Header="状态">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Border
-                                                Padding="8,4"
-                                                HorizontalAlignment="Center"
-                                                Background="{Binding StatusColor}"
-                                                CornerRadius="4">
-                                                <TextBlock
-                                                    FontSize="12"
-                                                    Foreground="White"
-                                                    Text="{Binding StatusDisplay}" />
-                                            </Border>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTextColumn
-                                    Width="130"
-                                    Binding="{Binding LastLoginDisplay}"
-                                    Header="最后登录" />
-                                <DataGridTemplateColumn Width="*" Header="操作">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                                                <Button
-                                                    Command="{Binding DataContext.EditUserCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    Content="编辑"
-                                                    Style="{StaticResource MaterialDesignFlatButton}" />
-                                                <Button
-                                                    Command="{Binding DataContext.ResetPasswordCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    Content="重置密码"
-                                                    Style="{StaticResource MaterialDesignFlatButton}" />
-                                                <Button
-                                                    Command="{Binding DataContext.ToggleUserStatusCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    Content="{Binding StatusDisplay, StringFormat='{}{0}用户'}"
-                                                    Style="{StaticResource MaterialDesignFlatButton}" />
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </Grid>
+                    <settings:UserManagementView DataContext="{Binding UserManagementViewModel}" />
                 </TabItem>
 
                 <!--  科室管理Tab  -->
                 <TabItem Visibility="{Binding ShowDepartmentTab, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TabItem.Header>
-                        <StackPanel Width="80" Height="60">
-                            <md:PackIcon
-                                Width="24"
-                                Height="24"
-                                HorizontalAlignment="Center"
-                                Kind="Domain" />
-                            <TextBlock
-                                Margin="0,4,0,0"
-                                HorizontalAlignment="Center"
-                                Text="科室管理" />
+                        <StackPanel Style="{StaticResource TabHeaderStackPanelStyle}">
+                            <md:PackIcon Style="{StaticResource TabHeaderIconStyle}" Kind="Domain" />
+                            <TextBlock Text="{DynamicResource DepartmentManagement}" Style="{StaticResource TabHeaderTextStyle}" />
                         </StackPanel>
                     </TabItem.Header>
-                    <Grid Margin="24">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-
-                        <!--  工具栏  -->
-                        <StackPanel
-                            Grid.Row="0"
-                            Margin="0,0,0,16"
-                            Orientation="Horizontal">
-                            <Button
-                                Margin="0,0,8,0"
-                                Command="{Binding AddDepartmentCommand}"
-                                Content="添加科室"
-                                Style="{StaticResource MaterialDesignRaisedButton}" />
-                            <Button
-                                Command="{Binding LoadDepartmentsCommand}"
-                                Content="刷新"
-                                Style="{StaticResource MaterialDesignOutlinedButton}" />
-                        </StackPanel>
-
-                        <!--  科室列表  -->
-                        <DataGrid
-                            Grid.Row="1"
-                            AutoGenerateColumns="False"
-                            CanUserAddRows="False"
-                            CanUserDeleteRows="False"
-                            HeadersVisibility="Column"
-                            IsReadOnly="True"
-                            ItemsSource="{Binding Departments}"
-                            RowHeight="44"
-                            SelectedItem="{Binding SelectedDepartment}"
-                            SelectionMode="Single"
-                            Style="{StaticResource MaterialDesignDataGrid}">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn
-                                    Width="50"
-                                    Binding="{Binding RowNumber}"
-                                    Header="序号" />
-                                <DataGridTextColumn
-                                    Width="150"
-                                    Binding="{Binding Name}"
-                                    Header="科室名称" />
-                                <DataGridTextColumn
-                                    Width="*"
-                                    Binding="{Binding Description}"
-                                    Header="描述" />
-                                <DataGridTextColumn
-                                    Width="150"
-                                    Binding="{Binding CreatedAtDisplay}"
-                                    Header="创建时间" />
-                                <DataGridTemplateColumn Width="150" Header="操作">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                                                <Button
-                                                    Command="{Binding DataContext.EditDepartmentCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    Content="编辑"
-                                                    Style="{StaticResource MaterialDesignFlatButton}" />
-                                                <Button
-                                                    Command="{Binding DataContext.DeleteDepartmentCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    Content="删除"
-                                                    Foreground="{DynamicResource MaterialDesign.Brush.ValidationError}"
-                                                    Style="{StaticResource MaterialDesignFlatButton}" />
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </Grid>
+                    <settings:DepartmentManagementView DataContext="{Binding DepartmentManagementViewModel}" />
                 </TabItem>
 
                 <!--  单位设置Tab  -->
-                <TabItem Visibility="{Binding ShowUnitSettingsTab, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TabItem  Visibility="{Binding ShowUnitSettingsTab, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TabItem.Header>
-                        <StackPanel Width="80" Height="60">
-                            <md:PackIcon
-                                Width="24"
-                                Height="24"
-                                HorizontalAlignment="Center"
-                                Kind="OfficeBuildingMarker" />
-                            <TextBlock
-                                Margin="0,4,0,0"
-                                HorizontalAlignment="Center"
-                                Text="单位设置" />
+                        <StackPanel Style="{StaticResource TabHeaderStackPanelStyle}">
+                            <md:PackIcon Style="{StaticResource TabHeaderIconStyle}" Kind="OfficeBuildingMarker" />
+                            <TextBlock Text="{DynamicResource UnitSettings}" Style="{StaticResource TabHeaderTextStyle}" />
                         </StackPanel>
                     </TabItem.Header>
-                    <ScrollViewer Padding="24" VerticalScrollBarVisibility="Auto">
-                        <StackPanel MaxWidth="500">
-                            <!--  单位名称  -->
-                            <TextBlock
-                                Margin="0,0,0,8"
-                                FontSize="16"
-                                FontWeight="Medium"
-                                Text="单位名称" />
-                            <TextBox
-                                MaxLength="{x:Static common:Constants.UNIT_NAME_MAX_LENGTH}"
-                                md:HintAssist.Hint="请输入单位名称"
-                                Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                Text="{Binding UnitName, UpdateSourceTrigger=PropertyChanged}"
-                                xmlns:common="clr-namespace:BTFX.Common" />
-
-                            <!--  Logo设置  -->
-                            <TextBlock
-                                Margin="0,24,0,8"
-                                FontSize="16"
-                                FontWeight="Medium"
-                                Text="单位Logo" />
-                            <StackPanel Orientation="Horizontal">
-                                <Border
-                                    Width="100"
-                                    Height="100"
-                                    Background="{DynamicResource MaterialDesign.Brush.Card.Background}"
-                                    BorderBrush="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"
-                                    BorderThickness="1"
-                                    CornerRadius="4">
-                                    <Grid>
-                                        <Image
-                                            Source="{Binding LogoPath}"
-                                            Stretch="Uniform"
-                                            Visibility="{Binding HasLogo, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                        <TextBlock
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                            Text="无Logo">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Visibility" Value="Collapsed" />
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding HasLogo}" Value="False">
-                                                            <Setter Property="Visibility" Value="Visible" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-                                    </Grid>
-                                </Border>
-                                <StackPanel Margin="16,0,0,0" VerticalAlignment="Center">
-                                    <Button
-                                        Margin="0,0,0,8"
-                                        Command="{Binding SelectLogoCommand}"
-                                        Content="选择图片"
-                                        Style="{StaticResource MaterialDesignOutlinedButton}" />
-                                    <Button
-                                        Command="{Binding ClearLogoCommand}"
-                                        Content="清除Logo"
-                                        Style="{StaticResource MaterialDesignFlatButton}"
-                                        Visibility="{Binding HasLogo, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                    <TextBlock
-                                        Margin="0,8,0,0"
-                                        FontSize="12"
-                                        Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                        Text="支持 PNG/JPG 格式，最大 300KB" />
-                                </StackPanel>
-                            </StackPanel>
-
-                            <!--  保存按钮  -->
-                            <Button
-                                Margin="0,32,0,0"
-                                HorizontalAlignment="Left"
-                                Command="{Binding SaveUnitSettingsCommand}"
-                                Content="保存设置"
-                                Style="{StaticResource MaterialDesignRaisedButton}" />
-                        </StackPanel>
-                    </ScrollViewer>
+                    <settings:UnitSettingsView DataContext="{Binding UnitSettingsViewModel}" />
                 </TabItem>
 
                 <!--  数据管理Tab  -->
                 <TabItem Visibility="{Binding ShowDataManagementTab, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TabItem.Header>
-                        <StackPanel Width="80" Height="60">
-                            <md:PackIcon
-                                Width="24"
-                                Height="24"
-                                HorizontalAlignment="Center"
-                                Kind="DatabaseCog" />
-                            <TextBlock
-                                Margin="0,4,0,0"
-                                HorizontalAlignment="Center"
-                                Text="数据管理" />
+                        <StackPanel Style="{StaticResource TabHeaderStackPanelStyle}">
+                            <md:PackIcon Style="{StaticResource TabHeaderIconStyle}" Kind="DatabaseCog" />
+                            <TextBlock Text="{DynamicResource DataManagementTab}" Style="{StaticResource TabHeaderTextStyle}" />
                         </StackPanel>
                     </TabItem.Header>
-                    <ScrollViewer Padding="24" VerticalScrollBarVisibility="Auto">
-                        <StackPanel MaxWidth="600">
-                            <!--  自动备份设置  -->
-                            <TextBlock
-                                Margin="0,0,0,16"
-                                FontSize="16"
-                                FontWeight="Medium"
-                                Text="自动备份" />
-                            <StackPanel Orientation="Horizontal">
-                                <ToggleButton IsChecked="{Binding AutoBackupEnabled}" Style="{StaticResource MaterialDesignSwitchToggleButton}" />
-                                <TextBlock
-                                    Margin="8,0,0,0"
-                                    VerticalAlignment="Center"
-                                    Text="启用自动备份" />
-                            </StackPanel>
-
-                            <StackPanel
-                                Margin="0,16,0,0"
-                                Orientation="Horizontal"
-                                Visibility="{Binding AutoBackupEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <StackPanel Margin="0,0,24,0">
-                                    <TextBlock Margin="0,0,0,8" Text="备份时间" />
-                                    <TextBox
-                                        Width="100"
-                                        md:HintAssist.Hint="HH:mm"
-                                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                        Text="{Binding BackupTime}" />
-                                </StackPanel>
-                                <StackPanel>
-                                    <TextBlock Margin="0,0,0,8" Text="保留数量" />
-                                    <TextBox
-                                        Width="80"
-                                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                        Text="{Binding BackupRetainCount}" />
-                                </StackPanel>
-                            </StackPanel>
-
-                            <Button
-                                Margin="0,16,0,0"
-                                HorizontalAlignment="Left"
-                                Command="{Binding SaveBackupSettingsCommand}"
-                                Content="保存备份设置"
-                                Style="{StaticResource MaterialDesignOutlinedButton}" />
-
-                            <!--  手动备份  -->
-                            <TextBlock
-                                Margin="0,32,0,16"
-                                FontSize="16"
-                                FontWeight="Medium"
-                                Text="手动备份" />
-                            <Button
-                                HorizontalAlignment="Left"
-                                Command="{Binding BackupNowCommand}"
-                                Content="立即备份"
-                                IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
-                                Style="{StaticResource MaterialDesignRaisedButton}" />
-
-                            <!--  备份历史  -->
-                            <TextBlock
-                                Margin="0,32,0,16"
-                                FontSize="16"
-                                FontWeight="Medium"
-                                Text="备份历史" />
-                            <DataGrid
-                                MaxHeight="200"
-                                AutoGenerateColumns="False"
-                                CanUserAddRows="False"
-                                CanUserDeleteRows="False"
-                                HeadersVisibility="Column"
-                                IsReadOnly="True"
-                                ItemsSource="{Binding BackupHistory}"
-                                RowHeight="36"
-                                Style="{StaticResource MaterialDesignDataGrid}">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn
-                                        Width="200"
-                                        Binding="{Binding FileName}"
-                                        Header="文件名" />
-                                    <DataGridTextColumn
-                                        Width="150"
-                                        Binding="{Binding CreatedAtDisplay}"
-                                        Header="创建时间" />
-                                    <DataGridTextColumn
-                                        Width="100"
-                                        Binding="{Binding FileSizeDisplay}"
-                                        Header="大小" />
-                                    <DataGridTemplateColumn Width="*" Header="操作">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Button
-                                                    Command="{Binding DataContext.RestoreBackupCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    Content="恢复"
-                                                    Style="{StaticResource MaterialDesignFlatButton}" />
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                            <Button
-                                Margin="0,8,0,0"
-                                HorizontalAlignment="Left"
-                                Command="{Binding LoadBackupHistoryCommand}"
-                                Content="刷新列表"
-                                Style="{StaticResource MaterialDesignFlatButton}" />
-                        </StackPanel>
-                    </ScrollViewer>
+                    <settings:DataManagementSettingsView DataContext="{Binding DataManagementSettingsViewModel}" />
                 </TabItem>
 
-                                <!--  系统信息Tab  -->
-                                <TabItem>
-                                    <TabItem.Header>
-                                        <StackPanel Width="80" Height="60">
-                                            <md:PackIcon
-                                                Width="24"
-                                                Height="24"
-                                                HorizontalAlignment="Center"
-                                                Kind="InformationOutline" />
-                                            <TextBlock
-                                                Margin="0,4,0,0"
-                                                HorizontalAlignment="Center"
-                                                Text="系统信息" />
-                                        </StackPanel>
-                                    </TabItem.Header>
-                                    <ScrollViewer Padding="24" VerticalScrollBarVisibility="Auto">
-                                        <StackPanel MaxWidth="600">
-                                            <!--  应用信息  -->
-                                            <TextBlock
-                                                Margin="0,0,0,16"
-                                                FontSize="16"
-                                                FontWeight="Medium"
-                                                Text="应用信息" />
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="120" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                </Grid.RowDefinitions>
-
-                                                <TextBlock
-                                                    Grid.Row="0"
-                                                    Grid.Column="0"
-                                                    Margin="0,0,0,8"
-                                                    Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                                    Text="应用名称：" />
-                                                <TextBlock
-                                                    Grid.Row="0"
-                                                    Grid.Column="1"
-                                                    Margin="0,0,0,8"
-                                                    Text="{Binding AppName}" />
-
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="0"
-                                                    Margin="0,0,0,8"
-                                                    Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                                    Text="版本号：" />
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="1"
-                                                    Margin="0,0,0,8"
-                                                    Text="{Binding AppVersion}" />
-
-                                                <TextBlock
-                                                    Grid.Row="2"
-                                                    Grid.Column="0"
-                                                    Margin="0,0,0,8"
-                                                    Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                                    Text="当前用户：" />
-                                                <TextBlock
-                                                    Grid.Row="2"
-                                                    Grid.Column="1"
-                                                    Margin="0,0,0,8"
-                                                    Text="{Binding CurrentUsername}" />
-
-                                                <TextBlock
-                                                    Grid.Row="3"
-                                                    Grid.Column="0"
-                                                    Margin="0,0,0,8"
-                                                    Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                                    Text="用户角色：" />
-                                                <TextBlock
-                                                    Grid.Row="3"
-                                                    Grid.Column="1"
-                                                    Margin="0,0,0,8"
-                                                    Text="{Binding CurrentUserRole}" />
-                                            </Grid>
-
-                                            <!--  数据信息  -->
-                                            <TextBlock
-                                                Margin="0,24,0,16"
-                                                FontSize="16"
-                                                FontWeight="Medium"
-                                                Text="数据信息" />
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="120" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="Auto" />
-                                                </Grid.RowDefinitions>
-
-                                                <TextBlock
-                                                    Grid.Row="0"
-                                                    Grid.Column="0"
-                                                    Margin="0,0,0,8"
-                                                    Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                                    Text="数据库大小：" />
-                                                <TextBlock
-                                                    Grid.Row="0"
-                                                    Grid.Column="1"
-                                                    Margin="0,0,0,8"
-                                                    Text="{Binding DatabaseSize}" />
-
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="0"
-                                                    Margin="0,0,0,8"
-                                                    Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                                    Text="日志目录：" />
-                                                <StackPanel
-                                                    Grid.Row="1"
-                                                    Grid.Column="1"
-                                                    Orientation="Horizontal">
-                                                    <TextBlock
-                                                        MaxWidth="250"
-                                                        Margin="0,0,8,0"
-                                                        Text="{Binding LogDirectory}"
-                                                        TextTrimming="CharacterEllipsis"
-                                                        ToolTip="{Binding LogDirectory}" />
-                                                    <Button
-                                                        Padding="4"
-                                                        Command="{Binding OpenLogDirectoryCommand}"
-                                                        Content="打开"
-                                                        Style="{StaticResource MaterialDesignFlatButton}" />
-                                                </StackPanel>
-                                            </Grid>
-
-                                            <!--  日志管理  -->
-                                            <TextBlock
-                                                Margin="0,24,0,16"
-                                                FontSize="16"
-                                                FontWeight="Medium"
-                                                Text="日志管理" />
-
-                                            <!--  日志统计  -->
-                                            <Border
-                                                Padding="12"
-                                                Background="{DynamicResource MaterialDesign.Brush.Card.Background}"
-                                                BorderBrush="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"
-                                                BorderThickness="1"
-                                                CornerRadius="4">
-                                                <StackPanel>
-                                                    <TextBlock
-                                                        Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                                        Text="{Binding LogStatistics}"
-                                                        TextWrapping="Wrap" />
-                                                    <Button
-                                                        Margin="0,8,0,0"
-                                                        Padding="8,4"
-                                                        HorizontalAlignment="Left"
-                                                        Command="{Binding LoadLogStatisticsCommand}"
-                                                        Content="刷新统计"
-                                                        Style="{StaticResource MaterialDesignFlatButton}" />
-                                                </StackPanel>
-                                            </Border>
-
-                                            <!--  日志操作  -->
-                                            <StackPanel Margin="0,16,0,0" Orientation="Horizontal">
-                                                <Button
-                                                    Margin="0,0,8,0"
-                                                    Command="{Binding ExportLogsCommand}"
-                                                    Content="导出日志"
-                                                    IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
-                                                    Style="{StaticResource MaterialDesignOutlinedButton}" />
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock
-                                                        Margin="16,0,8,0"
-                                                        VerticalAlignment="Center"
-                                                        Text="清理" />
-                                                    <TextBox
-                                                        Width="50"
-                                                        VerticalAlignment="Center"
-                                                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                                        Text="{Binding LogCleanupDays}" />
-                                                    <TextBlock
-                                                        Margin="8,0,8,0"
-                                                        VerticalAlignment="Center"
-                                                        Text="天前的日志" />
-                                                    <Button
-                                                        Command="{Binding CleanupLogsCommand}"
-                                                        Content="清理"
-                                                        Foreground="{DynamicResource MaterialDesign.Brush.ValidationError}"
-                                                        IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
-                                                        Style="{StaticResource MaterialDesignFlatButton}" />
-                                                </StackPanel>
-                                            </StackPanel>
-
-                                            <!--  关于按钮  -->
-                                            <Button
-                                                Margin="0,32,0,0"
-                                                HorizontalAlignment="Left"
-                                                Command="{Binding ShowAboutCommand}"
-                                                Content="关于我们"
-                                                Style="{StaticResource MaterialDesignOutlinedButton}" />
-                                        </StackPanel>
-                                    </ScrollViewer>
-                                </TabItem>
-                            </TabControl>
-                        </md:Card>
-                    </Grid>
-                </UserControl>
+                <!--  系统信息Tab  -->
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Style="{StaticResource TabHeaderStackPanelStyle}">
+                            <md:PackIcon Style="{StaticResource TabHeaderIconStyle}" Kind="InformationOutline" />
+                            <TextBlock Text="{DynamicResource SystemInfoTab}" Style="{StaticResource TabHeaderTextStyle}" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <settings:SystemInfoView DataContext="{Binding SystemInfoViewModel}" />
+                </TabItem>
+            </TabControl>
+        </md:Card>
+    </Grid>
+</UserControl>

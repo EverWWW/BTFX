@@ -58,7 +58,31 @@ public class LocalizationService : ILocalizationService
             Application.Current.Resources.MergedDictionaries.Add(newDict);
 
             CurrentLanguage = language;
+
+            // 触发事件通知UI更新
             LanguageChanged?.Invoke(this, language);
+
+            // 强制刷新所有打开的窗口
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                foreach (Window window in Application.Current.Windows)
+                {
+                    try
+                    {
+                        // 触发资源更新
+                        window.UpdateLayout();
+
+                        // 刷新DataContext以触发绑定更新
+                        var dc = window.DataContext;
+                        window.DataContext = null;
+                        window.DataContext = dc;
+                    }
+                    catch
+                    {
+                        // 忽略单个窗口刷新失败
+                    }
+                }
+            });
         }
         catch (Exception ex)
         {

@@ -26,7 +26,7 @@
                 CornerRadius="8" 
                 Margin="0,0,16,0">
             <Grid>
-                 <TextBlock Text="视频预览区域 (Placeholder)" 
+                 <TextBlock Text="{DynamicResource VideoPreviewPlaceholder}" 
                             Foreground="White" 
                             HorizontalAlignment="Center" 
                             VerticalAlignment="Center"
@@ -50,18 +50,21 @@
         <!-- Controls Area -->
         <materialDesign:Card Grid.Column="1" Padding="16" UniformCornerRadius="8">
             <StackPanel>
-                <TextBlock Text="测量控制" Style="{StaticResource MaterialDesignHeadline5TextBlock}" Margin="0,0,0,16"/>
+                <TextBlock Text="{DynamicResource MeasurementControl}" Style="{StaticResource MaterialDesignHeadline5TextBlock}" Margin="0,0,0,16"/>
 
                 <!-- Device Selection -->
                 <ComboBox ItemsSource="{Binding Devices}"
                           SelectedItem="{Binding SelectedDevice}"
-                          materialDesign:HintAssist.Hint="选择设备"
+                          materialDesign:HintAssist.Hint="{DynamicResource SelectDevice}"
                           Style="{StaticResource MaterialDesignOutlinedComboBox}"
                           Margin="0,0,0,16" />
 
                 <!-- Connection Status -->
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                    <TextBlock Text="状态: " FontWeight="Bold"/>
+                    <TextBlock FontWeight="Bold">
+                        <Run Text="{DynamicResource Status}"/>
+                        <Run Text=": "/>
+                    </TextBlock>
                     <TextBlock Text="{Binding ConnectionStatus}" Margin="8,0,0,0"/>
                 </StackPanel>
 
@@ -71,26 +74,26 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="0" Content="连接" Command="{Binding ConnectCommand}" Margin="0,0,4,0"/>
-                                        <Button Grid.Column="1" Content="断开" Command="{Binding DisconnectCommand}" Margin="4,0,0,0" Style="{StaticResource MaterialDesignOutlinedButton}"/>
+                    <Button Grid.Column="0" Content="{DynamicResource Connect}" Command="{Binding ConnectCommand}" Margin="0,0,4,0"/>
+                                        <Button Grid.Column="1" Content="{DynamicResource Disconnect}" Command="{Binding DisconnectCommand}" Margin="4,0,0,0" Style="{StaticResource MaterialDesignOutlinedButton}"/>
                                     </Grid>
 
                                     <Separator Margin="0,0,0,16"/>
 
                                     <!-- Recording Buttons -->
-                                    <Button Content="开始录制" 
+                                    <Button Content="{DynamicResource StartRecording}" 
                                             Command="{Binding StartRecordingCommand}" 
                                             Style="{StaticResource MaterialDesignRaisedButton}"
                                             Margin="0,0,0,8"/>
 
-                                    <Button Content="停止录制" 
+                                    <Button Content="{DynamicResource StopRecording}" 
                                             Command="{Binding StopRecordingCommand}" 
                                             Style="{StaticResource MaterialDesignOutlinedButton}"/>
 
                                     <Separator Margin="0,16,0,16"/>
 
                                     <!-- Real-time Data Placeholder -->
-                                    <TextBlock Text="实时数据" Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Margin="0,0,0,12"/>
+                                    <TextBlock Text="{DynamicResource RealTimeData}" Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Margin="0,0,0,12"/>
                                     <Grid>
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
@@ -101,10 +104,10 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="步频 (steps/min)" VerticalAlignment="Center" FontSize="14"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="{DynamicResource Cadence}" VerticalAlignment="Center" FontSize="14"/>
                                         <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Cadence, StringFormat=F0}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
 
-                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="速度 (m/s)" VerticalAlignment="Center" Margin="0,12,0,0" FontSize="14"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="{DynamicResource Speed}" VerticalAlignment="Center" Margin="0,12,0,0" FontSize="14"/>
                                         <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Speed, StringFormat=F2}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0,12,0,0"/>
                                     </Grid>
 

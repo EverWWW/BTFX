@@ -2,11 +2,131 @@
     x:Class="BTFX.Views.Settings.DataManagementSettingsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:BTFX.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:BTFX.Views.Settings"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
+    xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:vm="clr-namespace:BTFX.ViewModels"
+    d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
+    d:DesignHeight="600"
+    d:DesignWidth="700"
     mc:Ignorable="d">
-    <Grid />
+
+    <UserControl.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+    </UserControl.Resources>
+
+    <ScrollViewer Padding="24" VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="600">
+            <!--  自动备份设置  -->
+            <TextBlock
+                Margin="0,0,0,16"
+                FontSize="16"
+                FontWeight="Medium"
+                Text="{DynamicResource AutoBackupSettings}" />
+            <StackPanel Orientation="Horizontal">
+                <ToggleButton IsChecked="{Binding AutoBackupEnabled}" Style="{StaticResource MaterialDesignSwitchToggleButton}" />
+                <TextBlock
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    Text="{DynamicResource EnableAutoBackup}" />
+            </StackPanel>
+
+            <StackPanel
+                Margin="0,16,0,0"
+                Orientation="Horizontal"
+                Visibility="{Binding AutoBackupEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel Margin="0,0,24,0">
+                    <TextBlock Margin="0,0,0,8" Text="{DynamicResource BackupTime}" />
+                    <TextBox
+                        Width="100"
+                        md:HintAssist.Hint="HH:mm"
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                        Text="{Binding BackupTime}" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Margin="0,0,0,8" Text="{DynamicResource RetainCount}" />
+                    <TextBox
+                        Width="80"
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                        Text="{Binding BackupRetainCount}" />
+                </StackPanel>
+            </StackPanel>
+
+            <Button
+                Margin="0,16,0,0"
+                HorizontalAlignment="Left"
+                Command="{Binding SaveBackupSettingsCommand}"
+                Content="{DynamicResource SaveBackupSettings}"
+                Style="{StaticResource MaterialDesignOutlinedButton}" />
+
+            <!--  手动备份  -->
+            <TextBlock
+                Margin="0,32,0,16"
+                FontSize="16"
+                FontWeight="Medium"
+                Text="{DynamicResource ManualBackup}" />
+            <Button
+                HorizontalAlignment="Left"
+                Command="{Binding BackupNowCommand}"
+                Content="{DynamicResource BackupNow}"
+                IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
+                Style="{StaticResource MaterialDesignRaisedButton}" />
+
+            <!--  备份历史  -->
+            <TextBlock
+                Margin="0,32,0,16"
+                FontSize="16"
+                FontWeight="Medium"
+                Text="{DynamicResource BackupHistory}" />
+            <DataGrid
+                MaxHeight="200"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                CanUserDeleteRows="False"
+                HeadersVisibility="Column"
+                IsReadOnly="True"
+                ItemsSource="{Binding BackupHistory}"
+                RowHeight="36"
+                Style="{StaticResource MaterialDesignDataGrid}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn
+                        Width="200"
+                        Binding="{Binding FileName}"
+                        ElementStyle="{StaticResource CenteredTextColumnStyle}"
+                        Header="{DynamicResource FileName}" />
+                    <DataGridTextColumn
+                        Width="150"
+                        Binding="{Binding CreatedAtDisplay}"
+                        ElementStyle="{StaticResource CenteredTextColumnStyle}"
+                        Header="{DynamicResource CreatedAt}" />
+                    <DataGridTextColumn
+                        Width="100"
+                        Binding="{Binding FileSizeDisplay}"
+                        ElementStyle="{StaticResource CenteredTextColumnStyle}"
+                        Header="{DynamicResource Size}" />
+                    <DataGridTemplateColumn Width="*" Header="{DynamicResource Operations}">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button
+                                    VerticalAlignment="Center"
+                                    Command="{Binding DataContext.RestoreBackupCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                    CommandParameter="{Binding}"
+                                    Content="{DynamicResource Restore}"
+                                    Style="{StaticResource MaterialDesignFlatButton}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+            <Button
+                Margin="0,8,0,0"
+                HorizontalAlignment="Left"
+                Command="{Binding LoadBackupHistoryCommand}"
+                Content="{DynamicResource RefreshList}"
+                Style="{StaticResource MaterialDesignFlatButton}" />
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

@@ -29,6 +29,9 @@
 
             </ResourceDictionary.MergedDictionaries>
 
+            <!-- Override framework default background so DynamicResource MaterialDesign.Brush.Background 使用公司颜色 -->
+            <SolidColorBrush x:Key="MaterialDesign.Brush.Primary" Color="#FF009EDB" />
+
             <!--  Converters  -->
             <converters:NullableToVisibilityConverter x:Key="NullableToVisibilityConverter" />
             <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />

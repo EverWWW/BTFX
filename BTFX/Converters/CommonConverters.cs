@@ -92,15 +92,15 @@ public class InverseBooleanConverter : IValueConverter
 
     /// <summary>
     /// 反转换
-    /// </summary>
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        return value is bool b ? !b : false;
+        /// </summary>
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            return value is bool b ? !b : false;
+        }
     }
-}
 
-/// <summary>
-/// 枚举转描述转换器
+    /// <summary>
+    /// 枚举转描述转换器
 /// </summary>
 public class EnumToDescriptionConverter : IValueConverter
 {
@@ -325,18 +325,41 @@ public class CountToVisibilityConverter : IValueConverter
         {
             return count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
-        else
-        {
-            return count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        }
-    }
+                else
+                {
+                    return count > 0 ? Visibility.Visible : Visibility.Collapsed;
+                }
+            }
 
-    /// <summary>
-    /// 反转换
-    /// </summary>
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
-    }
-}
+            /// <summary>
+            /// 反转换
+            /// </summary>
+            public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+            {
+                throw new NotImplementedException();
+                    }
+                }
+
+            /// <summary>
+            /// 密码可见性转换为图标转换器
+            /// </summary>
+            public class BoolToPasswordIconConverter : IValueConverter
+            {
+                /// <summary>
+                /// 转换
+                /// </summary>
+                public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+                {
+                    // IsPasswordHidden: true = 显示EyeOff (表示密码隐藏)，false = 显示Eye (表示密码可见)
+                    return value is bool isHidden && isHidden ? "EyeOff" : "Eye";
+                }
+
+                /// <summary>
+                /// 反转换
+                /// </summary>
+                public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+                {
+                    throw new NotImplementedException();
+                }
+            }
 

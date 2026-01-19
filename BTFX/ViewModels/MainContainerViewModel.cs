@@ -43,6 +43,7 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
 {
     private readonly INavigationService _navigationService;
     private readonly ISessionService _sessionService;
+    private readonly ILocalizationService _localizationService;
     private readonly ILogHelper? _logHelper;
     private readonly DispatcherTimer _timeUpdateTimer;
     private bool _disposed;
@@ -131,13 +132,35 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     /// <summary>
     /// 设备状态文字
     /// </summary>
-    public string DeviceStatusText => DeviceStatus switch
+    public string DeviceStatusText
     {
-        DeviceConnectionStatus.Connected => "已连接",
-        DeviceConnectionStatus.Connecting => "连接中...",
-        DeviceConnectionStatus.ConnectionFailed => "连接失败",
-        _ => "未连接"
-    };
+        get
+        {
+            try
+            {
+                var resourceKey = DeviceStatus switch
+                {
+                    DeviceConnectionStatus.Connected => "DeviceConnected",
+                    DeviceConnectionStatus.Connecting => "DeviceConnecting",
+                    DeviceConnectionStatus.ConnectionFailed => "DeviceConnectionFailed",
+                    _ => "DeviceDisconnected"
+                };
+
+                var resource = System.Windows.Application.Current.FindResource(resourceKey);
+                return resource?.ToString() ?? "未知";
+            }
+            catch
+            {
+                return DeviceStatus switch
+                {
+                    DeviceConnectionStatus.Connected => "已连接",
+                    DeviceConnectionStatus.Connecting => "连接中...",
+                    DeviceConnectionStatus.ConnectionFailed => "连接失败",
+                    _ => "未连接"
+                };
+            }
+        }
+    }
 
     #endregion
 
@@ -162,10 +185,12 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     /// </summary>
     public MainContainerViewModel(
         INavigationService navigationService,
-        ISessionService sessionService)
+        ISessionService sessionService,
+        ILocalizationService localizationService)
     {
         _navigationService = navigationService;
         _sessionService = sessionService;
+        _localizationService = localizationService;
 
         // 尝试获取日志服务
         try
@@ -176,6 +201,9 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
 
         // 初始化导航菜单
         InitializeNavigationItems();
+
+        // 订阅语言变化事件
+        _localizationService.LanguageChanged += OnLanguageChanged;
 
         // 初始化时间更新定时器
         _timeUpdateTimer = new DispatcherTimer
@@ -211,7 +239,7 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
             new NavigationItem
             {
                 Key = "Measurement",
-                Title = "测量评估",
+                ResourceKey = "NavMeasurement",
                 IconKind = "ChartLine",
                 IsEnabled = true,
                 ViewModelName = "MeasurementViewModel"
@@ -219,7 +247,7 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
             new NavigationItem
             {
                 Key = "DataManagement",
-                Title = "数据管理",
+                ResourceKey = "NavDataManagement",
                 IconKind = "Database",
                 IsEnabled = !isGuest,
                 ViewModelName = "DataManagementViewModel"
@@ -227,7 +255,7 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
             new NavigationItem
             {
                 Key = "Report",
-                Title = "报告",
+                ResourceKey = "NavReport",
                 IconKind = "FileDocument",
                 IsEnabled = !isGuest,
                 ViewModelName = "ReportViewModel"
@@ -235,12 +263,15 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
             new NavigationItem
             {
                 Key = "Settings",
-                Title = "系统设置",
+                ResourceKey = "NavSettings",
                 IconKind = "Cog",
                 IsEnabled = true,
                 ViewModelName = "SettingsViewModel"
             }
         };
+
+        // 更新所有导航项的标题
+        UpdateNavigationTitles();
 
         // 默认选中第一项
         if (NavigationItems.Count > 0)
@@ -250,6 +281,29 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
             // 加载默认子视图
             LoadSubView(SelectedNavigationItem.ViewModelName);
         }
+    }
+
+    /// <summary>
+    /// 更新导航菜单标题
+    /// </summary>
+    private void UpdateNavigationTitles()
+    {
+        foreach (var item in NavigationItems)
+        {
+            item.UpdateTitleFromResource();
+        }
+    }
+
+    /// <summary>
+    /// 语言变化事件处理
+    /// </summary>
+    private void OnLanguageChanged(object? sender, AppLanguage language)
+    {
+        // 更新导航菜单标题
+        UpdateNavigationTitles();
+
+        // 更新设备状态文字
+        OnPropertyChanged(nameof(DeviceStatusText));
     }
 
     /// <summary>
@@ -282,7 +336,9 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
         if (patient != null)
         {
             CurrentPatientName = patient.Name;
-            CurrentPatientGender = patient.Gender == Gender.Male ? "男" : "女";
+            CurrentPatientGender = patient.Gender == Gender.Male 
+                ? _localizationService.GetString("Male") 
+                : _localizationService.GetString("Female");
             CurrentPatientAge = patient.Age;
         }
         else
@@ -308,18 +364,28 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     private void UpdateCurrentTime()
     {
         var now = DateTime.Now;
-        var dayOfWeek = now.DayOfWeek switch
+        var dayOfWeek = GetLocalizedDayOfWeek(now.DayOfWeek);
+        CurrentTime = $"{now:yyyy-MM-dd} {dayOfWeek} {now:HH:mm:ss}";
+    }
+
+    /// <summary>
+    /// 获取本地化的星期几
+    /// </summary>
+    private string GetLocalizedDayOfWeek(DayOfWeek dayOfWeek)
+    {
+        var resourceKey = dayOfWeek switch
         {
-            DayOfWeek.Monday => "星期一",
-            DayOfWeek.Tuesday => "星期二",
-            DayOfWeek.Wednesday => "星期三",
-            DayOfWeek.Thursday => "星期四",
-            DayOfWeek.Friday => "星期五",
-            DayOfWeek.Saturday => "星期六",
-            DayOfWeek.Sunday => "星期日",
+            DayOfWeek.Monday => "Monday",
+            DayOfWeek.Tuesday => "Tuesday",
+            DayOfWeek.Wednesday => "Wednesday",
+            DayOfWeek.Thursday => "Thursday",
+            DayOfWeek.Friday => "Friday",
+            DayOfWeek.Saturday => "Saturday",
+            DayOfWeek.Sunday => "Sunday",
             _ => string.Empty
         };
-        CurrentTime = $"{now:yyyy-MM-dd} {dayOfWeek} {now:HH:mm:ss}";
+
+        return _localizationService.GetString(resourceKey);
     }
 
     /// <summary>
@@ -507,6 +573,7 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
 
         _sessionService.CurrentPatientChanged -= OnCurrentPatientChanged;
         _sessionService.CurrentUserChanged -= OnCurrentUserChanged;
+        _localizationService.LanguageChanged -= OnLanguageChanged;
 
         _disposed = true;
         GC.SuppressFinalize(this);

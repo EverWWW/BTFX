@@ -52,11 +52,11 @@
                         <TextBlock
                             VerticalAlignment="Center"
                             FontSize="14"
-                            Text="患者姓名：" />
+                            Text="{DynamicResource FilterPatientName}" />
                         <TextBox
                             Width="150"
+                            md:HintAssist.Hint="{DynamicResource EnterNameSearch}"
                             MaxLength="50"
-                            md:HintAssist.Hint="输入姓名搜索"
                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
                             Text="{Binding FilterPatientName, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
@@ -66,10 +66,14 @@
                         <TextBlock
                             VerticalAlignment="Center"
                             FontSize="14"
-                            Text="开始日期：" />
+                            Text="{DynamicResource StartDate}" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            Text="：" />
                         <DatePicker
                             Width="140"
-                            md:HintAssist.Hint="选择日期"
+                            md:HintAssist.Hint="{DynamicResource SelectDateHint}"
                             DisplayDateEnd="{Binding MaxDate, Mode=OneWay}"
                             SelectedDate="{Binding FilterStartDate}"
                             Style="{StaticResource MaterialDesignOutlinedDatePicker}" />
@@ -80,10 +84,14 @@
                         <TextBlock
                             VerticalAlignment="Center"
                             FontSize="14"
-                            Text="结束日期：" />
+                            Text="{DynamicResource EndDate}" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            Text="：" />
                         <DatePicker
                             Width="140"
-                            md:HintAssist.Hint="选择日期"
+                            md:HintAssist.Hint="{DynamicResource SelectDateHint}"
                             DisplayDateEnd="{Binding MaxDate, Mode=OneWay}"
                             SelectedDate="{Binding FilterEndDate}"
                             Style="{StaticResource MaterialDesignOutlinedDatePicker}" />
@@ -94,7 +102,11 @@
                         <TextBlock
                             VerticalAlignment="Center"
                             FontSize="14"
-                            Text="测量状态：" />
+                            Text="{DynamicResource MeasurementStatus}" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            Text="：" />
                         <ComboBox
                             Width="120"
                             DisplayMemberPath="Display"
@@ -108,11 +120,11 @@
                         <Button
                             Margin="0,0,8,0"
                             Command="{Binding SearchCommand}"
-                            Content="搜索"
+                            Content="{DynamicResource Search}"
                             Style="{StaticResource MaterialDesignRaisedButton}" />
                         <Button
                             Command="{Binding ResetFilterCommand}"
-                            Content="重置"
+                            Content="{DynamicResource Reset}"
                             Style="{StaticResource MaterialDesignOutlinedButton}" />
                     </StackPanel>
                 </WrapPanel>
@@ -183,18 +195,18 @@
                         <!--  选择列  -->
                         <DataGridTemplateColumn Width="50">
                             <DataGridTemplateColumn.Header>
-                                <CheckBox 
-                                    IsChecked="{Binding DataContext.IsAllSelected, RelativeSource={RelativeSource AncestorType=DataGrid}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                    ToolTip="全选/取消全选"
+                                <CheckBox
                                     Checked="AllSelectCheckBox_CheckedChanged"
+                                    IsChecked="{Binding DataContext.IsAllSelected, RelativeSource={RelativeSource AncestorType=DataGrid}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    ToolTip="{DynamicResource ToggleSelectAll}"
                                     Unchecked="AllSelectCheckBox_CheckedChanged" />
                             </DataGridTemplateColumn.Header>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <CheckBox 
-                                        HorizontalAlignment="Center" 
-                                        IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    <CheckBox
+                                        HorizontalAlignment="Center"
                                         Checked="ItemCheckBox_CheckedChanged"
+                                        IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         Unchecked="ItemCheckBox_CheckedChanged" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -204,34 +216,34 @@
                         <DataGridTextColumn
                             Width="60"
                             Binding="{Binding RowNumber}"
-                            Header="序号" />
+                            Header="{DynamicResource Id}" />
 
                         <!--  患者姓名列  -->
                         <DataGridTextColumn
                             Width="120"
                             Binding="{Binding PatientName}"
-                            Header="患者姓名" />
+                            Header="{DynamicResource PatientName}" />
 
                         <!--  性别列  -->
                         <DataGridTextColumn
                             Width="60"
                             Binding="{Binding GenderDisplay}"
-                            Header="性别" />
+                            Header="{DynamicResource Gender}" />
 
                         <!--  年龄列  -->
                         <DataGridTextColumn
                             Width="60"
                             Binding="{Binding AgeDisplay}"
-                            Header="年龄" />
+                            Header="{DynamicResource Age}" />
 
                         <!--  测量日期列  -->
                         <DataGridTextColumn
                             Width="160"
                             Binding="{Binding MeasurementDateDisplay}"
-                            Header="测量日期" />
+                            Header="{DynamicResource MeasurementDate}" />
 
                         <!--  测量状态列  -->
-                        <DataGridTemplateColumn Width="100" Header="测量状态">
+                        <DataGridTemplateColumn Width="100" Header="{DynamicResource MeasurementStatus}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border
@@ -249,7 +261,7 @@
                         </DataGridTemplateColumn>
 
                         <!--  操作列  -->
-                        <DataGridTemplateColumn Width="200" Header="操作">
+                        <DataGridTemplateColumn Width="200" Header="{DynamicResource Actions}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
@@ -257,19 +269,19 @@
                                             Margin="0,0,4,0"
                                             Command="{Binding DataContext.ViewDetailCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}"
-                                            Content="查看"
+                                            Content="{DynamicResource ViewDetails}"
                                             Style="{StaticResource MaterialDesignFlatButton}" />
                                         <Button
                                             Margin="0,0,4,0"
                                             Command="{Binding DataContext.ExportSingleCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}"
-                                            Content="导出"
+                                            Content="{DynamicResource Export}"
                                             Style="{StaticResource MaterialDesignFlatButton}"
                                             Visibility="{Binding DataContext.CanExport, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                         <Button
                                             Command="{Binding DataContext.DeleteSingleCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}"
-                                            Content="删除"
+                                            Content="{DynamicResource Delete}"
                                             Foreground="{StaticResource FailedBrush}"
                                             Style="{StaticResource MaterialDesignFlatButton}"
                                             Visibility="{Binding DataContext.CanDelete, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}" />
@@ -298,29 +310,29 @@
                         <TextBlock
                             VerticalAlignment="Center"
                             Foreground="White"
-                            Text="加载中..." />
+                            Text="{DynamicResource Loading}" />
                     </StackPanel>
                 </Border>
 
-                        <!--  空数据提示  -->
-                        <Border
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Panel.ZIndex="-1">
-                            <TextBlock
-                                FontSize="16"
-                                Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                Text="暂无数据">
-                                <TextBlock.Visibility>
-                                    <MultiBinding Converter="{StaticResource EmptyDataVisibilityConverter}">
-                                        <Binding Path="MeasurementRecords.Count" />
-                                        <Binding Path="IsLoading" />
-                                    </MultiBinding>
-                                </TextBlock.Visibility>
-                            </TextBlock>
-                        </Border>
-                    </Grid>
-                </md:Card>
+                <!--  空数据提示  -->
+                <Border
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Panel.ZIndex="-1">
+                    <TextBlock
+                        FontSize="16"
+                        Foreground="{DynamicResource MaterialDesignBodyLight}"
+                        Text="{DynamicResource NoData}">
+                        <TextBlock.Visibility>
+                            <MultiBinding Converter="{StaticResource EmptyDataVisibilityConverter}">
+                                <Binding Path="MeasurementRecords.Count" />
+                                <Binding Path="IsLoading" />
+                            </MultiBinding>
+                        </TextBlock.Visibility>
+                    </TextBlock>
+                </Border>
+            </Grid>
+        </md:Card>
 
         <!--  底部分页和操作区域  -->
         <md:Card Grid.Row="2" Padding="16">
@@ -342,7 +354,7 @@
                     <Button
                         Margin="0,0,8,0"
                         Command="{Binding PreviousPageCommand}"
-                        Content="上一页"
+                        Content="{DynamicResource PreviousPage}"
                         IsEnabled="{Binding CurrentPage, Converter={StaticResource GreaterThanOneConverter}}"
                         Style="{StaticResource MaterialDesignOutlinedButton}" />
 
@@ -350,23 +362,23 @@
                         Margin="8,0"
                         VerticalAlignment="Center"
                         FontSize="14">
-                        <Run Text="第" />
+                        <Run Text="{DynamicResource Page}" />
                         <Run FontWeight="Bold" Text="{Binding CurrentPage, Mode=OneWay}" />
-                        <Run Text="页 / 共" />
+                        <Run Text="/" />
                         <Run FontWeight="Bold" Text="{Binding TotalPages, Mode=OneWay}" />
-                        <Run Text="页" />
+                        <Run Text="{DynamicResource Page}" />
                     </TextBlock>
 
                     <Button
                         Margin="8,0"
                         Command="{Binding NextPageCommand}"
-                        Content="下一页"
+                        Content="{DynamicResource NextPage}"
                         Style="{StaticResource MaterialDesignOutlinedButton}" />
 
                     <TextBlock
                         Margin="16,0,8,0"
                         VerticalAlignment="Center"
-                        Text="跳转到" />
+                        Text="{DynamicResource GoToPage}" />
                     <TextBox
                         Width="50"
                         VerticalContentAlignment="Center"
@@ -379,10 +391,10 @@
                     <TextBlock
                         Margin="8,0"
                         VerticalAlignment="Center"
-                        Text="页" />
+                        Text="{DynamicResource Pages}" />
                     <Button
                         Command="{Binding GoToPageCommand}"
-                        Content="GO"
+                        Content="{DynamicResource Go}"
                         Style="{StaticResource MaterialDesignFlatButton}" />
                 </StackPanel>
 
@@ -393,11 +405,11 @@
                     VerticalAlignment="Center"
                     FontSize="14"
                     Foreground="{DynamicResource MaterialDesignBodyLight}">
-                    <Run Text="共" />
+                    <Run Text="{DynamicResource Total}" />
                     <Run FontWeight="Bold" Text="{Binding TotalRecords, Mode=OneWay}" />
-                    <Run Text="条记录，已选" />
+                    <Run Text="{DynamicResource RecordsSelected}" />
                     <Run FontWeight="Bold" Text="{Binding SelectedCount, Mode=OneWay}" />
-                    <Run Text="条" />
+                    <Run Text="{DynamicResource Items}" />
                 </TextBlock>
 
                 <!--  批量操作按钮  -->
@@ -409,13 +421,13 @@
                     <Button
                         Margin="0,0,8,0"
                         Command="{Binding BatchExportCommand}"
-                        Content="批量导出"
+                        Content="{DynamicResource BatchExport}"
                         Style="{StaticResource MaterialDesignRaisedButton}"
                         Visibility="{Binding CanExport, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     <Button
                         Background="{StaticResource FailedBrush}"
                         Command="{Binding BatchDeleteCommand}"
-                        Content="批量删除"
+                        Content="{DynamicResource BatchDelete}"
                         Style="{StaticResource MaterialDesignRaisedButton}"
                         Visibility="{Binding CanDelete, Converter={StaticResource BooleanToVisibilityConverter}}" />
                 </StackPanel>

@@ -149,7 +149,7 @@
                         <Button Grid.Column="0"
                                 Style="{StaticResource MaterialDesignIconButton}"
                                 Command="{Binding ToggleNavigationCommand}"
-                                ToolTip="展开/折叠菜单">
+                                ToolTip="{DynamicResource ToggleMenu}">
                             <materialDesign:PackIcon Kind="Menu" Width="24" Height="24" />
                         </Button>
 
@@ -175,7 +175,7 @@
                                            Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}">
                                     <Run Text="{Binding CurrentPatientGender}" />
                                     <Run Text=" / " />
-                                    <Run Text="{Binding CurrentPatientAge, StringFormat={}{0}岁}" />
+                                    <Run Text="{Binding CurrentPatientAge, StringFormat={}{0}{DynamicResource YearsOld}}" />
                                 </TextBlock>
                             </StackPanel>
 
@@ -186,7 +186,7 @@
                                                           Width="20" Height="20"
                                                           VerticalAlignment="Center"
                                                           Foreground="#F44336" />
-                                <TextBlock Text="游客模式 - 功能受限"
+                                <TextBlock Text="{DynamicResource GuestModeWarning}"
                                            FontSize="14"
                                            Foreground="#F44336"
                                            VerticalAlignment="Center"
@@ -223,7 +223,7 @@
                                                 VerticalAlignment="Center">
                                         <!-- 切换患者按钮（非游客模式显示） -->
                             <Button Style="{StaticResource MaterialDesignOutlinedButton}"
-                                    Content="切换患者"
+                                    Content="{DynamicResource SwitchPatient}"
                                     Command="{Binding SwitchPatientCommand}"
                                     Visibility="{Binding IsGuestMode, Converter={StaticResource BoolToVisConverter}, ConverterParameter=Inverse}"
                                     Margin="0,0,8,0"
@@ -232,7 +232,7 @@
 
                             <!-- 退出登录按钮 -->
                             <Button Style="{StaticResource MaterialDesignOutlinedButton}"
-                                    Content="退出登录"
+                                    Content="{DynamicResource Logout}"
                                     Command="{Binding LogoutCommand}"
                                     Height="32"
                                     Padding="16,0"
@@ -261,12 +261,12 @@
                                                                                   Width="64" Height="64"
                                                                                   HorizontalAlignment="Center"
                                                                                   Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}" />
-                                                        <TextBlock Text="测量评估"
+                                                        <TextBlock Text="{DynamicResource NavMeasurement}"
                                                                    FontSize="18"
                                                                    FontWeight="Medium"
                                                                    HorizontalAlignment="Center"
                                                                    Margin="0,16,0,0" />
-                                                        <TextBlock Text="请选择左侧菜单开始操作"
+                                                        <TextBlock Text="{DynamicResource SelectMenuToStart}"
                                                                    FontSize="14"
                                                                    Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
                                                                    HorizontalAlignment="Center"
