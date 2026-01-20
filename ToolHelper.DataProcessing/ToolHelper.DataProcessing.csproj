@@ -15,7 +15,7 @@
     <PackageReference Include="YamlDotNet" Version="16.2.0" />
 
     <!-- Excel 支持 (NPOI) -->
-    <PackageReference Include="NPOI" Version="2.7.1" />
+    <PackageReference Include="NPOI" Version="2.7.5" />
 
     <!-- PDF 支持 (QuestPDF) -->
     <PackageReference Include="QuestPDF" Version="2024.12.3" />

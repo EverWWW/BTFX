@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using ToolHelper.DataProcessing.Compression;
 using ToolHelper.DataProcessing.Configuration;
 using ToolHelper.DataProcessing.Csv;
 using ToolHelper.DataProcessing.Excel;
@@ -181,8 +182,30 @@ public static class ServiceCollectionExtensions
             services.Configure<PdfOptions>(options => { });
         }
 
-        services.TryAddSingleton<PdfHelper>();
+                services.TryAddSingleton<PdfHelper>();
 
-        return services;
-    }
-}
+                return services;
+            }
+
+            /// <summary>
+            /// 添加ZIP压缩助手服务
+            /// </summary>
+            public static IServiceCollection AddZipHelper(
+                this IServiceCollection services,
+                Action<ZipOptions>? configure = null)
+            {
+                if (configure != null)
+                {
+                    services.Configure(configure);
+                }
+                else
+                {
+                    // 注册默认配置
+                    services.Configure<ZipOptions>(options => { });
+                }
+
+                services.TryAddSingleton<ZipHelper>();
+
+                return services;
+            }
+        }

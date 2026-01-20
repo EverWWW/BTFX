@@ -1,9 +1,9 @@
 <Solution>
-  <Project Path="../GIAS/ToolHelper.Communication/ToolHelper.Communication.csproj" />
-  <Project Path="../GIAS/ToolHelper.Database/ToolHelper.Database.csproj" />
-  <Project Path="../GIAS/ToolHelper.DataProcessing/ToolHelper.DataProcessing.csproj" />
-  <Project Path="../GIAS/ToolHelper.LoggingDiagnostics/ToolHelper.LoggingDiagnostics.csproj" />
   <Project Path="BTFX/BTFX.csproj" />
   <Project Path="test/test.csproj" Id="bf3a138f-bb28-43e4-a15f-558a9c73d05a" />
+  <Project Path="ToolHelper.Communication/ToolHelper.Communication.csproj" />
+  <Project Path="ToolHelper.Database/ToolHelper.Database.csproj" />
+  <Project Path="ToolHelper.DataProcessing/ToolHelper.DataProcessing.csproj" />
+  <Project Path="ToolHelper.LoggingDiagnostics/ToolHelper.LoggingDiagnostics.csproj" />
   <Project Path="ToolHelperTest/ToolHelperTest.csproj" />
 </Solution>

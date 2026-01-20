@@ -51,12 +51,6 @@
   </ItemGroup>
 
   <!-- 项目引用 -->
-  <ItemGroup>
-    <ProjectReference Include="..\..\GIAS\ToolHelper.Communication\ToolHelper.Communication.csproj" />
-    <ProjectReference Include="..\..\GIAS\ToolHelper.Database\ToolHelper.Database.csproj" />
-    <ProjectReference Include="..\..\GIAS\ToolHelper.DataProcessing\ToolHelper.DataProcessing.csproj" />
-    <ProjectReference Include="..\..\GIAS\ToolHelper.LoggingDiagnostics\ToolHelper.LoggingDiagnostics.csproj" />
-  </ItemGroup>
 
   <!-- 资源文件 -->
   <ItemGroup>
@@ -78,6 +72,12 @@
     <Folder Include="Data\Videos\" />
     <Folder Include="Data\Temp\" />
     <Folder Include="Data\Config\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ToolHelper.Communication\ToolHelper.Communication.csproj" />
+    <ProjectReference Include="..\ToolHelper.Database\ToolHelper.Database.csproj" />
+    <ProjectReference Include="..\ToolHelper.DataProcessing\ToolHelper.DataProcessing.csproj" />
+    <ProjectReference Include="..\ToolHelper.LoggingDiagnostics\ToolHelper.LoggingDiagnostics.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Images\Device\deviceImage.jpeg" />

@@ -241,11 +241,35 @@ public static class ServiceCollectionExtensions
             services.Configure<PerformanceMonitorOptions>(options => { });
         }
 
-        services.TryAddSingleton<IPerformanceMonitor, PerformanceMonitor>();
+                services.TryAddSingleton<IPerformanceMonitor, PerformanceMonitor>();
 
-        return services;
-    }
-}
+                return services;
+            }
+
+            /// <summary>
+            /// 添加日志导出助手服务
+            /// </summary>
+            /// <param name="services">服务集合</param>
+            /// <param name="configure">配置委托</param>
+            /// <returns>服务集合</returns>
+            public static IServiceCollection AddLogExportHelper(
+                this IServiceCollection services,
+                Action<LogExportOptions>? configure = null)
+            {
+                if (configure != null)
+                {
+                    services.Configure(configure);
+                }
+                else
+                {
+                    services.Configure<LogExportOptions>(options => { });
+                }
+
+                services.TryAddSingleton<LogExportHelper>();
+
+                return services;
+            }
+        }
 
 /// <summary>
 /// 日志诊断配置构建器
