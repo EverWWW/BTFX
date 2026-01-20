@@ -1,0 +1,63 @@
+步态智能分析系统 软件许可协议
+Gait Intelligent Analysis System - Software License Agreement
+
+版权所有 © 2024-2026 BTFX Team
+Copyright © 2024-2026 BTFX Team
+
+================================================================================
+
+【中文版】
+
+一、总则
+本软件由 BTFX Team 开发和维护。安装或使用本软件即表示您同意接受本许可协议的所有条款。
+
+二、授权范围
+1. 本软件仅供被授权用户在授权范围内使用。
+2. 未经书面许可，不得复制、分发、修改或逆向工程本软件。
+3. 本软件仅限于医疗辅助分析用途，不得用于临床诊断决策。
+
+三、免责声明
+1. 本软件按"原样"提供，不提供任何明示或暗示的保证。
+2. 开发者不对因使用本软件造成的任何直接或间接损失承担责任。
+3. 本软件的分析结果仅供参考，不能替代专业医学诊断。
+
+四、隐私保护
+1. 本软件在本地处理所有数据，不会上传任何用户数据到外部服务器。
+2. 用户有责任妥善保管软件中存储的患者信息。
+
+五、技术支持
+如有任何问题，请联系 BTFX Team 技术支持。
+
+================================================================================
+
+【English Version】
+
+1. General
+This software is developed and maintained by BTFX Team. By installing or using 
+this software, you agree to be bound by all terms of this license agreement.
+
+2. License Scope
+a) This software is licensed for use only by authorized users within the scope 
+   of authorization.
+b) Copying, distributing, modifying, or reverse engineering this software is 
+   prohibited without written permission.
+c) This software is intended for medical auxiliary analysis only and shall not 
+   be used for clinical diagnostic decisions.
+
+3. Disclaimer
+a) This software is provided "as is" without any express or implied warranty.
+b) The developers shall not be liable for any direct or indirect damages arising 
+   from the use of this software.
+c) Analysis results from this software are for reference only and cannot replace 
+   professional medical diagnosis.
+
+4. Privacy Protection
+a) This software processes all data locally and does not upload any user data 
+   to external servers.
+b) Users are responsible for properly safeguarding patient information stored 
+   in the software.
+
+5. Technical Support
+For any questions, please contact BTFX Team technical support.
+
+================================================================================

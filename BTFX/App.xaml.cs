@@ -449,7 +449,6 @@ public partial class App : Application
                 Constants.APP_DISPLAY_NAME,
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
-
             Environment.Exit(1);
         }
     }

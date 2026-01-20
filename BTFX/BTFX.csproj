@@ -5,9 +5,32 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-      <UseWPF>true</UseWPF>
-      <ApplicationManifest>app.manifest</ApplicationManifest>
-    </PropertyGroup>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+
+    <!-- 版本信息 -->
+    <Version>1.0.0.1</Version>
+    <FileVersion>1.0.0.1</FileVersion>
+    <AssemblyVersion>1.0.0.1</AssemblyVersion>
+    <Company>BTFX Team</Company>
+    <Product>步态智能分析系统</Product>
+    <Copyright>Copyright © 2024-2026</Copyright>
+    <Description>步态智能分析系统 - Gait Intelligent Analysis System</Description>
+
+    <!-- 应用程序图标（需要准备 app.ico 文件后取消注释） -->
+    <ApplicationIcon>Resources\Images\Logo\app.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <!-- 发布配置 -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <PublishSingleFile>false</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
 
   <!-- NuGet 包引用 -->
   <ItemGroup>
@@ -58,6 +81,7 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Images\Device\deviceImage.jpeg" />
+    <Resource Include="Resources\Images\Logo\app.ico" />
     <Resource Include="Resources\Images\Logo\logo1.png" />
     <Resource Include="Resources\Images\Logo\logo2.png" />
     <Resource Include="Resources\Images\Logo\logo3.png" />

@@ -19,6 +19,7 @@ public class MainWindowViewModel : ObservableObject
     private string _version = Constants.VERSION_DISPLAY;
     private bool _isFullscreen;
 
+
     /// <summary>
     /// 窗口标题
     /// </summary>
@@ -73,25 +74,25 @@ public class MainWindowViewModel : ObservableObject
         ISettingsService settingsService,
         ILocalizationService localizationService)
     {
-        _navigationService = navigationService;
-        _settingsService = settingsService;
-        _localizationService = localizationService;
+            _navigationService = navigationService;
+            _settingsService = settingsService;
+            _localizationService = localizationService;
 
-        // 初始化命令
-        ToggleFullscreenCommand = new RelayCommand(ToggleFullscreen);
-        ExitFullscreenCommand = new RelayCommand(ExitFullscreen);
+            // 初始化命令
+            ToggleFullscreenCommand = new RelayCommand(ToggleFullscreen);
+            ExitFullscreenCommand = new RelayCommand(ExitFullscreen);
 
-        // 监听导航服务的视图变化
-        if (_navigationService is ObservableObject observableNavigation)
-        {
-            observableNavigation.PropertyChanged += (s, e) =>
+            // 监听导航服务的视图变化
+            if (_navigationService is ObservableObject observableNavigation)
             {
-                if (e.PropertyName == nameof(INavigationService.CurrentView))
+                observableNavigation.PropertyChanged += (s, e) =>
                 {
-                    CurrentView = _navigationService.CurrentView;
-                }
-            };
-        }
+                    if (e.PropertyName == nameof(INavigationService.CurrentView))
+                    {
+                        CurrentView = _navigationService.CurrentView;
+                    }
+                };
+            }
 
             // 监听语言变化，更新标题
             _localizationService.LanguageChanged += (s, e) =>
