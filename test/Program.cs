@@ -4,5 +4,5 @@ using ToolHelperTest.Examples;
 using ToolHelperTest.Examples.DataProcessing;
 using ToolHelperTest.Examples.LoggingDiagnostics;
 
-await DataProcessingDemoRunner.RunAllExamplesAsync();
+await BluetoothExample.RunAllExamplesAsync();
 //Console.WriteLine("Hello, World!");

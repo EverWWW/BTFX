@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using ToolHelper.Communication.Bluetooth;
 using ToolHelper.Communication.Configuration;
 using ToolHelper.Communication.Http;
 using ToolHelper.Communication.Modbus;
@@ -30,6 +31,7 @@ public static class ServiceCollectionExtensions
         services.AddWebSocket();
         services.AddModbusTcp();
         services.AddModbusRtu();
+        services.AddBluetooth();
 
         return services;
     }
@@ -209,8 +211,28 @@ public static class ServiceCollectionExtensions
                 services.Configure(configure);
             }
 
-            services.TryAddTransient<ModbusRtuHelper>();
+                services.TryAddTransient<ModbusRtuHelper>();
 
-            return services;
-        }
-    }
+                    return services;
+                }
+
+                /// <summary>
+                /// 添加蓝牙通讯服务
+                /// </summary>
+                /// <param name="services">服务集合</param>
+                /// <param name="configure">配置委托</param>
+                /// <returns>服务集合</returns>
+                public static IServiceCollection AddBluetooth(
+                    this IServiceCollection services,
+                    Action<BluetoothOptions>? configure = null)
+                {
+                    if (configure != null)
+                    {
+                        services.Configure(configure);
+                    }
+
+                    services.TryAddTransient<BluetoothHelper>();
+
+                    return services;
+                }
+            }
