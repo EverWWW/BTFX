@@ -305,6 +305,7 @@
     <system:String x:Key="LanguageSettings">语言设置</system:String>
     <system:String x:Key="SelectLanguage">选择语言</system:String>
     <system:String x:Key="ThemeSettings">主题设置</system:String>
+    <system:String x:Key="ThemeColorSettings">主题色</system:String>
     <system:String x:Key="SaveSettings">保存设置</system:String>
     <system:String x:Key="SettingsExportImport">设置导入导出</system:String>
     <system:String x:Key="ExportSettings">导出设置</system:String>

@@ -47,6 +47,11 @@ public class ApplicationSettings
     /// 主题
     /// </summary>
     public AppTheme Theme { get; set; } = AppTheme.Light;
+
+    /// <summary>
+    /// 主题色（十六进制颜色值，如 #FF009EDB）
+    /// </summary>
+    public string PrimaryColor { get; set; } = "#FF009EDB";
 }
 
 /// <summary>

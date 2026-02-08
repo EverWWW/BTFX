@@ -44,36 +44,23 @@
             <converters:GreaterThanOneConverter x:Key="GreaterThanOneConverter" />
             <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
 
-            <!--  字体资源  -->
-            <FontFamily x:Key="AlibabaPuHuiTi">pack://application:,,,/Resources/Fonts/#Alibaba PuHuiTi</FontFamily>
+            <!--  字体资源
+                  Alibaba PuHuiTi 3.0 仅包含 Regular (55) 字重文件，
+                  Medium / Bold 等字重在该字体中无真实字形，WPF 会合成粗体导致显示异常。
+                  因此使用"Microsoft YaHei UI"作为主字体（系统自带 Light / Regular / Bold），
+                  Alibaba PuHuiTi 3.0 保留作为备选。如需完整使用 Alibaba PuHuiTi，
+                  请将 65-Medium、75-SemiBold、85-Bold 等字重 TTF 文件放入 Resources/Fonts 文件夹。  -->
+            <FontFamily x:Key="AppFont">Microsoft YaHei UI, pack://application:,,,/Resources/Fonts/#Alibaba PuHuiTi 3.0</FontFamily>
 
-            <!--  全局字体样式  -->
+            <!--  全局字体样式 —— 通过 TextElement.FontFamily 向下继承到所有子元素，
+                  不覆盖 TextBlock / Button / TextBox 等控件的隐式样式，
+                  避免破坏 MaterialDesign 内部控件模板  -->
             <Style BasedOn="{StaticResource {x:Type Window}}" TargetType="Window">
-                <Setter Property="FontFamily" Value="{StaticResource AlibabaPuHuiTi}" />
-                <Setter Property="FontSize" Value="14" />
+                <Setter Property="TextElement.FontFamily" Value="{StaticResource AppFont}" />
+                <Setter Property="TextElement.FontSize" Value="14" />
                 <Setter Property="UseLayoutRounding" Value="True" />
                 <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
                 <Setter Property="SnapsToDevicePixels" Value="True" />
-            </Style>
-
-            <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock">
-                <Setter Property="FontFamily" Value="{StaticResource AlibabaPuHuiTi}" />
-            </Style>
-
-            <Style BasedOn="{StaticResource MaterialDesignTextBox}" TargetType="TextBox">
-                <Setter Property="FontFamily" Value="{StaticResource AlibabaPuHuiTi}" />
-            </Style>
-
-            <Style BasedOn="{StaticResource MaterialDesignRaisedButton}" TargetType="Button">
-                <Setter Property="FontFamily" Value="{StaticResource AlibabaPuHuiTi}" />
-            </Style>
-
-            <Style BasedOn="{StaticResource {x:Type Label}}" TargetType="Label">
-                <Setter Property="FontFamily" Value="{StaticResource AlibabaPuHuiTi}" />
-            </Style>
-
-            <Style BasedOn="{StaticResource MaterialDesignComboBox}" TargetType="ComboBox">
-                <Setter Property="FontFamily" Value="{StaticResource AlibabaPuHuiTi}" />
             </Style>
 
         </ResourceDictionary>

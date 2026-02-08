@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="720"
     d:DesignWidth="1280"
-    Background="#009EDB"
+    Background="{DynamicResource MaterialDesign.Brush.Primary}"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -21,7 +21,7 @@
             <Setter Property="Height" Value="20" />
             <Setter Property="Margin" Value="12,0,8,0" />
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Foreground" Value="#888888" />
+            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.ForegroundLight}" />
             </Style>
 
             <!--  自定义文本框样式  -->
@@ -68,7 +68,7 @@
                 <Setter Property="VerticalAlignment" Value="Center" />
                 <Setter Property="HorizontalAlignment" Value="Right" />
                 <Setter Property="Margin" Value="0,0,8,0" />
-                <Setter Property="Foreground" Value="#888888" />
+                <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.ForegroundLight}" />
                 <Setter Property="Cursor" Value="Hand" />
             </Style>
         </UserControl.Resources>
@@ -76,8 +76,11 @@
     <Grid>
         <!--  核心登录卡片  -->
         <Border
-            Width="1000"
-            HorizontalAlignment="Center"
+            MinWidth="1000"
+            MaxWidth="1300"
+            Width="Auto"
+            Margin="80"
+            HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
             Background="White"
             CornerRadius="15">
@@ -111,14 +114,24 @@
                         Source="/Resources/Images/Logo/logo3.png"
                         Stretch="Uniform" />
 
-                    <!--  设备主图区域  -->
-                    <Image
-                        Grid.Row="1"
-                        Margin="0,30,0,0"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Source="/Resources/Images/Device/deviceImage.jpeg"
-                        Stretch="Uniform" />
+                    <!--  设备主图区域（带渐变蒙版）  -->
+                    <Grid Grid.Row="1" Margin="0,30,0,0">
+                        <Image
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Source="/Resources/Images/Device/deviceImage.jpeg"
+                            Stretch="Uniform"
+                            RenderOptions.BitmapScalingMode="HighQuality" />
+                        <!--  底部渐变蒙版，增加层次感  -->
+                        <Border VerticalAlignment="Bottom" Height="80" IsHitTestVisible="False">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="Transparent" Offset="0" />
+                                    <GradientStop Color="#30FFFFFF" Offset="1" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+                    </Grid>
                 </Grid>
 
                 <!--  右侧：交互表单区  -->
@@ -128,14 +141,14 @@
                         <TextBlock
                             FontSize="24"
                             FontWeight="Bold"
-                            Foreground="#0066CC"
+                            Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
                             Text="{DynamicResource AppName}"
                             TextWrapping="Wrap" />
 
                         <TextBlock
                             Margin="0,8,0,0"
                             FontSize="13"
-                            Foreground="#666666"
+                            Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
                             Text="Gait Intelligent Analysis System"
                             TextWrapping="Wrap" />
 
@@ -214,7 +227,7 @@
                             HorizontalAlignment="Right"
                             Content="{DynamicResource RememberPassword}"
                             FontSize="13"
-                            Foreground="#666666"
+                            Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
                             IsChecked="{Binding RememberPassword}" />
 
                         <!--  错误信息  -->
@@ -230,7 +243,7 @@
                         <Button
                             Height="48"
                             Margin="0,20,0,0"
-                            Background="#009EDB"
+                            Background="{DynamicResource MaterialDesign.Brush.Primary}"
                             Command="{Binding LoginCommand}"
                             FontSize="16"
                             FontWeight="Bold"
@@ -261,7 +274,7 @@
                             Command="{Binding GuestLoginCommand}"
                             Content="{DynamicResource GuestLogin}"
                             FontSize="13"
-                            Foreground="#4DB8E8"
+                            Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
                             Style="{StaticResource MaterialDesignFlatButton}" />
 
                     </StackPanel>

@@ -10,6 +10,7 @@
         Height="720" Width="1280"
         MinHeight="720" MinWidth="1280"
         WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="{DynamicResource MaterialDesign.Brush.Background}"
@@ -21,7 +22,7 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="40" />
+            <RowDefinition Height="46" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -34,22 +35,26 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" 
+            <!-- 左侧占位，保持对称 -->
+            <Border Grid.Column="0" Width="138" />
+
+            <!-- 居中标题区域 -->
+            <StackPanel Grid.Column="1" 
                         Orientation="Horizontal" 
-                        VerticalAlignment="Center"
-                        Margin="16,0,0,0">
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
                 <materialDesign:PackIcon Kind="Walk" 
-                                         Width="24" Height="24"
+                                         Width="22" Height="22"
                                          VerticalAlignment="Center"
                                          Foreground="White" />
                 <TextBlock Text="{Binding Title}" 
-                           FontSize="16" 
+                           FontSize="15" 
                            FontWeight="Medium"
                            Foreground="White"
                            VerticalAlignment="Center"
                            Margin="8,0,0,0" />
                 <TextBlock Text="{Binding Version}" 
-                           FontSize="12"
+                           FontSize="11"
                            Foreground="White"
                            Opacity="0.8"
                            VerticalAlignment="Center"
@@ -61,7 +66,7 @@
                         HorizontalAlignment="Right">
 
                 <Button Style="{StaticResource MaterialDesignFlatButton}"
-                        Width="46" Height="40"
+                        Width="46" Height="46"
                         Click="MinimizeButton_Click"
                         ToolTip="{DynamicResource Minimize}">
                     <materialDesign:PackIcon Kind="WindowMinimize" 
@@ -69,7 +74,7 @@
                 </Button>
 
                 <Button Style="{StaticResource MaterialDesignFlatButton}"
-                        Width="46" Height="40"
+                        Width="46" Height="46"
                         Click="MaximizeButton_Click"
                         ToolTip="{DynamicResource Maximize}">
                     <materialDesign:PackIcon x:Name="MaximizeIcon" 
@@ -78,7 +83,7 @@
                 </Button>
 
                 <Button Style="{StaticResource MaterialDesignFlatButton}"
-                        Width="46" Height="40"
+                        Width="46" Height="46"
                         Click="CloseButton_Click"
                         ToolTip="{DynamicResource Close}">
                     <materialDesign:PackIcon Kind="WindowClose" 

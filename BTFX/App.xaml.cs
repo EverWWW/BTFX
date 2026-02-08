@@ -77,6 +77,21 @@ public partial class App : Application
         var themeService = Services.GetRequiredService<IThemeService>();
         themeService.ApplyTheme(settingsService.CurrentSettings.Application.Theme);
 
+        // 8.1 应用保存的主题色
+        var savedColor = settingsService.CurrentSettings.Application.PrimaryColor;
+        if (!string.IsNullOrWhiteSpace(savedColor))
+        {
+            try
+            {
+                var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(savedColor);
+                themeService.SetPrimaryColor(color);
+            }
+            catch
+            {
+                // 颜色解析失败时使用默认颜色
+            }
+        }
+
         // 9. 应用语言
         var localizationService = Services.GetRequiredService<ILocalizationService>();
         localizationService.ApplyLanguage(settingsService.CurrentSettings.Application.Language);

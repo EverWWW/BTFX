@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows.Media;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -40,6 +41,23 @@ public partial class GeneralSettingsViewModel : ObservableObject
         new() { Value = Common.AppTheme.Dark, Display = "深色主题", IconKind = "WeatherNight" }
     ];
 
+    /// <summary>
+    /// 可选主题色列表
+    /// </summary>
+    public ObservableCollection<ThemeColorOption> ThemeColorOptions { get; } =
+    [
+        new() { ColorHex = "#FF009EDB", DisplayName = "天蓝" },
+        new() { ColorHex = "#FF2196F3", DisplayName = "蓝色" },
+        new() { ColorHex = "#FF3F51B5", DisplayName = "靛蓝" },
+        new() { ColorHex = "#FF673AB7", DisplayName = "紫色" },
+        new() { ColorHex = "#FF009688", DisplayName = "青色" },
+        new() { ColorHex = "#FF4CAF50", DisplayName = "绿色" },
+        new() { ColorHex = "#FFFF9800", DisplayName = "橙色" },
+        new() { ColorHex = "#FFE91E63", DisplayName = "粉红" },
+        new() { ColorHex = "#FFF44336", DisplayName = "红色" },
+        new() { ColorHex = "#FF607D8B", DisplayName = "蓝灰" }
+    ];
+
     public GeneralSettingsViewModel(
         ISettingsService settingsService,
         ILocalizationService localizationService,
@@ -62,6 +80,13 @@ public partial class GeneralSettingsViewModel : ObservableObject
             var settings = _settingsService.CurrentSettings;
             SelectedLanguage = LanguageOptions.FirstOrDefault(x => x.Value == settings.Application.Language);
             SelectedTheme = ThemeOptions.FirstOrDefault(x => x.Value == settings.Application.Theme);
+
+            // 加载主题色选中状态
+            var savedColor = settings.Application.PrimaryColor;
+            foreach (var option in ThemeColorOptions)
+            {
+                option.IsSelected = string.Equals(option.ColorHex, savedColor, StringComparison.OrdinalIgnoreCase);
+            }
         }
         catch (Exception ex)
         {
@@ -85,6 +110,37 @@ public partial class GeneralSettingsViewModel : ObservableObject
         _settingsService.CurrentSettings.Application.Theme = value.Value;
         _settingsService.SaveSettings();
         _logHelper?.Information($"切换主题: {value.Display}");
+    }
+
+    /// <summary>
+    /// 应用主题色
+    /// </summary>
+    [RelayCommand]
+    private void ApplyThemeColor(ThemeColorOption? colorOption)
+    {
+        if (_isInitializing || colorOption == null) return;
+
+        try
+        {
+            var color = (Color)ColorConverter.ConvertFromString(colorOption.ColorHex);
+            _themeService.SetPrimaryColor(color);
+
+            // 更新选中状态
+            foreach (var option in ThemeColorOptions)
+            {
+                option.IsSelected = option == colorOption;
+            }
+
+            // 保存配置
+            _settingsService.CurrentSettings.Application.PrimaryColor = colorOption.ColorHex;
+            _settingsService.SaveSettings();
+
+            _logHelper?.Information($"切换主题色: {colorOption.DisplayName} ({colorOption.ColorHex})");
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("切换主题色失败", ex);
+        }
     }
 
     [RelayCommand]

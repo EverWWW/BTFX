@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Shell;
 using BTFX.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,8 +18,51 @@ public partial class MainWindow : Window
     [DllImport("user32.dll")]
     private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
 
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+    [DllImport("user32.dll")]
+    private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+
     private const int WM_SYSCOMMAND = 0x112;
+    private const int WM_GETMINMAXINFO = 0x0024;
     private const int SC_SIZE = 0xF000;
+    private const uint MONITOR_DEFAULTTONEAREST = 0x00000002;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MONITORINFO
+    {
+        public int cbSize;
+        public RECT rcMonitor;
+        public RECT rcWork;
+        public uint dwFlags;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct RECT
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MINMAXINFO
+    {
+        public POINT ptReserved;
+        public POINT ptMaxSize;
+        public POINT ptMaxPosition;
+        public POINT ptMinTrackSize;
+        public POINT ptMaxTrackSize;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT
+    {
+        public int X;
+        public int Y;
+    }
 
     // 窗口大小调整方向
     private enum ResizeDirection
@@ -47,8 +91,44 @@ public partial class MainWindow : Window
         // 从DI容器获取ViewModel
         DataContext = App.Services.GetRequiredService<MainWindowViewModel>();
 
+        // 初始化最大化图标状态
+        MaximizeIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.WindowRestore;
+
         // 订阅状态变化
         StateChanged += MainWindow_StateChanged;
+        SourceInitialized += MainWindow_SourceInitialized;
+    }
+
+    /// <summary>
+    /// 窗口句柄初始化后挂载 WndProc，确保最大化时不遮挡任务栏
+    /// </summary>
+    private void MainWindow_SourceInitialized(object? sender, EventArgs e)
+    {
+        var handle = new WindowInteropHelper(this).Handle;
+        HwndSource.FromHwnd(handle)?.AddHook(WndProc);
+    }
+
+    private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (msg == WM_GETMINMAXINFO)
+        {
+            var mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
+            var monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+            if (monitor != IntPtr.Zero)
+            {
+                var monitorInfo = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
+                if (GetMonitorInfo(monitor, ref monitorInfo))
+                {
+                    var work = monitorInfo.rcWork;
+                    var mon = monitorInfo.rcMonitor;
+                    mmi.ptMaxPosition = new POINT { X = work.Left - mon.Left, Y = work.Top - mon.Top };
+                    mmi.ptMaxSize = new POINT { X = work.Right - work.Left, Y = work.Bottom - work.Top };
+                }
+            }
+            Marshal.StructureToPtr(mmi, lParam, true);
+            handled = true;
+        }
+        return IntPtr.Zero;
     }
 
     /// <summary>

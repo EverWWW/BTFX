@@ -304,6 +304,7 @@
     <system:String x:Key="LanguageSettings">Language Settings</system:String>
     <system:String x:Key="SelectLanguage">Select Language</system:String>
     <system:String x:Key="ThemeSettings">Theme Settings</system:String>
+    <system:String x:Key="ThemeColorSettings">Theme Color</system:String>
     <system:String x:Key="SaveSettings">Save Settings</system:String>
     <system:String x:Key="SettingsExportImport">Import/Export Settings</system:String>
     <system:String x:Key="ExportSettings">Export Settings</system:String>

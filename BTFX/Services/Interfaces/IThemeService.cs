@@ -13,9 +13,19 @@ public interface IThemeService
     AppTheme CurrentTheme { get; }
 
     /// <summary>
+    /// 当前主题色（十六进制）
+    /// </summary>
+    string CurrentPrimaryColor { get; }
+
+    /// <summary>
     /// 主题变更事件
     /// </summary>
     event EventHandler<AppTheme>? ThemeChanged;
+
+    /// <summary>
+    /// 主题色变更事件
+    /// </summary>
+    event EventHandler<string>? PrimaryColorChanged;
 
     /// <summary>
     /// 应用指定主题
@@ -27,4 +37,10 @@ public interface IThemeService
     /// 切换主题（亮色/深色）
     /// </summary>
     void ToggleTheme();
+
+    /// <summary>
+    /// 设置主题色
+    /// </summary>
+    /// <param name="primaryColor">主题色</param>
+    void SetPrimaryColor(System.Windows.Media.Color primaryColor);
 }
