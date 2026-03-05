@@ -107,7 +107,7 @@ public partial class App : Application
             navigationService.RegisterView<LoginViewModel, Views.LoginView>();
             navigationService.RegisterView<PatientSelectionViewModel, Views.PatientSelectionView>();
             navigationService.RegisterView<MainContainerViewModel, Views.MainContainerView>();
-            navigationService.RegisterView<MeasurementViewModel, Views.MeasurementView>();
+            navigationService.RegisterView<ViewModels.Measurement.MeasurementViewModel, Views.Measurement.MeasurementView>();
             navigationService.RegisterView<DataManagementViewModel, Views.DataManagementView>();
             // TODO: Register other sub-views (Report, Settings)
 
@@ -496,7 +496,6 @@ public partial class App : Application
         services.AddTransient<PatientSelectionViewModel>();
         services.AddTransient<PatientEditViewModel>();
         services.AddTransient<MainContainerViewModel>();
-        services.AddTransient<MeasurementViewModel>();
         services.AddTransient<DataManagementViewModel>();
         services.AddTransient<MeasurementDetailViewModel>();
         services.AddTransient<ReportViewModel>();
@@ -510,19 +509,24 @@ public partial class App : Application
         services.AddTransient<ViewModels.Settings.DataManagementSettingsViewModel>();
         services.AddTransient<ViewModels.Settings.SystemInfoViewModel>();
 
+        // Measurement 模块 ViewModel
+        services.AddTransient<ViewModels.Measurement.MeasurementViewModel>();
+
         // ========== View 注册 ==========
         services.AddTransient<MainWindow>();
         services.AddTransient<Views.LoginView>();
         services.AddTransient<Views.PatientSelectionView>();
         services.AddTransient<Views.Dialogs.PatientEditDialog>();
         services.AddTransient<Views.MainContainerView>();
-        services.AddTransient<Views.MeasurementView>();
         services.AddTransient<Views.DataManagementView>();
         services.AddTransient<Views.ReportView>();
         services.AddTransient<Views.SettingsView>();
         services.AddTransient<Views.Dialogs.MeasurementDetailDialog>();
         services.AddTransient<Views.Dialogs.ConfirmDialog>();
         services.AddTransient<Views.Dialogs.AboutDialog>();
+
+        // Measurement 模块 View
+        services.AddTransient<Views.Measurement.MeasurementView>();
     }
 }
 

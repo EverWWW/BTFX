@@ -1,0 +1,283 @@
+﻿<UserControl x:Class="BTFX.Views.Measurement.InfoPanelView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:BTFX.Views.Measurement"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:vm="clr-namespace:BTFX.ViewModels.Measurement"
+             mc:Ignorable="d" 
+             d:DataContext="{d:DesignInstance Type=vm:MeasurementViewModel}"
+             d:DesignHeight="700" d:DesignWidth="280">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
+        <StackPanel>
+
+            <!-- Card 1: 当前患者 -->
+            <materialDesign:Card Padding="12" Margin="0,0,0,12">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <materialDesign:PackIcon Kind="Account" 
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,8,0" />
+                        <TextBlock Text="{DynamicResource MA.Info.Patient.Title}"
+                                   Style="{StaticResource MaterialDesignSubtitle1TextBlock}" />
+                    </StackPanel>
+
+                    <!-- 患者信息 -->
+                    <StackPanel Visibility="{Binding HasCurrentPatient, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock Text="{Binding CurrentPatientName}"
+                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                   FontWeight="Bold" />
+                    </StackPanel>
+
+                    <!-- 无患者提示 -->
+                    <TextBlock Text="{DynamicResource MA.Info.NoPatient}"
+                               Foreground="Gray"
+                               Visibility="{Binding HasCurrentPatient, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}" />
+
+                    <Button Content="{DynamicResource MA.Info.SwitchPatient}"
+                            Style="{StaticResource MaterialDesignFlatButton}"
+                            HorizontalAlignment="Left"
+                            Margin="0,8,0,0"
+                            Padding="0" />
+                </StackPanel>
+            </materialDesign:Card>
+
+            <!-- Card 2: 本次测量 -->
+            <materialDesign:Card Padding="12" Margin="0,0,0,12">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <materialDesign:PackIcon Kind="ClipboardText" 
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,8,0" />
+                        <TextBlock Text="{DynamicResource MA.Info.Measurement.Title}"
+                                   Style="{StaticResource MaterialDesignSubtitle1TextBlock}" />
+                    </StackPanel>
+
+                    <!-- 测量信息 -->
+                    <StackPanel Visibility="{Binding HasMeasurementRecord, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock Text="{Binding MeasurementName}"
+                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                   FontWeight="Bold"
+                                   TextTrimming="CharacterEllipsis" />
+
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" 
+                                       Text="{DynamicResource MA.Info.CurrentStep}" 
+                                       Foreground="Gray" Margin="0,0,8,4" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" 
+                                       Text="{Binding CurrentStep}" />
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" 
+                                       Text="{DynamicResource MA.Info.RecordId}" 
+                                       Foreground="Gray" Margin="0,0,8,0" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" 
+                                       Text="{Binding CurrentMeasurement.Id, FallbackValue=—}" />
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- 无测量提示 -->
+                    <TextBlock Text="{DynamicResource MA.Info.NoMeasurement}"
+                               Foreground="Gray"
+                               Visibility="{Binding HasMeasurementRecord, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}" />
+                </StackPanel>
+            </materialDesign:Card>
+
+            <!-- Card 3: 视频状态 -->
+            <materialDesign:Card Padding="12" Margin="0,0,0,12">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <materialDesign:PackIcon Kind="Video" 
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,8,0" />
+                        <TextBlock Text="{DynamicResource MA.Info.Video.Title}"
+                                   Style="{StaticResource MaterialDesignSubtitle1TextBlock}" />
+                    </StackPanel>
+
+                    <!-- 正面视频状态 -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <materialDesign:PackIcon Width="16" Height="16" Margin="0,0,8,0">
+                            <materialDesign:PackIcon.Style>
+                                <Style TargetType="materialDesign:PackIcon">
+                                    <Setter Property="Kind" Value="Close" />
+                                    <Setter Property="Foreground" Value="Gray" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasFrontVideo}" Value="True">
+                                            <Setter Property="Kind" Value="Check" />
+                                            <Setter Property="Foreground" Value="Green" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </materialDesign:PackIcon.Style>
+                        </materialDesign:PackIcon>
+                        <TextBlock>
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="{DynamicResource MA.Info.Video.FrontMissing}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasFrontVideo}" Value="True">
+                                            <Setter Property="Text" Value="{DynamicResource MA.Info.Video.FrontReady}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <!-- 侧面视频状态 -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <materialDesign:PackIcon Width="16" Height="16" Margin="0,0,8,0">
+                            <materialDesign:PackIcon.Style>
+                                <Style TargetType="materialDesign:PackIcon">
+                                    <Setter Property="Kind" Value="Close" />
+                                    <Setter Property="Foreground" Value="Gray" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasSideVideo}" Value="True">
+                                            <Setter Property="Kind" Value="Check" />
+                                            <Setter Property="Foreground" Value="Green" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </materialDesign:PackIcon.Style>
+                        </materialDesign:PackIcon>
+                        <TextBlock>
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="{DynamicResource MA.Info.Video.SideMissing}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasSideVideo}" Value="True">
+                                            <Setter Property="Text" Value="{DynamicResource MA.Info.Video.SideReady}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <!-- 单视角警告 -->
+                    <Border Background="#FFF3E0" 
+                            CornerRadius="4" 
+                            Padding="8"
+                            Margin="0,8,0,0"
+                            Visibility="{Binding HasDualVideo, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}">
+                        <TextBlock Text="{DynamicResource MA.Info.Video.AnalysisUnavailable}"
+                                   TextWrapping="Wrap"
+                                   Foreground="#E65100"
+                                   FontSize="12"
+                                   Visibility="{Binding HasAnyVideo, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    </Border>
+                </StackPanel>
+            </materialDesign:Card>
+
+            <!-- Card 4: 分析阶段 -->
+            <materialDesign:Card Padding="12" Margin="0,0,0,12">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <materialDesign:PackIcon Kind="ChartTimelineVariant" 
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,8,0" />
+                        <TextBlock Text="{DynamicResource MA.Info.Analysis.Title}"
+                                   Style="{StaticResource MaterialDesignSubtitle1TextBlock}" />
+                    </StackPanel>
+
+                    <!-- Keypoints 状态 -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <materialDesign:PackIcon Kind="MapMarker" Width="16" Height="16" Margin="0,0,8,0" />
+                        <TextBlock Text="{DynamicResource MA.Step4.Stage.Keypoints}" Width="100" />
+                        <TextBlock FontSize="12">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="{DynamicResource MA.Status.NotRun}" />
+                                    <Setter Property="Foreground" Value="Gray" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentMeasurement.KeypointsCompleted}" Value="True">
+                                            <Setter Property="Text" Value="{DynamicResource MA.Status.Completed}" />
+                                            <Setter Property="Foreground" Value="Green" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <!-- Events 状态 -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <materialDesign:PackIcon Kind="Timeline" Width="16" Height="16" Margin="0,0,8,0" />
+                        <TextBlock Text="{DynamicResource MA.Step4.Stage.Events}" Width="100" />
+                        <TextBlock FontSize="12">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="{DynamicResource MA.Status.NotRun}" />
+                                    <Setter Property="Foreground" Value="Gray" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentMeasurement.EventsCompleted}" Value="True">
+                                            <Setter Property="Text" Value="{DynamicResource MA.Status.Completed}" />
+                                            <Setter Property="Foreground" Value="Green" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <!-- Kinematics 状态 -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <materialDesign:PackIcon Kind="ChartLine" Width="16" Height="16" Margin="0,0,8,0" />
+                        <TextBlock Text="{DynamicResource MA.Step4.Stage.Kinematics}" Width="100" />
+                        <TextBlock FontSize="12">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="{DynamicResource MA.Status.NotRun}" />
+                                    <Setter Property="Foreground" Value="Gray" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentMeasurement.KinematicsCompleted}" Value="True">
+                                            <Setter Property="Text" Value="{DynamicResource MA.Status.Completed}" />
+                                            <Setter Property="Foreground" Value="Green" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <Button Content="{DynamicResource MA.Info.GoToAnalyze}"
+                            Command="{Binding GoToStepCommand}"
+                            CommandParameter="4"
+                            Style="{StaticResource MaterialDesignFlatButton}"
+                            HorizontalAlignment="Left"
+                            IsEnabled="{Binding HasDualVideo}"
+                            Padding="0" />
+                </StackPanel>
+            </materialDesign:Card>
+
+            <!-- Card 5: 质量提示 -->
+            <materialDesign:Card Padding="12">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <materialDesign:PackIcon Kind="AlertCircleOutline" 
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,8,0" />
+                        <TextBlock Text="{DynamicResource MA.Info.Quality.Title}"
+                                   Style="{StaticResource MaterialDesignSubtitle1TextBlock}" />
+                    </StackPanel>
+
+                    <TextBlock Text="{DynamicResource MA.Info.Quality.Placeholder}"
+                               TextWrapping="Wrap"
+                               Foreground="Gray"
+                               FontSize="12" />
+                </StackPanel>
+            </materialDesign:Card>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

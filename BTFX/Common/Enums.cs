@@ -277,3 +277,151 @@ public enum UserStatus
     [Description("禁用")]
     Disabled = 1
 }
+
+#region 测量评估模块枚举
+
+/// <summary>
+/// 测量类型
+/// </summary>
+public enum MeasurementType
+{
+    /// <summary>
+    /// 自然步行
+    /// </summary>
+    [Description("自然步行")]
+    NormalWalk = 0,
+
+    /// <summary>
+    /// 快走
+    /// </summary>
+    [Description("快走")]
+    FastWalk = 1,
+
+    /// <summary>
+    /// 慢走
+    /// </summary>
+    [Description("慢走")]
+    SlowWalk = 2,
+
+    /// <summary>
+    /// 其他
+    /// </summary>
+    [Description("其他")]
+    Other = 3
+}
+
+/// <summary>
+/// 分析阶段
+/// </summary>
+public enum AnalysisStage
+{
+    /// <summary>
+    /// 未分析
+    /// </summary>
+    [Description("未分析")]
+    None = 0,
+
+    /// <summary>
+    /// 关键点识别
+    /// </summary>
+    [Description("关键点")]
+    Keypoints = 1,
+
+    /// <summary>
+    /// 步态事件检测
+    /// </summary>
+    [Description("步态事件")]
+    Events = 2,
+
+    /// <summary>
+    /// 运动学参数
+    /// </summary>
+    [Description("运动学")]
+    Kinematics = 3
+}
+
+/// <summary>
+/// 视频规格
+/// </summary>
+public enum VideoSpec
+{
+    /// <summary>
+    /// 1080P 30fps
+    /// </summary>
+    [Description("1080P / 30 FPS")]
+    P1080_30fps = 0,
+
+    /// <summary>
+    /// 1440P 30fps
+    /// </summary>
+    [Description("1440P / 30 FPS")]
+    P1440_30fps = 1
+}
+
+/// <summary>
+/// 导入策略
+/// </summary>
+public enum ImportStrategy
+{
+    /// <summary>
+    /// 复制到测量目录
+    /// </summary>
+    [Description("复制到测量目录")]
+    CopyToFolder = 0,
+
+    /// <summary>
+    /// 仅引用原路径
+    /// </summary>
+    [Description("仅引用原路径")]
+    ReferenceOnly = 1
+}
+
+/// <summary>
+/// 分析任务状态
+/// </summary>
+public enum AnalysisTaskStatus
+{
+    /// <summary>
+    /// 未运行
+    /// </summary>
+    [Description("未运行")]
+    NotRun = 0,
+
+    /// <summary>
+    /// 运行中
+    /// </summary>
+    [Description("运行中")]
+    Running = 1,
+
+    /// <summary>
+    /// 已完成
+    /// </summary>
+    [Description("已完成")]
+    Completed = 2,
+
+    /// <summary>
+    /// 失败
+    /// </summary>
+    [Description("失败")]
+    Failed = 3
+}
+
+/// <summary>
+/// 视频导入模式
+/// </summary>
+public enum VideoImportMode
+{
+    /// <summary>
+    /// 导入已有视频
+    /// </summary>
+    [Description("导入")]
+    Import = 0,
+
+    /// <summary>
+    /// 实时采集
+    /// </summary>
+    [Description("采集")]
+    Capture = 1
+}
+
+#endregion

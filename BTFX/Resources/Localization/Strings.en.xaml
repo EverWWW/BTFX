@@ -361,4 +361,162 @@
     <system:String x:Key="DaysAgoLogs">days ago</system:String>
     <system:String x:Key="AllRightsReserved">All Rights Reserved</system:String>
 
+    <!-- ========== Measurement Assessment Module (MA.*) ========== -->
+
+    <!-- Common -->
+    <system:String x:Key="MA.Common.MeasurementAssessment">Measurement Assessment</system:String>
+    <system:String x:Key="MA.Common.Step">Step</system:String>
+    <system:String x:Key="MA.Common.OpenFolder">Open Folder</system:String>
+    <system:String x:Key="MA.Common.Optional">(Optional)</system:String>
+    <system:String x:Key="MA.Common.NotAvailable">—</system:String>
+
+    <!-- StepBar -->
+    <system:String x:Key="MA.StepBar.Step1">Create Measurement</system:String>
+    <system:String x:Key="MA.StepBar.Step2">Import / Capture</system:String>
+    <system:String x:Key="MA.StepBar.Step3">Review</system:String>
+    <system:String x:Key="MA.StepBar.Step4">Analyze</system:String>
+
+    <!-- Step1 Create Measurement -->
+    <system:String x:Key="MA.Step1.Title">Create a New Measurement</system:String>
+    <system:String x:Key="MA.Step1.Card.BasicInfo">Measurement Info</system:String>
+    <system:String x:Key="MA.Step1.MeasurementName">Measurement Name</system:String>
+    <system:String x:Key="MA.Step1.MeasurementType">Measurement Type</system:String>
+    <system:String x:Key="MA.Step1.Type.NormalWalk">Normal Walk</system:String>
+    <system:String x:Key="MA.Step1.Type.FastWalk">Fast Walk</system:String>
+    <system:String x:Key="MA.Step1.Type.SlowWalk">Slow Walk</system:String>
+    <system:String x:Key="MA.Step1.Type.Other">Other</system:String>
+    <system:String x:Key="MA.Step1.Remark">Notes</system:String>
+    <system:String x:Key="MA.Step1.Card.Conditions">Measurement Settings</system:String>
+    <system:String x:Key="MA.Step1.VideoSpec">Video Preset</system:String>
+    <system:String x:Key="MA.Step1.WalkwayLength">Walkway Length (m)</system:String>
+    <system:String x:Key="MA.Step1.Mode">Mode</system:String>
+    <system:String x:Key="MA.Step1.Mode.Import">Import</system:String>
+    <system:String x:Key="MA.Step1.Mode.Capture">Capture</system:String>
+    <system:String x:Key="MA.Step1.CreateButton">Create Measurement</system:String>
+    <system:String x:Key="MA.Step1.Validation.WalkwayLengthInvalid">Please enter a valid walkway length (positive number).</system:String>
+
+    <!-- Step2 Import/Capture -->
+    <system:String x:Key="MA.Step2.Title">Import / Capture Videos</system:String>
+    <system:String x:Key="MA.Step2.Tab.Import">Import</system:String>
+    <system:String x:Key="MA.Step2.Tab.Capture">Capture</system:String>
+    <system:String x:Key="MA.Step2.FrontVideo">Front Video</system:String>
+    <system:String x:Key="MA.Step2.SideVideo">Side Video</system:String>
+    <system:String x:Key="MA.Step2.SelectFile">Select File</system:String>
+    <system:String x:Key="MA.Step2.Meta.Resolution">Resolution</system:String>
+    <system:String x:Key="MA.Step2.Meta.Fps">FPS</system:String>
+    <system:String x:Key="MA.Step2.Meta.Duration">Duration</system:String>
+    <system:String x:Key="MA.Step2.ImportStrategy">Import Strategy</system:String>
+    <system:String x:Key="MA.Step2.Strategy.Copy">Copy to Measurement Folder (Recommended)</system:String>
+    <system:String x:Key="MA.Step2.Strategy.Reference">Reference Original Path Only</system:String>
+    <system:String x:Key="MA.Step2.SyncCheck">Sync Check</system:String>
+    <system:String x:Key="MA.Step2.ImportConfirm">Confirm Import</system:String>
+    <system:String x:Key="MA.Step2.Capture.NotConfigured">Device not configured. Capture is unavailable.</system:String>
+    <system:String x:Key="MA.Step2.Validation.NoVideo">Please import at least one video.</system:String>
+    <system:String x:Key="MA.Step2.VideoFilter">Video Files</system:String>
+    <system:String x:Key="MA.Step2.SelectVideoTitle">Select Video File</system:String>
+
+    <!-- Step3 Review -->
+    <system:String x:Key="MA.Step3.Title">Review</system:String>
+    <system:String x:Key="MA.Step3.FrontView">Front View</system:String>
+    <system:String x:Key="MA.Step3.SideView">Side View</system:String>
+    <system:String x:Key="MA.Step3.Player.Placeholder">Video Area (Player Pending)</system:String>
+    <system:String x:Key="MA.Step3.Player.NotLoaded">Not Loaded</system:String>
+    <system:String x:Key="MA.Step3.Player.Loaded">Loaded</system:String>
+    <system:String x:Key="MA.Step3.Controls.Play">Play</system:String>
+    <system:String x:Key="MA.Step3.Controls.Pause">Pause</system:String>
+    <system:String x:Key="MA.Step3.Controls.PrevFrame">Prev Frame</system:String>
+    <system:String x:Key="MA.Step3.Controls.NextFrame">Next Frame</system:String>
+    <system:String x:Key="MA.Step3.Controls.Speed">Speed</system:String>
+    <system:String x:Key="MA.Step3.Overlay.Title">Overlay</system:String>
+    <system:String x:Key="MA.Step3.Overlay.ShowKeypoints">Show Keypoints</system:String>
+    <system:String x:Key="MA.Step3.Overlay.ShowSkeleton">Show Skeleton</system:String>
+    <system:String x:Key="MA.Step3.Overlay.ShowConfidence">Show Confidence</system:String>
+    <system:String x:Key="MA.Step3.Overlay.KeypointGroup">Keypoint Group</system:String>
+    <system:String x:Key="MA.Step3.Overlay.Group.LowerLimb">Lower Limb</system:String>
+    <system:String x:Key="MA.Step3.Overlay.Group.Trunk">Trunk</system:String>
+    <system:String x:Key="MA.Step3.Overlay.Group.All">All</system:String>
+    <system:String x:Key="MA.Step3.Overlay.NoKeypoints">Keypoints not available. Run keypoint analysis in "Analyze".</system:String>
+    <system:String x:Key="MA.Step3.Timeline.Title">Gait Events</system:String>
+    <system:String x:Key="MA.Step3.Timeline.NoEvents">No event data (available after event analysis).</system:String>
+    <system:String x:Key="MA.Step3.GoAnalyze">Go to Analyze</system:String>
+    <system:String x:Key="MA.Step3.GoAnalyze.DisabledReason">Both front and side videos are required for analysis.</system:String>
+    <system:String x:Key="MA.Step3.BackToImport">Back to Import</system:String>
+
+    <!-- Step4 Analyze -->
+    <system:String x:Key="MA.Step4.Title">Analyze</system:String>
+    <system:String x:Key="MA.Step4.Stage.Title">Analysis Stage</system:String>
+    <system:String x:Key="MA.Step4.Stage.Keypoints">Keypoint Detection</system:String>
+    <system:String x:Key="MA.Step4.Stage.Events">Event Detection</system:String>
+    <system:String x:Key="MA.Step4.Stage.Kinematics">Kinematics</system:String>
+    <system:String x:Key="MA.Step4.Options.Title">Options</system:String>
+    <system:String x:Key="MA.Step4.Run.Start">Start</system:String>
+    <system:String x:Key="MA.Step4.Run.Cancel">Cancel</system:String>
+    <system:String x:Key="MA.Step4.Run.Rerun">Rerun</system:String>
+    <system:String x:Key="MA.Step4.Run.OpenOutput">Open Output Folder</system:String>
+    <system:String x:Key="MA.Step4.Summary.Title">Summary</system:String>
+    <system:String x:Key="MA.Step4.Summary.SpatioTemporal">Spatio-Temporal</system:String>
+    <system:String x:Key="MA.Step4.Summary.Phase">Phase</system:String>
+    <system:String x:Key="MA.Step4.Summary.ROM">ROM</system:String>
+    <system:String x:Key="MA.Step4.Summary.Quality">Quality</system:String>
+    <system:String x:Key="MA.Step4.Link.ReviewOverlay">View Overlay</system:String>
+    <system:String x:Key="MA.Step4.Link.GenerateReport">Generate Report</system:String>
+    <system:String x:Key="MA.Step4.Validation.NeedDualVideo">Please import both front and side videos before analysis.</system:String>
+
+    <!-- InfoPanel -->
+    <system:String x:Key="MA.Info.Patient.Title">Current Patient</system:String>
+    <system:String x:Key="MA.Info.Measurement.Title">Current Measurement</system:String>
+    <system:String x:Key="MA.Info.Video.Title">Video Status</system:String>
+    <system:String x:Key="MA.Info.Analysis.Title">Analysis Status</system:String>
+    <system:String x:Key="MA.Info.Quality.Title">Quality</system:String>
+    <system:String x:Key="MA.Info.SwitchPatient">Switch Patient</system:String>
+    <system:String x:Key="MA.Info.Video.FrontReady">Front: Selected</system:String>
+    <system:String x:Key="MA.Info.Video.FrontMissing">Front: Not Selected</system:String>
+    <system:String x:Key="MA.Info.Video.SideReady">Side: Selected</system:String>
+    <system:String x:Key="MA.Info.Video.SideMissing">Side: Not Selected</system:String>
+    <system:String x:Key="MA.Info.Video.AnalysisUnavailable">Single view only. Analysis unavailable.</system:String>
+    <system:String x:Key="MA.Info.Quality.Placeholder">Quality info will be available after keypoint analysis.</system:String>
+    <system:String x:Key="MA.Info.GoToAnalyze">Go to Analyze</system:String>
+    <system:String x:Key="MA.Info.NoPatient">No Patient Selected</system:String>
+    <system:String x:Key="MA.Info.NoMeasurement">No Measurement Created</system:String>
+    <system:String x:Key="MA.Info.CurrentStep">Current Step</system:String>
+    <system:String x:Key="MA.Info.RecordId">Record ID</system:String>
+    <system:String x:Key="MA.Info.CreateTime">Created At</system:String>
+    <system:String x:Key="MA.Info.OpenMeasurementFolder">Open Measurement Folder</system:String>
+
+    <!-- TaskDrawer -->
+    <system:String x:Key="MA.Task.Title">Tasks</system:String>
+    <system:String x:Key="MA.Task.CurrentTask">Current Task</system:String>
+    <system:String x:Key="MA.Task.Progress">Progress</system:String>
+    <system:String x:Key="MA.Task.Elapsed">Elapsed</system:String>
+    <system:String x:Key="MA.Task.Log">Log</system:String>
+    <system:String x:Key="MA.Task.History">History</system:String>
+    <system:String x:Key="MA.Task.NoTask">No task.</system:String>
+    <system:String x:Key="MA.Task.Analyzing">Analyzing...</system:String>
+
+    <!-- Dialog -->
+    <system:String x:Key="MA.Dialog.VideoIncomplete.Title">Incomplete Video</system:String>
+    <system:String x:Key="MA.Dialog.VideoIncomplete.Content">Only one view video is imported. You can review, but analysis is unavailable. Continue?</system:String>
+    <system:String x:Key="MA.Dialog.VideoIncomplete.Continue">Continue</system:String>
+    <system:String x:Key="MA.Dialog.VideoIncomplete.BackImport">Back to Import</system:String>
+    <system:String x:Key="MA.Dialog.OverrideMeasurement.Title">Create New Measurement</system:String>
+    <system:String x:Key="MA.Dialog.OverrideMeasurement.Content">Current measurement is not finished. Creating a new one will overwrite it. Continue?</system:String>
+    <system:String x:Key="MA.Dialog.CancelAnalysis.Title">Cancel Analysis</system:String>
+    <system:String x:Key="MA.Dialog.CancelAnalysis.Content">Are you sure you want to cancel the current analysis task?</system:String>
+
+    <!-- Snackbar -->
+    <system:String x:Key="MA.Snackbar.ImportSuccess">Import successful.</system:String>
+    <system:String x:Key="MA.Snackbar.AnalysisStarted">Analysis started.</system:String>
+    <system:String x:Key="MA.Snackbar.AnalysisCompleted">Analysis completed.</system:String>
+    <system:String x:Key="MA.Snackbar.AnalysisCanceled">Analysis canceled.</system:String>
+    <system:String x:Key="MA.Snackbar.NoKeypoints">Keypoints not available.</system:String>
+    <system:String x:Key="MA.Snackbar.MeasurementCreated">Measurement created.</system:String>
+    <system:String x:Key="MA.Snackbar.VideoCleared">Video cleared.</system:String>
+    <system:String x:Key="MA.Snackbar.SelectPatientFirst">Please select a patient first.</system:String>
+
+    <!-- Status -->
+    <system:String x:Key="MA.Status.NotRun">Not Run</system:String>
+    <system:String x:Key="MA.Status.Running">Running</system:String>
+    <system:String x:Key="MA.Status.Completed">Completed</system:String>
+    <system:String x:Key="MA.Status.Failed">Failed</system:String>
+
 </ResourceDictionary>

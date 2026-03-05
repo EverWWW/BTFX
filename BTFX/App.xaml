@@ -43,6 +43,8 @@
             <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
             <converters:GreaterThanOneConverter x:Key="GreaterThanOneConverter" />
             <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
+            <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+            <converters:BooleanToValueConverter x:Key="BooleanToValueConverter" />
 
             <!--  字体资源
                   Alibaba PuHuiTi 3.0 仅包含 Regular (55) 字重文件，

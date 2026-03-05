@@ -1,0 +1,289 @@
+﻿<UserControl x:Class="BTFX.Views.Measurement.Step4AnalyzeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:BTFX.Views.Measurement"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:vm="clr-namespace:BTFX.ViewModels.Measurement"
+             xmlns:common="clr-namespace:BTFX.Common"
+             mc:Ignorable="d" 
+             d:DataContext="{d:DesignInstance Type=vm:MeasurementViewModel}"
+             d:DesignHeight="650" d:DesignWidth="750">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- 标题 -->
+        <TextBlock Grid.Row="0" 
+                   Text="{DynamicResource MA.Step4.Title}"
+                   Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                   Margin="0,0,0,16" />
+
+        <!-- 内容区 -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+
+                <!-- 阶段选择卡片 -->
+                <TextBlock Text="{DynamicResource MA.Step4.Stage.Title}"
+                           Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                           Margin="0,0,0,12" />
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Keypoints 卡片 -->
+                    <materialDesign:Card Grid.Column="0" Padding="16" Cursor="Hand">
+                        <materialDesign:Card.Style>
+                            <Style TargetType="materialDesign:Card" BasedOn="{StaticResource {x:Type materialDesign:Card}}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedStage}" Value="{x:Static common:AnalysisStage.Keypoints}">
+                                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </materialDesign:Card.Style>
+                        <materialDesign:Card.InputBindings>
+                            <MouseBinding MouseAction="LeftClick" 
+                                          Command="{Binding DataContext.SelectStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                          CommandParameter="{x:Static common:AnalysisStage.Keypoints}" />
+                        </materialDesign:Card.InputBindings>
+                        <StackPanel HorizontalAlignment="Center">
+                            <materialDesign:PackIcon Kind="MapMarker" Width="32" Height="32" HorizontalAlignment="Center" />
+                            <TextBlock Text="{DynamicResource MA.Step4.Stage.Keypoints}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,8,0,4" />
+                            <TextBlock HorizontalAlignment="Center" FontSize="12">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="{DynamicResource MA.Status.NotRun}" />
+                                        <Setter Property="Foreground" Value="Gray" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding CurrentMeasurement.KeypointsCompleted}" Value="True">
+                                                <Setter Property="Text" Value="{DynamicResource MA.Status.Completed}" />
+                                                <Setter Property="Foreground" Value="Green" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </materialDesign:Card>
+
+                    <!-- Events 卡片 -->
+                    <materialDesign:Card Grid.Column="2" Padding="16" Cursor="Hand">
+                        <materialDesign:Card.Style>
+                            <Style TargetType="materialDesign:Card" BasedOn="{StaticResource {x:Type materialDesign:Card}}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedStage}" Value="{x:Static common:AnalysisStage.Events}">
+                                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </materialDesign:Card.Style>
+                        <materialDesign:Card.InputBindings>
+                            <MouseBinding MouseAction="LeftClick" 
+                                          Command="{Binding DataContext.SelectStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                          CommandParameter="{x:Static common:AnalysisStage.Events}" />
+                        </materialDesign:Card.InputBindings>
+                        <StackPanel HorizontalAlignment="Center">
+                            <materialDesign:PackIcon Kind="Timeline" Width="32" Height="32" HorizontalAlignment="Center" />
+                            <TextBlock Text="{DynamicResource MA.Step4.Stage.Events}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,8,0,4" />
+                            <TextBlock HorizontalAlignment="Center" FontSize="12">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="{DynamicResource MA.Status.NotRun}" />
+                                        <Setter Property="Foreground" Value="Gray" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding CurrentMeasurement.EventsCompleted}" Value="True">
+                                                <Setter Property="Text" Value="{DynamicResource MA.Status.Completed}" />
+                                                <Setter Property="Foreground" Value="Green" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </materialDesign:Card>
+
+                    <!-- Kinematics 卡片 -->
+                    <materialDesign:Card Grid.Column="4" Padding="16" Cursor="Hand">
+                        <materialDesign:Card.Style>
+                            <Style TargetType="materialDesign:Card" BasedOn="{StaticResource {x:Type materialDesign:Card}}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedStage}" Value="{x:Static common:AnalysisStage.Kinematics}">
+                                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </materialDesign:Card.Style>
+                        <materialDesign:Card.InputBindings>
+                            <MouseBinding MouseAction="LeftClick" 
+                                          Command="{Binding DataContext.SelectStageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                          CommandParameter="{x:Static common:AnalysisStage.Kinematics}" />
+                        </materialDesign:Card.InputBindings>
+                        <StackPanel HorizontalAlignment="Center">
+                            <materialDesign:PackIcon Kind="ChartLine" Width="32" Height="32" HorizontalAlignment="Center" />
+                            <TextBlock Text="{DynamicResource MA.Step4.Stage.Kinematics}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,8,0,4" />
+                            <TextBlock HorizontalAlignment="Center" FontSize="12">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="{DynamicResource MA.Status.NotRun}" />
+                                        <Setter Property="Foreground" Value="Gray" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding CurrentMeasurement.KinematicsCompleted}" Value="True">
+                                                <Setter Property="Text" Value="{DynamicResource MA.Status.Completed}" />
+                                                <Setter Property="Foreground" Value="Green" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </materialDesign:Card>
+                </Grid>
+
+                <!-- 运行控制区 -->
+                <materialDesign:Card Margin="0,16,0,0" Padding="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 进度条 -->
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <ProgressBar Value="{Binding AnalysisProgress}" 
+                                         Height="8"
+                                         Visibility="{Binding IsAnalyzing, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                            <TextBlock Text="{Binding CurrentTaskName}"
+                                       Visibility="{Binding IsAnalyzing, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                       Margin="0,8,0,0"
+                                       Foreground="Gray" />
+                        </StackPanel>
+
+                        <!-- 控制按钮 -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button Content="{DynamicResource MA.Step4.Run.Start}"
+                                    Command="{Binding StartAnalyzeCommand}"
+                                    Style="{StaticResource MaterialDesignRaisedButton}"
+                                    Margin="0,0,8,0"
+                                    Visibility="{Binding IsAnalyzing, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}" />
+                            <Button Content="{DynamicResource MA.Step4.Run.Cancel}"
+                                    Command="{Binding CancelAnalyzeCommand}"
+                                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                                    Visibility="{Binding IsAnalyzing, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        </StackPanel>
+                    </Grid>
+                </materialDesign:Card>
+
+                <!-- 参数设置区（占位） -->
+                <materialDesign:Card Margin="0,16,0,0">
+                    <Expander Header="{DynamicResource MA.Step4.Options.Title}"
+                              HorizontalAlignment="Stretch"
+                              Padding="16,8">
+                        <StackPanel Margin="0,8,0,0">
+                            <TextBlock Text="{DynamicResource MA.Common.NotAvailable}" 
+                                       Foreground="Gray" />
+                        </StackPanel>
+                    </Expander>
+                </materialDesign:Card>
+
+                <!-- 结果摘要区（占位） -->
+                <TextBlock Text="{DynamicResource MA.Step4.Summary.Title}"
+                           Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                           Margin="0,16,0,12" />
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="12" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- 时空参数 -->
+                    <materialDesign:Card Grid.Row="0" Grid.Column="0" Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource MA.Step4.Summary.SpatioTemporal}"
+                                       Style="{StaticResource MaterialDesignSubtitle2TextBlock}" />
+                            <TextBlock Text="{DynamicResource MA.Common.NotAvailable}" 
+                                       Foreground="Gray" Margin="0,8,0,0" />
+                        </StackPanel>
+                    </materialDesign:Card>
+
+                    <!-- 相位参数 -->
+                    <materialDesign:Card Grid.Row="0" Grid.Column="2" Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource MA.Step4.Summary.Phase}"
+                                       Style="{StaticResource MaterialDesignSubtitle2TextBlock}" />
+                            <TextBlock Text="{DynamicResource MA.Common.NotAvailable}" 
+                                       Foreground="Gray" Margin="0,8,0,0" />
+                        </StackPanel>
+                    </materialDesign:Card>
+
+                    <!-- 关节活动度 -->
+                    <materialDesign:Card Grid.Row="2" Grid.Column="0" Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource MA.Step4.Summary.ROM}"
+                                       Style="{StaticResource MaterialDesignSubtitle2TextBlock}" />
+                            <TextBlock Text="{DynamicResource MA.Common.NotAvailable}" 
+                                       Foreground="Gray" Margin="0,8,0,0" />
+                        </StackPanel>
+                    </materialDesign:Card>
+
+                    <!-- 质量指标 -->
+                    <materialDesign:Card Grid.Row="2" Grid.Column="2" Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource MA.Step4.Summary.Quality}"
+                                       Style="{StaticResource MaterialDesignSubtitle2TextBlock}" />
+                            <TextBlock Text="{DynamicResource MA.Common.NotAvailable}" 
+                                       Foreground="Gray" Margin="0,8,0,0" />
+                        </StackPanel>
+                    </materialDesign:Card>
+                </Grid>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- 底部操作栏 -->
+        <Border Grid.Row="2" Padding="0,16,0,0">
+            <Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <Button Content="{DynamicResource MA.Step4.Link.ReviewOverlay}"
+                            Command="{Binding GoToStepCommand}"
+                            CommandParameter="3"
+                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                            Margin="0,0,8,0" />
+                    <Button Content="{DynamicResource MA.Task.Title}"
+                            Command="{Binding ToggleTaskDrawerCommand}"
+                            Style="{StaticResource MaterialDesignOutlinedButton}" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="{DynamicResource MA.Step4.Link.GenerateReport}"
+                            Style="{StaticResource MaterialDesignRaisedButton}"
+                            IsEnabled="{Binding CurrentMeasurement.KinematicsCompleted, FallbackValue=False}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

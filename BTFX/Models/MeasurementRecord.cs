@@ -98,4 +98,108 @@ public class MeasurementRecord
     /// </summary>
     [SugarColumn(IsIgnore = true)]
     public GaitParameters? GaitParameters { get; set; }
+
+    #region 测量评估模块扩展字段
+
+    /// <summary>
+    /// 测量名称
+    /// </summary>
+    [SugarColumn(Length = 100, IsNullable = true)]
+    public string? MeasurementName { get; set; }
+
+    /// <summary>
+    /// 测量类型
+    /// </summary>
+    [SugarColumn(IsNullable = false)]
+    public MeasurementType MeasurementType { get; set; } = MeasurementType.NormalWalk;
+
+    /// <summary>
+    /// 正面视频路径
+    /// </summary>
+    [SugarColumn(Length = 500, IsNullable = true)]
+    public string? FrontVideoPath { get; set; }
+
+    /// <summary>
+    /// 侧面视频路径
+    /// </summary>
+    [SugarColumn(Length = 500, IsNullable = true)]
+    public string? SideVideoPath { get; set; }
+
+    /// <summary>
+    /// 视频规格
+    /// </summary>
+    [SugarColumn(IsNullable = false)]
+    public VideoSpec VideoSpec { get; set; } = VideoSpec.P1080_30fps;
+
+    /// <summary>
+    /// 步道长度 (米)
+    /// </summary>
+    [SugarColumn(IsNullable = false)]
+    public double WalkwayLength { get; set; } = 6.0;
+
+    /// <summary>
+    /// 导入策略（复制/引用）
+    /// </summary>
+    [SugarColumn(IsNullable = false)]
+    public ImportStrategy ImportStrategy { get; set; } = ImportStrategy.CopyToFolder;
+
+    /// <summary>
+    /// 视频导入模式（导入/采集）
+    /// </summary>
+    [SugarColumn(IsNullable = false)]
+    public VideoImportMode VideoImportMode { get; set; } = VideoImportMode.Import;
+
+    /// <summary>
+    /// 当前分析阶段
+    /// </summary>
+    [SugarColumn(IsNullable = false)]
+    public AnalysisStage CurrentAnalysisStage { get; set; } = AnalysisStage.None;
+
+    /// <summary>
+    /// 关键点分析完成
+    /// </summary>
+    [SugarColumn(IsNullable = false)]
+    public bool KeypointsCompleted { get; set; } = false;
+
+    /// <summary>
+    /// 事件分析完成
+    /// </summary>
+    [SugarColumn(IsNullable = false)]
+    public bool EventsCompleted { get; set; } = false;
+
+    /// <summary>
+    /// 运动学分析完成
+    /// </summary>
+    [SugarColumn(IsNullable = false)]
+    public bool KinematicsCompleted { get; set; } = false;
+
+    /// <summary>
+    /// 测量目录路径（相对路径）
+    /// </summary>
+    [SugarColumn(Length = 500, IsNullable = true)]
+    public string? MeasurementFolderPath { get; set; }
+
+    #endregion
+
+    #region 辅助属性（非数据库字段）
+
+    /// <summary>
+    /// 是否有正面视频
+    /// </summary>
+    [SugarColumn(IsIgnore = true)]
+    public bool HasFrontVideo => !string.IsNullOrEmpty(FrontVideoPath);
+
+    /// <summary>
+    /// 是否有侧面视频
+    /// </summary>
+    [SugarColumn(IsIgnore = true)]
+    public bool HasSideVideo => !string.IsNullOrEmpty(SideVideoPath);
+
+    /// <summary>
+    /// 是否有双视频（可进行分析）
+    /// </summary>
+    [SugarColumn(IsIgnore = true)]
+    public bool HasDualVideo => HasFrontVideo && HasSideVideo;
+
+    #endregion
 }

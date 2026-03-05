@@ -1,0 +1,187 @@
+﻿<UserControl x:Class="BTFX.Views.Measurement.Step2VideoSourceView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:BTFX.Views.Measurement"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:vm="clr-namespace:BTFX.ViewModels.Measurement"
+             xmlns:common="clr-namespace:BTFX.Common"
+             mc:Ignorable="d" 
+             d:DataContext="{d:DesignInstance Type=vm:MeasurementViewModel}"
+             d:DesignHeight="600" d:DesignWidth="700">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- 标题 -->
+        <TextBlock Grid.Row="0" 
+                   Text="{DynamicResource MA.Step2.Title}"
+                   Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                   Margin="0,0,0,16" />
+
+        <!-- TabControl: 导入 / 采集 -->
+        <TabControl Grid.Row="1" Style="{StaticResource MaterialDesignFilledTabControl}">
+
+            <!-- Tab1: 导入视频 -->
+            <TabItem Header="{DynamicResource MA.Step2.Tab.Import}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,16,0,0">
+                    <StackPanel>
+
+                        <!-- 双视频卡片区域 -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- 正面视频卡片 -->
+                            <materialDesign:Card Grid.Column="0" Padding="16">
+                                <StackPanel>
+                                    <TextBlock Text="{DynamicResource MA.Step2.FrontVideo}"
+                                               Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                                               Margin="0,0,0,12" />
+
+                                    <!-- 视频路径 -->
+                                    <TextBox Text="{Binding FrontVideoPath, Mode=OneWay}"
+                                             IsReadOnly="True"
+                                             materialDesign:HintAssist.Hint="{DynamicResource MA.Step2.FrontVideo}"
+                                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                             Margin="0,0,0,12" />
+
+                                    <!-- 元信息（占位） -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                        <TextBlock Text="{DynamicResource MA.Step2.Meta.Resolution}" Margin="0,0,4,0" />
+                                        <TextBlock Text="{DynamicResource MA.Common.NotAvailable}" Foreground="Gray" Margin="0,0,16,0" />
+                                        <TextBlock Text="{DynamicResource MA.Step2.Meta.Fps}" Margin="0,0,4,0" />
+                                        <TextBlock Text="{DynamicResource MA.Common.NotAvailable}" Foreground="Gray" Margin="0,0,16,0" />
+                                        <TextBlock Text="{DynamicResource MA.Step2.Meta.Duration}" Margin="0,0,4,0" />
+                                        <TextBlock Text="{DynamicResource MA.Common.NotAvailable}" Foreground="Gray" />
+                                    </StackPanel>
+
+                                    <!-- 按钮 -->
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="{DynamicResource MA.Step2.SelectFile}"
+                                                Command="{Binding SelectFrontVideoCommand}"
+                                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                                Margin="0,0,8,0" />
+                                        <Button Content="{DynamicResource Clear}"
+                                                Command="{Binding ClearFrontVideoCommand}"
+                                                Style="{StaticResource MaterialDesignOutlinedButton}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </materialDesign:Card>
+
+                            <!-- 侧面视频卡片 -->
+                            <materialDesign:Card Grid.Column="2" Padding="16">
+                                <StackPanel>
+                                    <TextBlock Text="{DynamicResource MA.Step2.SideVideo}"
+                                               Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                                               Margin="0,0,0,12" />
+
+                                    <!-- 视频路径 -->
+                                    <TextBox Text="{Binding SideVideoPath, Mode=OneWay}"
+                                             IsReadOnly="True"
+                                             materialDesign:HintAssist.Hint="{DynamicResource MA.Step2.SideVideo}"
+                                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                             Margin="0,0,0,12" />
+
+                                    <!-- 元信息（占位） -->
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                        <TextBlock Text="{DynamicResource MA.Step2.Meta.Resolution}" Margin="0,0,4,0" />
+                                        <TextBlock Text="{DynamicResource MA.Common.NotAvailable}" Foreground="Gray" Margin="0,0,16,0" />
+                                        <TextBlock Text="{DynamicResource MA.Step2.Meta.Fps}" Margin="0,0,4,0" />
+                                        <TextBlock Text="{DynamicResource MA.Common.NotAvailable}" Foreground="Gray" Margin="0,0,16,0" />
+                                        <TextBlock Text="{DynamicResource MA.Step2.Meta.Duration}" Margin="0,0,4,0" />
+                                        <TextBlock Text="{DynamicResource MA.Common.NotAvailable}" Foreground="Gray" />
+                                    </StackPanel>
+
+                                    <!-- 按钮 -->
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="{DynamicResource MA.Step2.SelectFile}"
+                                                Command="{Binding SelectSideVideoCommand}"
+                                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                                Margin="0,0,8,0" />
+                                        <Button Content="{DynamicResource Clear}"
+                                                Command="{Binding ClearSideVideoCommand}"
+                                                Style="{StaticResource MaterialDesignOutlinedButton}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </materialDesign:Card>
+                        </Grid>
+
+                        <!-- 导入策略卡片 -->
+                        <materialDesign:Card Margin="0,16,0,0" Padding="16">
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource MA.Step2.ImportStrategy}"
+                                           Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                                           Margin="0,0,0,12" />
+
+                                <StackPanel>
+                                    <RadioButton Content="{DynamicResource MA.Step2.Strategy.Copy}"
+                                                 IsChecked="{Binding SelectedImportStrategy, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static common:ImportStrategy.CopyToFolder}}"
+                                                 GroupName="ImportStrategy"
+                                                 Margin="0,0,0,8" />
+                                    <RadioButton Content="{DynamicResource MA.Step2.Strategy.Reference}"
+                                                 IsChecked="{Binding SelectedImportStrategy, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static common:ImportStrategy.ReferenceOnly}}"
+                                                 GroupName="ImportStrategy" />
+                                </StackPanel>
+                            </StackPanel>
+                        </materialDesign:Card>
+
+                        <!-- 同步检查卡片（占位） -->
+                        <materialDesign:Card Margin="0,16,0,0" Padding="16">
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource MA.Step2.SyncCheck}"
+                                           Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                                           Margin="0,0,0,12" />
+
+                                <TextBlock Text="{DynamicResource MA.Common.NotAvailable}" 
+                                           Foreground="Gray" />
+                            </StackPanel>
+                        </materialDesign:Card>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Tab2: 实时采集（占位） -->
+            <TabItem Header="{DynamicResource MA.Step2.Tab.Capture}" IsEnabled="False">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <materialDesign:PackIcon Kind="VideocamOff" Width="64" Height="64" 
+                                             HorizontalAlignment="Center" 
+                                             Foreground="Gray" />
+                    <TextBlock Text="{DynamicResource MA.Step2.Capture.NotConfigured}"
+                               Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                               Foreground="Gray"
+                               HorizontalAlignment="Center"
+                               Margin="0,16,0,0" />
+                </StackPanel>
+            </TabItem>
+
+        </TabControl>
+
+        <!-- 底部操作栏 -->
+        <Border Grid.Row="2" Padding="0,16,0,0">
+            <Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <Button Content="{DynamicResource Back}"
+                            Command="{Binding PreviousStepCommand}"
+                            Style="{StaticResource MaterialDesignOutlinedButton}" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="{DynamicResource MA.Step2.ImportConfirm}"
+                            Command="{Binding ConfirmImportCommand}"
+                            IsEnabled="{Binding HasAnyVideo}"
+                            Style="{StaticResource MaterialDesignRaisedButton}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

@@ -363,3 +363,30 @@ public class CountToVisibilityConverter : IValueConverter
                 }
             }
 
+/// <summary>
+/// 枚举与布尔值转换器（用于 RadioButton 绑定枚举）
+/// </summary>
+public class EnumToBooleanConverter : IValueConverter
+{
+    /// <summary>
+    /// 转换：当绑定值等于参数值时返回 true
+    /// </summary>
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value == null || parameter == null) return false;
+        return value.Equals(parameter);
+    }
+
+    /// <summary>
+    /// 反转换：当 RadioButton 被选中时返回参数值
+    /// </summary>
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is true && parameter != null)
+        {
+            return parameter;
+        }
+        return Binding.DoNothing;
+    }
+}
+

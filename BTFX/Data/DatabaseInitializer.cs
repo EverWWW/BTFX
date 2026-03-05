@@ -17,8 +17,11 @@ public class DatabaseInitializer
 {
     /// <summary>
     /// 当前数据库版本
+    /// 版本历史:
+    /// - 1: 初始版本
+    /// - 2: 测量评估模块扩展（新增 MeasurementRecord 字段：MeasurementName, MeasurementType, FrontVideoPath, SideVideoPath 等）
     /// </summary>
-    public const int CurrentDatabaseVersion = 1;
+    public const int CurrentDatabaseVersion = 2;
 
     private readonly string _databasePath;
     private readonly ILogHelper? _logHelper;
@@ -413,14 +416,60 @@ public class DatabaseInitializer
                     // v0 -> v1: 初始版本，无升级脚本
                     break;
 
+                case 2:
+                    // v1 -> v2: 测量评估模块扩展
+                    UpgradeToV2(db);
+                    break;
+
                 // 未来版本升级在此添加
-                // case 2:
-                //     UpgradeToV2(db);
-                //     break;
             }
         }
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// 升级到 v2: 测量评估模块扩展字段
+    /// </summary>
+    private void UpgradeToV2(SqliteSugarHelper db)
+    {
+        _logHelper?.Information("升级到 v2: 添加测量评估模块字段...");
+
+        // 使用 CodeFirst 自动同步表结构（SqlSugar 会自动添加缺失的列）
+        db.CreateTables(typeof(MeasurementRecord));
+
+        // 也可以手动添加列（如果 CodeFirst 不生效）
+        var alterStatements = new[]
+        {
+            "ALTER TABLE MeasurementRecords ADD COLUMN MeasurementName TEXT;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN MeasurementType INTEGER DEFAULT 0 NOT NULL;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN FrontVideoPath TEXT;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN SideVideoPath TEXT;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN VideoSpec INTEGER DEFAULT 0 NOT NULL;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN WalkwayLength REAL DEFAULT 6.0 NOT NULL;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN ImportStrategy INTEGER DEFAULT 0 NOT NULL;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN VideoImportMode INTEGER DEFAULT 0 NOT NULL;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN CurrentAnalysisStage INTEGER DEFAULT 0 NOT NULL;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN KeypointsCompleted INTEGER DEFAULT 0 NOT NULL;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN EventsCompleted INTEGER DEFAULT 0 NOT NULL;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN KinematicsCompleted INTEGER DEFAULT 0 NOT NULL;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN MeasurementFolderPath TEXT;"
+        };
+
+        foreach (var sql in alterStatements)
+        {
+            try
+            {
+                db.ExecuteSql(sql);
+            }
+            catch (Exception ex)
+            {
+                // 列可能已存在，忽略错误
+                _logHelper?.Debug($"列可能已存在: {ex.Message}");
+            }
+        }
+
+        _logHelper?.Information("v2 升级完成");
     }
 
     /// <summary>

@@ -441,7 +441,7 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
         {
             object? view = viewModelName switch
             {
-                "MeasurementViewModel" => App.Services?.GetService(typeof(Views.MeasurementView)),
+                "MeasurementViewModel" => App.Services?.GetService(typeof(Views.Measurement.MeasurementView)),
                 "DataManagementViewModel" => App.Services?.GetService(typeof(Views.DataManagementView)),
                 "ReportViewModel" => App.Services?.GetService(typeof(Views.ReportView)),
                 "SettingsViewModel" => App.Services?.GetService(typeof(Views.SettingsView)),

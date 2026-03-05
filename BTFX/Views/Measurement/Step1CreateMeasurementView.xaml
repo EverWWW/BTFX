@@ -1,0 +1,172 @@
+﻿<UserControl x:Class="BTFX.Views.Measurement.Step1CreateMeasurementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:BTFX.Views.Measurement"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:vm="clr-namespace:BTFX.ViewModels.Measurement"
+             xmlns:common="clr-namespace:BTFX.Common"
+             mc:Ignorable="d" 
+             d:DataContext="{d:DesignInstance Type=vm:MeasurementViewModel}"
+             d:DesignHeight="600" d:DesignWidth="700">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- 标题 -->
+        <TextBlock Grid.Row="0" 
+                   Text="{DynamicResource MA.Step1.Title}"
+                   Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                   Margin="0,0,0,16" />
+
+        <!-- 内容区 -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+
+                <!-- Card A: 本次测量信息 -->
+                <materialDesign:Card Margin="0,0,0,16" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource MA.Step1.Card.BasicInfo}"
+                                   Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                                   Margin="0,0,0,16" />
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- 测量名称 -->
+                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,16,16">
+                                <TextBlock Text="{DynamicResource MA.Step1.MeasurementName}" 
+                                           Margin="0,0,0,4" />
+                                <TextBox Text="{Binding MeasurementName, UpdateSourceTrigger=PropertyChanged}"
+                                         materialDesign:HintAssist.Hint="{DynamicResource MA.Step1.MeasurementName}"
+                                         Style="{StaticResource MaterialDesignOutlinedTextBox}" />
+                            </StackPanel>
+
+                            <!-- 测量类型 -->
+                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,16">
+                                <TextBlock Text="{DynamicResource MA.Step1.MeasurementType}" 
+                                           Margin="0,0,0,4" />
+                                <ComboBox SelectedValue="{Binding SelectedMeasurementType}"
+                                          SelectedValuePath="Tag"
+                                          Style="{StaticResource MaterialDesignOutlinedComboBox}">
+                                    <ComboBoxItem Content="{DynamicResource MA.Step1.Type.NormalWalk}" Tag="{x:Static common:MeasurementType.NormalWalk}" />
+                                    <ComboBoxItem Content="{DynamicResource MA.Step1.Type.FastWalk}" Tag="{x:Static common:MeasurementType.FastWalk}" />
+                                    <ComboBoxItem Content="{DynamicResource MA.Step1.Type.SlowWalk}" Tag="{x:Static common:MeasurementType.SlowWalk}" />
+                                    <ComboBoxItem Content="{DynamicResource MA.Step1.Type.Other}" Tag="{x:Static common:MeasurementType.Other}" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- 备注 -->
+                            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,8">
+                                <TextBlock Margin="0,0,0,4">
+                                    <Run Text="{DynamicResource MA.Step1.Remark}" />
+                                    <Run Text="{DynamicResource MA.Common.Optional}" Foreground="Gray" />
+                                </TextBlock>
+                                <TextBox Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}"
+                                         materialDesign:HintAssist.Hint="{DynamicResource MA.Step1.Remark}"
+                                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                         AcceptsReturn="True"
+                                         TextWrapping="Wrap"
+                                         MinHeight="80"
+                                         MaxHeight="120"
+                                         VerticalScrollBarVisibility="Auto" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </materialDesign:Card>
+
+                <!-- Card B: 测量条件 -->
+                <materialDesign:Card Margin="0,0,0,16" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="{DynamicResource MA.Step1.Card.Conditions}"
+                                   Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                                   Margin="0,0,0,16" />
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- 视频规格 -->
+                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,16,16">
+                                <TextBlock Text="{DynamicResource MA.Step1.VideoSpec}" 
+                                           Margin="0,0,0,4" />
+                                <ComboBox SelectedValue="{Binding SelectedVideoSpec}"
+                                          SelectedValuePath="Tag"
+                                          Style="{StaticResource MaterialDesignOutlinedComboBox}">
+                                    <ComboBoxItem Content="1080P / 30 FPS" Tag="{x:Static common:VideoSpec.P1080_30fps}" />
+                                    <ComboBoxItem Content="1440P / 30 FPS" Tag="{x:Static common:VideoSpec.P1440_30fps}" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- 步道长度 -->
+                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,16">
+                                <TextBlock Text="{DynamicResource MA.Step1.WalkwayLength}" 
+                                           Margin="0,0,0,4" />
+                                <TextBox Text="{Binding WalkwayLength, UpdateSourceTrigger=PropertyChanged}"
+                                         materialDesign:HintAssist.Hint="6.0"
+                                         Style="{StaticResource MaterialDesignOutlinedTextBox}" />
+                                <TextBlock Text="{Binding WalkwayLengthError}" 
+                                           Foreground="Red" 
+                                           Visibility="{Binding WalkwayLengthError, Converter={StaticResource NullableToVisibilityConverter}}"
+                                           Margin="0,4,0,0" />
+                            </StackPanel>
+
+                            <!-- 模式 -->
+                            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,8">
+                                <TextBlock Text="{DynamicResource MA.Step1.Mode}" 
+                                           Margin="0,0,0,8" />
+                                <StackPanel Orientation="Horizontal">
+                                    <RadioButton Content="{DynamicResource MA.Step1.Mode.Import}"
+                                                 IsChecked="{Binding SelectedVideoImportMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static common:VideoImportMode.Import}}"
+                                                 GroupName="ImportMode"
+                                                 Margin="0,0,24,0"
+                                                 Style="{StaticResource MaterialDesignChoiceChipPrimaryOutlineRadioButton}" />
+                                    <RadioButton Content="{DynamicResource MA.Step1.Mode.Capture}"
+                                                 IsChecked="{Binding SelectedVideoImportMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static common:VideoImportMode.Capture}}"
+                                                 GroupName="ImportMode"
+                                                 IsEnabled="False"
+                                                 Style="{StaticResource MaterialDesignChoiceChipPrimaryOutlineRadioButton}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </materialDesign:Card>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- 底部操作栏 -->
+        <Border Grid.Row="2" Padding="0,16,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="{DynamicResource Reset}"
+                        Command="{Binding ResetMeasurementCommand}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Margin="0,0,16,0" />
+
+                <Button Content="{DynamicResource MA.Step1.CreateButton}"
+                        Command="{Binding CreateMeasurementCommand}"
+                        IsEnabled="{Binding HasCurrentPatient}"
+                        Style="{StaticResource MaterialDesignRaisedButton}" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
