@@ -110,6 +110,64 @@ public class GaitParameters
     [SugarColumn(IsNullable = false)]
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+    #region 算法输出映射字段（新增）
+
+    /// <summary>
+    /// 关联分析结果 ID（可选，向前兼容历史数据）
+    /// </summary>
+    [SugarColumn(IsNullable = true)]
+    public int? AnalysisResultId { get; set; }
+
+    /// <summary>
+    /// 步态周期时长 (s)
+    /// </summary>
+    [SugarColumn(IsNullable = true)]
+    public double? GaitCycleDurationS { get; set; }
+
+    /// <summary>
+    /// 站立相时间 (s)（原始值）
+    /// </summary>
+    [SugarColumn(IsNullable = true)]
+    public double? StanceTimeS { get; set; }
+
+    /// <summary>
+    /// 摆动相时间 (s)（原始值）
+    /// </summary>
+    [SugarColumn(IsNullable = true)]
+    public double? SwingTimeS { get; set; }
+
+    /// <summary>
+    /// 双支撑相时间 (s)（原始值）
+    /// </summary>
+    [SugarColumn(IsNullable = true)]
+    public double? DoubleSupportTimeS { get; set; }
+
+    /// <summary>
+    /// 单支撑相时间 (s)（原始值）
+    /// </summary>
+    [SugarColumn(IsNullable = true)]
+    public double? SingleSupportTimeS { get; set; }
+
+    /// <summary>
+    /// 步长 (m)（算法原始单值）
+    /// </summary>
+    [SugarColumn(IsNullable = true)]
+    public double? StepLengthM { get; set; }
+
+    /// <summary>
+    /// 步幅 (m)（算法原始单值）
+    /// </summary>
+    [SugarColumn(IsNullable = true)]
+    public double? StrideLengthM { get; set; }
+
+    /// <summary>
+    /// 步速 (m/s)（算法原始值）
+    /// </summary>
+    [SugarColumn(IsNullable = true)]
+    public double? GaitSpeedMPerS { get; set; }
+
+    #endregion
+
     /// <summary>
     /// 步宽 (cm)（忽略，不存在于当前数据库）
     /// </summary>

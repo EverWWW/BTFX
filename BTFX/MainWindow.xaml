@@ -22,11 +22,14 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="46" />
+            <!-- 标题栏：登录页时折叠为 0，其他页面显示 -->
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" 
+        <Grid Grid.Row="0"
+              Height="46"
+              Visibility="{Binding IsLoginView, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
               Background="{DynamicResource MaterialDesign.Brush.Primary}"
               MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
             <Grid.ColumnDefinitions>

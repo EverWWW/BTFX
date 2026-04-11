@@ -2,6 +2,7 @@ using System.IO;
 using BTFX.Common;
 using BTFX.Helpers;
 using BTFX.Models;
+using BTFX.Models.Analysis;
 using ToolHelper.Database.Configuration;
 using ToolHelper.Database.Sqlite;
 using ToolHelper.LoggingDiagnostics.Abstractions;
@@ -17,8 +18,11 @@ public class DatabaseInitializer
 {
     /// <summary>
     /// 当前数据库版本
+    /// 版本历史:
+    /// - 1: 初始版本
+    /// - 2: 测量评估模块扩展（新增 MeasurementRecord 字段：MeasurementName, MeasurementType, FrontVideoPath, SideVideoPath 等）
     /// </summary>
-    public const int CurrentDatabaseVersion = 1;
+    public const int CurrentDatabaseVersion = 3;
 
     private readonly string _databasePath;
     private readonly ILogHelper? _logHelper;
@@ -233,7 +237,11 @@ public class DatabaseInitializer
             typeof(MeasurementRecord),
             typeof(GaitParameters),
             typeof(Report),
-            typeof(SystemSetting)
+            typeof(SystemSetting),
+            typeof(AnalysisResult),
+            typeof(KinematicSummary),
+            typeof(AnalysisCsvFile),
+            typeof(QualityControlInfo)
         );
 
         // 创建索引（SqlSugar CodeFirst 不自动创建索引，需要手动执行）
@@ -268,6 +276,21 @@ public class DatabaseInitializer
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Reports_ReportNumber ON Reports(ReportNumber);");
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Reports_PatientId ON Reports(PatientId);");
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Reports_ReportDate ON Reports(ReportDate);");
+
+        // AnalysisResults 表索引
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisResults_MeasurementId ON AnalysisResults(MeasurementId);");
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisResults_RequestId ON AnalysisResults(RequestId);");
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisResults_Success ON AnalysisResults(Success);");
+
+        // KinematicSummaries 表索引
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_KinematicSummaries_AnalysisResultId ON KinematicSummaries(AnalysisResultId);");
+
+        // AnalysisCsvFiles 表索引
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisCsvFiles_AnalysisResultId ON AnalysisCsvFiles(AnalysisResultId);");
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisCsvFiles_FileType ON AnalysisCsvFiles(FileType);");
+
+        // QualityControls 表索引
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_QualityControls_AnalysisResultId ON QualityControls(AnalysisResultId);");
     }
 
     /// <summary>
@@ -413,14 +436,119 @@ public class DatabaseInitializer
                     // v0 -> v1: 初始版本，无升级脚本
                     break;
 
+                case 2:
+                    // v1 -> v2: 测量评估模块扩展
+                    UpgradeToV2(db);
+                    break;
+
+                case 3:
+                    // v2 -> v3: 分析模块（新增分析结果表 + GaitParameters 扩展字段）
+                    UpgradeToV3(db);
+                    break;
+
                 // 未来版本升级在此添加
-                // case 2:
-                //     UpgradeToV2(db);
-                //     break;
             }
         }
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// 升级到 v2: 测量评估模块扩展字段
+    /// </summary>
+    private void UpgradeToV2(SqliteSugarHelper db)
+    {
+        _logHelper?.Information("升级到 v2: 添加测量评估模块字段...");
+
+        // 使用 CodeFirst 自动同步表结构（SqlSugar 会自动添加缺失的列）
+        db.CreateTables(typeof(MeasurementRecord));
+
+        // 也可以手动添加列（如果 CodeFirst 不生效）
+        var alterStatements = new[]
+        {
+            "ALTER TABLE MeasurementRecords ADD COLUMN MeasurementName TEXT;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN MeasurementType INTEGER DEFAULT 0 NOT NULL;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN FrontVideoPath TEXT;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN SideVideoPath TEXT;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN VideoSpec INTEGER DEFAULT 0 NOT NULL;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN WalkwayLength REAL DEFAULT 6.0 NOT NULL;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN ImportStrategy INTEGER DEFAULT 0 NOT NULL;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN VideoImportMode INTEGER DEFAULT 0 NOT NULL;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN CurrentAnalysisStage INTEGER DEFAULT 0 NOT NULL;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN KeypointsCompleted INTEGER DEFAULT 0 NOT NULL;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN EventsCompleted INTEGER DEFAULT 0 NOT NULL;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN KinematicsCompleted INTEGER DEFAULT 0 NOT NULL;",
+            "ALTER TABLE MeasurementRecords ADD COLUMN MeasurementFolderPath TEXT;"
+        };
+
+        foreach (var sql in alterStatements)
+        {
+            try
+            {
+                db.ExecuteSql(sql);
+            }
+            catch (Exception ex)
+            {
+                // 列可能已存在，忽略错误
+                _logHelper?.Debug($"列可能已存在: {ex.Message}");
+            }
+        }
+
+        _logHelper?.Information("v2 升级完成");
+    }
+
+    /// <summary>
+    /// 升级到 v3: 分析模块 — 新增4张分析表 + GaitParameters 扩展字段
+    /// </summary>
+    private void UpgradeToV3(SqliteSugarHelper db)
+    {
+        _logHelper?.Information("升级到 v3: 添加分析模块表和字段...");
+
+        // 使用 CodeFirst 创建新表
+        db.CreateTables(
+            typeof(AnalysisResult),
+            typeof(KinematicSummary),
+            typeof(AnalysisCsvFile),
+            typeof(QualityControlInfo)
+        );
+
+        // GaitParameters 表新增字段（ALTER TABLE 兜底，防止 CodeFirst 未生效）
+        var alterStatements = new[]
+        {
+            "ALTER TABLE GaitParameters ADD COLUMN AnalysisResultId INTEGER;",
+            "ALTER TABLE GaitParameters ADD COLUMN GaitCycleDurationS REAL;",
+            "ALTER TABLE GaitParameters ADD COLUMN StanceTimeS REAL;",
+            "ALTER TABLE GaitParameters ADD COLUMN SwingTimeS REAL;",
+            "ALTER TABLE GaitParameters ADD COLUMN DoubleSupportTimeS REAL;",
+            "ALTER TABLE GaitParameters ADD COLUMN SingleSupportTimeS REAL;",
+            "ALTER TABLE GaitParameters ADD COLUMN StepLengthM REAL;",
+            "ALTER TABLE GaitParameters ADD COLUMN StrideLengthM REAL;",
+            "ALTER TABLE GaitParameters ADD COLUMN GaitSpeedMPerS REAL;"
+        };
+
+        foreach (var sql in alterStatements)
+        {
+            try
+            {
+                db.ExecuteSql(sql);
+            }
+            catch (Exception ex)
+            {
+                // 列可能已存在，忽略
+                _logHelper?.Debug($"列可能已存在: {ex.Message}");
+            }
+        }
+
+        // 创建新表索引
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisResults_MeasurementId ON AnalysisResults(MeasurementId);");
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisResults_RequestId ON AnalysisResults(RequestId);");
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisResults_Success ON AnalysisResults(Success);");
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_KinematicSummaries_AnalysisResultId ON KinematicSummaries(AnalysisResultId);");
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisCsvFiles_AnalysisResultId ON AnalysisCsvFiles(AnalysisResultId);");
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisCsvFiles_FileType ON AnalysisCsvFiles(FileType);");
+        db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_QualityControls_AnalysisResultId ON QualityControls(AnalysisResultId);");
+
+        _logHelper?.Information("v3 升级完成");
     }
 
     /// <summary>

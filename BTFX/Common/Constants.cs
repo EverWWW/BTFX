@@ -347,4 +347,118 @@ public static class Constants
     public const double WINDOW_DEFAULT_HEIGHT = 1080;
 
     #endregion
+
+    #region 算法分析常量
+
+    /// <summary>
+    /// 算法程序默认目录
+    /// </summary>
+    public const string ALGORITHM_DIRECTORY = "Algorithm";
+
+    /// <summary>
+    /// 算法程序默认文件名
+    /// </summary>
+    public const string ALGORITHM_EXE_FILENAME = "gait_analysis.exe";
+
+    /// <summary>
+    /// 算法默认超时时间（分钟）
+    /// </summary>
+    public const int ALGORITHM_DEFAULT_TIMEOUT_MINUTES = 10;
+
+    /// <summary>
+    /// 进程优雅关闭等待时间（秒）
+    /// </summary>
+    public const int ALGORITHM_GRACEFUL_SHUTDOWN_SECONDS = 5;
+
+    /// <summary>
+    /// 通讯协议版本
+    /// </summary>
+    public const string PROTOCOL_VERSION = "V2.0";
+
+    /// <summary>
+    /// 默认算法版本
+    /// </summary>
+    public const string DEFAULT_ALGORITHM_VERSION = "1.0.0";
+
+    /// <summary>
+    /// 默认模型版本
+    /// </summary>
+    public const string DEFAULT_MODEL_VERSION = "1.0.0";
+
+    /// <summary>
+    /// 任务类型标识
+    /// </summary>
+    public const string TASK_TYPE = "gait_analysis";
+
+    /// <summary>
+    /// 分析模式
+    /// </summary>
+    public const string ANALYSIS_MODE = "offline";
+
+    /// <summary>
+    /// 请求ID前缀
+    /// </summary>
+    public const string REQUEST_ID_PREFIX = "GAIT";
+
+    /// <summary>
+    /// 分析结果目录名
+    /// </summary>
+    public const string ANALYSIS_DIRECTORY = "Analysis";
+
+    /// <summary>
+    /// 算法输入配置文件名
+    /// </summary>
+    public const string TASK_CONFIG_FILENAME = "task_config.json";
+
+    /// <summary>
+    /// 算法输出汇总文件名
+    /// </summary>
+    public const string SUMMARY_FILENAME = "summary.json";
+
+    /// <summary>
+    /// 标注视频文件名
+    /// </summary>
+    public const string ANNOTATED_VIDEO_FILENAME = "annotated_video.mp4";
+
+    /// <summary>
+    /// 关节角度时间序列 CSV 文件名
+    /// </summary>
+    public const string JOINT_ANGLE_CSV_FILENAME = "joint_angle_timeseries.csv";
+
+    /// <summary>
+    /// 关键点轨迹 CSV 文件名
+    /// </summary>
+    public const string KEYPOINT_TRAJECTORY_CSV_FILENAME = "keypoint_trajectory.csv";
+
+    /// <summary>
+    /// 关键点速度 CSV 文件名
+    /// </summary>
+    public const string KEYPOINT_VELOCITY_CSV_FILENAME = "keypoint_velocity.csv";
+
+    /// <summary>
+    /// 关节角速度 CSV 文件名
+    /// </summary>
+    public const string JOINT_ANGULAR_VELOCITY_CSV_FILENAME = "joint_angular_velocity.csv";
+
+    /// <summary>
+    /// 算法调试日志文件名
+    /// </summary>
+    public const string ALGORITHM_DEBUG_LOG_FILENAME = "debug.log";
+
+    /// <summary>
+    /// 算法 stdout 状态消息类型标识
+    /// </summary>
+    public const string STATUS_MESSAGE_TYPE = "status";
+
+    /// <summary>
+    /// 视频预览 Timer 采样间隔（毫秒），约 30fps
+    /// </summary>
+    public const int VIDEO_TIMER_INTERVAL_MS = 33;
+
+    /// <summary>
+    /// 视频快进/快退步长（秒）
+    /// </summary>
+    public const double VIDEO_STEP_SECONDS = 1.0;
+
+    #endregion
 }

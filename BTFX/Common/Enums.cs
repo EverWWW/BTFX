@@ -277,3 +277,352 @@ public enum UserStatus
     [Description("禁用")]
     Disabled = 1
 }
+
+#region 测量评估模块枚举
+
+/// <summary>
+/// 测量类型
+/// </summary>
+public enum MeasurementType
+{
+    /// <summary>
+    /// 自然步行
+    /// </summary>
+    [Description("自然步行")]
+    NormalWalk = 0,
+
+    /// <summary>
+    /// 快走
+    /// </summary>
+    [Description("快走")]
+    FastWalk = 1,
+
+    /// <summary>
+    /// 慢走
+    /// </summary>
+    [Description("慢走")]
+    SlowWalk = 2,
+
+    /// <summary>
+    /// 其他
+    /// </summary>
+    [Description("其他")]
+    Other = 3
+}
+
+/// <summary>
+/// 分析阶段
+/// </summary>
+public enum AnalysisStage
+{
+    /// <summary>
+    /// 未分析
+    /// </summary>
+    [Description("未分析")]
+    None = 0,
+
+    /// <summary>
+    /// 关键点识别
+    /// </summary>
+    [Description("关键点")]
+    Keypoints = 1,
+
+    /// <summary>
+    /// 步态事件检测
+    /// </summary>
+    [Description("步态事件")]
+    Events = 2,
+
+    /// <summary>
+    /// 运动学参数
+    /// </summary>
+    [Description("运动学")]
+    Kinematics = 3
+}
+
+/// <summary>
+/// 视频规格
+/// </summary>
+public enum VideoSpec
+{
+    /// <summary>
+    /// 1080P 30fps
+    /// </summary>
+    [Description("1080P / 30 FPS")]
+    P1080_30fps = 0,
+
+    /// <summary>
+    /// 1440P 30fps
+    /// </summary>
+    [Description("1440P / 30 FPS")]
+    P1440_30fps = 1
+}
+
+/// <summary>
+/// 导入策略
+/// </summary>
+public enum ImportStrategy
+{
+    /// <summary>
+    /// 复制到测量目录
+    /// </summary>
+    [Description("复制到测量目录")]
+    CopyToFolder = 0,
+
+    /// <summary>
+    /// 仅引用原路径
+    /// </summary>
+    [Description("仅引用原路径")]
+    ReferenceOnly = 1
+}
+
+/// <summary>
+/// 分析任务状态
+/// </summary>
+public enum AnalysisTaskStatus
+{
+    /// <summary>
+    /// 未运行
+    /// </summary>
+    [Description("未运行")]
+    NotRun = 0,
+
+    /// <summary>
+    /// 运行中
+    /// </summary>
+    [Description("运行中")]
+    Running = 1,
+
+    /// <summary>
+    /// 已完成
+    /// </summary>
+    [Description("已完成")]
+    Completed = 2,
+
+    /// <summary>
+    /// 失败
+    /// </summary>
+    [Description("失败")]
+    Failed = 3
+}
+
+/// <summary>
+/// 视频导入模式
+/// </summary>
+public enum VideoImportMode
+{
+    /// <summary>
+    /// 导入已有视频
+    /// </summary>
+    [Description("导入")]
+    Import = 0,
+
+    /// <summary>
+    /// 实时采集
+    /// </summary>
+    [Description("采集")]
+    Capture = 1
+}
+
+/// <summary>
+/// 采集画面布局
+/// </summary>
+public enum CaptureLayout
+{
+    /// <summary>
+    /// 单视频模式（仅正面或侧面）
+    /// </summary>
+    [Description("单视频")]
+    Single = 0,
+
+    /// <summary>
+    /// 双视频模式（正面 + 侧面）
+    /// </summary>
+    [Description("双视频")]
+    Dual = 1
+}
+
+/// <summary>
+/// 录制时长选项
+/// </summary>
+public enum RecordDuration
+{
+    /// <summary>
+    /// 30 秒
+    /// </summary>
+    [Description("30秒")]
+    Seconds30 = 30,
+
+    /// <summary>
+    /// 1 分钟
+    /// </summary>
+    [Description("1分钟")]
+    Seconds60 = 60
+}
+
+/// <summary>
+/// 采集录制状态
+/// </summary>
+public enum CaptureState
+{
+    /// <summary>
+    /// 待机 - 等待开始录制
+    /// </summary>
+    Idle = 0,
+
+    /// <summary>
+    /// 录制中
+    /// </summary>
+    Recording = 1,
+
+    /// <summary>
+    /// 录制完成
+    /// </summary>
+    Completed = 2
+}
+
+/// <summary>
+/// 评估模块 UI 状态
+/// </summary>
+public enum AnalysisState
+{
+    /// <summary>
+    /// 就绪，等待开始分析
+    /// </summary>
+    [Description("就绪")]
+    Ready = 0,
+
+    /// <summary>
+    /// 分析进行中
+    /// </summary>
+    [Description("分析中")]
+    Running = 1,
+
+    /// <summary>
+    /// 分析完成，视频预览中
+    /// </summary>
+    [Description("预览中")]
+    Previewing = 2,
+
+    /// <summary>
+    /// 分析失败
+    /// </summary>
+    [Description("失败")]
+    Failed = 3
+}
+
+/// <summary>
+/// 算法退出错误码
+/// </summary>
+public enum AnalysisErrorCode
+{
+    /// <summary>
+    /// 成功
+    /// </summary>
+    [Description("成功")]
+    Success = 0,
+
+    /// <summary>
+    /// 配置文件错误
+    /// </summary>
+    [Description("配置文件错误")]
+    ConfigError = 1,
+
+    /// <summary>
+    /// 输入文件不存在
+    /// </summary>
+    [Description("输入文件不存在")]
+    InputFileNotFound = 2,
+
+    /// <summary>
+    /// 视频读取失败
+    /// </summary>
+    [Description("视频读取失败")]
+    VideoReadFailed = 3,
+
+    /// <summary>
+    /// 分析处理失败
+    /// </summary>
+    [Description("分析处理失败")]
+    AnalysisFailed = 4,
+
+    /// <summary>
+    /// 结果导出失败
+    /// </summary>
+    [Description("结果导出失败")]
+    ExportFailed = 5,
+
+    /// <summary>
+    /// 未知错误
+    /// </summary>
+    [Description("未知错误")]
+    Unknown = 9
+}
+
+/// <summary>
+/// 视频播放速度
+/// </summary>
+public enum PlaybackSpeed
+{
+    /// <summary>
+    /// 0.25 倍速
+    /// </summary>
+    [Description("0.25x")]
+    Quarter = 0,
+
+    /// <summary>
+    /// 0.5 倍速
+    /// </summary>
+    [Description("0.5x")]
+    Half = 1,
+
+    /// <summary>
+    /// 1.0 倍速（正常）
+    /// </summary>
+    [Description("1x")]
+    Normal = 2,
+
+    /// <summary>
+    /// 1.5 倍速
+    /// </summary>
+    [Description("1.5x")]
+    OneAndHalf = 3,
+
+    /// <summary>
+    /// 2.0 倍速
+    /// </summary>
+    [Description("2x")]
+    Double = 4
+}
+
+/// <summary>
+/// CSV 文件类型标识
+/// </summary>
+public enum CsvFileType
+{
+    /// <summary>
+    /// 关节角度时间序列
+    /// </summary>
+    [Description("关节角度")]
+    JointAngle,
+
+    /// <summary>
+    /// 关键点运动轨迹
+    /// </summary>
+    [Description("关键点轨迹")]
+    KeypointTrajectory,
+
+    /// <summary>
+    /// 关键点速度
+    /// </summary>
+    [Description("关键点速度")]
+    KeypointVelocity,
+
+    /// <summary>
+    /// 关节角速度
+    /// </summary>
+    [Description("关节角速度")]
+    JointAngularVelocity
+}
+
+#endregion

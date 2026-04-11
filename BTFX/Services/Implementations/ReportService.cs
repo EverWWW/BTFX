@@ -374,7 +374,7 @@ public class ReportService : IReportService
         var measurement = await _measurementService.GetMeasurementByIdAsync(measurementRecordId);
         if (measurement == null)
         {
-            _logHelper?.Error($"生成报告失败：找不到测量记录 ID={measurementRecordId}");
+            _logHelper?.Error($"生成报告失败，找不到测量记录 ID={measurementRecordId}");
             return null;
         }
 
@@ -384,7 +384,11 @@ public class ReportService : IReportService
             existing.Status = ReportStatus.Draft;
             existing.DoctorOpinion = string.Empty;
             await UpdateReportAsync(existing);
-            _logHelper?.Information($"覆盖报告：ID={existing.Id}");
+            
+            // 加载分析数据
+            await LoadAnalysisDataForReportAsync(existing);
+            
+            _logHelper?.Information($"重置报告：ID={existing.Id}");
             return existing;
         }
         else
@@ -406,8 +410,52 @@ public class ReportService : IReportService
 
             var id = await CreateReportAsync(report);
             report.Id = id;
-            _logHelper?.Information($"创建报告：ID={report.Id}, Number={report.ReportNumber}");
+            
+            // 加载分析数据
+            await LoadAnalysisDataForReportAsync(report);
+            
+            _logHelper?.Information($"新建报告：ID={report.Id}, Number={report.ReportNumber}");
             return report;
+        }
+    }
+
+    /// <summary>
+    /// 获取报告（含分析数据）
+    /// </summary>
+    public async Task<Report?> GetReportWithAnalysisDataAsync(int reportId)
+    {
+        var report = await GetReportByIdAsync(reportId);
+        if (report == null) return null;
+
+        await LoadAnalysisDataForReportAsync(report);
+        return report;
+    }
+
+    /// <summary>
+    /// 为报告加载分析数据（私有辅助方法）
+    /// </summary>
+    private async Task LoadAnalysisDataForReportAsync(Report report)
+    {
+        try
+        {
+            // 获取 IGaitAnalysisService
+            var gaitAnalysisService = App.Services?.GetService(typeof(IGaitAnalysisService)) as IGaitAnalysisService;
+            if (gaitAnalysisService == null) return;
+
+            // 获取最新分析结果
+            var analysisResult = await gaitAnalysisService.GetLatestAnalysisResultAsync(report.MeasurementId);
+            if (analysisResult == null || !analysisResult.Success) return;
+
+            // 填充导航属性
+            report.AnalysisResult = analysisResult;
+            report.KinematicSummary = analysisResult.KinematicSummary;
+            report.QualityControl = analysisResult.QualityControl;
+
+            _logHelper?.Information($"报告加载分析数据成功：ReportId={report.Id}, AnalysisResultId={analysisResult.Id}");
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"报告加载分析数据失败：ReportId={report.Id}", ex);
         }
     }
 }

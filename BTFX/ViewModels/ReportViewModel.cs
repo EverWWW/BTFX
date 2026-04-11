@@ -340,7 +340,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
         if (value != null)
         {
-            LoadReportPreview(value.Report);
+            _ = LoadReportPreviewAsync(value.Report);
         }
         else
         {
@@ -575,7 +575,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                         // 刷新当前预览
                         if (SelectedReport != null)
                         {
-                            LoadReportPreview(SelectedReport.Report);
+                            _ = LoadReportPreviewAsync(SelectedReport.Report);
                         }
                     });
                 }
@@ -888,64 +888,124 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     /// <summary>
     /// 加载报告预览
     /// </summary>
-    private void LoadReportPreview(Report report)
+    private async Task LoadReportPreviewAsync(Report report)
     {
         // 如果应用正在关闭或已释放，不执行任何操作
         if (_disposed || App.IsShuttingDown) return;
 
-        _currentPreviewReport = report;
-        DoctorOpinion = report.DoctorOpinion ?? string.Empty;
-        HasPreviewContent = true;
-
-        // 构建预览内容
-        var sb = new System.Text.StringBuilder();
-        sb.AppendLine($"报告编号：{report.ReportNumber}");
-        sb.AppendLine($"生成日期：{report.CreatedAt:yyyy-MM-dd HH:mm}");
-        sb.AppendLine($"报告状态：{GetStatusText(report.Status)}");
-        sb.AppendLine();
-
-        if (report.MeasurementRecord?.Patient != null)
+        try
         {
-            var patient = report.MeasurementRecord.Patient;
-            sb.AppendLine("【患者信息】");
-            sb.AppendLine($"姓名：{patient.Name}");
-            sb.AppendLine($"性别：{(patient.Gender == Gender.Male ? "男" : "女")}");
-            sb.AppendLine($"年龄：{patient.Age}岁");
-            sb.AppendLine();
-        }
+            TryInvokeOnUI(() => IsLoading = true);
 
-        if (report.MeasurementRecord != null)
-        {
-            sb.AppendLine("【测量信息】");
-            sb.AppendLine($"测量日期：{report.MeasurementRecord.MeasurementDate:yyyy-MM-dd HH:mm}");
-            sb.AppendLine($"操作员：{report.MeasurementRecord.Operator?.Name ?? "未知"}");
-            sb.AppendLine();
-
-            if (report.MeasurementRecord.GaitParameters != null)
+            // 重新加载报告（含分析数据）
+            var fullReport = await _reportService.GetReportWithAnalysisDataAsync(report.Id);
+            if (fullReport == null || _disposed || App.IsShuttingDown)
             {
-                var gait = report.MeasurementRecord.GaitParameters;
-                sb.AppendLine("【步态参数】");
-                sb.AppendLine($"步幅（左）：{gait.StrideLengthLeft?.ToString("F2") ?? "--"} cm");
-                sb.AppendLine($"步幅（右）：{gait.StrideLengthRight?.ToString("F2") ?? "--"} cm");
-                sb.AppendLine($"步频：{gait.Cadence?.ToString("F1") ?? "--"} steps/min");
-                sb.AppendLine($"步速：{gait.Velocity?.ToString("F2") ?? "--"} m/s");
-                sb.AppendLine($"左脚支撑相：{gait.StancePhaseLeft?.ToString("F1") ?? "--"} %");
-                sb.AppendLine($"右脚支撑相：{gait.StancePhaseRight?.ToString("F1") ?? "--"} %");
-                sb.AppendLine($"双支撑时间：{gait.DoubleSupport?.ToString("F1") ?? "--"} %");
+                TryInvokeOnUI(() => IsLoading = false);
+                return;
+            }
+
+            _currentPreviewReport = fullReport;
+            DoctorOpinion = fullReport.DoctorOpinion ?? string.Empty;
+            HasPreviewContent = true;
+
+            // 构建预览内容
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"报告编号：{fullReport.ReportNumber}");
+            sb.AppendLine($"生成日期：{fullReport.CreatedAt:yyyy-MM-dd HH:mm}");
+            sb.AppendLine($"报告状态：{GetStatusText(fullReport.Status)}");
+            sb.AppendLine();
+
+            if (fullReport.MeasurementRecord?.Patient != null)
+            {
+                var patient = fullReport.MeasurementRecord.Patient;
+                sb.AppendLine("【患者信息】");
+                sb.AppendLine($"姓名：{patient.Name}");
+                sb.AppendLine($"性别：{(patient.Gender == Gender.Male ? "男" : "女")}");
+                sb.AppendLine($"年龄：{patient.Age}岁");
                 sb.AppendLine();
             }
-        }
 
-        if (!string.IsNullOrEmpty(report.DoctorOpinion))
+            if (fullReport.MeasurementRecord != null)
+            {
+                sb.AppendLine("【测量信息】");
+                sb.AppendLine($"测量日期：{fullReport.MeasurementRecord.MeasurementDate:yyyy-MM-dd HH:mm}");
+                sb.AppendLine($"操作员：{fullReport.MeasurementRecord.Operator?.Name ?? "未知"}");
+                sb.AppendLine();
+
+                if (fullReport.MeasurementRecord.GaitParameters != null)
+                {
+                    var gait = fullReport.MeasurementRecord.GaitParameters;
+                    sb.AppendLine("【步态参数】");
+                    sb.AppendLine($"步幅（左）：{gait.StrideLengthLeft?.ToString("F2") ?? "--"} cm");
+                    sb.AppendLine($"步幅（右）：{gait.StrideLengthRight?.ToString("F2") ?? "--"} cm");
+                    sb.AppendLine($"步频：{gait.Cadence?.ToString("F1") ?? "--"} steps/min");
+                    sb.AppendLine($"步速：{gait.Velocity?.ToString("F2") ?? "--"} m/s");
+                    sb.AppendLine($"左脚支撑相：{gait.StancePhaseLeft?.ToString("F1") ?? "--"} %");
+                    sb.AppendLine($"右脚支撑相：{gait.StancePhaseRight?.ToString("F1") ?? "--"} %");
+                    sb.AppendLine($"双支撑时间：{gait.DoubleSupport?.ToString("F1") ?? "--"} %");
+                    sb.AppendLine();
+                }
+            }
+
+            // 运动学参数
+            if (fullReport.KinematicSummary != null)
+            {
+                var ks = fullReport.KinematicSummary;
+                sb.AppendLine("【运动学参数（ROM）】");
+                sb.AppendLine($"髋关节 ROM：{ks.HipRomDeg?.ToString("F1") ?? "--"} °");
+                sb.AppendLine($"膝关节 ROM：{ks.KneeRomDeg?.ToString("F1") ?? "--"} °");
+                sb.AppendLine($"踝关节 ROM：{ks.AnkleRomDeg?.ToString("F1") ?? "--"} °");
+                sb.AppendLine($"骨盆冠状面 ROM：{ks.PelvisCoronalRomDeg?.ToString("F1") ?? "--"} °");
+                sb.AppendLine();
+            }
+
+            // 质量控制信息
+            if (fullReport.QualityControl != null)
+            {
+                var qc = fullReport.QualityControl;
+                sb.AppendLine("【质量控制信息】");
+                sb.AppendLine($"平均置信度：{(qc.MeanKeypointConfidence.HasValue ? $"{qc.MeanKeypointConfidence * 100:F1}%" : "--")}");
+                sb.AppendLine($"有效帧比例：{(qc.ValidFrameRatio.HasValue ? $"{qc.ValidFrameRatio * 100:F1}%" : "--")}");
+                sb.AppendLine($"遮挡预警：{(qc.OcclusionWarning ? "⚠ 是" : "✓ 否")}");
+                sb.AppendLine($"丢点预警：{(qc.MissingPointWarning ? "⚠ 是" : "✓ 否")}");
+                sb.AppendLine();
+            }
+
+            // 分析信息
+            if (fullReport.AnalysisResult != null)
+            {
+                var ar = fullReport.AnalysisResult;
+                sb.AppendLine("【分析信息】");
+                sb.AppendLine($"算法版本：{ar.AlgorithmVersion}");
+                sb.AppendLine($"模型版本：{ar.ModelVersion}");
+                sb.AppendLine($"分析耗时：{(ar.AnalysisDurationSeconds.HasValue ? $"{ar.AnalysisDurationSeconds:F1}秒" : "--")}");
+                sb.AppendLine($"分析时间：{ar.CreatedAt:yyyy-MM-dd HH:mm}");
+                sb.AppendLine();
+            }
+
+            if (!string.IsNullOrEmpty(fullReport.DoctorOpinion))
+            {
+                sb.AppendLine("【医生意见】");
+                sb.AppendLine(fullReport.DoctorOpinion);
+            }
+
+            // 再次检查关闭状态
+            if (_disposed || App.IsShuttingDown) return;
+
+            TryInvokeOnUI(() => PreviewContent = sb.ToString());
+        }
+        catch (Exception ex)
         {
-            sb.AppendLine("【医生意见】");
-            sb.AppendLine(report.DoctorOpinion);
+            if (!_disposed && !App.IsShuttingDown)
+            {
+                _logHelper?.Error($"加载报告预览失败：ReportId={report.Id}", ex);
+            }
         }
-
-        // 再次检查关闭状态
-        if (_disposed || App.IsShuttingDown) return;
-
-        PreviewContent = sb.ToString();
+        finally
+        {
+            TryInvokeOnUI(() => IsLoading = false);
+        }
     }
 
     /// <summary>

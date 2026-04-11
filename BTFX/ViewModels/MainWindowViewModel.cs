@@ -67,6 +67,12 @@ public class MainWindowViewModel : ObservableObject
     public IRelayCommand ExitFullscreenCommand { get; }
 
     /// <summary>
+    /// 是否正在显示登录页（登录页时隐藏标题栏）
+    /// </summary>
+    public bool IsLoginView => _navigationService.CurrentViewKey == "LoginViewModel"
+                               || string.IsNullOrEmpty(_navigationService.CurrentViewKey);
+
+    /// <summary>
     /// 构造函数
     /// </summary>
     public MainWindowViewModel(
@@ -90,6 +96,10 @@ public class MainWindowViewModel : ObservableObject
                     if (e.PropertyName == nameof(INavigationService.CurrentView))
                     {
                         CurrentView = _navigationService.CurrentView;
+                    }
+                    if (e.PropertyName == nameof(INavigationService.CurrentViewKey))
+                    {
+                        OnPropertyChanged(nameof(IsLoginView));
                     }
                 };
             }

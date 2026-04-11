@@ -1,4 +1,5 @@
 using BTFX.Common;
+using BTFX.Models.Analysis;
 using SqlSugar;
 
 namespace BTFX.Models;
@@ -168,4 +169,24 @@ public class Report
     /// </summary>
     [SugarColumn(IsIgnore = true)]
     public DateTime? PrintedAt { get; set; }
+
+    // ============ 分析数据导航属性（不入库，报告增强用） ============
+
+    /// <summary>
+    /// 运动学汇总（导航属性，从 AnalysisResult 加载）
+    /// </summary>
+    [SugarColumn(IsIgnore = true)]
+    public KinematicSummary? KinematicSummary { get; set; }
+
+    /// <summary>
+    /// 质量控制信息（导航属性，从 AnalysisResult 加载）
+    /// </summary>
+    [SugarColumn(IsIgnore = true)]
+    public QualityControlInfo? QualityControl { get; set; }
+
+    /// <summary>
+    /// 分析结果（导航属性，从 AnalysisResult 加载）
+    /// </summary>
+    [SugarColumn(IsIgnore = true)]
+    public AnalysisResult? AnalysisResult { get; set; }
 }

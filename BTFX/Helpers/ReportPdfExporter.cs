@@ -1,5 +1,6 @@
 using BTFX.Common;
 using BTFX.Models;
+using BTFX.Models.Analysis;
 using BTFX.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -172,6 +173,34 @@ public class ReportPdfExporter
             column.Item().Element(c => ComposeGaitParameters(c, report));
 
             column.Item().PaddingVertical(8);
+
+            // 运动学参数汇总
+            if (report.KinematicSummary != null)
+            {
+                column.Item().Element(c => ComposeKinematicSummary(c, report.KinematicSummary));
+                column.Item().PaddingVertical(8);
+            }
+
+            // 关节角度曲线图
+            if (report.AnalysisResult?.CsvFiles != null)
+            {
+                column.Item().Element(c => ComposeJointAngleCharts(c, report.AnalysisResult));
+                column.Item().PaddingVertical(8);
+            }
+
+            // 质量控制信息
+            if (report.QualityControl != null)
+            {
+                column.Item().Element(c => ComposeQualityControl(c, report.QualityControl));
+                column.Item().PaddingVertical(8);
+            }
+
+            // 分析信息
+            if (report.AnalysisResult != null)
+            {
+                column.Item().Element(c => ComposeAnalysisInfo(c, report.AnalysisResult));
+                column.Item().PaddingVertical(8);
+            }
 
             // 医生意见
             column.Item().Element(c => ComposeDoctorOpinion(c, report));
@@ -360,6 +389,180 @@ public class ReportPdfExporter
                 .FontSize(10)
                 .LineHeight(1.5f);
         });
+    }
+
+    /// <summary>
+    /// 运动学参数汇总表
+    /// </summary>
+    private void ComposeKinematicSummary(IContainer container, KinematicSummary summary)
+    {
+        container.Column(column =>
+        {
+            column.Item().Text("运动学参数（ROM）")
+                .FontSize(12)
+                .Bold();
+
+            column.Item().PaddingVertical(6);
+
+            column.Item().Table(table =>
+            {
+                table.ColumnsDefinition(columns =>
+                {
+                    for (int i = 0; i < 4; i++)
+                        columns.RelativeColumn();
+                });
+
+                table.Cell().Element(c => CreateParameterCell(c, "髋关节 ROM", summary.HipRomDeg, "°"));
+                table.Cell().Element(c => CreateParameterCell(c, "膝关节 ROM", summary.KneeRomDeg, "°"));
+                table.Cell().Element(c => CreateParameterCell(c, "踝关节 ROM", summary.AnkleRomDeg, "°"));
+                table.Cell().Element(c => CreateParameterCell(c, "骨盆冠状面 ROM", summary.PelvisCoronalRomDeg, "°"));
+            });
+        });
+    }
+
+    /// <summary>
+    /// 关节角度曲线图区域
+    /// </summary>
+    private void ComposeJointAngleCharts(IContainer container, AnalysisResult analysisResult)
+    {
+        var jointAngleCsv = analysisResult.CsvFiles?
+            .FirstOrDefault(f => f.FileType == CsvFileType.JointAngle && f.FileExists);
+
+        if (jointAngleCsv == null) return;
+
+        var chartService = App.Services?.GetService(typeof(IChartService)) as IChartService;
+        if (chartService == null) return;
+
+        var data = chartService.ReadJointAngleCsv(jointAngleCsv.FilePath);
+        if (data.Count == 0) return;
+
+        container.Column(column =>
+        {
+            column.Item().Text("关节角度-时间曲线")
+                .FontSize(12)
+                .Bold();
+
+            column.Item().PaddingVertical(6);
+
+            var joints = new (string Name, string Title)[]
+            {
+                ("hip", "髋关节角度-时间曲线（矢状面）"),
+                ("knee", "膝关节角度-时间曲线（矢状面）"),
+                ("ankle", "踝关节角度-时间曲线（矢状面）"),
+                ("pelvis", "骨盆角度-时间曲线（冠状面）")
+            };
+
+            foreach (var (name, title) in joints)
+            {
+                var plotModel = chartService.CreateJointAnglePlot(data, name, title);
+                var pngBytes = chartService.ExportPlotToPng(plotModel, 480, 240);
+
+                if (pngBytes.Length > 0)
+                {
+                    column.Item().Image(pngBytes);
+                    column.Item().PaddingVertical(4);
+                }
+            }
+        });
+    }
+
+    /// <summary>
+    /// 质量控制信息
+    /// </summary>
+    private void ComposeQualityControl(IContainer container, QualityControlInfo qc)
+    {
+        container.Column(column =>
+        {
+            column.Item().Text("质量控制信息")
+                .FontSize(12)
+                .Bold();
+
+            column.Item().PaddingVertical(6);
+
+            column.Item().Table(table =>
+            {
+                table.ColumnsDefinition(columns =>
+                {
+                    for (int i = 0; i < 4; i++)
+                        columns.RelativeColumn();
+                });
+
+                table.Cell().Element(c => CreateParameterCell(c, "平均置信度", 
+                    qc.MeanKeypointConfidence.HasValue ? qc.MeanKeypointConfidence * 100 : null, "%"));
+                table.Cell().Element(c => CreateParameterCell(c, "有效帧比例",
+                    qc.ValidFrameRatio.HasValue ? qc.ValidFrameRatio * 100 : null, "%"));
+                table.Cell().Element(c => CreateQualityStatusCell(c, "遮挡预警", qc.OcclusionWarning));
+                table.Cell().Element(c => CreateQualityStatusCell(c, "丢点预警", qc.MissingPointWarning));
+            });
+        });
+    }
+
+    /// <summary>
+    /// 分析元信息
+    /// </summary>
+    private void ComposeAnalysisInfo(IContainer container, AnalysisResult analysisResult)
+    {
+        container.Column(column =>
+        {
+            column.Item().Text("分析信息")
+                .FontSize(12)
+                .Bold();
+
+            column.Item().PaddingVertical(6);
+
+            column.Item().Table(table =>
+            {
+                table.ColumnsDefinition(columns =>
+                {
+                    columns.ConstantColumn(60);
+                    columns.RelativeColumn();
+                    columns.ConstantColumn(60);
+                    columns.RelativeColumn();
+                    columns.ConstantColumn(60);
+                    columns.RelativeColumn();
+                });
+
+                table.Cell().Text("算法版本").FontColor(Colors.Grey.Medium);
+                table.Cell().Text(analysisResult.AlgorithmVersion);
+                table.Cell().Text("模型版本").FontColor(Colors.Grey.Medium);
+                table.Cell().Text(analysisResult.ModelVersion);
+                table.Cell().Text("分析耗时").FontColor(Colors.Grey.Medium);
+                table.Cell().Text(analysisResult.AnalysisDurationSeconds.HasValue 
+                    ? $"{analysisResult.AnalysisDurationSeconds:F1}秒" : "--");
+
+                table.Cell().Text("分析时间").FontColor(Colors.Grey.Medium);
+                table.Cell().Text(analysisResult.CreatedAt.ToString(Constants.DATETIME_FORMAT));
+                table.Cell().Text("协议版本").FontColor(Colors.Grey.Medium);
+                table.Cell().Text(analysisResult.ProtocolVersion);
+                table.Cell().Text("").FontColor(Colors.Grey.Medium);
+                table.Cell().Text("");
+            });
+        });
+    }
+
+    /// <summary>
+    /// 创建质量状态单元格（PDF版）
+    /// </summary>
+    private void CreateQualityStatusCell(IContainer container, string label, bool hasWarning)
+    {
+        container
+            .Background(Colors.Grey.Lighten4)
+            .Padding(8)
+            .Column(column =>
+            {
+                column.Item().Text(label)
+                    .FontSize(8)
+                    .FontColor(Colors.Grey.Medium)
+                    .AlignCenter();
+
+                column.Item().PaddingVertical(2);
+
+                column.Item().Text(hasWarning ? "? 是" : "? 否")
+                    .FontSize(14)
+                    .Bold()
+                    .FontColor(hasWarning ? Colors.Red.Medium : Colors.Green.Medium)
+                    .AlignCenter();
+            });
     }
 
     /// <summary>

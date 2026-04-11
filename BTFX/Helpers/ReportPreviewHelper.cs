@@ -1,9 +1,13 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using BTFX.Common;
 using BTFX.Models;
+using BTFX.Models.Analysis;
+using BTFX.Services.Interfaces;
 
 namespace BTFX.Helpers;
 
@@ -42,6 +46,18 @@ public static class ReportPreviewHelper
 
         // 步态参数
         AddGaitParameters(document, report);
+
+        // 运动学参数汇总
+        AddKinematicSummary(document, report.KinematicSummary);
+
+        // 关节角度曲线图
+        AddJointAngleCharts(document, report.AnalysisResult);
+
+        // 质量控制信息
+        AddQualityControlInfo(document, report.QualityControl);
+
+        // 分析信息
+        AddAnalysisInfo(document, report.AnalysisResult);
 
         // 医生意见
         AddDoctorOpinion(document, report);
@@ -212,6 +228,204 @@ public static class ReportPreviewHelper
         table.RowGroups[0].Rows.Add(row3);
 
         document.Blocks.Add(table);
+    }
+
+    /// <summary>
+    /// 添加运动学参数汇总表
+    /// </summary>
+    private static void AddKinematicSummary(FlowDocument document, KinematicSummary? summary)
+    {
+        if (summary == null) return;
+
+        AddSectionTitle(document, "运动学参数（ROM）");
+
+        var table = new Table
+        {
+            CellSpacing = 4,
+            Margin = new Thickness(0, 0, 0, 16)
+        };
+
+        for (int i = 0; i < 4; i++)
+        {
+            table.Columns.Add(new TableColumn { Width = new GridLength(1, GridUnitType.Star) });
+        }
+
+        table.RowGroups.Add(new TableRowGroup());
+
+        var row = new TableRow();
+        row.Cells.Add(CreateParameterCell("髋关节 ROM", summary.HipRomDeg, "°"));
+        row.Cells.Add(CreateParameterCell("膝关节 ROM", summary.KneeRomDeg, "°"));
+        row.Cells.Add(CreateParameterCell("踝关节 ROM", summary.AnkleRomDeg, "°"));
+        row.Cells.Add(CreateParameterCell("骨盆冠状面 ROM", summary.PelvisCoronalRomDeg, "°"));
+        table.RowGroups[0].Rows.Add(row);
+
+        document.Blocks.Add(table);
+    }
+
+    /// <summary>
+    /// 添加关节角度曲线图区域
+    /// </summary>
+    private static void AddJointAngleCharts(FlowDocument document, AnalysisResult? analysisResult)
+    {
+        if (analysisResult?.CsvFiles == null) return;
+
+        var jointAngleCsv = analysisResult.CsvFiles
+            .FirstOrDefault(f => f.FileType == CsvFileType.JointAngle && f.FileExists);
+
+        if (jointAngleCsv == null) return;
+
+        // 获取 ChartService
+        var chartService = App.Services?.GetService(typeof(IChartService)) as IChartService;
+        if (chartService == null) return;
+
+        var data = chartService.ReadJointAngleCsv(jointAngleCsv.FilePath);
+        if (data.Count == 0) return;
+
+        AddSectionTitle(document, "关节角度-时间曲线");
+
+        var joints = new (string Name, string Title)[]
+        {
+            ("hip", "髋关节角度-时间曲线（矢状面）"),
+            ("knee", "膝关节角度-时间曲线（矢状面）"),
+            ("ankle", "踝关节角度-时间曲线（矢状面）"),
+            ("pelvis", "骨盆角度-时间曲线（冠状面）")
+        };
+
+        foreach (var (name, title) in joints)
+        {
+            var plotModel = chartService.CreateJointAnglePlot(data, name, title);
+            var pngBytes = chartService.ExportPlotToPng(plotModel, 480, 240);
+            AddChartImage(document, pngBytes);
+        }
+    }
+
+    /// <summary>
+    /// 添加质量控制信息
+    /// </summary>
+    private static void AddQualityControlInfo(FlowDocument document, QualityControlInfo? qc)
+    {
+        if (qc == null) return;
+
+        AddSectionTitle(document, "质量控制信息");
+
+        var table = new Table
+        {
+            CellSpacing = 4,
+            Margin = new Thickness(0, 0, 0, 16)
+        };
+
+        for (int i = 0; i < 4; i++)
+        {
+            table.Columns.Add(new TableColumn { Width = new GridLength(1, GridUnitType.Star) });
+        }
+
+        table.RowGroups.Add(new TableRowGroup());
+
+        var row = new TableRow();
+        row.Cells.Add(CreateParameterCell("平均置信度", qc.MeanKeypointConfidence.HasValue ? qc.MeanKeypointConfidence * 100 : null, "%"));
+        row.Cells.Add(CreateParameterCell("有效帧比例", qc.ValidFrameRatio.HasValue ? qc.ValidFrameRatio * 100 : null, "%"));
+        row.Cells.Add(CreateQualityStatusCell("遮挡预警", qc.OcclusionWarning));
+        row.Cells.Add(CreateQualityStatusCell("丢点预警", qc.MissingPointWarning));
+        table.RowGroups[0].Rows.Add(row);
+
+        document.Blocks.Add(table);
+    }
+
+    /// <summary>
+    /// 添加分析元信息
+    /// </summary>
+    private static void AddAnalysisInfo(FlowDocument document, AnalysisResult? analysisResult)
+    {
+        if (analysisResult == null) return;
+
+        AddSectionTitle(document, "分析信息");
+
+        var table = CreateInfoTable();
+
+        var row1 = new TableRow();
+        row1.Cells.Add(CreateLabelCell("算法版本"));
+        row1.Cells.Add(CreateValueCell(analysisResult.AlgorithmVersion));
+        row1.Cells.Add(CreateLabelCell("模型版本"));
+        row1.Cells.Add(CreateValueCell(analysisResult.ModelVersion));
+        row1.Cells.Add(CreateLabelCell("分析耗时"));
+        row1.Cells.Add(CreateValueCell(analysisResult.AnalysisDurationSeconds.HasValue ? $"{analysisResult.AnalysisDurationSeconds:F1}秒" : "--"));
+        table.RowGroups[0].Rows.Add(row1);
+
+        var row2 = new TableRow();
+        row2.Cells.Add(CreateLabelCell("分析时间"));
+        row2.Cells.Add(CreateValueCell(analysisResult.CreatedAt.ToString(Constants.DATETIME_FORMAT)));
+        row2.Cells.Add(CreateLabelCell("协议版本"));
+        row2.Cells.Add(CreateValueCell(analysisResult.ProtocolVersion));
+        row2.Cells.Add(CreateLabelCell(""));
+        row2.Cells.Add(CreateValueCell(""));
+        table.RowGroups[0].Rows.Add(row2);
+
+        document.Blocks.Add(table);
+    }
+
+    /// <summary>
+    /// 嵌入图表图片到 FlowDocument
+    /// </summary>
+    private static void AddChartImage(FlowDocument document, byte[] pngBytes)
+    {
+        if (pngBytes.Length == 0) return;
+
+        using var ms = new MemoryStream(pngBytes);
+        var bitmap = new BitmapImage();
+        bitmap.BeginInit();
+        bitmap.CacheOption = BitmapCacheOption.OnLoad;
+        bitmap.StreamSource = ms;
+        bitmap.EndInit();
+        bitmap.Freeze();
+
+        var image = new Image
+        {
+            Source = bitmap,
+            Stretch = Stretch.Uniform,
+            MaxWidth = 460,
+            Margin = new Thickness(0, 4, 0, 8)
+        };
+
+        document.Blocks.Add(new BlockUIContainer(image));
+    }
+
+    /// <summary>
+    /// 创建质量状态单元格
+    /// </summary>
+    private static TableCell CreateQualityStatusCell(string label, bool hasWarning)
+    {
+        var border = new Border
+        {
+            Background = new SolidColorBrush(Color.FromRgb(245, 245, 245)),
+            CornerRadius = new CornerRadius(4),
+            Padding = new Thickness(8, 12, 8, 12),
+            Margin = new Thickness(2)
+        };
+
+        var stack = new StackPanel();
+
+        stack.Children.Add(new TextBlock
+        {
+            Text = label,
+            FontSize = 10,
+            Foreground = Brushes.Gray,
+            HorizontalAlignment = HorizontalAlignment.Center
+        });
+
+        stack.Children.Add(new TextBlock
+        {
+            Text = hasWarning ? "? 是" : "? 否",
+            FontSize = 16,
+            FontWeight = FontWeights.Bold,
+            Foreground = hasWarning
+                ? new SolidColorBrush(Color.FromRgb(244, 67, 54))
+                : new SolidColorBrush(Color.FromRgb(76, 175, 80)),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Margin = new Thickness(0, 4, 0, 0)
+        });
+
+        border.Child = stack;
+        return new TableCell(new BlockUIContainer(border));
     }
 
     /// <summary>

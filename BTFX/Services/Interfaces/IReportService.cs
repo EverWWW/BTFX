@@ -94,4 +94,11 @@ public interface IReportService
     /// <param name="operatorId">操作员ID</param>
     /// <returns>生成的报告</returns>
     Task<Report?> GenerateReportAsync(int measurementRecordId, int operatorId);
+
+    /// <summary>
+    /// 获取报告（含分析数据）
+    /// </summary>
+    /// <param name="reportId">报告ID</param>
+    /// <returns>带分析数据的报告</returns>
+    Task<Report?> GetReportWithAnalysisDataAsync(int reportId);
 }

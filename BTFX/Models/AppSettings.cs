@@ -31,6 +31,11 @@ public class AppSettings
     /// 登录凭据设置
     /// </summary>
     public CredentialsSettings Credentials { get; set; } = new();
+
+    /// <summary>
+    /// 算法配置
+    /// </summary>
+    public AlgorithmSettings Algorithm { get; set; } = new();
 }
 
 /// <summary>
@@ -126,4 +131,35 @@ public class CredentialsSettings
     /// 密码哈希（加密存储）
     /// </summary>
     public string PasswordHash { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// 算法配置
+/// </summary>
+public class AlgorithmSettings
+{
+    /// <summary>
+    /// 算法程序路径（默认 Algorithm/gait_analysis.exe）
+    /// </summary>
+    public string ExePath { get; set; } = System.IO.Path.Combine(Constants.ALGORITHM_DIRECTORY, Constants.ALGORITHM_EXE_FILENAME);
+
+    /// <summary>
+    /// 分析超时时间（分钟）
+    /// </summary>
+    public int TimeoutMinutes { get; set; } = Constants.ALGORITHM_DEFAULT_TIMEOUT_MINUTES;
+
+    /// <summary>
+    /// 算法版本号
+    /// </summary>
+    public string AlgorithmVersion { get; set; } = Constants.DEFAULT_ALGORITHM_VERSION;
+
+    /// <summary>
+    /// 模型版本号
+    /// </summary>
+    public string ModelVersion { get; set; } = Constants.DEFAULT_MODEL_VERSION;
+
+    /// <summary>
+    /// 侧向相机与步道距离（m），算法必填参数
+    /// </summary>
+    public double? SideCameraDistance { get; set; }
 }
