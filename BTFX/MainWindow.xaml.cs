@@ -91,9 +91,6 @@ public partial class MainWindow : Window
         // 从DI容器获取ViewModel
         DataContext = App.Services.GetRequiredService<MainWindowViewModel>();
 
-        // 初始化最大化图标状态
-        MaximizeIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.WindowRestore;
-
         // 订阅状态变化
         StateChanged += MainWindow_StateChanged;
         SourceInitialized += MainWindow_SourceInitialized;
@@ -136,10 +133,7 @@ public partial class MainWindow : Window
     /// </summary>
     private void MainWindow_StateChanged(object? sender, EventArgs e)
     {
-        // 更新最大化图标
-        MaximizeIcon.Kind = WindowState == WindowState.Maximized
-            ? MaterialDesignThemes.Wpf.PackIconKind.WindowRestore
-            : MaterialDesignThemes.Wpf.PackIconKind.WindowMaximize;
+        // 标题栏已移至 TitleBarControl，默认处理逻辑在此可扩展
     }
 
     /// <summary>
@@ -152,21 +146,9 @@ public partial class MainWindow : Window
             // 双击切换最大化/还原
             ToggleMaximize();
         }
-        else
+        else if (WindowState == WindowState.Normal)
         {
-            // 拖动窗口
-            if (WindowState == WindowState.Maximized)
-            {
-                // 从最大化状态拖动时，先还原窗口
-                var point = e.GetPosition(this);
-                _previousWindowState = WindowState.Normal;
-                WindowState = WindowState.Normal;
-
-                // 调整窗口位置，使鼠标保持在相对位置
-                Left = point.X - Width / 2;
-                Top = point.Y - 20;
-            }
-
+            // 仅在普通窗口状态下允许拖动；最大化时单击不做任何操作
             DragMove();
         }
     }
@@ -188,11 +170,18 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// 关闭按钮点击
+    /// 关闭按钮点击（备用，实际由 TitleBarControl 路由事件驱动）
     /// </summary>
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
-        // 显示确认对话框
+        TitleBar_CloseClicked(sender, e);
+    }
+
+    /// <summary>
+    /// 标题栏组件关闭路由事件处理，包含确认对话框逻辑
+    /// </summary>
+    private void TitleBar_CloseClicked(object sender, RoutedEventArgs e)
+    {
         var result = MessageBox.Show(
             FindResource("ExitConfirmMessage")?.ToString() ?? "确认退出系统？",
             FindResource("ConfirmExit")?.ToString() ?? "确认退出",
@@ -203,6 +192,9 @@ public partial class MainWindow : Window
         {
             Application.Current.Shutdown();
         }
+
+        // 标记已处理，阻止 TitleBarControl 内部继续执行 window.Close()
+        e.Handled = true;
     }
 
     /// <summary>

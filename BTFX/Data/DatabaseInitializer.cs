@@ -10,36 +10,31 @@ using ToolHelper.LoggingDiagnostics.Abstractions;
 namespace BTFX.Data;
 
 /// <summary>
-/// ���ݿ��ʼ����
-/// ���𴴽����ݿ⡢���ṹ�ͳ�ʼ����
-/// ʹ�� SqlSugar ORM �������ݿ����
+/// 数据库初始化器。
+/// 负责创建数据库文件、建表、建索引、写入种子数据，以及执行版本迁移。
+/// 通过 SQLite PRAGMA user_version 管理数据库版本号。
 /// </summary>
 public class DatabaseInitializer
 {
     /// <summary>
-    /// ��ǰ���ݿ�汾
-    /// �汾��ʷ:
-    /// - 1: ��ʼ�汾
-    /// - 2: ��������ģ����չ������ MeasurementRecord �ֶΣ�MeasurementName, MeasurementType, FrontVideoPath, SideVideoPath �ȣ�
+    /// 当前数据库目标版本号。每次结构变更时递增，并在 <see cref="UpgradeDatabaseAsync"/> 中添加对应迁移逻辑。
     /// </summary>
-    public const int CurrentDatabaseVersion = 3;
+    public const int CurrentDatabaseVersion = 4;
 
     private readonly string _databasePath;
     private readonly ILogHelper? _logHelper;
 
     /// <summary>
-    /// ���캯��
+    /// 初始化 <see cref="DatabaseInitializer"/>，自动确定数据库文件路径并创建所需目录。
     /// </summary>
-    /// <param name="logHelper">��־���֣���ѡ��</param>
+    /// <param name="logHelper">可选的日志记录器。</param>
     public DatabaseInitializer(ILogHelper? logHelper = null)
     {
         _logHelper = logHelper;
 
-        // ���ݿ�·��
         var baseDir = AppDomain.CurrentDomain.BaseDirectory;
         var dbDir = Path.Combine(baseDir, Constants.DATABASE_DIRECTORY);
 
-        // ȷ��Ŀ¼����
         if (!Directory.Exists(dbDir))
         {
             Directory.CreateDirectory(dbDir);
@@ -49,12 +44,13 @@ public class DatabaseInitializer
     }
 
     /// <summary>
-    /// ��ȡ���ݿ�·��
+    /// 获取数据库文件的完整路径。
     /// </summary>
     public string DatabasePath => _databasePath;
 
     /// <summary>
-    /// ���� SqliteSugarHelper ʵ��
+    /// 创建并返回一个新的 <see cref="SqliteSugarHelper"/> 实例。
+    /// 每次调用返回独立实例，调用方负责释放。
     /// </summary>
     public SqliteSugarHelper CreateSqliteSugarHelper()
     {
@@ -68,67 +64,65 @@ public class DatabaseInitializer
     }
 
     /// <summary>
-    /// ��ʼ�����ݿ�
+    /// 异步初始化数据库。
+    /// 首次尝试正常初始化；若失败，释放连接、删除损坏文件后重建。
+    /// 两次均失败时抛出异常，并保留原始异常信息。
     /// </summary>
     public async Task InitializeAsync()
     {
-        _logHelper?.Information("��ʼ��ʼ�����ݿ�...");
+        _logHelper?.Information("开始初始化数据库...");
 
         Exception? firstException = null;
 
         try
         {
             await InitializeDatabaseCoreAsync();
-            return; // �ɹ���ֱ�ӷ���
+            return;
         }
         catch (Exception ex)
         {
             firstException = ex;
-            _logHelper?.Warning($"���ݿ��ʼ��ʧ�ܣ�׼���ؽ����ݿ�: {ex.Message}");
+            _logHelper?.Warning($"数据库初始化失败，准备删除重建：{ex.Message}");
         }
 
-        // ǿ�ƽ����������գ��ͷ��������ݿ�����
+        // 释放所有 SQLite 连接，等待文件句柄释放
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
 
-        // �ȴ�һС��ʱ�����ļ������ȫ�ͷ�
         await Task.Delay(500);
 
-        // ����ɾ�����ݿⲢ���³�ʼ��
         try
         {
             DeleteDatabaseSafe();
-            _logHelper?.Information("��ɾ�������ݿ⣬���³�ʼ��...");
+            _logHelper?.Information("已删除旧数据库文件，重新初始化...");
 
             await InitializeDatabaseCoreAsync();
-            _logHelper?.Information("���ݿ��ؽ��ɹ�");
+            _logHelper?.Information("数据库重建成功。");
         }
         catch (Exception retryEx)
         {
-            // ������ϸ�Ĵ�����Ϣ
             var fullMessage = retryEx.Message;
             var inner = retryEx.InnerException;
             while (inner != null)
             {
-                fullMessage += $"\n�ڲ��쳣: {inner.Message}";
+                fullMessage += $"\n内部异常：{inner.Message}";
                 inner = inner.InnerException;
             }
 
-            _logHelper?.Error($"���ݿ��ؽ�ʧ��: {fullMessage}\n��ջ: {retryEx.StackTrace}", retryEx);
+            _logHelper?.Error($"数据库重建失败：{fullMessage}\n堆栈：{retryEx.StackTrace}", retryEx);
 
-            // ����ؽ�Ҳʧ�ܣ��׳�ԭʼ�쳣�����м�ֵ��
             var originalMessage = firstException?.Message ?? retryEx.Message;
-            throw new Exception($"���ݿ��ʼ��ʧ��: {originalMessage}", firstException ?? retryEx);
+            throw new Exception($"数据库初始化失败：{originalMessage}", firstException ?? retryEx);
         }
     }
 
     /// <summary>
-    /// ��ȫɾ�����ݿ⣨�����ļ���ռ�õ������
+    /// 安全删除数据库文件及其 WAL/SHM/Journal 附属文件。
+    /// 先清空连接池，再对每个文件最多重试 5 次（间隔递增）。
     /// </summary>
     private void DeleteDatabaseSafe()
     {
-        // ���� SQLite ���ӳ�
         Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
 
         var files = new[]
@@ -152,7 +146,6 @@ public class DatabaseInitializer
                 }
                 catch (IOException) when (retry < 4)
                 {
-                    // �ļ���ռ�ã��ȴ�������
                     Thread.Sleep(200 * (retry + 1));
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
@@ -162,44 +155,43 @@ public class DatabaseInitializer
     }
 
     /// <summary>
-    /// ���ݿ��ʼ�������߼�
+    /// 数据库初始化核心逻辑。
+    /// 读取当前版本号：0 表示全新数据库（建表+种子数据）；
+    /// 低于目标版本则执行迁移；等于目标版本则跳过。
     /// </summary>
     private async Task InitializeDatabaseCoreAsync()
     {
         using var db = CreateSqliteSugarHelper();
-
-        // ������ݿ�汾
         var version = GetDatabaseVersion(db);
-        _logHelper?.Information($"��ǰ���ݿ�汾: {version}");
+        _logHelper?.Information($"当前数据库版本：{version}");
 
         if (version == 0)
         {
-            // �����ݿ⣬�������б��ͳ�ʼ����
-            _logHelper?.Information("�������ݿ���ṹ...");
+            _logHelper?.Information("检测到新数据库，开始创建表结构...");
             await CreateTablesAsync(db);
 
-            _logHelper?.Information("��ʼ����������...");
+            _logHelper?.Information("表结构创建完成，开始写入种子数据...");
             await SeedDataAsync(db);
-            
+
             SetDatabaseVersion(db, CurrentDatabaseVersion);
-            _logHelper?.Information($"���ݿ��ʼ����ɣ��汾: {CurrentDatabaseVersion}");
+            _logHelper?.Information($"数据库初始化完成，版本设置为 {CurrentDatabaseVersion}。");
         }
         else if (version < CurrentDatabaseVersion)
         {
-            // ��Ҫ����
-            _logHelper?.Information($"�������ݿ�: {version} -> {CurrentDatabaseVersion}");
+            _logHelper?.Information($"数据库需要升级：{version} → {CurrentDatabaseVersion}");
             await UpgradeDatabaseAsync(db, version);
             SetDatabaseVersion(db, CurrentDatabaseVersion);
-            _logHelper?.Information("���ݿ��������");
+            _logHelper?.Information("数据库升级完成。");
         }
         else
         {
-            _logHelper?.Information("���ݿ��������°汾");
+            _logHelper?.Information("数据库版本已是最新，无需迁移。");
         }
     }
 
     /// <summary>
-    /// ��ȡ���ݿ�汾
+    /// 读取 SQLite PRAGMA user_version 作为数据库版本号。
+    /// 读取失败时返回 0（视为全新数据库）。
     /// </summary>
     private int GetDatabaseVersion(SqliteSugarHelper db)
     {
@@ -215,7 +207,7 @@ public class DatabaseInitializer
     }
 
     /// <summary>
-    /// �������ݿ�汾
+    /// 将指定版本号写入 SQLite PRAGMA user_version。
     /// </summary>
     private void SetDatabaseVersion(SqliteSugarHelper db, int version)
     {
@@ -223,13 +215,11 @@ public class DatabaseInitializer
     }
 
     /// <summary>
-    /// �������б���ʹ�� CodeFirst��
+    /// 创建所有业务表并建立索引。
     /// </summary>
     private Task CreateTablesAsync(SqliteSugarHelper db)
     {
-        _logHelper?.Information("ʹ�� CodeFirst �������ṹ...");
-
-        // ������˳�򴴽���
+        _logHelper?.Information("创建数据表...");
         db.CreateTables(
             typeof(Department),
             typeof(User),
@@ -244,95 +234,86 @@ public class DatabaseInitializer
             typeof(QualityControlInfo)
         );
 
-        // ����������SqlSugar CodeFirst ���Զ�������������Ҫ�ֶ�ִ�У�
         CreateIndexes(db);
 
         return Task.CompletedTask;
     }
 
     /// <summary>
-    /// ��������
+    /// 为高频查询字段创建索引，使用 IF NOT EXISTS 保证幂等性。
     /// </summary>
     private void CreateIndexes(SqliteSugarHelper db)
     {
-        _logHelper?.Information("�������ݿ�����...");
+        _logHelper?.Information("创建数据库索引...");
 
-        // Users ������
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Users_Username ON Users(Username);");
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Users_Phone ON Users(Phone);");
 
-        // Patients ������
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Patients_Name ON Patients(Name);");
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Patients_Phone ON Patients(Phone);");
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Patients_IdNumber ON Patients(IdNumber);");
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Patients_Status ON Patients(Status);");
 
-        // MeasurementRecords ������
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_MeasurementRecords_PatientId ON MeasurementRecords(PatientId);");
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_MeasurementRecords_MeasurementDate ON MeasurementRecords(MeasurementDate);");
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_MeasurementRecords_Status ON MeasurementRecords(Status);");
 
-        // Reports ������
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Reports_ReportNumber ON Reports(ReportNumber);");
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Reports_PatientId ON Reports(PatientId);");
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Reports_ReportDate ON Reports(ReportDate);");
 
-        // AnalysisResults ������
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisResults_MeasurementId ON AnalysisResults(MeasurementId);");
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisResults_RequestId ON AnalysisResults(RequestId);");
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisResults_Success ON AnalysisResults(Success);");
 
-        // KinematicSummaries ������
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_KinematicSummaries_AnalysisResultId ON KinematicSummaries(AnalysisResultId);");
 
-        // AnalysisCsvFiles ������
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisCsvFiles_AnalysisResultId ON AnalysisCsvFiles(AnalysisResultId);");
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisCsvFiles_FileType ON AnalysisCsvFiles(FileType);");
 
-        // QualityControls ������
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_QualityControls_AnalysisResultId ON QualityControls(AnalysisResultId);");
     }
 
     /// <summary>
-    /// ��ʼ����������
+    /// 写入初始种子数据，包括默认科室、内置管理员账户、内置普通账户及系统配置项。
+    /// 所有插入均先检查是否已存在，保证幂等性。
     /// </summary>
     private async Task SeedDataAsync(SqliteSugarHelper db)
     {
         var now = DateTime.Now;
 
-        // ����Ĭ�Ͽ���
+        // Step 1：创建默认科室
         try
         {
-            _logHelper?.Information("Step 1: ����Ĭ�Ͽ���...");
-            
-            // ����Ƿ��Ѵ���
-            if (!db.Any<Department>(d => d.Name == "Ĭ�Ͽ���"))
+            _logHelper?.Information("Step 1：创建默认科室...");
+
+            if (!db.Any<Department>(d => d.Name == ""))
             {
                 await db.InsertAsync(new Department
                 {
-                    Name = "Ĭ�Ͽ���",
+                    Name = "",
                     Phone = "",
                     CreatedAt = now,
                     UpdatedAt = now
                 });
             }
-            _logHelper?.Information("Step 1: ���");
+            _logHelper?.Information("Step 1：默认科室创建完成。");
         }
         catch (Exception ex)
         {
-            throw new Exception($"Step 1 ʧ�� (Departments): {ex.Message}", ex);
+            throw new Exception($"创建默认科室失败：{ex.Message}", ex);
         }
 
-        // ���������û�
         var adminSalt = PasswordHelper.GenerateSalt();
         var adminHash = PasswordHelper.HashPassword(Constants.DEFAULT_PASSWORD, adminSalt);
         var userSalt = PasswordHelper.GenerateSalt();
         var userHash = PasswordHelper.HashPassword(Constants.DEFAULT_PASSWORD, userSalt);
 
+        // Step 2：创建内置管理员账户
         try
         {
-            _logHelper?.Information("Step 2: ���� admin �û�...");
-            
+            _logHelper?.Information("Step 2：创建内置管理员账户...");
+
             if (!await db.AnyAsync<User>(u => u.Username == Constants.ADMIN_USERNAME))
             {
                 await db.InsertAsync(new User
@@ -340,7 +321,7 @@ public class DatabaseInitializer
                     Username = Constants.ADMIN_USERNAME,
                     PasswordHash = adminHash,
                     PasswordSalt = adminSalt,
-                    Name = "����Ա",
+                    Name = "",
                     Phone = "",
                     Role = UserRole.Administrator,
                     IsEnabled = true,
@@ -349,17 +330,18 @@ public class DatabaseInitializer
                     UpdatedAt = now
                 });
             }
-            _logHelper?.Information("Step 2: ���");
+            _logHelper?.Information("Step 2：内置管理员账户创建完成。");
         }
         catch (Exception ex)
         {
-            throw new Exception($"Step 2 ʧ�� (admin): {ex.Message}", ex);
+            throw new Exception($"Step 2 创建管理员失败：{ex.Message}", ex);
         }
 
+        // Step 3：创建内置普通账户
         try
         {
-            _logHelper?.Information("Step 3: ���� user �û�...");
-            
+            _logHelper?.Information("Step 3：创建内置普通账户...");
+
             if (!await db.AnyAsync<User>(u => u.Username == Constants.USER_USERNAME))
             {
                 await db.InsertAsync(new User
@@ -367,7 +349,7 @@ public class DatabaseInitializer
                     Username = Constants.USER_USERNAME,
                     PasswordHash = userHash,
                     PasswordSalt = userSalt,
-                    Name = "����Ա",
+                    Name = "普通账户",
                     Phone = "",
                     Role = UserRole.Operator,
                     IsEnabled = true,
@@ -376,14 +358,14 @@ public class DatabaseInitializer
                     UpdatedAt = now
                 });
             }
-            _logHelper?.Information("Step 3: ���");
+            _logHelper?.Information("Step 3：内置普通账户创建完成。");
         }
         catch (Exception ex)
         {
-            throw new Exception($"Step 3 ʧ�� (user): {ex.Message}", ex);
+            throw new Exception($"Step 3 创建普通账户失败：{ex.Message}", ex);
         }
 
-        // ��ʼ��ϵͳ����
+        // Step 4：写入系统配置默认值
         var settings = new (string Key, string Value, string Type)[]
         {
             ("UnitName", "", "string"),
@@ -399,8 +381,8 @@ public class DatabaseInitializer
             var (key, value, type) = settings[i];
             try
             {
-                _logHelper?.Information($"Step 4.{i + 1}: �������� {key}...");
-                
+                _logHelper?.Information($"Step 4.{i + 1}：写入系统配置 {key}...");
+
                 if (!await db.AnyAsync<SystemSetting>(s => s.SettingKey == key))
                 {
                     await db.InsertAsync(new SystemSetting
@@ -411,42 +393,43 @@ public class DatabaseInitializer
                         UpdatedAt = now
                     });
                 }
-                _logHelper?.Information($"Step 4.{i + 1}: ���");
+                _logHelper?.Information($"Step 4.{i + 1}：系统配置 {key} 写入完成。");
             }
             catch (Exception ex)
             {
-                throw new Exception($"Step 4.{i + 1} ʧ�� (���� {key}): {ex.Message}", ex);
+                throw new Exception($"Step 4.{i + 1} 写入系统配置（{key}）失败：{ex.Message}", ex);
             }
         }
     }
 
     /// <summary>
-    /// �������ݿ�
+    /// 按版本号顺序依次执行数据库结构迁移，从 <paramref name="fromVersion"/> 升级到 <see cref="CurrentDatabaseVersion"/>。
     /// </summary>
+    /// <param name="db">数据库连接。</param>
+    /// <param name="fromVersion">当前数据库版本号。</param>
     private Task UpgradeDatabaseAsync(SqliteSugarHelper db, int fromVersion)
     {
-        // ���汾��ִ�������ű�
         for (int version = fromVersion + 1; version <= CurrentDatabaseVersion; version++)
         {
-            _logHelper?.Information($"ִ�������ű� v{version}...");
+            _logHelper?.Information($"执行 v{version} 升级...");
 
             switch (version)
             {
                 case 1:
-                    // v0 -> v1: ��ʼ�汾���������ű�
+                    // v1 为初始版本，无需迁移操作
                     break;
 
                 case 2:
-                    // v1 -> v2: ��������ģ����չ
                     UpgradeToV2(db);
                     break;
 
                 case 3:
-                    // v2 -> v3: ����ģ�飨������������� + GaitParameters ��չ�ֶΣ�
                     UpgradeToV3(db);
                     break;
 
-                // δ���汾�����ڴ�����
+                case 4:
+                    UpgradeToV4(db);
+                    break;
             }
         }
 
@@ -454,16 +437,15 @@ public class DatabaseInitializer
     }
 
     /// <summary>
-    /// ������ v2: ��������ģ����չ�ֶ�
+    /// 升级到 v2：新增 MeasurementRecords 表并添加测量相关扩展字段。
+    /// 使用 ALTER TABLE ADD COLUMN，对已存在的列忽略错误（容错处理）。
     /// </summary>
     private void UpgradeToV2(SqliteSugarHelper db)
     {
-        _logHelper?.Information("������ v2: ���Ӳ�������ģ���ֶ�...");
+        _logHelper?.Information("升级到 v2：扩展 MeasurementRecords 表字段...");
 
-        // ʹ�� CodeFirst �Զ�ͬ�����ṹ��SqlSugar ���Զ�����ȱʧ���У�
         db.CreateTables(typeof(MeasurementRecord));
 
-        // Ҳ�����ֶ������У���� CodeFirst ����Ч��
         var alterStatements = new[]
         {
             "ALTER TABLE MeasurementRecords ADD COLUMN MeasurementName TEXT;",
@@ -489,22 +471,22 @@ public class DatabaseInitializer
             }
             catch (Exception ex)
             {
-                // �п����Ѵ��ڣ����Դ���
-                _logHelper?.Debug($"�п����Ѵ���: {ex.Message}");
+                // 列已存在时 SQLite 会报错，属于正常情况，记录调试日志后继续
+                _logHelper?.Debug($"v2 迁移跳过（列可能已存在）：{ex.Message}");
             }
         }
 
-        _logHelper?.Information("v2 �������");
+        _logHelper?.Information("v2 升级完成。");
     }
 
     /// <summary>
-    /// ������ v3: ����ģ�� �� ����4�ŷ����� + GaitParameters ��չ�ֶ�
+    /// 升级到 v3：新增分析结果相关表（AnalysisResult、KinematicSummary、AnalysisCsvFile、QualityControlInfo），
+    /// 并为 GaitParameters 添加详细步态参数字段，同时创建对应索引。
     /// </summary>
     private void UpgradeToV3(SqliteSugarHelper db)
     {
-        _logHelper?.Information("������ v3: ���ӷ���ģ������ֶ�...");
+        _logHelper?.Information("升级到 v3：新增分析结果相关表及字段...");
 
-        // ʹ�� CodeFirst �����±�
         db.CreateTables(
             typeof(AnalysisResult),
             typeof(KinematicSummary),
@@ -512,7 +494,6 @@ public class DatabaseInitializer
             typeof(QualityControlInfo)
         );
 
-        // GaitParameters �������ֶΣ�ALTER TABLE ���ף���ֹ CodeFirst δ��Ч��
         var alterStatements = new[]
         {
             "ALTER TABLE GaitParameters ADD COLUMN AnalysisResultId INTEGER;",
@@ -534,12 +515,11 @@ public class DatabaseInitializer
             }
             catch (Exception ex)
             {
-                // �п����Ѵ��ڣ�����
-                _logHelper?.Debug($"�п����Ѵ���: {ex.Message}");
+                // 列已存在时忽略，记录调试日志
+                _logHelper?.Debug($"v3 迁移跳过（列可能已存在）：{ex.Message}");
             }
         }
 
-        // �����±�����
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisResults_MeasurementId ON AnalysisResults(MeasurementId);");
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisResults_RequestId ON AnalysisResults(RequestId);");
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisResults_Success ON AnalysisResults(Success);");
@@ -548,23 +528,52 @@ public class DatabaseInitializer
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_AnalysisCsvFiles_FileType ON AnalysisCsvFiles(FileType);");
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_QualityControls_AnalysisResultId ON QualityControls(AnalysisResultId);");
 
-        _logHelper?.Information("v3 �������");
+        _logHelper?.Information("v3 升级完成。");
     }
 
     /// <summary>
-    /// ������ݿ��Ƿ����
+    /// 升级到 v4：为 Patients 表添加 BirthDate 字段（TEXT 类型，存储 ISO 8601 日期字符串）。
     /// </summary>
+    private void UpgradeToV4(SqliteSugarHelper db)
+    {
+        _logHelper?.Information("升级到 v4：为 Patients 表添加 BirthDate 字段...");
+
+        var alterStatements = new[]
+        {
+            "ALTER TABLE Patients ADD COLUMN BirthDate TEXT;"
+        };
+
+        foreach (var sql in alterStatements)
+        {
+            try
+            {
+                db.ExecuteSql(sql);
+            }
+            catch (Exception ex)
+            {
+                // 列已存在时忽略，记录调试日志
+                _logHelper?.Debug($"v4 迁移跳过（列可能已存在）：{ex.Message}");
+            }
+        }
+
+        _logHelper?.Information("v4 升级完成。");
+    }
+
+    /// <summary>
+    /// 检查数据库文件是否存在。
+    /// </summary>
+    /// <returns>文件存在返回 <c>true</c>，否则返回 <c>false</c>。</returns>
     public bool DatabaseExists()
     {
         return File.Exists(_databasePath);
     }
 
     /// <summary>
-    /// ɾ�����ݿ⣨�����ڲ��ԣ�
+    /// 删除数据库文件及其 WAL/SHM 附属文件。
+    /// 先清空连接池以释放文件锁，再执行删除。
     /// </summary>
     public void DeleteDatabase()
     {
-        // �������ӳ�
         Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
 
         if (File.Exists(_databasePath))
@@ -572,7 +581,6 @@ public class DatabaseInitializer
             File.Delete(_databasePath);
         }
 
-        // ͬʱɾ�� WAL �� SHM �ļ�
         var walPath = _databasePath + "-wal";
         var shmPath = _databasePath + "-shm";
 

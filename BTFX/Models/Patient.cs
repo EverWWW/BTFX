@@ -46,6 +46,12 @@ public class Patient
     public string? IdNumber { get; set; }
 
     /// <summary>
+    /// 住院号
+    /// </summary>
+    [SugarColumn(Length = 50, IsNullable = true)]
+    public string? HospitalNumber { get; set; }
+
+    /// <summary>
     /// 身高 (cm)
     /// </summary>
     [SugarColumn(IsNullable = true)]

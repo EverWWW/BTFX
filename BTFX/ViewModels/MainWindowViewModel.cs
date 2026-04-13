@@ -13,11 +13,13 @@ public class MainWindowViewModel : ObservableObject
     private readonly INavigationService _navigationService;
     private readonly ISettingsService _settingsService;
     private readonly ILocalizationService _localizationService;
+    private readonly ISessionService _sessionService;
 
     private string _title = Constants.APP_DISPLAY_NAME;
     private object? _currentView;
     private string _version = Constants.VERSION_DISPLAY;
     private bool _isFullscreen;
+    private string _userDisplayName = "游客";
 
 
     /// <summary>
@@ -67,6 +69,15 @@ public class MainWindowViewModel : ObservableObject
     public IRelayCommand ExitFullscreenCommand { get; }
 
     /// <summary>
+    /// 当前显示的账号名，登录后自动更新
+    /// </summary>
+    public string UserDisplayName
+    {
+        get => _userDisplayName;
+        set => SetProperty(ref _userDisplayName, value);
+    }
+
+    /// <summary>
     /// 是否正在显示登录页（登录页时隐藏标题栏）
     /// </summary>
     public bool IsLoginView => _navigationService.CurrentViewKey == "LoginViewModel"
@@ -78,11 +89,13 @@ public class MainWindowViewModel : ObservableObject
     public MainWindowViewModel(
         INavigationService navigationService,
         ISettingsService settingsService,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        ISessionService sessionService)
     {
             _navigationService = navigationService;
             _settingsService = settingsService;
             _localizationService = localizationService;
+            _sessionService = sessionService;
 
             // 初始化命令
             ToggleFullscreenCommand = new RelayCommand(ToggleFullscreen);
@@ -100,6 +113,7 @@ public class MainWindowViewModel : ObservableObject
                     if (e.PropertyName == nameof(INavigationService.CurrentViewKey))
                     {
                         OnPropertyChanged(nameof(IsLoginView));
+                        RefreshUserDisplayName();
                     }
                 };
             }
@@ -128,5 +142,18 @@ public class MainWindowViewModel : ObservableObject
     private void ExitFullscreen()
     {
         IsFullscreen = false;
+    }
+
+    /// <summary>
+    /// 从 SessionService 刷新当前账号显示名称
+    /// </summary>
+    private void RefreshUserDisplayName()
+    {
+        var user = _sessionService.CurrentUser;
+        UserDisplayName = !string.IsNullOrWhiteSpace(user?.Name)
+            ? user.Name
+            : !string.IsNullOrWhiteSpace(user?.Username)
+                ? user.Username
+                : "游客";
     }
 }

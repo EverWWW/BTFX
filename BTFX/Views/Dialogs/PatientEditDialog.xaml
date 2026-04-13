@@ -1,4 +1,4 @@
-<Window x:Class="BTFX.Views.Dialogs.PatientEditDialog"
+﻿<Window x:Class="BTFX.Views.Dialogs.PatientEditDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -7,13 +7,11 @@
         xmlns:behaviors="clr-namespace:BTFX.Behaviors"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="Manual"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
         ResizeMode="NoResize"
-        Width="660"
-        Height="820"
         Loaded="Window_Loaded">
 
     <Border Background="{DynamicResource MaterialDesign.Brush.Background}"

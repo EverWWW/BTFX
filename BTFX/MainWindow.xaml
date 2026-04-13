@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BTFX"
+        xmlns:controls="clr-namespace:BTFX.Controls"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
         Title="{Binding Title}"
@@ -27,73 +28,14 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0"
-              Height="46"
+        <!-- 顶部标题栏：登录页时折叠隐藏，其他页面共用 -->
+        <controls:TitleBarControl
+              x:Name="AppTitleBar"
+              Grid.Row="0"
               Visibility="{Binding IsLoginView, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-              Background="{DynamicResource MaterialDesign.Brush.Primary}"
-              MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <!-- 左侧占位，保持对称 -->
-            <Border Grid.Column="0" Width="138" />
-
-            <!-- 居中标题区域 -->
-            <StackPanel Grid.Column="1" 
-                        Orientation="Horizontal" 
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center">
-                <materialDesign:PackIcon Kind="Walk" 
-                                         Width="22" Height="22"
-                                         VerticalAlignment="Center"
-                                         Foreground="White" />
-                <TextBlock Text="{Binding Title}" 
-                           FontSize="15" 
-                           FontWeight="Medium"
-                           Foreground="White"
-                           VerticalAlignment="Center"
-                           Margin="8,0,0,0" />
-                <TextBlock Text="{Binding Version}" 
-                           FontSize="11"
-                           Foreground="White"
-                           Opacity="0.8"
-                           VerticalAlignment="Center"
-                           Margin="8,0,0,0" />
-            </StackPanel>
-
-            <StackPanel Grid.Column="2" 
-                        Orientation="Horizontal"
-                        HorizontalAlignment="Right">
-
-                <Button Style="{StaticResource MaterialDesignFlatButton}"
-                        Width="46" Height="46"
-                        Click="MinimizeButton_Click"
-                        ToolTip="{DynamicResource Minimize}">
-                    <materialDesign:PackIcon Kind="WindowMinimize" 
-                                             Foreground="White" />
-                </Button>
-
-                <Button Style="{StaticResource MaterialDesignFlatButton}"
-                        Width="46" Height="46"
-                        Click="MaximizeButton_Click"
-                        ToolTip="{DynamicResource Maximize}">
-                    <materialDesign:PackIcon x:Name="MaximizeIcon" 
-                                             Kind="WindowMaximize" 
-                                             Foreground="White" />
-                </Button>
-
-                <Button Style="{StaticResource MaterialDesignFlatButton}"
-                        Width="46" Height="46"
-                        Click="CloseButton_Click"
-                        ToolTip="{DynamicResource Close}">
-                    <materialDesign:PackIcon Kind="WindowClose" 
-                                             Foreground="White" />
-                </Button>
-            </StackPanel>
-        </Grid>
+              UserDisplayName="{Binding UserDisplayName, FallbackValue=游客}"
+              MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"
+              controls:TitleBarControl.CloseClicked="TitleBar_CloseClicked" />
 
         <Grid Grid.Row="1">
             <ContentControl Content="{Binding CurrentView}">

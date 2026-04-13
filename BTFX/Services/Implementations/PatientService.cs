@@ -31,7 +31,8 @@ public class PatientService : IPatientService
         try
         {
             using var db = DatabaseFactory.CreateSqliteSugarHelper();
-            return await db.GetListAsync<Patient>(p => p.Status == PatientStatus.Active);
+            var all = await db.GetAllAsync<Patient>();
+            return all.Where(p => p.Status == PatientStatus.Active).ToList();
         }
         catch (Exception ex)
         {

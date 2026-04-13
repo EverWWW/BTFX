@@ -59,9 +59,21 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Resources\Images\Device\deviceImage.jpeg" />
+    <None Remove="Resources\Images\PatientSelectionView\bianji.png" />
+    <None Remove="Resources\Images\PatientSelectionView\daochu.png" />
+    <None Remove="Resources\Images\PatientSelectionView\daoru.png" />
+    <None Remove="Resources\Images\PatientSelectionView\guanbi.png" />
+    <None Remove="Resources\Images\PatientSelectionView\shanchu.png" />
+    <None Remove="Resources\Images\PatientSelectionView\sousuo.png" />
+    <None Remove="Resources\Images\PatientSelectionView\tianjia.png" />
+    <None Remove="Resources\Images\PatientSelectionView\tuichu.png" />
+    <None Remove="Resources\Images\PatientSelectionView\xuanzekuang.png" />
+    <None Remove="Resources\Images\PatientSelectionView\xuanzhongkuang.png" />
+    <None Remove="Resources\Images\PatientSelectionView\you.png" />
+    <None Remove="Resources\Images\PatientSelectionView\zhanghaotubiao.png" />
+    <None Remove="Resources\Images\PatientSelectionView\zuo.png" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Controls\" />
     <Folder Include="Resources\Themes\" />
     <Folder Include="Validators\" />
     <Folder Include="Extensions\" />
@@ -87,6 +99,19 @@
     <Resource Include="Resources\Images\Logo\logo3.png" />
     <Resource Include="Resources\Images\Logo\logo4.png" />
     <Resource Include="Resources\Images\Logo\logo5.png" />
+    <Resource Include="Resources\Images\PatientSelectionView\bianji.png" />
+    <Resource Include="Resources\Images\PatientSelectionView\daochu.png" />
+    <Resource Include="Resources\Images\PatientSelectionView\daoru.png" />
+    <Resource Include="Resources\Images\PatientSelectionView\guanbi.png" />
+    <Resource Include="Resources\Images\PatientSelectionView\shanchu.png" />
+    <Resource Include="Resources\Images\PatientSelectionView\sousuo.png" />
+    <Resource Include="Resources\Images\PatientSelectionView\tianjia.png" />
+    <Resource Include="Resources\Images\PatientSelectionView\tuichu.png" />
+    <Resource Include="Resources\Images\PatientSelectionView\xuanzekuang.png" />
+    <Resource Include="Resources\Images\PatientSelectionView\xuanzhongkuang.png" />
+    <Resource Include="Resources\Images\PatientSelectionView\you.png" />
+    <Resource Include="Resources\Images\PatientSelectionView\zhanghaotubiao.png" />
+    <Resource Include="Resources\Images\PatientSelectionView\zuo.png" />
   </ItemGroup>
 
 </Project>

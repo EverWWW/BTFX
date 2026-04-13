@@ -1,4 +1,4 @@
-using BTFX.Common;
+﻿using BTFX.Common;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -69,6 +69,9 @@ public partial class PatientEditViewModel : ObservableObject
     public bool ShouldClose => DialogResult.HasValue;
 
     private bool _isEditMode;
+    private DateTime _originalCreatedAt;
+    private int _originalCreatedBy;
+    private DateTime? _originalBirthDate;
 
     /// <summary>
     /// Constructor
@@ -226,6 +229,10 @@ public partial class PatientEditViewModel : ObservableObject
         MedicalHistory = patient.MedicalHistory ?? string.Empty;
         Remark = patient.Remark ?? string.Empty;
         ErrorMessage = string.Empty; // Clear any previous error messages
+
+        _originalCreatedAt = patient.CreatedAt;
+        _originalCreatedBy = patient.CreatedBy;
+        _originalBirthDate = patient.BirthDate;
     }
 
     /// <summary>
@@ -330,7 +337,15 @@ public partial class PatientEditViewModel : ObservableObject
 
             if (_isEditMode)
             {
-                await _patientService.UpdatePatientAsync(patient);
+                patient.CreatedAt = _originalCreatedAt;
+                patient.CreatedBy = _originalCreatedBy;
+
+                var success = await _patientService.UpdatePatientAsync(patient);
+                if (!success)
+                {
+                    ErrorMessage = _localizationService.GetString("SaveFailedError", "数据库更新失败");
+                    return;
+                }
                 _logHelper?.Information($"Updated patient: {patient.Name} (ID: {patient.Id})");
             }
             else
@@ -341,21 +356,26 @@ public partial class PatientEditViewModel : ObservableObject
                     patient.CreatedBy = currentUser.Id;
                 }
 
-                await _patientService.AddPatientAsync(patient);
+                var id = await _patientService.AddPatientAsync(patient);
+                if (id == 0)
+                {
+                    ErrorMessage = _localizationService.GetString("SaveFailedError", "数据库插入失败");
+                    return;
+                }
                 _logHelper?.Information($"Added new patient: {patient.Name}");
             }
 
-                DialogResult = true;
-            }
-            catch (Exception ex)
-            {
-                ErrorMessage = _localizationService.GetString("SaveFailedError", ex.Message);
-                _logHelper?.Error("Failed to save patient", ex);
-            }
-            finally
-            {
-                IsSaving = false;
-            }
+            DialogResult = true;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = _localizationService.GetString("SaveFailedError", ex.Message);
+            _logHelper?.Error("Failed to save patient", ex);
+        }
+        finally
+        {
+            IsSaving = false;
+        }
     }
 
     /// <summary>

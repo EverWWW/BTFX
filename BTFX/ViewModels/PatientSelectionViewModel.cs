@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+ï»¿using System.Collections.ObjectModel;
 using BTFX.Common;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
@@ -14,7 +14,7 @@ namespace BTFX.ViewModels;
 public partial class PatientSelectionViewModel : ObservableObject
 {
     /// <summary>
-    /// ·şÎñ
+    /// æœåŠ¡
     /// </summary>
     private readonly IPatientService _patientService;
     private readonly INavigationService _navigationService;
@@ -24,6 +24,18 @@ public partial class PatientSelectionViewModel : ObservableObject
 
     [ObservableProperty]
     private ObservableCollection<Patient> _patients = new();
+
+    [ObservableProperty]
+    private ObservableCollection<PatientRowItem> _patientRows = new();
+
+    [ObservableProperty]
+    private ObservableCollection<PageItem> _pageNumbers = new();
+
+    [ObservableProperty]
+    private bool _canGoPrevious;
+
+    [ObservableProperty]
+    private bool _canGoNext;
 
     [ObservableProperty]
     private Patient? _selectedPatient;
@@ -48,6 +60,24 @@ public partial class PatientSelectionViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _canImportExport;
+
+    /// <summary>
+    /// å·²é€‰ä¸­çš„æ‚£è€…æ•°é‡
+    /// </summary>
+    public int SelectedCount => PatientRows.Count(r => r.IsChecked);
+
+    /// <summary>
+    /// å…¨é€‰çŠ¶æ€ï¼š0=æœªé€‰ï¼Œ1=éƒ¨åˆ†é€‰ï¼Œ2=å…¨é€‰
+    /// </summary>
+    public int SelectAllState
+    {
+        get
+        {
+            var count = SelectedCount;
+            if (count == 0) return 0;
+            return count == PatientRows.Count ? 2 : 1;
+        }
+    }
 
     private List<Patient> _allPatients = new();
     private const int PageSize = Constants.PATIENT_PAGE_SIZE;
@@ -89,7 +119,7 @@ public partial class PatientSelectionViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Load patients¼ÓÔØ»¼Õß
+    /// Load patientsåŠ è½½æ‚£è€…
     /// </summary>
     private async Task LoadPatientsAsync()
     {
@@ -115,21 +145,21 @@ public partial class PatientSelectionViewModel : ObservableObject
     /// </summary>
     private void ApplySearchFilter()
     {
-        IEnumerable<Patient> filtered = _allPatients;//¿ªÊ¼Ê±£¬¹ıÂË¼¯ºÏÊÇËùÓĞ»¼Õß
+        IEnumerable<Patient> filtered = _allPatients;//å¼€å§‹æ—¶ï¼Œè¿‡æ»¤é›†åˆæ˜¯æ‰€æœ‰æ‚£è€…
 
-        // Apply search//Èç¹ûËÑË÷¿òÊäÈë²»Îª¿Õ£¬Ôò½øĞĞ¹ıÂË
+        // Apply search//å¦‚æœæœç´¢æ¡†è¾“å…¥ä¸ä¸ºç©ºï¼Œåˆ™è¿›è¡Œè¿‡æ»¤
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
-            var searchLower = SearchText.Trim().ToLower();//½«ËÑË÷ÎÄ±¾×ª»»ÎªĞ¡Ğ´ÒÔ½øĞĞ²»Çø·Ö´óĞ¡Ğ´µÄ±È½Ï
+            var searchLower = SearchText.Trim().ToLower();//å°†æœç´¢æ–‡æœ¬è½¬æ¢ä¸ºå°å†™ä»¥è¿›è¡Œä¸åŒºåˆ†å¤§å°å†™çš„æ¯”è¾ƒ
             filtered = filtered.Where(p =>
                 p.Name.ToLower().Contains(searchLower) ||
                 (p.Phone != null && p.Phone.Contains(searchLower)) ||
-                (p.IdNumber != null && p.IdNumber.ToLower().Contains(searchLower)));//¹ıÂË»¼ÕßÁĞ±í£¬±£ÁôÃû³Æ¡¢µç»°»òÉí·İÖ¤ºÅ°üº¬ËÑË÷ÎÄ±¾µÄ»¼Õß
+                (p.IdNumber != null && p.IdNumber.ToLower().Contains(searchLower)));//è¿‡æ»¤æ‚£è€…åˆ—è¡¨ï¼Œä¿ç•™åç§°ã€ç”µè¯æˆ–èº«ä»½è¯å·åŒ…å«æœç´¢æ–‡æœ¬çš„æ‚£è€…
         }
 
-        var filteredList = filtered.ToList();//½«¹ıÂËºóµÄ½á¹û×ª»»ÎªÁĞ±íÒÔ±ãºóĞø´¦Àí
+        var filteredList = filtered.ToList();//å°†è¿‡æ»¤åçš„ç»“æœè½¬æ¢ä¸ºåˆ—è¡¨ä»¥ä¾¿åç»­å¤„ç†
         TotalRecords = filteredList.Count;
-        TotalPages = (int)Math.Ceiling(TotalRecords / (double)PageSize);//¼ÆËã×ÜÒ³Êı
+        TotalPages = (int)Math.Ceiling(TotalRecords / (double)PageSize);//è®¡ç®—æ€»é¡µæ•°
 
         // Ensure current page is valid
         if (CurrentPage > TotalPages && TotalPages > 0)
@@ -145,12 +175,58 @@ public partial class PatientSelectionViewModel : ObservableObject
         var pageData = filteredList
             .Skip((CurrentPage - 1) * PageSize)
             .Take(PageSize)
-            .ToList();//Ê¹ÓÃSkipºÍTake·½·¨»ñÈ¡µ±Ç°Ò³µÄÊı¾İ
+            .ToList();//ä½¿ç”¨Skipå’ŒTakeæ–¹æ³•è·å–å½“å‰é¡µçš„æ•°æ®
 
         Patients.Clear();
-        foreach (var patient in pageData)
+        PatientRows.Clear();
+        var startIndex = (CurrentPage - 1) * PageSize + 1;
+        for (int i = 0; i < pageData.Count; i++)
         {
-            Patients.Add(patient);
+            Patients.Add(pageData[i]);
+            PatientRows.Add(new PatientRowItem
+            {
+                DisplayIndex = startIndex + i,
+                Patient = pageData[i]
+            });
+        }
+
+        // æ›´æ–°åˆ†é¡µå¯¼èˆªçŠ¶æ€
+        CanGoPrevious = CurrentPage > 1;
+        CanGoNext = CurrentPage < TotalPages;
+
+        // æ›´æ–°é¡µç åˆ—è¡¨
+        BuildPageNumbers();
+    }
+
+    /// <summary>
+    /// æ„å»ºåˆ†é¡µé¡µç é¡¹é›†åˆï¼ˆæ”¯æŒçœç•¥å·ï¼‰
+    /// </summary>
+    private void BuildPageNumbers()
+    {
+        PageNumbers.Clear();
+        if (TotalPages == 0) return;
+
+        // å§‹ç»ˆæ˜¾ç¤ºï¼šé¦–é¡µã€å°¾é¡µã€å½“å‰é¡µåŠå…¶å‰åå„1é¡µï¼Œå…¶ä½™ç”¨çœç•¥å·
+        var pagesToShow = new SortedSet<int>();
+        pagesToShow.Add(1);
+        pagesToShow.Add(TotalPages);
+        for (int p = Math.Max(1, CurrentPage - 1); p <= Math.Min(TotalPages, CurrentPage + 1); p++)
+            pagesToShow.Add(p);
+
+        int prev = 0;
+        foreach (var page in pagesToShow)
+        {
+            if (prev > 0 && page - prev > 1)
+            {
+                PageNumbers.Add(new PageItem { DisplayText = "...", IsEllipsis = true, PageNumber = -1 });
+            }
+            PageNumbers.Add(new PageItem
+            {
+                DisplayText = page.ToString(),
+                PageNumber = page,
+                IsCurrent = page == CurrentPage
+            });
+            prev = page;
         }
     }
 
@@ -180,6 +256,7 @@ public partial class PatientSelectionViewModel : ObservableObject
             {
                 viewModel.InitializeForAdd();
                 dialog.DataContext = viewModel;
+                dialog.Owner = System.Windows.Application.Current.MainWindow;
 
                 var result = dialog.ShowDialog();
                 if (result == true)
@@ -212,6 +289,7 @@ public partial class PatientSelectionViewModel : ObservableObject
             {
                 viewModel.InitializeForEdit(patient);
                 dialog.DataContext = viewModel;
+                dialog.Owner = System.Windows.Application.Current.MainWindow;
 
                 var result = dialog.ShowDialog();
                 if (result == true)
@@ -322,8 +400,8 @@ public partial class PatientSelectionViewModel : ObservableObject
         if (SelectedPatient == null)
         {
             System.Windows.MessageBox.Show(
-                "ÇëÏÈÑ¡ÔñÒ»¸ö»¼Õß",
-                "ÌáÊ¾",
+                "è¯·å…ˆé€‰æ‹©ä¸€ä¸ªæ‚£è€…",
+                "æç¤º",
                 System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Information);
             return;
@@ -379,17 +457,95 @@ public partial class PatientSelectionViewModel : ObservableObject
         }
     }
 
+    // ç”¨äºåŒå‡»æ£€æµ‹
+    private PatientRowItem? _lastClickedRow;
+    private DateTime _lastClickTime = DateTime.MinValue;
+    private static readonly TimeSpan DoubleClickThreshold = TimeSpan.FromMilliseconds(500);
+
     /// <summary>
-    /// Patient double click command
+    /// Toggle patient row selection commandï¼ˆå•å‡»é€‰ä¸­ï¼›åŒå‡»ç›´æ¥è¿›å…¥ï¼‰
+    /// </summary>
+    [RelayCommand]
+    private void ToggleSelect(PatientRowItem? row)
+    {
+        if (row == null) return;
+
+        var now = DateTime.Now;
+        bool isDoubleClick = row == _lastClickedRow && (now - _lastClickTime) < DoubleClickThreshold;
+        _lastClickedRow = row;
+        _lastClickTime = now;
+
+        if (isDoubleClick)
+        {
+            // åŒå‡»ï¼šç›´æ¥é€‰ä¸­å¹¶è¿›å…¥
+            foreach (var r in PatientRows)
+                r.IsChecked = false;
+            row.IsChecked = true;
+            SelectedPatient = row.Patient;
+            OnPropertyChanged(nameof(SelectedCount));
+            OnPropertyChanged(nameof(SelectAllState));
+            ConfirmSelect();
+            return;
+        }
+
+        // å•å‡»ï¼šåˆ‡æ¢é€‰ä¸­çŠ¶æ€
+        var newState = !row.IsChecked;
+        foreach (var r in PatientRows)
+            r.IsChecked = false;
+        row.IsChecked = newState;
+        SelectedPatient = newState ? row.Patient : null;
+        OnPropertyChanged(nameof(SelectedCount));
+        OnPropertyChanged(nameof(SelectAllState));
+    }
+
+    /// <summary>
+    /// Patient double click commandï¼ˆä¿ç•™ä»¥å…¼å®¹ XAML ç»‘å®šï¼Œå®é™…ç”± ToggleSelect å¤„ç†ï¼‰
     /// </summary>
     [RelayCommand]
     private void PatientDoubleClick(Patient? patient)
     {
+        // åŒå‡»é€»è¾‘å·²åœ¨ ToggleSelect ä¸­é€šè¿‡æ—¶é—´æ£€æµ‹å¤„ç†ï¼Œæ­¤å¤„ä½œä¸ºå¤‡ç”¨
         if (patient != null)
         {
             SelectedPatient = patient;
             ConfirmSelect();
         }
+    }
+
+    /// <summary>
+    /// Toggle select all command
+    /// </summary>
+    [RelayCommand]
+    private void ToggleSelectAll()
+    {
+        var allSelected = SelectAllState == 2;
+        foreach (var r in PatientRows)
+            r.IsChecked = !allSelected;
+        SelectedPatient = allSelected ? null : PatientRows.FirstOrDefault()?.Patient;
+        OnPropertyChanged(nameof(SelectedCount));
+        OnPropertyChanged(nameof(SelectAllState));
+    }
+
+    /// <summary>
+    /// Clear search text command
+    /// </summary>
+    [RelayCommand]
+    private void ClearSearchText()
+    {
+        SearchText = string.Empty;
+        CurrentPage = 1;
+        ApplySearchFilter();
+    }
+
+    /// <summary>
+    /// Go to specific page command
+    /// </summary>
+    [RelayCommand]
+    private void GoToPage(int pageNumber)
+    {
+        if (pageNumber < 1 || pageNumber > TotalPages || pageNumber == CurrentPage) return;
+        CurrentPage = pageNumber;
+        ApplySearchFilter();
     }
 
     /// <summary>
@@ -399,10 +555,10 @@ public partial class PatientSelectionViewModel : ObservableObject
     {
         return role switch
         {
-            UserRole.Administrator => "¹ÜÀíÔ±",
-            UserRole.Operator => "²Ù×÷Ô±",
-            UserRole.Guest => "ÓÎ¿Í",
-            _ => "Î´Öª"
+            UserRole.Administrator => "ç®¡ç†å‘˜",
+            UserRole.Operator => "æ“ä½œå‘˜",
+            UserRole.Guest => "æ¸¸å®¢",
+            _ => "æœªçŸ¥"
         };
     }
 }

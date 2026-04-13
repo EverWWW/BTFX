@@ -4,274 +4,702 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="720"
-    d:DesignWidth="1280"
-    Background="{DynamicResource MaterialDesign.Brush.Background}"
+    d:DesignHeight="900"
+    d:DesignWidth="1920"
+    Background="#F5F5F5"
     mc:Ignorable="d">
 
     <UserControl.Resources>
-        <!--  DataGridCell style to remove focus border  -->
-        <!--<Style TargetType="DataGridCell" BasedOn="{StaticResource MaterialDesignDataGridCell}">
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Selection}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-                    <Setter Property="BorderThickness" Value="0"/>
+        <!-- 页面级按钮模板（圆角 16） -->
+        <ControlTemplate x:Key="PlainButtonTemplate" TargetType="Button">
+            <Border x:Name="border"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="16"
+                    SnapsToDevicePixels="True">
+                <ContentPresenter HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  RecognizesAccessKey="True" />
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="border" Property="Opacity" Value="0.85" />
                 </Trigger>
-            </Style.Triggers>
-        </Style>-->
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter TargetName="border" Property="Opacity" Value="0.7" />
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter TargetName="border" Property="Opacity" Value="0.4" />
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
 
-        <!--  DataGridRow style to remove focus border  -->
-        <Style BasedOn="{StaticResource MaterialDesignDataGridRow}" TargetType="DataGridRow">
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <!-- 分页箭头按钮样式 -->
+        <Style x:Key="PageArrowButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="40" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#F0F0F0" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.35" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 页码数字按钮样式（非当前页） -->
+        <Style x:Key="PageNumberButtonStyle" TargetType="Button">
+            <Setter Property="MinWidth" Value="40" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontFamily" Value="Roboto" />
+            <Setter Property="FontSize" Value="22" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Foreground" Value="#555555" />
+            <Setter Property="Margin" Value="4,0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                MinWidth="{TemplateBinding MinWidth}"
+                                Height="{TemplateBinding Height}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#F0F0F0" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="24">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!--  Top Bar  -->
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+        <!-- ═══════════════════ 一、顶部返回区域 ═══════════════════ -->
+        <Border Grid.Row="0"
+                Background="#F5F5F5"
+                Padding="20,10">
+            <Button Command="{Binding BackCommand}"
+                    HorizontalAlignment="Left"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Cursor="Hand">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="Transparent" Padding="8,4" CornerRadius="6">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Image Source="/Resources/Images/PatientSelectionView/tuichu.png"
+                                       Width="24" Height="24"
+                                       VerticalAlignment="Center"
+                                       RenderOptions.BitmapScalingMode="HighQuality" />
+                                <TextBlock Text="退出"
+                                           FontFamily="{StaticResource AppFont}"
+                                           FontSize="26"
+                                           FontWeight="Medium"
+                                           Foreground="#555555"
+                                           VerticalAlignment="Center"
+                                           Margin="8,0,0,0" />
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#EEEEEE" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </Border>
 
-            <!--  Back Button and Title  -->
-            <StackPanel Grid.Column="0" Orientation="Horizontal">
-                <Button
-                    Command="{Binding BackCommand}"
-                    Style="{StaticResource MaterialDesignIconButton}"
-                    ToolTip="{DynamicResource Back}">
-                    <materialDesign:PackIcon
-                        Width="30"
-                        Height="30"
-                        Kind="ArrowLeft" />
-                </Button>
-                <TextBlock
-                    Margin="8,0,0,0"
-                    VerticalAlignment="Center"
-                    FontSize="24"
-                    FontWeight="Bold"
-                    Text="{DynamicResource PatientSelectionTitle}" />
-            </StackPanel>
+        <!-- ═══════════════════ 二、主内容卡片 ═══════════════════ -->
+        <Border Grid.Row="1"
+                Margin="20,14,20,20"
+                Padding="40,28"
+                Background="#FFFFFF"
+                CornerRadius="12">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="16" ShadowDepth="2" Opacity="0.06" Color="#000000" />
+            </Border.Effect>
 
-            <!--  User Info  -->
-            <TextBlock
-                Grid.Column="2"
-                VerticalAlignment="Center"
-                FontSize="14"
-                Foreground="{DynamicResource MaterialDesign.Brush.Secondary}"
-                Text="{Binding CurrentUserInfo}" />
-        </Grid>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-        <!--  Toolbar  -->
-        <Grid Grid.Row="1" Margin="0,24,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+                <!-- ═══════════════════ 三、搜索区和操作按钮区 ═══════════════════ -->
+                <Grid Grid.Row="0" Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-            <!--  Search Box  -->
-            <TextBox
-                Grid.Column="0"
-                Width="400"
-                HorizontalAlignment="Left"
-                materialDesign:HintAssist.Hint="{DynamicResource SearchPatient}"
-                MaxLength="10"
-                Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}">
-                <TextBox.InputBindings>
-                    <KeyBinding Key="Return" Command="{Binding SearchCommand}" />
-                </TextBox.InputBindings>
-            </TextBox>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <!-- 搜索框 -->
+                        <Border Width="600" Height="68"
+                                Background="#FFFFFF"
+                                BorderBrush="#D1D1D1"
+                                BorderThickness="1"
+                                CornerRadius="16">
+                            <Grid Margin="18,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <!-- 占位提示文字 -->
+                                <TextBlock Grid.Column="0"
+                                           Text="输入患者姓名关键字"
+                                           FontFamily="{StaticResource AppFont}"
+                                           FontSize="22"
+                                           Foreground="#BBBBBB"
+                                           VerticalAlignment="Center"
+                                           IsHitTestVisible="False">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SearchText}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding SearchText}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <!-- 实际输入框 -->
+                                <TextBox Grid.Column="0"
+                                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                         MaxLength="10"
+                                         FontFamily="{StaticResource AppFont}"
+                                         FontSize="22"
+                                         Foreground="#333333"
+                                         VerticalAlignment="Center"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         CaretBrush="#403B5B">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Return" Command="{Binding SearchCommand}" />
+                                    </TextBox.InputBindings>
+                                </TextBox>
+                                <!-- 清除按钮（X） -->
+                                <Button Grid.Column="1"
+                                        Command="{Binding ClearSearchTextCommand}"
+                                        Width="28" Height="28"
+                                        VerticalAlignment="Center"
+                                        Cursor="Hand">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SearchText}" Value="">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding SearchText}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="clearBd" Background="Transparent" CornerRadius="14">
+                                                <Grid>
+                                                    <Ellipse Width="22" Height="22" Fill="#CCCCCC" />
+                                                    <TextBlock Text="✕"
+                                                               FontSize="12"
+                                                               Foreground="White"
+                                                               FontWeight="Bold"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"
+                                                               Margin="0,-1,0,0" />
+                                                </Grid>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="clearBd" Property="Opacity" Value="0.7" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </Grid>
+                        </Border>
 
-            <!--  Action Buttons  -->
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button
-                    Margin="8,0"
-                    Command="{Binding AddPatientCommand}"
-                    Content="{DynamicResource AddPatient}"
-                    Style="{StaticResource MaterialDesignRaisedButton}"
-                    Visibility="{Binding CanAddPatient, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                <Button
-                    Margin="0,0,8,0"
-                    Command="{Binding ImportCommand}"
-                    Content="{DynamicResource Import}"
-                    Style="{StaticResource MaterialDesignOutlinedButton}"
-                    Visibility="{Binding CanImportExport, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                <Button
-                    Command="{Binding ExportCommand}"
-                    Content="{DynamicResource Export}"
-                    Style="{StaticResource MaterialDesignOutlinedButton}"
-                    Visibility="{Binding CanImportExport, Converter={StaticResource BooleanToVisibilityConverter}}" />
-            </StackPanel>
-        </Grid>
+                        <!-- 搜索按钮 -->
+                        <Button Width="180" Height="68"
+                                Margin="30,0,0,0"
+                                Command="{Binding SearchCommand}"
+                                Background="#403B5B"
+                                BorderThickness="0"
+                                Foreground="White"
+                                Cursor="Hand"
+                                Template="{StaticResource PlainButtonTemplate}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Image Source="/Resources/Images/PatientSelectionView/sousuo.png"
+                                       Width="24" Height="24"
+                                       RenderOptions.BitmapScalingMode="HighQuality" />
+                                <TextBlock Text="搜索"
+                                           FontFamily="{StaticResource AppFont}"
+                                           FontSize="22"
+                                           Foreground="White"
+                                           VerticalAlignment="Center"
+                                           Margin="8,0,0,0" />
+                            </StackPanel>
+                        </Button>
 
-        <!--  Patient List  -->
-        <DataGrid
-            Grid.Row="2"
-            Margin="0,16,0,0"
-            AutoGenerateColumns="False"
-            CanUserAddRows="False"
-            CanUserDeleteRows="False"
-            CanUserResizeRows="False"
-            ColumnHeaderHeight="56"
-            GridLinesVisibility="Horizontal"
-            HeadersVisibility="Column"
-            IsReadOnly="True"
-            ItemsSource="{Binding Patients}"
-            RowHeight="48"
-            SelectedItem="{Binding SelectedPatient}"
-            SelectionMode="Single">
+                        <!-- 添加按钮 -->
+                        <Button Width="180" Height="68"
+                                Margin="40,0,0,0"
+                                Command="{Binding AddPatientCommand}"
+                                Background="#FFFFFF"
+                                BorderBrush="#403B5B"
+                                BorderThickness="1"
+                                Cursor="Hand"
+                                Visibility="{Binding CanAddPatient, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Template="{StaticResource PlainButtonTemplate}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Image Source="/Resources/Images/PatientSelectionView/tianjia.png"
+                                       Width="24" Height="24"
+                                       RenderOptions.BitmapScalingMode="HighQuality" />
+                                <TextBlock Text="添加"
+                                           FontFamily="{StaticResource AppFont}"
+                                           FontSize="22"
+                                           Foreground="#403B5B"
+                                           VerticalAlignment="Center"
+                                           Margin="8,0,0,0" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
 
-            <DataGrid.Resources>
-                <!--  Cell vertical alignment  -->
-                <Style BasedOn="{StaticResource {x:Type DataGridCell}}" TargetType="DataGridCell">
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="DataGridCell">
-                                <Border
-                                    Padding="8,0"
-                                    Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}">
-                                    <ContentPresenter VerticalAlignment="Center" />
+                    <!-- 右侧：导出 + 导入 -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal"
+                                Visibility="{Binding CanImportExport, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Button Width="180" Height="68"
+                                Command="{Binding ExportCommand}"
+                                Background="#F0F4F9"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Template="{StaticResource PlainButtonTemplate}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Image Source="/Resources/Images/PatientSelectionView/daochu.png"
+                                       Width="24" Height="24"
+                                       RenderOptions.BitmapScalingMode="HighQuality" />
+                                <TextBlock Text="导出"
+                                           FontFamily="{StaticResource AppFont}"
+                                           FontSize="22"
+                                           Foreground="#555555"
+                                           VerticalAlignment="Center"
+                                           Margin="8,0,0,0" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Width="180" Height="68"
+                                Margin="40,0,0,0"
+                                Command="{Binding ImportCommand}"
+                                Background="#F0F4F9"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Template="{StaticResource PlainButtonTemplate}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Image Source="/Resources/Images/PatientSelectionView/daoru.png"
+                                       Width="24" Height="24"
+                                       RenderOptions.BitmapScalingMode="HighQuality" />
+                                <TextBlock Text="导入"
+                                           FontFamily="{StaticResource AppFont}"
+                                           FontSize="22"
+                                           Foreground="#555555"
+                                           VerticalAlignment="Center"
+                                           Margin="8,0,0,0" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <!-- 已选提示（轻量） -->
+                <StackPanel Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal" Margin="0,0,380,0">
+                    <TextBlock FontFamily="{StaticResource AppFont}" FontSize="16" Foreground="#999999" VerticalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedCount}" Value="0">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- ═══════════════════ 四、患者信息列表区域 ═══════════════════ -->
+                <!-- 列表标题栏 -->
+                <Grid Grid.Row="1" Margin="0,0,0,6" Height="44"  Background="#FAFAFA">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="60" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="0.6*" />
+                        <ColumnDefinition Width="0.6*" />
+                        <ColumnDefinition Width="1.6*" />
+                        <ColumnDefinition Width="1.2*" />
+                        <ColumnDefinition Width="0.7*" />
+                        <ColumnDefinition Width="0.7*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 全选按钮（可点击） -->
+                    <Button Grid.Column="0"
+                            Command="{Binding ToggleSelectAllCommand}"
+                            Cursor="Hand"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="Transparent" Padding="4">
+                                    <Image Width="22" Height="22"
+                                           RenderOptions.BitmapScalingMode="HighQuality">
+                                        <Image.Style>
+                                            <Style TargetType="Image">
+                                                <Setter Property="Source" Value="/Resources/Images/PatientSelectionView/xuanzekuang.png" />
+                                                <Style.Triggers>
+                                                    <!-- 全选状态 -->
+                                                    <DataTrigger Binding="{Binding SelectAllState}" Value="2">
+                                                        <Setter Property="Source" Value="/Resources/Images/PatientSelectionView/xuanzhongkuang.png" />
+                                                    </DataTrigger>
+                                                    <!-- 半选状态：也显示选中图标 -->
+                                                    <DataTrigger Binding="{Binding SelectAllState}" Value="1">
+                                                        <Setter Property="Source" Value="/Resources/Images/PatientSelectionView/xuanzhongkuang.png" />
+                                                        <Setter Property="Opacity" Value="0.5" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Image.Style>
+                                    </Image>
                                 </Border>
                             </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </DataGrid.Resources>
+                        </Button.Template>
+                    </Button>
 
-            <DataGrid.Columns>
-                <DataGridTextColumn
-                    Width="80"
-                    Binding="{Binding Id}"
-                    Header="{DynamicResource Id}" />
-                <DataGridTextColumn
-                    Width="120"
-                    Binding="{Binding Name}"
-                    Header="{DynamicResource PatientName}" />
-                <DataGridTextColumn
-                    Width="60"
-                    Binding="{Binding GenderDisplay}"
-                    Header="{DynamicResource Gender}" />
-                <DataGridTextColumn
-                    Width="60"
-                    Binding="{Binding Age}"
-                    Header="{DynamicResource Age}" />
-                <DataGridTextColumn
-                    Width="120"
-                    Binding="{Binding Phone}"
-                    Header="{DynamicResource Phone}" />
-                <DataGridTextColumn
-                    Width="180"
-                    Binding="{Binding IdNumber}"
-                    Header="{DynamicResource IdNumber}" />
-                <DataGridTextColumn
-                    Width="150"
-                    Binding="{Binding CreatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
-                    Header="{DynamicResource CreatedAt}" />
-                <DataGridTemplateColumn Width="160" Header="{DynamicResource Actions}">
-                    <DataGridTemplateColumn.CellTemplate>
+                    <TextBlock Grid.Column="1" Text="编号"
+                               FontFamily="{StaticResource AppFont}" FontSize="22" Foreground="#666666"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="2" Text="姓名"
+                               FontFamily="{StaticResource AppFont}" FontSize="22" Foreground="#666666"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="3" Text="性别"
+                               FontFamily="{StaticResource AppFont}" FontSize="22" Foreground="#666666"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="4" Text="年龄"
+                               FontFamily="{StaticResource AppFont}" FontSize="22" Foreground="#666666"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="5" Text="身份证号"
+                               FontFamily="{StaticResource AppFont}" FontSize="22" Foreground="#666666"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="6" Text="电话"
+                               FontFamily="{StaticResource AppFont}" FontSize="22" Foreground="#666666"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="7" Text="编辑"
+                               FontFamily="{StaticResource AppFont}" FontSize="22" Foreground="#666666"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="8" Text="删除"
+                               FontFamily="{StaticResource AppFont}" FontSize="22" Foreground="#666666"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Grid>
+
+                <!-- 列表内容区（禁用滚动条，固定区域，分页展示） -->
+                <ItemsControl Grid.Row="2"
+                              ItemsSource="{Binding PatientRows}"
+                              Background="Transparent"
+                              Focusable="False">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                                <Button
-                                    Padding="8,4"
-                                    Command="{Binding DataContext.EditPatientCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                    CommandParameter="{Binding}"
-                                    Content="{DynamicResource Edit}"
-                                    Style="{StaticResource MaterialDesignFlatButton}" />
-                                <Button
-                                    Margin="8,0,0,0"
-                                    Padding="8,4"
-                                    Command="{Binding DataContext.DeletePatientCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                    CommandParameter="{Binding}"
-                                    Content="{DynamicResource Delete}"
-                                    Foreground="{DynamicResource MaterialDesign.Brush.ValidationError}"
-                                    Style="{StaticResource MaterialDesignFlatButton}" />
-                            </StackPanel>
+                            <Border x:Name="RowBorder"
+                                    Height="60"
+                                    CornerRadius="8"
+                                    Margin="0,7,0,0"
+                                    Background="#FAFAFA"
+                                    SnapsToDevicePixels="True"
+                                    Cursor="Hand">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="MouseLeftButtonDown">
+                                        <i:InvokeCommandAction Command="{Binding DataContext.ToggleSelectCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                               CommandParameter="{Binding}" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="MouseDoubleClick">
+                                        <i:InvokeCommandAction Command="{Binding DataContext.PatientDoubleClickCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                               CommandParameter="{Binding Patient}" />
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+
+                                <Grid VerticalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="60" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="0.6*" />
+                                        <ColumnDefinition Width="0.6*" />
+                                        <ColumnDefinition Width="1.6*" />
+                                        <ColumnDefinition Width="1.2*" />
+                                        <ColumnDefinition Width="0.7*" />
+                                        <ColumnDefinition Width="0.7*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- 选择框图标 -->
+                                    <Image Grid.Column="0"
+                                           Width="22" Height="22"
+                                           HorizontalAlignment="Center"
+                                           RenderOptions.BitmapScalingMode="HighQuality">
+                                        <Image.Style>
+                                            <Style TargetType="Image">
+                                                <Setter Property="Source" Value="/Resources/Images/PatientSelectionView/xuanzekuang.png" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsChecked}" Value="True">
+                                                        <Setter Property="Source" Value="/Resources/Images/PatientSelectionView/xuanzhongkuang.png" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Image.Style>
+                                    </Image>
+
+                                    <!-- 显示序号（跨页连续） -->
+                                    <TextBlock Grid.Column="1" Text="{Binding DisplayIndex}"
+                                               FontFamily="{StaticResource AppFont}" FontSize="20" Foreground="#333333"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="{Binding Patient.Name}"
+                                               FontFamily="{StaticResource AppFont}" FontSize="20" Foreground="#333333"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="3" Text="{Binding Patient.GenderDisplay}"
+                                               FontFamily="{StaticResource AppFont}" FontSize="20" Foreground="#333333"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="4" Text="{Binding Patient.Age}"
+                                               FontFamily="{StaticResource AppFont}" FontSize="20" Foreground="#333333"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="5" Text="{Binding Patient.IdNumber}"
+                                               FontFamily="{StaticResource AppFont}" FontSize="20" Foreground="#333333"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="6" Text="{Binding Patient.Phone}"
+                                               FontFamily="{StaticResource AppFont}" FontSize="20" Foreground="#333333"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                                    <!-- 编辑按钮 -->
+                                    <Button Grid.Column="7"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Command="{Binding DataContext.EditPatientCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding Patient}">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="bd" Background="Transparent" Padding="4" CornerRadius="6"
+                                                        Width="38" Height="38">
+                                                    <Image Source="/Resources/Images/PatientSelectionView/bianji.png"
+                                                           Width="28" Height="28"
+                                                           Stretch="Uniform"
+                                                           RenderOptions.BitmapScalingMode="HighQuality" />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="bd" Property="Background" Value="#E8F5E9" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+
+                                    <!-- 删除按钮 -->
+                                    <Button Grid.Column="8"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Command="{Binding DataContext.DeletePatientCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding Patient}">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="bd" Background="Transparent" Padding="4" CornerRadius="6"
+                                                        Width="38" Height="38">
+                                                    <Image Source="/Resources/Images/PatientSelectionView/shanchu.png"
+                                                           Width="28" Height="28"
+                                                           Stretch="Uniform"
+                                                           RenderOptions.BitmapScalingMode="HighQuality" />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="bd" Property="Background" Value="#FFEBEE" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
+                            </Border>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding IsChecked}" Value="True">
+                                    <Setter TargetName="RowBorder" Property="Background" Value="#F0F4F9" />
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
                         </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
 
-            <i:Interaction.Triggers>
-                <i:EventTrigger EventName="MouseDoubleClick">
-                    <i:InvokeCommandAction Command="{Binding PatientDoubleClickCommand}" CommandParameter="{Binding SelectedPatient}" />
-                </i:EventTrigger>
-            </i:Interaction.Triggers>
-        </DataGrid>
+                <!-- ═══════════════════ 五、分页区域 ═══════════════════ -->
+                <StackPanel Grid.Row="3"
+                            Margin="0,18,0,0"
+                            HorizontalAlignment="Center"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
 
-        <!--  Bottom Bar: Pagination and Actions  -->
-        <Grid Grid.Row="3" Margin="0,16,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+                    <!-- 上一页箭头 -->
+                    <Button Command="{Binding PreviousPageCommand}"
+                            Margin="0,0,30,0"
+                            IsEnabled="{Binding CanGoPrevious}"
+                            Style="{StaticResource PageArrowButtonStyle}">
+                        <Image Source="/Resources/Images/PatientSelectionView/zuo.png"
+                               
+                               Width="20" Height="20"
+                               RenderOptions.BitmapScalingMode="HighQuality" />
+                    </Button>
 
-            <!--  Pagination  -->
-            <StackPanel
-                Grid.Column="0"
-                VerticalAlignment="Center"
-                Orientation="Horizontal">
-                <Button
-                    Command="{Binding PreviousPageCommand}"
-                    Style="{StaticResource MaterialDesignIconButton}"
-                    ToolTip="{DynamicResource PreviousPage}">
-                    <materialDesign:PackIcon Kind="ChevronLeft" />
-                </Button>
-                <TextBlock
-                    Margin="8,0"
-                    VerticalAlignment="Center"
-                    FontSize="14">
-                    <Run Text="{DynamicResource Page}" /><Run Text="{Binding CurrentPage, Mode=OneWay}" />
-                </TextBlock>
-                <TextBlock
-                    Margin="4,0"
-                    VerticalAlignment="Center"
-                    FontSize="14"
-                    Text="/" />
-                <TextBlock
-                    Margin="8,0"
-                    VerticalAlignment="Center"
-                    FontSize="14">
-                    <Run Text="{DynamicResource Of}" /><Run Text="{Binding TotalPages, Mode=OneWay}" />
-                </TextBlock>
-                <Button
-                    Command="{Binding NextPageCommand}"
-                    Style="{StaticResource MaterialDesignIconButton}"
-                    ToolTip="{DynamicResource NextPage}">
-                    <materialDesign:PackIcon Kind="ChevronRight" />
-                </Button>
-                <TextBlock
-                    Margin="16,0,0,0"
-                    VerticalAlignment="Center"
-                    FontSize="14"
-                    Foreground="{DynamicResource MaterialDesign.Brush.Secondary}">
-                    <Run Text="{DynamicResource Total}" /><Run Text="{Binding TotalRecords, Mode=OneWay}" /><Run Text="{DynamicResource Records}" />
-                </TextBlock>
-            </StackPanel>
+                    <!-- 页码列表：每项固定宽 65px，保证中心间距 65px -->
+                    <ItemsControl ItemsSource="{Binding PageNumbers}" Margin="4,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <!-- 每个页码项固定 65px 宽，高 40px，内容居中 -->
+                                <Grid Width="65" Height="40">
 
-            <!--  Confirm Button  -->
-            <Button
-                Grid.Column="1"
-                Height="40"
-                Padding="24,0"
-                Command="{Binding ConfirmSelectCommand}"
-                Content="{DynamicResource ConfirmSelect}"
-                Style="{StaticResource MaterialDesignRaisedButton}" />
-        </Grid>
+                                    <!-- 省略号（不可点击，IsEllipsis=True 时显示） -->
+                                    <TextBlock Text="..."
+                                               FontFamily="Roboto"
+                                               FontSize="22"
+                                               FontWeight="Medium"
+                                               Foreground="#999999"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsEllipsis}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <!-- 当前页高亮块（IsCurrent=True 且非省略号时显示） -->
+                                    <Border Height="40"
+                                            Width="44"
+                                            CornerRadius="8"
+                                            Background="#403B5B"
+                                            HorizontalAlignment="Center">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <MultiDataTrigger>
+                                                        <MultiDataTrigger.Conditions>
+                                                            <Condition Binding="{Binding IsCurrent}" Value="True" />
+                                                            <Condition Binding="{Binding IsEllipsis}" Value="False" />
+                                                        </MultiDataTrigger.Conditions>
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </MultiDataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock Text="{Binding DisplayText}"
+                                                   FontFamily="Roboto"
+                                                   FontSize="22"
+                                                   FontWeight="Medium"
+                                                   Foreground="White"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+
+                                    <!-- 非当前页数字按钮（可点击，IsCurrent=False 且非省略号时显示） -->
+                                    <Button Command="{Binding DataContext.GoToPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding PageNumber}"
+                                            Width="44"
+                                            Height="40"
+                                            HorizontalAlignment="Center">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource PageNumberButtonStyle}">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsEllipsis}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                        <TextBlock Text="{Binding DisplayText}"
+                                                   FontFamily="Roboto"
+                                                   FontSize="22"
+                                                   FontWeight="Medium"
+                                                   Foreground="#555555" />
+                                    </Button>
+
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- 下一页箭头 -->
+                    <Button Command="{Binding NextPageCommand}"
+                            Margin="30,0,0,0"
+                            IsEnabled="{Binding CanGoNext}"
+                            Style="{StaticResource PageArrowButtonStyle}">
+                        <Image Source="/Resources/Images/PatientSelectionView/you.png"
+                               Width="20" Height="20"
+                               RenderOptions.BitmapScalingMode="HighQuality" />
+                    </Button>
+                </StackPanel>
+
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

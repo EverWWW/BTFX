@@ -1,0 +1,180 @@
+<UserControl
+	x:Class="BTFX.Controls.TitleBarControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    mc:Ignorable="d"
+    d:DesignHeight="100" 
+	d:DesignWidth="1920"
+    Height="100">
+
+    <Border Background="#FFFFFF"
+            BorderBrush="#E8E8E8"
+            BorderThickness="0,0,0,1">
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <!-- 左侧 Logo 区域 -->
+                <ColumnDefinition Width="Auto" />
+                <!-- 中间弹性占位 -->
+                <ColumnDefinition Width="*" />
+                <!-- 中间标题（绝对居中通过 Grid 覆盖实现） -->
+                <ColumnDefinition Width="*" />
+                <!-- 右侧用户区 + 窗口控制按钮 -->
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ① 左侧 Logo -->
+            <Image Grid.Column="0"
+                   Source="/Resources/Images/Logo/logo4.png"
+                   Height="42"
+                   Margin="40,0,0,0"
+                   VerticalAlignment="Center"
+                   Stretch="Uniform"
+                   RenderOptions.BitmapScalingMode="HighQuality" />
+
+            <!-- ② 中间系统标题（跨全列居中，使用 Grid 覆盖保证真正居中） -->
+            <TextBlock Grid.Column="0"
+                       Grid.ColumnSpan="4"
+                       Text="步态信息采集系统"
+                       FontFamily="{StaticResource AppFont}"
+                       FontSize="36"
+                       FontWeight="Normal"
+                       Foreground="#403B5B"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       IsHitTestVisible="False" />
+
+            <!-- ③ 右侧：用户信息 + 窗口控制按钮 -->
+            <StackPanel Grid.Column="3"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        Margin="0,0,16,0">
+
+                <!-- 用户区域 -->
+                <StackPanel Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Margin="0,0,16,0">
+
+                    <!-- "你好！"文字 -->
+                    <TextBlock Text="你好！"
+                               FontFamily="{StaticResource AppFont}"
+                               FontSize="22"
+                               FontWeight="Normal"
+                               Foreground="#999999"
+                               VerticalAlignment="Center" />
+
+                    <!-- 当前账号名 -->
+                    <TextBlock Text="{Binding UserDisplayName, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                               FontFamily="{StaticResource AppFont}"
+                               FontSize="22"
+                               FontWeight="Normal"
+                               Foreground="#555555"
+                               VerticalAlignment="Center"
+                               Margin="2,0,10,0" />
+
+                    <!-- 账号图标 -->
+                    <Image Source="/Resources/Images/PatientSelectionView/zhanghaotubiao.png"
+                           Width="28" Height="28"
+						   Margin="20,0,0,0"
+                           VerticalAlignment="Center"
+                           RenderOptions.BitmapScalingMode="HighQuality"
+                           Stretch="Uniform" />
+                </StackPanel>
+
+                <!-- 窗口控制按钮：最小化 -->
+                <Button x:Name="MinimizeButton"
+                        Width="34" Height="34"
+                        Margin="100,0,0,0"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Click="MinimizeButton_Click"
+                        ToolTip="最小化">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}"
+                                                CornerRadius="4">
+                                            <ContentPresenter HorizontalAlignment="Center"
+                                                              VerticalAlignment="Center" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#F0F0F0" />
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter Property="Background" Value="#E0E0E0" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                    <!-- 最小化符号：使用文字或 Path，此处用 Unicode 横线 -->
+                    <Path Data="M0,0 H16"
+                          Stroke="#555555"
+                          StrokeThickness="1.5"
+                          Width="16" Height="2"
+                          VerticalAlignment="Center"
+                          HorizontalAlignment="Center"
+                          Stretch="None" />
+                </Button>
+
+                <!-- 窗口控制按钮：关闭 -->
+                <Button x:Name="CloseButton"
+                        Width="34" Height="34"
+                        Margin="40,0,40,0"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Click="CloseButton_Click"
+                        ToolTip="关闭">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}"
+                                                CornerRadius="4">
+                                            <ContentPresenter HorizontalAlignment="Center"
+                                                              VerticalAlignment="Center" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#FFECEC" />
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter Property="Background" Value="#FFCFCF" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                    <!-- ✕ 关闭符号 -->
+                    <Grid Width="14" Height="14">
+                        <Path Data="M0,0 L14,14"
+                              Stroke="#555555" StrokeThickness="1.5"
+                              Stretch="None" />
+                        <Path Data="M14,0 L0,14"
+                              Stroke="#555555" StrokeThickness="1.5"
+                              Stretch="None" />
+                    </Grid>
+                </Button>
+
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>
