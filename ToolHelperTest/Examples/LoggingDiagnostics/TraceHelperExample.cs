@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+ï»¿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using ToolHelper.LoggingDiagnostics.Abstractions;
 using ToolHelper.LoggingDiagnostics.Extensions;
@@ -8,17 +8,17 @@ using TraceOptions = ToolHelper.LoggingDiagnostics.Configuration.TraceOptions;
 namespace ToolHelperTest.Examples.LoggingDiagnostics;
 
 /// <summary>
-/// TraceHelper Ê¹ÓÃÊ¾Àı
-/// ÑİÊ¾µ÷ÓÃÕ»×·×Ù¡¢ĞÔÄÜ·ÖÎö¡¢·½·¨¼ÆÊ±µÈ¹¦ÄÜ
+/// TraceHelper ä½¿ç”¨ç¤ºä¾‹
+/// æ¼”ç¤ºè°ƒç”¨æ ˆè¿½è¸ªã€æ€§èƒ½åˆ†æã€æ–¹æ³•è®¡æ—¶ç­‰åŠŸèƒ½
 /// </summary>
 public class TraceHelperExample
 {
     /// <summary>
-    /// Ê¾Àı 1: »ù±¾×·×Ù
+    /// ç¤ºä¾‹ 1: åŸºæœ¬è¿½è¸ª
     /// </summary>
     public static void BasicTracing()
     {
-        Console.WriteLine("=== TraceHelper »ù±¾×·×ÙÊ¾Àı ===\n");
+        Console.WriteLine("=== TraceHelper åŸºæœ¬è¿½è¸ªç¤ºä¾‹ ===\n");
 
         var options = Options.Create(new TraceOptions
         {
@@ -29,36 +29,36 @@ public class TraceHelperExample
 
         var traceHelper = new TraceHelper(options);
 
-        // ¶©ÔÄ×·×ÙÍê³ÉÊÂ¼ş
+        // è®¢é˜…è¿½è¸ªå®Œæˆäº‹ä»¶
         traceHelper.TraceCompleted += (s, result) =>
         {
-            Console.WriteLine($"  ×·×ÙÍê³É: {result.OperationName} - {result.Duration.TotalMilliseconds:F2}ms");
+            Console.WriteLine($"  è¿½è¸ªå®Œæˆ: {result.OperationName} - {result.Duration.TotalMilliseconds:F2}ms");
         };
 
-        // Ê¹ÓÃ×·×Ù×÷ÓÃÓò
-        using (traceHelper.BeginTrace("Êı¾İ¿â²éÑ¯"))
+        // ä½¿ç”¨è¿½è¸ªä½œç”¨åŸŸ
+        using (traceHelper.BeginTrace("æ•°æ®åº“æŸ¥è¯¢"))
         {
-            // Ä£ÄâÊı¾İ¿â²éÑ¯
+            // æ¨¡æ‹Ÿæ•°æ®åº“æŸ¥è¯¢
             Thread.Sleep(100);
         }
 
-        // ×·×Ù·½·¨Ö´ĞĞ
-        var result = traceHelper.Trace("¼ÆËã²Ù×÷", () =>
+        // è¿½è¸ªæ–¹æ³•æ‰§è¡Œ
+        var result = traceHelper.Trace("è®¡ç®—æ“ä½œ", () =>
         {
             Thread.Sleep(50);
             return 42;
         });
 
-        Console.WriteLine($"\n¼ÆËã½á¹û: {result}");
-        Console.WriteLine("\n? »ù±¾×·×ÙÍê³É\n");
+        Console.WriteLine($"\nè®¡ç®—ç»“æœ: {result}");
+        Console.WriteLine("\n? åŸºæœ¬è¿½è¸ªå®Œæˆ\n");
     }
 
     /// <summary>
-    /// Ê¾Àı 2: Òì²½·½·¨×·×Ù
+    /// ç¤ºä¾‹ 2: å¼‚æ­¥æ–¹æ³•è¿½è¸ª
     /// </summary>
     public static async Task AsyncTracingAsync()
     {
-        Console.WriteLine("=== TraceHelper Òì²½×·×ÙÊ¾Àı ===\n");
+        Console.WriteLine("=== TraceHelper å¼‚æ­¥è¿½è¸ªç¤ºä¾‹ ===\n");
 
         var options = Options.Create(new TraceOptions
         {
@@ -70,36 +70,36 @@ public class TraceHelperExample
 
         traceHelper.TraceCompleted += (s, result) =>
         {
-            Console.WriteLine($"  ²Ù×÷: {result.OperationName}");
-            Console.WriteLine($"  ºÄÊ±: {result.Duration.TotalMilliseconds:F2}ms");
-            Console.WriteLine($"  ÄÚ´æ±ä»¯: {result.MemoryDelta / 1024:N0} KB");
+            Console.WriteLine($"  æ“ä½œ: {result.OperationName}");
+            Console.WriteLine($"  è€—æ—¶: {result.Duration.TotalMilliseconds:F2}ms");
+            Console.WriteLine($"  å†…å­˜å˜åŒ–: {result.MemoryDelta / 1024:N0} KB");
             Console.WriteLine();
         };
 
-        // ×·×ÙÒì²½HTTPÇëÇó£¨Ä£Äâ£©
-        var response = await traceHelper.TraceAsync("HTTPÇëÇó", async ct =>
+        // è¿½è¸ªå¼‚æ­¥HTTPè¯·æ±‚ï¼ˆæ¨¡æ‹Ÿï¼‰
+        var response = await traceHelper.TraceAsync("HTTPè¯·æ±‚", async ct =>
         {
             await Task.Delay(150, ct);
             return "Response Data";
         });
 
-        Console.WriteLine($"ÏìÓ¦: {response}");
+        Console.WriteLine($"å“åº”: {response}");
 
-        // ×·×ÙÒì²½ÎÄ¼ş²Ù×÷£¨Ä£Äâ£©
-        await traceHelper.TraceAsync("ÎÄ¼şĞ´Èë", async ct =>
+        // è¿½è¸ªå¼‚æ­¥æ–‡ä»¶æ“ä½œï¼ˆæ¨¡æ‹Ÿï¼‰
+        await traceHelper.TraceAsync("æ–‡ä»¶å†™å…¥", async ct =>
         {
             await Task.Delay(80, ct);
         });
 
-        Console.WriteLine("? Òì²½×·×ÙÍê³É\n");
+        Console.WriteLine("? å¼‚æ­¥è¿½è¸ªå®Œæˆ\n");
     }
 
     /// <summary>
-    /// Ê¾Àı 3: »ñÈ¡µ÷ÓÃÕ»
+    /// ç¤ºä¾‹ 3: è·å–è°ƒç”¨æ ˆ
     /// </summary>
     public static void CallStackExample()
     {
-        Console.WriteLine("=== TraceHelper µ÷ÓÃÕ»Ê¾Àı ===\n");
+        Console.WriteLine("=== TraceHelper è°ƒç”¨æ ˆç¤ºä¾‹ ===\n");
 
         var options = Options.Create(new TraceOptions
         {
@@ -108,10 +108,10 @@ public class TraceHelperExample
 
         var traceHelper = new TraceHelper(options);
 
-        // Ç¶Ì×µ÷ÓÃÑİÊ¾
+        // åµŒå¥—è°ƒç”¨æ¼”ç¤º
         OuterMethod(traceHelper);
 
-        Console.WriteLine("? µ÷ÓÃÕ»Ê¾ÀıÍê³É\n");
+        Console.WriteLine("? è°ƒç”¨æ ˆç¤ºä¾‹å®Œæˆ\n");
     }
 
     private static void OuterMethod(TraceHelper traceHelper)
@@ -126,23 +126,23 @@ public class TraceHelperExample
 
     private static void InnerMethod(TraceHelper traceHelper)
     {
-        Console.WriteLine("µ±Ç°µ÷ÓÃÕ»:");
+        Console.WriteLine("å½“å‰è°ƒç”¨æ ˆ:");
         Console.WriteLine(traceHelper.GetCallStackString(0));
         Console.WriteLine();
 
-        // »ñÈ¡½á¹¹»¯µÄµ÷ÓÃÕ»ĞÅÏ¢
+        // è·å–ç»“æ„åŒ–çš„è°ƒç”¨æ ˆä¿¡æ¯
         var frames = traceHelper.GetCallStack(0);
-        Console.WriteLine($"µ÷ÓÃÕ»Éî¶È: {frames.Count}");
-        Console.WriteLine($"µ±Ç°·½·¨: {frames.FirstOrDefault()?.MethodName}");
+        Console.WriteLine($"è°ƒç”¨æ ˆæ·±åº¦: {frames.Count}");
+        Console.WriteLine($"å½“å‰æ–¹æ³•: {frames.FirstOrDefault()?.MethodName}");
         Console.WriteLine();
     }
 
     /// <summary>
-    /// Ê¾Àı 4: ĞÔÄÜÍ³¼Æ
+    /// ç¤ºä¾‹ 4: æ€§èƒ½ç»Ÿè®¡
     /// </summary>
     public static async Task PerformanceStatisticsAsync()
     {
-        Console.WriteLine("=== TraceHelper ĞÔÄÜÍ³¼ÆÊ¾Àı ===\n");
+        Console.WriteLine("=== TraceHelper æ€§èƒ½ç»Ÿè®¡ç¤ºä¾‹ ===\n");
 
         var options = Options.Create(new TraceOptions
         {
@@ -152,50 +152,50 @@ public class TraceHelperExample
 
         var traceHelper = new TraceHelper(options);
 
-        // Ä£Äâ¶à´ÎÊı¾İ¿â²éÑ¯
+        // æ¨¡æ‹Ÿå¤šæ¬¡æ•°æ®åº“æŸ¥è¯¢
         var random = new Random();
         for (int i = 0; i < 20; i++)
         {
-            await traceHelper.TraceAsync("Êı¾İ¿â²éÑ¯", async ct =>
+            await traceHelper.TraceAsync("æ•°æ®åº“æŸ¥è¯¢", async ct =>
             {
                 await Task.Delay(random.Next(20, 150), ct);
             });
         }
 
-        // »ñÈ¡Í³¼ÆĞÅÏ¢
-        var stats = traceHelper.GetStatistics("Êı¾İ¿â²éÑ¯");
+        // è·å–ç»Ÿè®¡ä¿¡æ¯
+        var stats = traceHelper.GetStatistics("æ•°æ®åº“æŸ¥è¯¢");
 
-        Console.WriteLine("Êı¾İ¿â²éÑ¯Í³¼Æ:");
-        Console.WriteLine($"  µ÷ÓÃ´ÎÊı: {stats.CallCount}");
-        Console.WriteLine($"  ³É¹¦´ÎÊı: {stats.SuccessCount}");
-        Console.WriteLine($"  Ê§°Ü´ÎÊı: {stats.FailureCount}");
-        Console.WriteLine($"  Æ½¾ùºÄÊ±: {stats.AverageDuration.TotalMilliseconds:F2}ms");
-        Console.WriteLine($"  ×îĞ¡ºÄÊ±: {stats.MinDuration.TotalMilliseconds:F2}ms");
-        Console.WriteLine($"  ×î´óºÄÊ±: {stats.MaxDuration.TotalMilliseconds:F2}ms");
-        Console.WriteLine($"  ×ÜºÄÊ±: {stats.TotalDuration.TotalMilliseconds:F2}ms");
+        Console.WriteLine("æ•°æ®åº“æŸ¥è¯¢ç»Ÿè®¡:");
+        Console.WriteLine($"  è°ƒç”¨æ¬¡æ•°: {stats.CallCount}");
+        Console.WriteLine($"  æˆåŠŸæ¬¡æ•°: {stats.SuccessCount}");
+        Console.WriteLine($"  å¤±è´¥æ¬¡æ•°: {stats.FailureCount}");
+        Console.WriteLine($"  å¹³å‡è€—æ—¶: {stats.AverageDuration.TotalMilliseconds:F2}ms");
+        Console.WriteLine($"  æœ€å°è€—æ—¶: {stats.MinDuration.TotalMilliseconds:F2}ms");
+        Console.WriteLine($"  æœ€å¤§è€—æ—¶: {stats.MaxDuration.TotalMilliseconds:F2}ms");
+        Console.WriteLine($"  æ€»è€—æ—¶: {stats.TotalDuration.TotalMilliseconds:F2}ms");
 
-        Console.WriteLine("\n? ĞÔÄÜÍ³¼ÆÍê³É\n");
+        Console.WriteLine("\n? æ€§èƒ½ç»Ÿè®¡å®Œæˆ\n");
     }
 
     /// <summary>
-    /// Ê¾Àı 5: ´øÊı¾İµÄ×·×Ù
+    /// ç¤ºä¾‹ 5: å¸¦æ•°æ®çš„è¿½è¸ª
     /// </summary>
     public static void TracingWithData()
     {
-        Console.WriteLine("=== TraceHelper ´øÊı¾İ×·×ÙÊ¾Àı ===\n");
+        Console.WriteLine("=== TraceHelper å¸¦æ•°æ®è¿½è¸ªç¤ºä¾‹ ===\n");
 
         var options = Options.Create(new TraceOptions { Enabled = true });
         var traceHelper = new TraceHelper(options);
 
         traceHelper.TraceCompleted += (s, result) =>
         {
-            Console.WriteLine($"²Ù×÷: {result.OperationName}");
-            Console.WriteLine($"ºÄÊ±: {result.Duration.TotalMilliseconds:F2}ms");
-            Console.WriteLine($"³É¹¦: {result.IsSuccess}");
+            Console.WriteLine($"æ“ä½œ: {result.OperationName}");
+            Console.WriteLine($"è€—æ—¶: {result.Duration.TotalMilliseconds:F2}ms");
+            Console.WriteLine($"æˆåŠŸ: {result.IsSuccess}");
             
             if (result.Data != null)
             {
-                Console.WriteLine("¸½¼ÓÊı¾İ:");
+                Console.WriteLine("é™„åŠ æ•°æ®:");
                 foreach (var kvp in result.Data)
                 {
                     Console.WriteLine($"  {kvp.Key}: {kvp.Value}");
@@ -204,28 +204,28 @@ public class TraceHelperExample
             Console.WriteLine();
         };
 
-        // ×·×Ù¶©µ¥´¦Àí
-        using (var scope = traceHelper.BeginTrace("´¦Àí¶©µ¥"))
+        // è¿½è¸ªè®¢å•å¤„ç†
+        using (var scope = traceHelper.BeginTrace("å¤„ç†è®¢å•"))
         {
             scope.SetData("OrderId", "ORD-2024-001");
             scope.SetData("CustomerId", 12345);
             
-            // Ä£Äâ´¦Àí
+            // æ¨¡æ‹Ÿå¤„ç†
             Thread.Sleep(100);
             
             scope.SetData("ItemCount", 5);
             scope.SetData("TotalAmount", 299.99m);
         }
 
-        Console.WriteLine("? ´øÊı¾İ×·×ÙÍê³É\n");
+        Console.WriteLine("? å¸¦æ•°æ®è¿½è¸ªå®Œæˆ\n");
     }
 
     /// <summary>
-    /// Ê¾Àı 6: Ê¹ÓÃÒÀÀµ×¢Èë
+    /// ç¤ºä¾‹ 6: ä½¿ç”¨ä¾èµ–æ³¨å…¥
     /// </summary>
     public static async Task DependencyInjectionExampleAsync()
     {
-        Console.WriteLine("=== TraceHelper ÒÀÀµ×¢ÈëÊ¾Àı ===\n");
+        Console.WriteLine("=== TraceHelper ä¾èµ–æ³¨å…¥ç¤ºä¾‹ ===\n");
 
         var services = new ServiceCollection();
         services.AddTraceHelper(options =>
@@ -238,23 +238,23 @@ public class TraceHelperExample
         await using var serviceProvider = services.BuildServiceProvider();
         var traceHelper = serviceProvider.GetRequiredService<ITraceHelper>();
 
-        // Ê¹ÓÃ×Ô¶¯ÃüÃû×·×Ù
+        // ä½¿ç”¨è‡ªåŠ¨å‘½åè¿½è¸ª
         using (traceHelper.BeginTraceAuto())
         {
             await Task.Delay(60);
         }
 
-        Console.WriteLine("? ÒÀÀµ×¢ÈëÊ¾ÀıÍê³É\n");
+        Console.WriteLine("? ä¾èµ–æ³¨å…¥ç¤ºä¾‹å®Œæˆ\n");
     }
 
     /// <summary>
-    /// ÔËĞĞËùÓĞÊ¾Àı
+    /// è¿è¡Œæ‰€æœ‰ç¤ºä¾‹
     /// </summary>
     public static async Task RunAllAsync()
     {
-        Console.WriteLine("¨X¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨[");
-        Console.WriteLine("¨U      TraceHelper Ê¹ÓÃÊ¾ÀıÑİÊ¾          ¨U");
-        Console.WriteLine("¨^¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨a\n");
+        Console.WriteLine("â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—");
+        Console.WriteLine("â•‘      TraceHelper ä½¿ç”¨ç¤ºä¾‹æ¼”ç¤º          â•‘");
+        Console.WriteLine("â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n");
 
         BasicTracing();
         await AsyncTracingAsync();
@@ -263,8 +263,8 @@ public class TraceHelperExample
         TracingWithData();
         await DependencyInjectionExampleAsync();
 
-        Console.WriteLine("¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T");
-        Console.WriteLine("ËùÓĞ TraceHelper Ê¾ÀıÖ´ĞĞÍê³É£¡");
-        Console.WriteLine("¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T\n");
+        Console.WriteLine("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•");
+        Console.WriteLine("æ‰€æœ‰ TraceHelper ç¤ºä¾‹æ‰§è¡Œå®Œæˆï¼");
+        Console.WriteLine("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n");
     }
 }

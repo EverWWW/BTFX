@@ -1,56 +1,56 @@
-using System.Windows;
+ï»¿using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BTFX.Models;
 
 /// <summary>
-/// µ¼º½²Ëµ¥ÏîÄ£ĞÍ
+/// å¯¼èˆªèœå•é¡¹æ¨¡å‹
 /// </summary>
 public partial class NavigationItem : ObservableObject
 {
     /// <summary>
-    /// ²Ëµ¥Ïî±êÊ¶
+    /// èœå•é¡¹æ ‡è¯†
     /// </summary>
     [ObservableProperty]
     private string _key = string.Empty;
 
     /// <summary>
-    /// ÏÔÊ¾±êÌâ
+    /// æ˜¾ç¤ºæ ‡é¢˜
     /// </summary>
     [ObservableProperty]
     private string _title = string.Empty;
 
     /// <summary>
-    /// ×ÊÔ´¼ü£¨ÓÃÓÚ¶àÓïÑÔ£©
+    /// èµ„æºé”®ï¼ˆç”¨äºå¤šè¯­è¨€ï¼‰
     /// </summary>
     [ObservableProperty]
     private string _resourceKey = string.Empty;
 
     /// <summary>
-    /// Í¼±êÃû³Æ£¨Material Design Icon£©
+    /// å›¾æ ‡åç§°ï¼ˆMaterial Design Iconï¼‰
     /// </summary>
     [ObservableProperty]
     private string _iconKind = string.Empty;
 
     /// <summary>
-    /// ÊÇ·ñÑ¡ÖĞ
+    /// æ˜¯å¦é€‰ä¸­
     /// </summary>
     [ObservableProperty]
     private bool _isSelected;
 
     /// <summary>
-    /// ÊÇ·ñÆôÓÃ
+    /// æ˜¯å¦å¯ç”¨
     /// </summary>
     [ObservableProperty]
     private bool _isEnabled = true;
 
         /// <summary>
-        /// ¶ÔÓ¦µÄViewModelÀàĞÍÃû³Æ
+        /// å¯¹åº”çš„ViewModelç±»å‹åç§°
         /// </summary>
         public string ViewModelName { get; set; } = string.Empty;
 
         /// <summary>
-        /// ´Ó×ÊÔ´¸üĞÂ±êÌâ
+        /// ä»èµ„æºæ›´æ–°æ ‡é¢˜
         /// </summary>
         public void UpdateTitleFromResource()
         {
@@ -66,7 +66,7 @@ public partial class NavigationItem : ObservableObject
                 }
                 catch
                 {
-                    // Èç¹ûÕÒ²»µ½×ÊÔ´£¬±£³ÖÔ­±êÌâ
+                    // å¦‚æœæ‰¾ä¸åˆ°èµ„æºï¼Œä¿æŒåŸæ ‡é¢˜
                 }
             }
         }

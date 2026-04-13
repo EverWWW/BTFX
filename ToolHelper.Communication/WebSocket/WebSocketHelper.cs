@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+ï»¿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Buffers;
 using System.Net.WebSockets;
@@ -9,8 +9,8 @@ using ToolHelper.Communication.Configuration;
 namespace ToolHelper.Communication.WebSocket;
 
 /// <summary>
-/// WebSocket Í¨ĞÅ°ïÖúÀà
-/// Ìá¹©ÊµÊ±Ë«ÏòÍ¨ĞÅ¡¢×Ô¶¯ÖØÁ¬¡¢ĞÄÌø±£»îµÈ¹¦ÄÜ
+/// WebSocket é€šä¿¡å¸®åŠ©ç±»
+/// æä¾›å®æ—¶åŒå‘é€šä¿¡ã€è‡ªåŠ¨é‡è¿ã€å¿ƒè·³ä¿æ´»ç­‰åŠŸèƒ½
 /// </summary>
 public class WebSocketHelper : IClientConnection
 {
@@ -37,15 +37,15 @@ public class WebSocketHelper : IClientConnection
     public event EventHandler<DataReceivedEventArgs>? DataReceived;
 
     /// <summary>
-    /// ÎÄ±¾ÏûÏ¢½ÓÊÕÊÂ¼ş
+    /// æ–‡æœ¬æ¶ˆæ¯æ¥æ”¶äº‹ä»¶
     /// </summary>
     public event EventHandler<TextMessageReceivedEventArgs>? TextMessageReceived;
 
     /// <summary>
-    /// ¹¹Ôìº¯Êı
+    /// æ„é€ å‡½æ•°
     /// </summary>
-    /// <param name="options">WebSocket ÅäÖÃÑ¡Ïî</param>
-    /// <param name="logger">ÈÕÖ¾¼ÇÂ¼Æ÷</param>
+    /// <param name="options">WebSocket é…ç½®é€‰é¡¹</param>
+    /// <param name="logger">æ—¥å¿—è®°å½•å™¨</param>
     public WebSocketHelper(IOptions<WebSocketOptions> options, ILogger<WebSocketHelper> logger)
     {
         _options = options.Value;
@@ -53,10 +53,10 @@ public class WebSocketHelper : IClientConnection
     }
 
     /// <summary>
-    /// ¹¹Ôìº¯Êı£¨Ö§³ÖÊÖ¶¯ÅäÖÃ£©
+    /// æ„é€ å‡½æ•°ï¼ˆæ”¯æŒæ‰‹åŠ¨é…ç½®ï¼‰
     /// </summary>
-    /// <param name="uri">·şÎñÆ÷µØÖ·</param>
-    /// <param name="logger">ÈÕÖ¾¼ÇÂ¼Æ÷</param>
+    /// <param name="uri">æœåŠ¡å™¨åœ°å€</param>
+    /// <param name="logger">æ—¥å¿—è®°å½•å™¨</param>
     public WebSocketHelper(string uri, ILogger<WebSocketHelper> logger)
     {
         _options = new WebSocketOptions { Uri = uri };
@@ -68,7 +68,7 @@ public class WebSocketHelper : IClientConnection
     {
         if (IsConnected)
         {
-            _logger.LogWarning("WebSocket ÒÑ¾­´¦ÓÚÁ¬½Ó×´Ì¬");
+            _logger.LogWarning("WebSocket å·²ç»å¤„äºè¿æ¥çŠ¶æ€");
             return true;
         }
 
@@ -78,28 +78,28 @@ public class WebSocketHelper : IClientConnection
 
             _webSocket = new ClientWebSocket();
             
-            // ÅäÖÃÑ¡Ïî
+            // é…ç½®é€‰é¡¹
             _webSocket.Options.SetBuffer(_options.ReceiveBufferSize, _options.SendBufferSize);
 
-            // Ìí¼Ó×ÓĞ­Òé
+            // æ·»åŠ å­åè®®
             foreach (var subProtocol in _options.SubProtocols)
             {
                 _webSocket.Options.AddSubProtocol(subProtocol);
             }
 
-            // Ìí¼ÓÇëÇóÍ·
+            // æ·»åŠ è¯·æ±‚å¤´
             foreach (var header in _options.Headers)
             {
                 _webSocket.Options.SetRequestHeader(header.Key, header.Value);
             }
 
-            // ÉèÖÃ Cookie
+            // è®¾ç½® Cookie
             if (_options.Cookies != null)
             {
                 _webSocket.Options.Cookies = _options.Cookies;
             }
 
-            // Ê¹ÓÃ³¬Ê±¿ØÖÆ
+            // ä½¿ç”¨è¶…æ—¶æ§åˆ¶
             using var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             connectCts.CancelAfter(_options.ConnectTimeout);
 
@@ -109,9 +109,9 @@ public class WebSocketHelper : IClientConnection
             ChangeState(ConnectionState.Connected);
             _lastHeartbeatTime = DateTime.Now;
 
-            _logger.LogInformation("³É¹¦Á¬½Óµ½ WebSocket ·şÎñÆ÷: {Uri}", _options.Uri);
+            _logger.LogInformation("æˆåŠŸè¿æ¥åˆ° WebSocket æœåŠ¡å™¨: {Uri}", _options.Uri);
 
-            // Æô¶¯ĞÄÌø
+            // å¯åŠ¨å¿ƒè·³
             if (_options.HeartbeatInterval > 0)
             {
                 StartHeartbeat();
@@ -121,10 +121,10 @@ public class WebSocketHelper : IClientConnection
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Á¬½Ó WebSocket ·şÎñÆ÷Ê§°Ü: {Message}", ex.Message);
+            _logger.LogError(ex, "è¿æ¥ WebSocket æœåŠ¡å™¨å¤±è´¥: {Message}", ex.Message);
             ChangeState(ConnectionState.Disconnected);
 
-            // ³¢ÊÔÖØÁ¬
+            // å°è¯•é‡è¿
             if (_options.EnableAutoReconnect)
             {
                 _ = Task.Run(() => ReconnectAsync(cancellationToken), cancellationToken);
@@ -154,15 +154,15 @@ public class WebSocketHelper : IClientConnection
                 using var closeCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 closeCts.CancelAfter(_options.CloseTimeout);
 
-                await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Õı³£¹Ø±Õ", closeCts.Token);
+                await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "æ­£å¸¸å…³é—­", closeCts.Token);
             }
 
             ChangeState(ConnectionState.Disconnected);
-            _logger.LogInformation("WebSocket Á¬½ÓÒÑ¹Ø±Õ");
+            _logger.LogInformation("WebSocket è¿æ¥å·²å…³é—­");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "¹Ø±Õ WebSocket Á¬½ÓÊ±³ö´í: {Message}", ex.Message);
+            _logger.LogError(ex, "å…³é—­ WebSocket è¿æ¥æ—¶å‡ºé”™: {Message}", ex.Message);
         }
     }
 
@@ -177,7 +177,7 @@ public class WebSocketHelper : IClientConnection
     {
         if (!IsConnected || _webSocket == null)
         {
-            throw new InvalidOperationException("WebSocket Î´Á¬½Ó");
+            throw new InvalidOperationException("WebSocket æœªè¿æ¥");
         }
 
         await _sendLock.WaitAsync(cancellationToken);
@@ -188,7 +188,7 @@ public class WebSocketHelper : IClientConnection
 
             await _webSocket.SendAsync(data, WebSocketMessageType.Binary, true, sendCts.Token);
 
-            _logger.LogDebug("·¢ËÍÁË {Length} ×Ö½Ú¶ş½øÖÆÊı¾İ", data.Length);
+            _logger.LogDebug("å‘é€äº† {Length} å­—èŠ‚äºŒè¿›åˆ¶æ•°æ®", data.Length);
             return data.Length;
         }
         finally
@@ -198,16 +198,16 @@ public class WebSocketHelper : IClientConnection
     }
 
     /// <summary>
-    /// ·¢ËÍÎÄ±¾ÏûÏ¢
+    /// å‘é€æ–‡æœ¬æ¶ˆæ¯
     /// </summary>
-    /// <param name="text">ÎÄ±¾ÄÚÈİ</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>·¢ËÍµÄ×Ö½ÚÊı</returns>
+    /// <param name="text">æ–‡æœ¬å†…å®¹</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>å‘é€çš„å­—èŠ‚æ•°</returns>
     public async Task<int> SendTextAsync(string text, CancellationToken cancellationToken = default)
     {
         if (!IsConnected || _webSocket == null)
         {
-            throw new InvalidOperationException("WebSocket Î´Á¬½Ó");
+            throw new InvalidOperationException("WebSocket æœªè¿æ¥");
         }
 
         var data = Encoding.UTF8.GetBytes(text);
@@ -220,7 +220,7 @@ public class WebSocketHelper : IClientConnection
 
             await _webSocket.SendAsync(data, WebSocketMessageType.Text, true, sendCts.Token);
 
-            _logger.LogDebug("·¢ËÍÁËÎÄ±¾ÏûÏ¢: {Text}", text.Length > 100 ? text.Substring(0, 100) + "..." : text);
+            _logger.LogDebug("å‘é€äº†æ–‡æœ¬æ¶ˆæ¯: {Text}", text.Length > 100 ? text.Substring(0, 100) + "..." : text);
             return data.Length;
         }
         finally
@@ -234,7 +234,7 @@ public class WebSocketHelper : IClientConnection
     {
         if (!IsConnected || _webSocket == null)
         {
-            throw new InvalidOperationException("WebSocket Î´Á¬½Ó");
+            throw new InvalidOperationException("WebSocket æœªè¿æ¥");
         }
 
         StopReceiving();
@@ -242,7 +242,7 @@ public class WebSocketHelper : IClientConnection
         _receiveCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _ = Task.Run(() => ReceiveLoopAsync(_receiveCts.Token), _receiveCts.Token);
 
-        _logger.LogDebug("¿ªÊ¼½ÓÊÕ WebSocket ÏûÏ¢");
+        _logger.LogDebug("å¼€å§‹æ¥æ”¶ WebSocket æ¶ˆæ¯");
         await Task.CompletedTask;
     }
 
@@ -252,11 +252,11 @@ public class WebSocketHelper : IClientConnection
         _receiveCts?.Cancel();
         _receiveCts?.Dispose();
         _receiveCts = null;
-        _logger.LogDebug("Í£Ö¹½ÓÊÕ WebSocket ÏûÏ¢");
+        _logger.LogDebug("åœæ­¢æ¥æ”¶ WebSocket æ¶ˆæ¯");
     }
 
     /// <summary>
-    /// Æô¶¯ĞÄÌø
+    /// å¯åŠ¨å¿ƒè·³
     /// </summary>
     private void StartHeartbeat()
     {
@@ -265,11 +265,11 @@ public class WebSocketHelper : IClientConnection
         _heartbeatCts = new CancellationTokenSource();
         _ = Task.Run(() => HeartbeatLoopAsync(_heartbeatCts.Token), _heartbeatCts.Token);
 
-        _logger.LogDebug("Æô¶¯ĞÄÌø, ¼ä¸ô: {Interval}ms", _options.HeartbeatInterval);
+        _logger.LogDebug("å¯åŠ¨å¿ƒè·³, é—´éš”: {Interval}ms", _options.HeartbeatInterval);
     }
 
     /// <summary>
-    /// Í£Ö¹ĞÄÌø
+    /// åœæ­¢å¿ƒè·³
     /// </summary>
     private void StopHeartbeat()
     {
@@ -279,7 +279,7 @@ public class WebSocketHelper : IClientConnection
     }
 
     /// <summary>
-    /// ĞÄÌøÑ­»·
+    /// å¿ƒè·³å¾ªç¯
     /// </summary>
     private async Task HeartbeatLoopAsync(CancellationToken cancellationToken)
     {
@@ -291,16 +291,16 @@ public class WebSocketHelper : IClientConnection
 
                 if (IsConnected && _webSocket != null)
                 {
-                    // ·¢ËÍ Ping ÏûÏ¢
+                    // å‘é€ Ping æ¶ˆæ¯
                     var pingData = new byte[0];
                     await _webSocket.SendAsync(pingData, WebSocketMessageType.Text, true, cancellationToken);
 
-                    _logger.LogTrace("·¢ËÍĞÄÌø");
+                    _logger.LogTrace("å‘é€å¿ƒè·³");
 
-                    // ¼ì²éĞÄÌø³¬Ê±
+                    // æ£€æŸ¥å¿ƒè·³è¶…æ—¶
                     if ((DateTime.Now - _lastHeartbeatTime).TotalMilliseconds > _options.HeartbeatTimeout)
                     {
-                        _logger.LogWarning("ĞÄÌø³¬Ê±, ³¢ÊÔÖØÁ¬");
+                        _logger.LogWarning("å¿ƒè·³è¶…æ—¶, å°è¯•é‡è¿");
                         await DisconnectAsync(cancellationToken);
 
                         if (_options.EnableAutoReconnect)
@@ -317,13 +317,13 @@ public class WebSocketHelper : IClientConnection
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "ĞÄÌø·¢ËÍÊ§°Ü: {Message}", ex.Message);
+                _logger.LogError(ex, "å¿ƒè·³å‘é€å¤±è´¥: {Message}", ex.Message);
             }
         }
     }
 
     /// <summary>
-    /// ÖØÁ¬Ñ­»·
+    /// é‡è¿å¾ªç¯
     /// </summary>
     private async Task ReconnectAsync(CancellationToken cancellationToken)
     {
@@ -331,22 +331,22 @@ public class WebSocketHelper : IClientConnection
                (_options.MaxReconnectAttempts == -1 || _reconnectAttempts < _options.MaxReconnectAttempts))
         {
             _reconnectAttempts++;
-            _logger.LogInformation("³¢ÊÔÖØÁ¬ (µÚ {Attempt} ´Î)...", _reconnectAttempts);
+            _logger.LogInformation("å°è¯•é‡è¿ (ç¬¬ {Attempt} æ¬¡)...", _reconnectAttempts);
 
             await Task.Delay(_options.ReconnectInterval, cancellationToken);
 
             if (await ConnectAsync(cancellationToken))
             {
-                _logger.LogInformation("ÖØÁ¬³É¹¦");
+                _logger.LogInformation("é‡è¿æˆåŠŸ");
                 return;
             }
         }
 
-        _logger.LogError("´ïµ½×î´óÖØÁ¬´ÎÊı ({MaxAttempts}), Í£Ö¹ÖØÁ¬", _options.MaxReconnectAttempts);
+        _logger.LogError("è¾¾åˆ°æœ€å¤§é‡è¿æ¬¡æ•° ({MaxAttempts}), åœæ­¢é‡è¿", _options.MaxReconnectAttempts);
     }
 
     /// <summary>
-    /// Êı¾İ½ÓÊÕÑ­»·
+    /// æ•°æ®æ¥æ”¶å¾ªç¯
     /// </summary>
     private async Task ReceiveLoopAsync(CancellationToken cancellationToken)
     {
@@ -371,7 +371,7 @@ public class WebSocketHelper : IClientConnection
 
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
-                        _logger.LogInformation("·şÎñÆ÷¹Ø±ÕÁËÁ¬½Ó: {Status} - {Description}",
+                        _logger.LogInformation("æœåŠ¡å™¨å…³é—­äº†è¿æ¥: {Status} - {Description}",
                             result.CloseStatus, result.CloseStatusDescription);
 
                         await DisconnectAsync(cancellationToken);
@@ -387,7 +387,7 @@ public class WebSocketHelper : IClientConnection
                         var data = ms.ToArray();
                         var text = Encoding.UTF8.GetString(data);
 
-                        _logger.LogDebug("½ÓÊÕµ½ÎÄ±¾ÏûÏ¢: {Length} ×Ö½Ú", data.Length);
+                        _logger.LogDebug("æ¥æ”¶åˆ°æ–‡æœ¬æ¶ˆæ¯: {Length} å­—èŠ‚", data.Length);
 
                         TextMessageReceived?.Invoke(this, new TextMessageReceivedEventArgs(text, data, data.Length));
                         DataReceived?.Invoke(this, new DataReceivedEventArgs(data, data.Length));
@@ -396,7 +396,7 @@ public class WebSocketHelper : IClientConnection
                     {
                         var data = ms.ToArray();
 
-                        _logger.LogDebug("½ÓÊÕµ½¶ş½øÖÆÏûÏ¢: {Length} ×Ö½Ú", data.Length);
+                        _logger.LogDebug("æ¥æ”¶åˆ°äºŒè¿›åˆ¶æ¶ˆæ¯: {Length} å­—èŠ‚", data.Length);
 
                         DataReceived?.Invoke(this, new DataReceivedEventArgs(data, data.Length));
                     }
@@ -407,7 +407,7 @@ public class WebSocketHelper : IClientConnection
                 }
                 catch (WebSocketException ex)
                 {
-                    _logger.LogError(ex, "½ÓÊÕ WebSocket ÏûÏ¢Ê±³ö´í: {Message}", ex.Message);
+                    _logger.LogError(ex, "æ¥æ”¶ WebSocket æ¶ˆæ¯æ—¶å‡ºé”™: {Message}", ex.Message);
 
                     if (!IsConnected)
                     {
@@ -420,7 +420,7 @@ public class WebSocketHelper : IClientConnection
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "½ÓÊÕÊı¾İÊ±³ö´í: {Message}", ex.Message);
+                    _logger.LogError(ex, "æ¥æ”¶æ•°æ®æ—¶å‡ºé”™: {Message}", ex.Message);
                     await Task.Delay(100, cancellationToken);
                 }
             }
@@ -432,7 +432,7 @@ public class WebSocketHelper : IClientConnection
     }
 
     /// <summary>
-    /// ¸ü¸ÄÁ¬½Ó×´Ì¬
+    /// æ›´æ”¹è¿æ¥çŠ¶æ€
     /// </summary>
     private void ChangeState(ConnectionState newState)
     {
@@ -441,7 +441,7 @@ public class WebSocketHelper : IClientConnection
             var oldState = _state;
             _state = newState;
             ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(oldState, newState));
-            _logger.LogDebug("Á¬½Ó×´Ì¬´Ó {OldState} ±ä¸üÎª {NewState}", oldState, newState);
+            _logger.LogDebug("è¿æ¥çŠ¶æ€ä» {OldState} å˜æ›´ä¸º {NewState}", oldState, newState);
         }
     }
 
@@ -466,12 +466,12 @@ public class WebSocketHelper : IClientConnection
 }
 
 /// <summary>
-/// ÎÄ±¾ÏûÏ¢½ÓÊÕÊÂ¼ş²ÎÊı
+/// æ–‡æœ¬æ¶ˆæ¯æ¥æ”¶äº‹ä»¶å‚æ•°
 /// </summary>
 public class TextMessageReceivedEventArgs : DataReceivedEventArgs
 {
     /// <summary>
-    /// ÎÄ±¾ÄÚÈİ
+    /// æ–‡æœ¬å†…å®¹
     /// </summary>
     public string Text { get; init; }
 

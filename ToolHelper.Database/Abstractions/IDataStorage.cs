@@ -1,55 +1,55 @@
-namespace ToolHelper.Database.Abstractions;
+ï»¿namespace ToolHelper.Database.Abstractions;
 
 /// <summary>
-/// Êı¾İ´æ´¢½Ó¿Ú
-/// Ìá¹©Í¨ÓÃµÄCRUD²Ù×÷
+/// æ•°æ®å­˜å‚¨æ¥å£
+/// æä¾›é€šç”¨çš„CRUDæ“ä½œ
 /// </summary>
-/// <typeparam name="TEntity">ÊµÌåÀàĞÍ</typeparam>
-/// <typeparam name="TKey">Ö÷¼üÀàĞÍ</typeparam>
+/// <typeparam name="TEntity">å®ä½“ç±»å‹</typeparam>
+/// <typeparam name="TKey">ä¸»é”®ç±»å‹</typeparam>
 public interface IDataStorage<TEntity, TKey> where TEntity : class
 {
     /// <summary>
-    /// ±íÃû
+    /// è¡¨å
     /// </summary>
     string TableName { get; }
 
     /// <summary>
-    /// ¸ù¾İÖ÷¼ü»ñÈ¡ÊµÌå
+    /// æ ¹æ®ä¸»é”®è·å–å®ä½“
     /// </summary>
-    /// <param name="id">Ö÷¼ü</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>ÊµÌå¶ÔÏó</returns>
+    /// <param name="id">ä¸»é”®</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>å®ä½“å¯¹è±¡</returns>
     Task<TEntity?> GetByIdAsync(TKey id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// »ñÈ¡ËùÓĞÊµÌå
+    /// è·å–æ‰€æœ‰å®ä½“
     /// </summary>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>ÊµÌå¼¯ºÏ</returns>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>å®ä½“é›†åˆ</returns>
     Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// ¸ù¾İÌõ¼ş²éÑ¯
+    /// æ ¹æ®æ¡ä»¶æŸ¥è¯¢
     /// </summary>
-    /// <param name="whereClause">WHERE×Ó¾ä£¨²»º¬WHERE¹Ø¼ü×Ö£©</param>
-    /// <param name="parameters">²ÎÊı</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>ÊµÌå¼¯ºÏ</returns>
+    /// <param name="whereClause">WHEREå­å¥ï¼ˆä¸å«WHEREå…³é”®å­—ï¼‰</param>
+    /// <param name="parameters">å‚æ•°</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>å®ä½“é›†åˆ</returns>
     Task<IEnumerable<TEntity>> GetByConditionAsync(
         string whereClause,
         object? parameters = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// ·ÖÒ³²éÑ¯
+    /// åˆ†é¡µæŸ¥è¯¢
     /// </summary>
-    /// <param name="pageIndex">Ò³Ë÷Òı£¨´Ó0¿ªÊ¼£©</param>
-    /// <param name="pageSize">Ò³´óĞ¡</param>
-    /// <param name="orderBy">ÅÅĞò×Ö¶Î</param>
-    /// <param name="whereClause">WHERE×Ó¾ä</param>
-    /// <param name="parameters">²ÎÊı</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>·ÖÒ³½á¹û</returns>
+    /// <param name="pageIndex">é¡µç´¢å¼•ï¼ˆä»0å¼€å§‹ï¼‰</param>
+    /// <param name="pageSize">é¡µå¤§å°</param>
+    /// <param name="orderBy">æ’åºå­—æ®µ</param>
+    /// <param name="whereClause">WHEREå­å¥</param>
+    /// <param name="parameters">å‚æ•°</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>åˆ†é¡µç»“æœ</returns>
     Task<PagedResult<TEntity>> GetPagedAsync(
         int pageIndex,
         int pageSize,
@@ -59,92 +59,92 @@ public interface IDataStorage<TEntity, TKey> where TEntity : class
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// ²åÈëÊµÌå
+    /// æ’å…¥å®ä½“
     /// </summary>
-    /// <param name="entity">ÊµÌå¶ÔÏó</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>²åÈëºóµÄÊµÌå£¨º¬×ÔÔöID£©</returns>
+    /// <param name="entity">å®ä½“å¯¹è±¡</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>æ’å…¥åçš„å®ä½“ï¼ˆå«è‡ªå¢IDï¼‰</returns>
     Task<TEntity> InsertAsync(TEntity entity, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// ÅúÁ¿²åÈë
+    /// æ‰¹é‡æ’å…¥
     /// </summary>
-    /// <param name="entities">ÊµÌå¼¯ºÏ</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>²åÈëµÄĞĞÊı</returns>
+    /// <param name="entities">å®ä½“é›†åˆ</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>æ’å…¥çš„è¡Œæ•°</returns>
     Task<int> InsertRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// ¸üĞÂÊµÌå
+    /// æ›´æ–°å®ä½“
     /// </summary>
-    /// <param name="entity">ÊµÌå¶ÔÏó</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>ÊÇ·ñ³É¹¦</returns>
+    /// <param name="entity">å®ä½“å¯¹è±¡</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>æ˜¯å¦æˆåŠŸ</returns>
     Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// ÅúÁ¿¸üĞÂ
+    /// æ‰¹é‡æ›´æ–°
     /// </summary>
-    /// <param name="entities">ÊµÌå¼¯ºÏ</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>¸üĞÂµÄĞĞÊı</returns>
+    /// <param name="entities">å®ä½“é›†åˆ</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>æ›´æ–°çš„è¡Œæ•°</returns>
     Task<int> UpdateRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// É¾³ıÊµÌå
+    /// åˆ é™¤å®ä½“
     /// </summary>
-    /// <param name="id">Ö÷¼ü</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>ÊÇ·ñ³É¹¦</returns>
+    /// <param name="id">ä¸»é”®</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>æ˜¯å¦æˆåŠŸ</returns>
     Task<bool> DeleteAsync(TKey id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// ÅúÁ¿É¾³ı
+    /// æ‰¹é‡åˆ é™¤
     /// </summary>
-    /// <param name="ids">Ö÷¼ü¼¯ºÏ</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>É¾³ıµÄĞĞÊı</returns>
+    /// <param name="ids">ä¸»é”®é›†åˆ</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>åˆ é™¤çš„è¡Œæ•°</returns>
     Task<int> DeleteRangeAsync(IEnumerable<TKey> ids, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// ¸ù¾İÌõ¼şÉ¾³ı
+    /// æ ¹æ®æ¡ä»¶åˆ é™¤
     /// </summary>
-    /// <param name="whereClause">WHERE×Ó¾ä</param>
-    /// <param name="parameters">²ÎÊı</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>É¾³ıµÄĞĞÊı</returns>
+    /// <param name="whereClause">WHEREå­å¥</param>
+    /// <param name="parameters">å‚æ•°</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>åˆ é™¤çš„è¡Œæ•°</returns>
     Task<int> DeleteByConditionAsync(
         string whereClause,
         object? parameters = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Í³¼Æ¼ÇÂ¼Êı
+    /// ç»Ÿè®¡è®°å½•æ•°
     /// </summary>
-    /// <param name="whereClause">WHERE×Ó¾ä</param>
-    /// <param name="parameters">²ÎÊı</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>¼ÇÂ¼Êı</returns>
+    /// <param name="whereClause">WHEREå­å¥</param>
+    /// <param name="parameters">å‚æ•°</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>è®°å½•æ•°</returns>
     Task<long> CountAsync(
         string? whereClause = null,
         object? parameters = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// ¼ì²éÊÇ·ñ´æÔÚ
+    /// æ£€æŸ¥æ˜¯å¦å­˜åœ¨
     /// </summary>
-    /// <param name="id">Ö÷¼ü</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>ÊÇ·ñ´æÔÚ</returns>
+    /// <param name="id">ä¸»é”®</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>æ˜¯å¦å­˜åœ¨</returns>
     Task<bool> ExistsAsync(TKey id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// ¸ù¾İÌõ¼ş¼ì²éÊÇ·ñ´æÔÚ
+    /// æ ¹æ®æ¡ä»¶æ£€æŸ¥æ˜¯å¦å­˜åœ¨
     /// </summary>
-    /// <param name="whereClause">WHERE×Ó¾ä</param>
-    /// <param name="parameters">²ÎÊı</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>ÊÇ·ñ´æÔÚ</returns>
+    /// <param name="whereClause">WHEREå­å¥</param>
+    /// <param name="parameters">å‚æ•°</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>æ˜¯å¦å­˜åœ¨</returns>
     Task<bool> ExistsByConditionAsync(
         string whereClause,
         object? parameters = null,
@@ -152,29 +152,29 @@ public interface IDataStorage<TEntity, TKey> where TEntity : class
 }
 
 /// <summary>
-/// ·ÖÒ³½á¹û
+/// åˆ†é¡µç»“æœ
 /// </summary>
-/// <typeparam name="T">ÊµÌåÀàĞÍ</typeparam>
+/// <typeparam name="T">å®ä½“ç±»å‹</typeparam>
 public record PagedResult<T>
 {
-    /// <summary>Êı¾İ¼¯ºÏ</summary>
+    /// <summary>æ•°æ®é›†åˆ</summary>
     public IReadOnlyList<T> Items { get; init; } = [];
     
-    /// <summary>µ±Ç°Ò³Ë÷Òı</summary>
+    /// <summary>å½“å‰é¡µç´¢å¼•</summary>
     public int PageIndex { get; init; }
     
-    /// <summary>Ò³´óĞ¡</summary>
+    /// <summary>é¡µå¤§å°</summary>
     public int PageSize { get; init; }
     
-    /// <summary>×Ü¼ÇÂ¼Êı</summary>
+    /// <summary>æ€»è®°å½•æ•°</summary>
     public long TotalCount { get; init; }
     
-    /// <summary>×ÜÒ³Êı</summary>
+    /// <summary>æ€»é¡µæ•°</summary>
     public int TotalPages => PageSize > 0 ? (int)Math.Ceiling((double)TotalCount / PageSize) : 0;
     
-    /// <summary>ÊÇ·ñÓĞÉÏÒ»Ò³</summary>
+    /// <summary>æ˜¯å¦æœ‰ä¸Šä¸€é¡µ</summary>
     public bool HasPrevious => PageIndex > 0;
     
-    /// <summary>ÊÇ·ñÓĞÏÂÒ»Ò³</summary>
+    /// <summary>æ˜¯å¦æœ‰ä¸‹ä¸€é¡µ</summary>
     public bool HasNext => PageIndex < TotalPages - 1;
 }

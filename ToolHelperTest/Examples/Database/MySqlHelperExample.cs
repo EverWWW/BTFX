@@ -1,21 +1,21 @@
-using Microsoft.Extensions.Options;
+ï»¿using Microsoft.Extensions.Options;
 using ToolHelper.Database.Configuration;
 using ToolHelper.Database.MySql;
 
 namespace ToolHelperTest.Examples.Database;
 
 /// <summary>
-/// MySqlHelper Ê¹ÓÃÊ¾Àı
-/// ÑİÊ¾ MySQL Êı¾İ¿âµÄ»ù±¾²Ù×÷
+/// MySqlHelper ä½¿ç”¨ç¤ºä¾‹
+/// æ¼”ç¤º MySQL æ•°æ®åº“çš„åŸºæœ¬æ“ä½œ
 /// </summary>
 /// <remarks>
-/// ×¢Òâ: ÔËĞĞÕâĞ©Ê¾ÀıĞèÒª¿ÉÓÃµÄ MySQL ÊµÀı
-/// ¿ÉÒÔÊ¹ÓÃ Docker ¿ìËÙÆô¶¯:
+/// æ³¨æ„: è¿è¡Œè¿™äº›ç¤ºä¾‹éœ€è¦å¯ç”¨çš„ MySQL å®ä¾‹
+/// å¯ä»¥ä½¿ç”¨ Docker å¿«é€Ÿå¯åŠ¨:
 /// docker run -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE=testdb -p 3306:3306 -d mysql:8.0
 /// </remarks>
 public class MySqlHelperExample
 {
-    // Ä¬ÈÏÁ¬½ÓÅäÖÃ£¨Çë¸ù¾İÊµ¼ÊÇé¿öĞŞ¸Ä£©
+    // é»˜è®¤è¿æ¥é…ç½®ï¼ˆè¯·æ ¹æ®å®é™…æƒ…å†µä¿®æ”¹ï¼‰
     private static MySqlOptions GetDefaultOptions() => new()
     {
         Server = "localhost",
@@ -28,12 +28,12 @@ public class MySqlHelperExample
     };
 
     /// <summary>
-    /// Ê¾Àı 1: »ù±¾CRUD²Ù×÷
+    /// ç¤ºä¾‹ 1: åŸºæœ¬CRUDæ“ä½œ
     /// </summary>
     public static async Task BasicCrudExample()
     {
-        Console.WriteLine("=== MySQL »ù±¾CRUD²Ù×÷Ê¾Àı ===\n");
-        Console.WriteLine("×¢Òâ: ´ËÊ¾ÀıĞèÒª¿ÉÓÃµÄ MySQL ÊµÀı\n");
+        Console.WriteLine("=== MySQL åŸºæœ¬CRUDæ“ä½œç¤ºä¾‹ ===\n");
+        Console.WriteLine("æ³¨æ„: æ­¤ç¤ºä¾‹éœ€è¦å¯ç”¨çš„ MySQL å®ä¾‹\n");
 
         var options = Options.Create(GetDefaultOptions());
 
@@ -41,21 +41,21 @@ public class MySqlHelperExample
         {
             using var helper = new MySqlHelper(options);
 
-            // ²âÊÔÁ¬½Ó
+            // æµ‹è¯•è¿æ¥
             if (!await helper.TestConnectionAsync())
             {
-                Console.WriteLine("? ÎŞ·¨Á¬½Óµ½ MySQL£¬Ìø¹ıÊ¾Àı");
-                Console.WriteLine("  ÇëÈ·±£ MySQL ÕıÔÚÔËĞĞ²¢¼ì²éÁ¬½ÓÅäÖÃ");
+                Console.WriteLine("? æ— æ³•è¿æ¥åˆ° MySQLï¼Œè·³è¿‡ç¤ºä¾‹");
+                Console.WriteLine("  è¯·ç¡®ä¿ MySQL æ­£åœ¨è¿è¡Œå¹¶æ£€æŸ¥è¿æ¥é…ç½®");
                 return;
             }
 
-            Console.WriteLine("? Á¬½Ó³É¹¦");
+            Console.WriteLine("? è¿æ¥æˆåŠŸ");
 
-            // »ñÈ¡·şÎñÆ÷°æ±¾
+            // è·å–æœåŠ¡å™¨ç‰ˆæœ¬
             var version = await helper.GetServerVersionAsync();
-            Console.WriteLine($"  MySQL °æ±¾: {version}");
+            Console.WriteLine($"  MySQL ç‰ˆæœ¬: {version}");
 
-            // ´´½¨±í
+            // åˆ›å»ºè¡¨
             await helper.ExecuteNonQueryAsync(@"
                 CREATE TABLE IF NOT EXISTS Customers (
                     Id INT AUTO_INCREMENT PRIMARY KEY,
@@ -66,69 +66,69 @@ public class MySqlHelperExample
                     CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
                     UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-            Console.WriteLine("? ´´½¨±í Customers");
+            Console.WriteLine("? åˆ›å»ºè¡¨ Customers");
 
-            // Çå¿Õ±í
+            // æ¸…ç©ºè¡¨
             await helper.TruncateTableAsync("Customers");
 
-            // ²åÈëÊı¾İ²¢»ñÈ¡ID
+            // æ’å…¥æ•°æ®å¹¶è·å–ID
             var id1 = await helper.InsertAndGetIdAsync(
                 "INSERT INTO Customers (Name, Email, Phone) VALUES (@Name, @Email, @Phone)",
-                new { Name = "ÕÅÈı", Email = "zhang@example.com", Phone = "13800138001" });
-            Console.WriteLine($"? ²åÈë¿Í»§: ÕÅÈı, ID = {id1}");
+                new { Name = "å¼ ä¸‰", Email = "zhang@example.com", Phone = "13800138001" });
+            Console.WriteLine($"? æ’å…¥å®¢æˆ·: å¼ ä¸‰, ID = {id1}");
 
             var id2 = await helper.InsertAndGetIdAsync(
                 "INSERT INTO Customers (Name, Email, Phone) VALUES (@Name, @Email, @Phone)",
-                new { Name = "ÀîËÄ", Email = "li@example.com", Phone = "13800138002" });
-            Console.WriteLine($"? ²åÈë¿Í»§: ÀîËÄ, ID = {id2}");
+                new { Name = "æå››", Email = "li@example.com", Phone = "13800138002" });
+            Console.WriteLine($"? æ’å…¥å®¢æˆ·: æå››, ID = {id2}");
 
             var id3 = await helper.InsertAndGetIdAsync(
                 "INSERT INTO Customers (Name, Email, Phone) VALUES (@Name, @Email, @Phone)",
-                new { Name = "ÍõÎå", Email = "wang@example.com", Phone = "13800138003" });
-            Console.WriteLine($"? ²åÈë¿Í»§: ÍõÎå, ID = {id3}");
+                new { Name = "ç‹äº”", Email = "wang@example.com", Phone = "13800138003" });
+            Console.WriteLine($"? æ’å…¥å®¢æˆ·: ç‹äº”, ID = {id3}");
 
-            // ²éÑ¯
+            // æŸ¥è¯¢
             var customers = await helper.QueryAsync<Customer>(
                 "SELECT * FROM Customers ORDER BY Id");
 
-            Console.WriteLine($"\n¿Í»§ÁĞ±í ({customers.Count()} Ìõ):");
+            Console.WriteLine($"\nå®¢æˆ·åˆ—è¡¨ ({customers.Count()} æ¡):");
             foreach (var customer in customers)
             {
                 Console.WriteLine($"  {customer.Id}: {customer.Name} - {customer.Email} - {customer.Phone}");
             }
 
-            // ¸üĞÂ
+            // æ›´æ–°
             var affected = await helper.ExecuteNonQueryAsync(
                 "UPDATE Customers SET Address = @Address WHERE Id = @Id",
-                new { Address = "±±¾©ÊĞ³¯ÑôÇø", Id = id1 });
-            Console.WriteLine($"\n? ¸üĞÂ {affected} Ìõ¼ÇÂ¼");
+                new { Address = "åŒ—äº¬å¸‚æœé˜³åŒº", Id = id1 });
+            Console.WriteLine($"\n? æ›´æ–° {affected} æ¡è®°å½•");
 
-            // É¾³ı
+            // åˆ é™¤
             affected = await helper.ExecuteNonQueryAsync(
                 "DELETE FROM Customers WHERE Id = @Id",
                 new { Id = id3 });
-            Console.WriteLine($"? É¾³ı {affected} Ìõ¼ÇÂ¼");
+            Console.WriteLine($"? åˆ é™¤ {affected} æ¡è®°å½•");
 
-            // ÑéÖ¤
+            // éªŒè¯
             var count = await helper.ExecuteScalarAsync<long>("SELECT COUNT(*) FROM Customers");
-            Console.WriteLine($"? µ±Ç°¼ÇÂ¼Êı: {count}");
+            Console.WriteLine($"? å½“å‰è®°å½•æ•°: {count}");
 
-            // ÇåÀí
+            // æ¸…ç†
             await helper.ExecuteNonQueryAsync("DROP TABLE IF EXISTS Customers");
-            Console.WriteLine("\n? ÇåÀíÍê³É");
+            Console.WriteLine("\n? æ¸…ç†å®Œæˆ");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"? ´íÎó: {ex.Message}");
+            Console.WriteLine($"? é”™è¯¯: {ex.Message}");
         }
     }
 
     /// <summary>
-    /// Ê¾Àı 2: INSERT ON DUPLICATE KEY UPDATE
+    /// ç¤ºä¾‹ 2: INSERT ON DUPLICATE KEY UPDATE
     /// </summary>
     public static async Task InsertOrUpdateExample()
     {
-        Console.WriteLine("\n=== MySQL INSERT ON DUPLICATE KEY UPDATE Ê¾Àı ===\n");
+        Console.WriteLine("\n=== MySQL INSERT ON DUPLICATE KEY UPDATE ç¤ºä¾‹ ===\n");
 
         var options = Options.Create(GetDefaultOptions());
 
@@ -138,11 +138,11 @@ public class MySqlHelperExample
 
             if (!await helper.TestConnectionAsync())
             {
-                Console.WriteLine("? ÎŞ·¨Á¬½Óµ½ MySQL£¬Ìø¹ıÊ¾Àı");
+                Console.WriteLine("? æ— æ³•è¿æ¥åˆ° MySQLï¼Œè·³è¿‡ç¤ºä¾‹");
                 return;
             }
 
-            // ´´½¨±í
+            // åˆ›å»ºè¡¨
             await helper.ExecuteNonQueryAsync(@"
                 CREATE TABLE IF NOT EXISTS Settings (
                     `Key` VARCHAR(100) PRIMARY KEY,
@@ -153,14 +153,14 @@ public class MySqlHelperExample
 
             await helper.TruncateTableAsync("Settings");
 
-            Console.WriteLine("³õÊ¼²åÈëÅäÖÃ...");
+            Console.WriteLine("åˆå§‹æ’å…¥é…ç½®...");
 
-            // ³õÊ¼²åÈë
+            // åˆå§‹æ’å…¥
             var settings = new[]
             {
-                new Setting { Key = "app.name", Value = "MyApp", Description = "Ó¦ÓÃÃû³Æ" },
-                new Setting { Key = "app.version", Value = "1.0.0", Description = "°æ±¾ºÅ" },
-                new Setting { Key = "app.debug", Value = "false", Description = "µ÷ÊÔÄ£Ê½" }
+                new Setting { Key = "app.name", Value = "MyApp", Description = "åº”ç”¨åç§°" },
+                new Setting { Key = "app.version", Value = "1.0.0", Description = "ç‰ˆæœ¬å·" },
+                new Setting { Key = "app.debug", Value = "false", Description = "è°ƒè¯•æ¨¡å¼" }
             };
 
             foreach (var setting in settings)
@@ -169,24 +169,24 @@ public class MySqlHelperExample
                 Console.WriteLine($"  {setting.Key} = {setting.Value}");
             }
 
-            // ²éÑ¯µ±Ç°×´Ì¬
+            // æŸ¥è¯¢å½“å‰çŠ¶æ€
             var currentSettings = await helper.QueryAsync<Setting>(
                 "SELECT `Key`, `Value`, Description FROM Settings");
 
-            Console.WriteLine("\nµ±Ç°ÅäÖÃ:");
+            Console.WriteLine("\nå½“å‰é…ç½®:");
             foreach (var s in currentSettings)
             {
                 Console.WriteLine($"  {s.Key} = {s.Value}");
             }
 
-            // ¸üĞÂ£¨Ê¹ÓÃ INSERT ON DUPLICATE KEY UPDATE£©
-            Console.WriteLine("\n¸üĞÂÅäÖÃ...");
+            // æ›´æ–°ï¼ˆä½¿ç”¨ INSERT ON DUPLICATE KEY UPDATEï¼‰
+            Console.WriteLine("\næ›´æ–°é…ç½®...");
 
             var updatedSettings = new[]
             {
-                new Setting { Key = "app.version", Value = "2.0.0", Description = "°æ±¾ºÅ" },
-                new Setting { Key = "app.debug", Value = "true", Description = "µ÷ÊÔÄ£Ê½" },
-                new Setting { Key = "app.theme", Value = "dark", Description = "Ö÷Ìâ" }  // ĞÂÔö
+                new Setting { Key = "app.version", Value = "2.0.0", Description = "ç‰ˆæœ¬å·" },
+                new Setting { Key = "app.debug", Value = "true", Description = "è°ƒè¯•æ¨¡å¼" },
+                new Setting { Key = "app.theme", Value = "dark", Description = "ä¸»é¢˜" }  // æ–°å¢
             };
 
             foreach (var setting in updatedSettings)
@@ -195,32 +195,32 @@ public class MySqlHelperExample
                 Console.WriteLine($"  {setting.Key} = {setting.Value}");
             }
 
-            // ²éÑ¯¸üĞÂºó×´Ì¬
+            // æŸ¥è¯¢æ›´æ–°åçŠ¶æ€
             currentSettings = await helper.QueryAsync<Setting>(
                 "SELECT `Key`, `Value`, Description FROM Settings");
 
-            Console.WriteLine("\n¸üĞÂºóÅäÖÃ:");
+            Console.WriteLine("\næ›´æ–°åé…ç½®:");
             foreach (var s in currentSettings)
             {
                 Console.WriteLine($"  {s.Key} = {s.Value}");
             }
 
-            // ÇåÀí
+            // æ¸…ç†
             await helper.ExecuteNonQueryAsync("DROP TABLE IF EXISTS Settings");
-            Console.WriteLine("\n? ÇåÀíÍê³É");
+            Console.WriteLine("\n? æ¸…ç†å®Œæˆ");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"? ´íÎó: {ex.Message}");
+            Console.WriteLine($"? é”™è¯¯: {ex.Message}");
         }
     }
 
     /// <summary>
-    /// Ê¾Àı 3: ÅúÁ¿²Ù×÷
+    /// ç¤ºä¾‹ 3: æ‰¹é‡æ“ä½œ
     /// </summary>
     public static async Task BulkOperationExample()
     {
-        Console.WriteLine("\n=== MySQL ÅúÁ¿²Ù×÷Ê¾Àı ===\n");
+        Console.WriteLine("\n=== MySQL æ‰¹é‡æ“ä½œç¤ºä¾‹ ===\n");
 
         var options = Options.Create(GetDefaultOptions());
         options.Value.BatchSize = 500;
@@ -231,11 +231,11 @@ public class MySqlHelperExample
 
             if (!await helper.TestConnectionAsync())
             {
-                Console.WriteLine("? ÎŞ·¨Á¬½Óµ½ MySQL£¬Ìø¹ıÊ¾Àı");
+                Console.WriteLine("? æ— æ³•è¿æ¥åˆ° MySQLï¼Œè·³è¿‡ç¤ºä¾‹");
                 return;
             }
 
-            // ´´½¨±í
+            // åˆ›å»ºè¡¨
             await helper.ExecuteNonQueryAsync(@"
                 CREATE TABLE IF NOT EXISTS Orders (
                     Id INT AUTO_INCREMENT PRIMARY KEY,
@@ -250,27 +250,27 @@ public class MySqlHelperExample
 
             await helper.TruncateTableAsync("Orders");
 
-            // Éú³É²âÊÔÊı¾İ
+            // ç”Ÿæˆæµ‹è¯•æ•°æ®
             var orders = Enumerable.Range(1, 5000)
                 .Select(i => new Order
                 {
                     OrderNo = $"ORD{DateTime.Now:yyyyMMdd}{i:D6}",
-                    CustomerName = $"¿Í»§_{i % 100:D3}",
+                    CustomerName = $"å®¢æˆ·_{i % 100:D3}",
                     Amount = Math.Round(100.0m + (decimal)Random.Shared.NextDouble() * 9900.0m, 2),
                     Status = (byte)Random.Shared.Next(0, 4),
                     OrderDate = DateTime.Now.AddDays(-Random.Shared.Next(0, 90))
                 })
                 .ToList();
 
-            Console.WriteLine($"×¼±¸ÅúÁ¿²åÈë {orders.Count} Ìõ¶©µ¥...");
+            Console.WriteLine($"å‡†å¤‡æ‰¹é‡æ’å…¥ {orders.Count} æ¡è®¢å•...");
 
-            // ·½·¨1: Ê¹ÓÃ MySqlBulkCopy
+            // æ–¹æ³•1: ä½¿ç”¨ MySqlBulkCopy
             var sw = System.Diagnostics.Stopwatch.StartNew();
             var count = await helper.BulkInsertAsync("Orders", orders);
             sw.Stop();
-            Console.WriteLine($"? MySqlBulkCopy ²åÈë: {count} Ìõ, ºÄÊ±: {sw.ElapsedMilliseconds}ms");
+            Console.WriteLine($"? MySqlBulkCopy æ’å…¥: {count} æ¡, è€—æ—¶: {sw.ElapsedMilliseconds}ms");
 
-            // Í³¼Æ
+            // ç»Ÿè®¡
             var stats = await helper.QueryFirstOrDefaultAsync<OrderStats>(@"
                 SELECT 
                     COUNT(*) as TotalOrders,
@@ -280,50 +280,50 @@ public class MySqlHelperExample
                     MAX(Amount) as MaxAmount
                 FROM Orders");
 
-            Console.WriteLine($"\n¶©µ¥Í³¼Æ:");
-            Console.WriteLine($"  ×Ü¶©µ¥Êı: {stats?.TotalOrders}");
-            Console.WriteLine($"  ×Ü½ğ¶î: ?{stats?.TotalAmount:N2}");
-            Console.WriteLine($"  Æ½¾ù½ğ¶î: ?{stats?.AvgAmount:N2}");
-            Console.WriteLine($"  ×îĞ¡½ğ¶î: ?{stats?.MinAmount:N2}");
-            Console.WriteLine($"  ×î´ó½ğ¶î: ?{stats?.MaxAmount:N2}");
+            Console.WriteLine($"\nè®¢å•ç»Ÿè®¡:");
+            Console.WriteLine($"  æ€»è®¢å•æ•°: {stats?.TotalOrders}");
+            Console.WriteLine($"  æ€»é‡‘é¢: ?{stats?.TotalAmount:N2}");
+            Console.WriteLine($"  å¹³å‡é‡‘é¢: ?{stats?.AvgAmount:N2}");
+            Console.WriteLine($"  æœ€å°é‡‘é¢: ?{stats?.MinAmount:N2}");
+            Console.WriteLine($"  æœ€å¤§é‡‘é¢: ?{stats?.MaxAmount:N2}");
 
-            // °´×´Ì¬Í³¼Æ
+            // æŒ‰çŠ¶æ€ç»Ÿè®¡
             var statusStats = await helper.QueryAsync<StatusStat>(@"
                 SELECT Status, COUNT(*) as Count, SUM(Amount) as TotalAmount
                 FROM Orders
                 GROUP BY Status
                 ORDER BY Status");
 
-            Console.WriteLine("\n°´×´Ì¬Í³¼Æ:");
+            Console.WriteLine("\næŒ‰çŠ¶æ€ç»Ÿè®¡:");
             foreach (var stat in statusStats)
             {
                 var statusName = stat.Status switch
                 {
-                    0 => "´ı´¦Àí",
-                    1 => "´¦ÀíÖĞ",
-                    2 => "ÒÑÍê³É",
-                    3 => "ÒÑÈ¡Ïû",
-                    _ => "Î´Öª"
+                    0 => "å¾…å¤„ç†",
+                    1 => "å¤„ç†ä¸­",
+                    2 => "å·²å®Œæˆ",
+                    3 => "å·²å–æ¶ˆ",
+                    _ => "æœªçŸ¥"
                 };
-                Console.WriteLine($"  {statusName}: {stat.Count} µ¥, ?{stat.TotalAmount:N2}");
+                Console.WriteLine($"  {statusName}: {stat.Count} å•, ?{stat.TotalAmount:N2}");
             }
 
-            // ÇåÀí
+            // æ¸…ç†
             await helper.ExecuteNonQueryAsync("DROP TABLE IF EXISTS Orders");
-            Console.WriteLine("\n? ÇåÀíÍê³É");
+            Console.WriteLine("\n? æ¸…ç†å®Œæˆ");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"? ´íÎó: {ex.Message}");
+            Console.WriteLine($"? é”™è¯¯: {ex.Message}");
         }
     }
 
     /// <summary>
-    /// Ê¾Àı 4: Êı¾İ¿â¹ÜÀí
+    /// ç¤ºä¾‹ 4: æ•°æ®åº“ç®¡ç†
     /// </summary>
     public static async Task DatabaseManagementExample()
     {
-        Console.WriteLine("\n=== MySQL Êı¾İ¿â¹ÜÀíÊ¾Àı ===\n");
+        Console.WriteLine("\n=== MySQL æ•°æ®åº“ç®¡ç†ç¤ºä¾‹ ===\n");
 
         var options = Options.Create(GetDefaultOptions());
 
@@ -333,49 +333,49 @@ public class MySqlHelperExample
 
             if (!await helper.TestConnectionAsync())
             {
-                Console.WriteLine("? ÎŞ·¨Á¬½Óµ½ MySQL£¬Ìø¹ıÊ¾Àı");
+                Console.WriteLine("? æ— æ³•è¿æ¥åˆ° MySQLï¼Œè·³è¿‡ç¤ºä¾‹");
                 return;
             }
 
-            // ·şÎñÆ÷ĞÅÏ¢
+            // æœåŠ¡å™¨ä¿¡æ¯
             var version = await helper.GetServerVersionAsync();
-            Console.WriteLine($"MySQL °æ±¾: {version}");
+            Console.WriteLine($"MySQL ç‰ˆæœ¬: {version}");
 
             var connectionCount = await helper.GetConnectionCountAsync();
-            Console.WriteLine($"µ±Ç°Á¬½ÓÊı: {connectionCount}");
+            Console.WriteLine($"å½“å‰è¿æ¥æ•°: {connectionCount}");
 
-            // Êı¾İ¿âĞÅÏ¢
+            // æ•°æ®åº“ä¿¡æ¯
             var dbInfo = await helper.GetDatabaseInfoAsync();
             if (dbInfo != null)
             {
-                Console.WriteLine($"\nÊı¾İ¿âĞÅÏ¢:");
-                Console.WriteLine($"  Ãû³Æ: {dbInfo.DatabaseName}");
-                Console.WriteLine($"  Êı¾İ´óĞ¡: {dbInfo.DataSizeMB:N2} MB");
-                Console.WriteLine($"  Ë÷Òı´óĞ¡: {dbInfo.IndexSizeMB:N2} MB");
-                Console.WriteLine($"  ×Ü´óĞ¡: {dbInfo.TotalSizeMB:N2} MB");
-                Console.WriteLine($"  ±íÊıÁ¿: {dbInfo.TableCount}");
+                Console.WriteLine($"\næ•°æ®åº“ä¿¡æ¯:");
+                Console.WriteLine($"  åç§°: {dbInfo.DatabaseName}");
+                Console.WriteLine($"  æ•°æ®å¤§å°: {dbInfo.DataSizeMB:N2} MB");
+                Console.WriteLine($"  ç´¢å¼•å¤§å°: {dbInfo.IndexSizeMB:N2} MB");
+                Console.WriteLine($"  æ€»å¤§å°: {dbInfo.TotalSizeMB:N2} MB");
+                Console.WriteLine($"  è¡¨æ•°é‡: {dbInfo.TableCount}");
             }
 
-            // »ñÈ¡ËùÓĞ±í
+            // è·å–æ‰€æœ‰è¡¨
             var tables = await helper.GetTableNamesAsync();
-            Console.WriteLine($"\nÊı¾İ¿âÖĞµÄ±í:");
+            Console.WriteLine($"\næ•°æ®åº“ä¸­çš„è¡¨:");
             foreach (var table in tables)
             {
                 Console.WriteLine($"  - {table}");
             }
 
-            // ´´½¨²âÊÔ±í
+            // åˆ›å»ºæµ‹è¯•è¡¨
             await helper.ExecuteNonQueryAsync(@"
                 CREATE TABLE IF NOT EXISTS TestMgmt (
-                    Id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Ö÷¼ü',
-                    Name VARCHAR(100) NOT NULL COMMENT 'Ãû³Æ',
-                    Value DECIMAL(10,2) DEFAULT 0.00 COMMENT 'ÊıÖµ',
-                    IsActive TINYINT(1) DEFAULT 1 COMMENT 'ÊÇ·ñ¼¤»î',
-                    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '´´½¨Ê±¼ä'
-                ) ENGINE=InnoDB COMMENT='²âÊÔ±í'");
+                    Id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'ä¸»é”®',
+                    Name VARCHAR(100) NOT NULL COMMENT 'åç§°',
+                    Value DECIMAL(10,2) DEFAULT 0.00 COMMENT 'æ•°å€¼',
+                    IsActive TINYINT(1) DEFAULT 1 COMMENT 'æ˜¯å¦æ¿€æ´»',
+                    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT 'åˆ›å»ºæ—¶é—´'
+                ) ENGINE=InnoDB COMMENT='æµ‹è¯•è¡¨'");
 
-            // ²é¿´±í½á¹¹
-            Console.WriteLine("\nTestMgmt ±í½á¹¹:");
+            // æŸ¥çœ‹è¡¨ç»“æ„
+            Console.WriteLine("\nTestMgmt è¡¨ç»“æ„:");
             var schema = await helper.GetTableSchemaAsync("TestMgmt");
             foreach (var col in schema)
             {
@@ -385,63 +385,63 @@ public class MySqlHelperExample
                 Console.WriteLine($"  {col.ColumnName}: {col.DataType}{pkFlag} {nullFlag}{aiFlag}");
                 if (!string.IsNullOrEmpty(col.Comment))
                 {
-                    Console.WriteLine($"    ×¢ÊÍ: {col.Comment}");
+                    Console.WriteLine($"    æ³¨é‡Š: {col.Comment}");
                 }
             }
 
-            // ²åÈë²âÊÔÊı¾İ
+            // æ’å…¥æµ‹è¯•æ•°æ®
             for (int i = 1; i <= 100; i++)
             {
                 await helper.ExecuteNonQueryAsync(
                     "INSERT INTO TestMgmt (Name, Value) VALUES (@Name, @Value)",
-                    new { Name = $"²âÊÔ_{i}", Value = Random.Shared.NextDouble() * 1000 });
+                    new { Name = $"æµ‹è¯•_{i}", Value = Random.Shared.NextDouble() * 1000 });
             }
 
-            // ±íÎ¬»¤²Ù×÷
-            Console.WriteLine("\nÖ´ĞĞ±íÎ¬»¤²Ù×÷...");
+            // è¡¨ç»´æŠ¤æ“ä½œ
+            Console.WriteLine("\næ‰§è¡Œè¡¨ç»´æŠ¤æ“ä½œ...");
 
-            // ·ÖÎö±í
+            // åˆ†æè¡¨
             await helper.AnalyzeTableAsync("TestMgmt");
-            Console.WriteLine("? ANALYZE TABLE Íê³É");
+            Console.WriteLine("? ANALYZE TABLE å®Œæˆ");
 
-            // ÓÅ»¯±í
+            // ä¼˜åŒ–è¡¨
             await helper.OptimizeTableAsync("TestMgmt");
-            Console.WriteLine("? OPTIMIZE TABLE Íê³É");
+            Console.WriteLine("? OPTIMIZE TABLE å®Œæˆ");
 
-            // ¼ì²é±í
+            // æ£€æŸ¥è¡¨
             var checkResults = await helper.CheckTableAsync("TestMgmt");
-            Console.WriteLine("? CHECK TABLE ½á¹û:");
+            Console.WriteLine("? CHECK TABLE ç»“æœ:");
             foreach (var result in checkResults)
             {
                 Console.WriteLine($"  {result.Msg_type}: {result.Msg_text}");
             }
 
-            // ´´½¨/É¾³ıË÷Òı
+            // åˆ›å»º/åˆ é™¤ç´¢å¼•
             await helper.CreateIndexAsync("TestMgmt", "idx_name", ["Name"]);
-            Console.WriteLine("? ´´½¨Ë÷Òı idx_name");
+            Console.WriteLine("? åˆ›å»ºç´¢å¼• idx_name");
 
             await helper.DropIndexAsync("TestMgmt", "idx_name");
-            Console.WriteLine("? É¾³ıË÷Òı idx_name");
+            Console.WriteLine("? åˆ é™¤ç´¢å¼• idx_name");
 
-            // ÇåÀí
+            // æ¸…ç†
             await helper.ExecuteNonQueryAsync("DROP TABLE IF EXISTS TestMgmt");
-            Console.WriteLine("\n? ÇåÀíÍê³É");
+            Console.WriteLine("\n? æ¸…ç†å®Œæˆ");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"? ´íÎó: {ex.Message}");
+            Console.WriteLine($"? é”™è¯¯: {ex.Message}");
         }
     }
 
     /// <summary>
-    /// ÔËĞĞËùÓĞÊ¾Àı
+    /// è¿è¡Œæ‰€æœ‰ç¤ºä¾‹
     /// </summary>
     public static async Task RunAllExamples()
     {
-        Console.WriteLine("¨X¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨[");
-        Console.WriteLine("¨U       MySQL Helper Ê¾Àı³ÌĞò              ¨U");
-        Console.WriteLine("¨U       ĞèÒª¿ÉÓÃµÄ MySQL ÊµÀı              ¨U");
-        Console.WriteLine("¨^¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨a\n");
+        Console.WriteLine("â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—");
+        Console.WriteLine("â•‘       MySQL Helper ç¤ºä¾‹ç¨‹åº              â•‘");
+        Console.WriteLine("â•‘       éœ€è¦å¯ç”¨çš„ MySQL å®ä¾‹              â•‘");
+        Console.WriteLine("â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n");
 
         await BasicCrudExample();
         await InsertOrUpdateExample();
@@ -449,12 +449,12 @@ public class MySqlHelperExample
         await DatabaseManagementExample();
 
         Console.WriteLine("\n========================================");
-        Console.WriteLine("ËùÓĞ MySQL Ê¾ÀıÔËĞĞÍê³É!");
+        Console.WriteLine("æ‰€æœ‰ MySQL ç¤ºä¾‹è¿è¡Œå®Œæˆ!");
         Console.WriteLine("========================================");
     }
 }
 
-// Ê¾ÀıÊµÌåÀà
+// ç¤ºä¾‹å®ä½“ç±»
 public class Customer
 {
     public int Id { get; set; }

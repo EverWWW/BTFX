@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+ï»¿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Buffers;
 using System.Net.Sockets;
@@ -8,8 +8,8 @@ using ToolHelper.Communication.Configuration;
 namespace ToolHelper.Communication.Modbus;
 
 /// <summary>
-/// Modbus TCP Ğ­Òé°ïÖúÀà
-/// Ö§³ÖÖ÷Õ¾/´ÓÕ¾Ä£Ê½, Ìá¹©¶ÁĞ´ÏßÈ¦¡¢ÀëÉ¢ÊäÈë¡¢±£³Ö¼Ä´æÆ÷¡¢ÊäÈë¼Ä´æÆ÷µÈ¹¦ÄÜ
+/// Modbus TCP åè®®å¸®åŠ©ç±»
+/// æ”¯æŒä¸»ç«™/ä»ç«™æ¨¡å¼, æä¾›è¯»å†™çº¿åœˆã€ç¦»æ•£è¾“å…¥ã€ä¿æŒå¯„å­˜å™¨ã€è¾“å…¥å¯„å­˜å™¨ç­‰åŠŸèƒ½
 /// </summary>
 public class ModbusTcpHelper : IClientConnection
 {
@@ -34,10 +34,10 @@ public class ModbusTcpHelper : IClientConnection
     public event EventHandler<DataReceivedEventArgs>? DataReceived;
 
     /// <summary>
-    /// ¹¹Ôìº¯Êı
+    /// æ„é€ å‡½æ•°
     /// </summary>
-    /// <param name="options">Modbus TCP ÅäÖÃÑ¡Ïî</param>
-    /// <param name="logger">ÈÕÖ¾¼ÇÂ¼Æ÷</param>
+    /// <param name="options">Modbus TCP é…ç½®é€‰é¡¹</param>
+    /// <param name="logger">æ—¥å¿—è®°å½•å™¨</param>
     public ModbusTcpHelper(IOptions<ModbusTcpOptions> options, ILogger<ModbusTcpHelper> logger)
     {
         _options = options.Value;
@@ -45,12 +45,12 @@ public class ModbusTcpHelper : IClientConnection
     }
 
     /// <summary>
-    /// ¹¹Ôìº¯Êı£¨Ö§³ÖÊÖ¶¯ÅäÖÃ£©
+    /// æ„é€ å‡½æ•°ï¼ˆæ”¯æŒæ‰‹åŠ¨é…ç½®ï¼‰
     /// </summary>
-    /// <param name="host">·şÎñÆ÷µØÖ·</param>
-    /// <param name="port">·şÎñÆ÷¶Ë¿Ú</param>
-    /// <param name="unitId">´ÓÕ¾µØÖ·</param>
-    /// <param name="logger">ÈÕÖ¾¼ÇÂ¼Æ÷</param>
+    /// <param name="host">æœåŠ¡å™¨åœ°å€</param>
+    /// <param name="port">æœåŠ¡å™¨ç«¯å£</param>
+    /// <param name="unitId">ä»ç«™åœ°å€</param>
+    /// <param name="logger">æ—¥å¿—è®°å½•å™¨</param>
     public ModbusTcpHelper(string host, int port, byte unitId, ILogger<ModbusTcpHelper> logger)
     {
         _options = new ModbusTcpOptions { Host = host, Port = port, UnitId = unitId };
@@ -62,7 +62,7 @@ public class ModbusTcpHelper : IClientConnection
     {
         if (IsConnected)
         {
-            _logger.LogWarning("ÒÑ¾­´¦ÓÚÁ¬½Ó×´Ì¬");
+            _logger.LogWarning("å·²ç»å¤„äºè¿æ¥çŠ¶æ€");
             return true;
         }
 
@@ -93,12 +93,12 @@ public class ModbusTcpHelper : IClientConnection
             _reconnectAttempts = 0;
             ChangeState(ConnectionState.Connected);
 
-            _logger.LogInformation("³É¹¦Á¬½Óµ½ Modbus TCP ·şÎñÆ÷ {Host}:{Port}", _options.Host, _options.Port);
+            _logger.LogInformation("æˆåŠŸè¿æ¥åˆ° Modbus TCP æœåŠ¡å™¨ {Host}:{Port}", _options.Host, _options.Port);
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Á¬½Ó Modbus TCP ·şÎñÆ÷Ê§°Ü: {Message}", ex.Message);
+            _logger.LogError(ex, "è¿æ¥ Modbus TCP æœåŠ¡å™¨å¤±è´¥: {Message}", ex.Message);
             ChangeState(ConnectionState.Disconnected);
 
             if (_options.EnableAutoReconnect && _reconnectAttempts < _options.MaxReconnectAttempts)
@@ -128,11 +128,11 @@ public class ModbusTcpHelper : IClientConnection
             _tcpClient?.Close();
 
             ChangeState(ConnectionState.Disconnected);
-            _logger.LogInformation("Modbus TCP Á¬½ÓÒÑ¹Ø±Õ");
+            _logger.LogInformation("Modbus TCP è¿æ¥å·²å…³é—­");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "¹Ø±Õ Modbus TCP Á¬½ÓÊ±³ö´í: {Message}", ex.Message);
+            _logger.LogError(ex, "å…³é—­ Modbus TCP è¿æ¥æ—¶å‡ºé”™: {Message}", ex.Message);
         }
         await Task.CompletedTask;
     }
@@ -148,42 +148,42 @@ public class ModbusTcpHelper : IClientConnection
     {
         if (!IsConnected || _networkStream == null)
         {
-            throw new InvalidOperationException("Modbus TCP Î´Á¬½Ó");
+            throw new InvalidOperationException("Modbus TCP æœªè¿æ¥");
         }
 
         await _networkStream.WriteAsync(data, cancellationToken);
         await _networkStream.FlushAsync(cancellationToken);
 
-        _logger.LogDebug("·¢ËÍÁË {Length} ×Ö½Ú Modbus Êı¾İ", data.Length);
+        _logger.LogDebug("å‘é€äº† {Length} å­—èŠ‚ Modbus æ•°æ®", data.Length);
         return data.Length;
     }
 
     /// <inheritdoc/>
     public Task StartReceivingAsync(CancellationToken cancellationToken = default)
     {
-        _logger.LogWarning("Modbus TCP Ê¹ÓÃÇëÇó-ÏìÓ¦Ä£Ê½, ²»ĞèÒªÖ÷¶¯½ÓÊÕ");
+        _logger.LogWarning("Modbus TCP ä½¿ç”¨è¯·æ±‚-å“åº”æ¨¡å¼, ä¸éœ€è¦ä¸»åŠ¨æ¥æ”¶");
         return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
     public void StopReceiving()
     {
-        // Modbus TCP Ê¹ÓÃÇëÇó-ÏìÓ¦Ä£Ê½
+        // Modbus TCP ä½¿ç”¨è¯·æ±‚-å“åº”æ¨¡å¼
     }
 
-    #region Modbus ¹¦ÄÜÂëÊµÏÖ
+    #region Modbus åŠŸèƒ½ç å®ç°
 
     /// <summary>
-    /// ¶ÁÈ¡ÏßÈ¦ (¹¦ÄÜÂë 0x01)
+    /// è¯»å–çº¿åœˆ (åŠŸèƒ½ç  0x01)
     /// </summary>
-    /// <param name="startAddress">ÆğÊ¼µØÖ·</param>
-    /// <param name="quantity">ÊıÁ¿ (1-2000)</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>ÏßÈ¦×´Ì¬Êı×é</returns>
+    /// <param name="startAddress">èµ·å§‹åœ°å€</param>
+    /// <param name="quantity">æ•°é‡ (1-2000)</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>çº¿åœˆçŠ¶æ€æ•°ç»„</returns>
     public async Task<bool[]> ReadCoilsAsync(ushort startAddress, ushort quantity, CancellationToken cancellationToken = default)
     {
         if (quantity < 1 || quantity > 2000)
-            throw new ArgumentException("ÊıÁ¿±ØĞëÔÚ 1-2000 Ö®¼ä", nameof(quantity));
+            throw new ArgumentException("æ•°é‡å¿…é¡»åœ¨ 1-2000 ä¹‹é—´", nameof(quantity));
 
         var request = BuildModbusRequest(0x01, startAddress, quantity);
         var response = await SendRequestAndReceiveResponseAsync(request, cancellationToken);
@@ -192,16 +192,16 @@ public class ModbusTcpHelper : IClientConnection
     }
 
     /// <summary>
-    /// ¶ÁÈ¡ÀëÉ¢ÊäÈë (¹¦ÄÜÂë 0x02)
+    /// è¯»å–ç¦»æ•£è¾“å…¥ (åŠŸèƒ½ç  0x02)
     /// </summary>
-    /// <param name="startAddress">ÆğÊ¼µØÖ·</param>
-    /// <param name="quantity">ÊıÁ¿ (1-2000)</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>ÀëÉ¢ÊäÈë×´Ì¬Êı×é</returns>
+    /// <param name="startAddress">èµ·å§‹åœ°å€</param>
+    /// <param name="quantity">æ•°é‡ (1-2000)</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>ç¦»æ•£è¾“å…¥çŠ¶æ€æ•°ç»„</returns>
     public async Task<bool[]> ReadDiscreteInputsAsync(ushort startAddress, ushort quantity, CancellationToken cancellationToken = default)
     {
         if (quantity < 1 || quantity > 2000)
-            throw new ArgumentException("ÊıÁ¿±ØĞëÔÚ 1-2000 Ö®¼ä", nameof(quantity));
+            throw new ArgumentException("æ•°é‡å¿…é¡»åœ¨ 1-2000 ä¹‹é—´", nameof(quantity));
 
         var request = BuildModbusRequest(0x02, startAddress, quantity);
         var response = await SendRequestAndReceiveResponseAsync(request, cancellationToken);
@@ -210,16 +210,16 @@ public class ModbusTcpHelper : IClientConnection
     }
 
     /// <summary>
-    /// ¶ÁÈ¡±£³Ö¼Ä´æÆ÷ (¹¦ÄÜÂë 0x03)
+    /// è¯»å–ä¿æŒå¯„å­˜å™¨ (åŠŸèƒ½ç  0x03)
     /// </summary>
-    /// <param name="startAddress">ÆğÊ¼µØÖ·</param>
-    /// <param name="quantity">ÊıÁ¿ (1-125)</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>¼Ä´æÆ÷ÖµÊı×é</returns>
+    /// <param name="startAddress">èµ·å§‹åœ°å€</param>
+    /// <param name="quantity">æ•°é‡ (1-125)</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>å¯„å­˜å™¨å€¼æ•°ç»„</returns>
     public async Task<ushort[]> ReadHoldingRegistersAsync(ushort startAddress, ushort quantity, CancellationToken cancellationToken = default)
     {
         if (quantity < 1 || quantity > 125)
-            throw new ArgumentException("ÊıÁ¿±ØĞëÔÚ 1-125 Ö®¼ä", nameof(quantity));
+            throw new ArgumentException("æ•°é‡å¿…é¡»åœ¨ 1-125 ä¹‹é—´", nameof(quantity));
 
         var request = BuildModbusRequest(0x03, startAddress, quantity);
         var response = await SendRequestAndReceiveResponseAsync(request, cancellationToken);
@@ -228,16 +228,16 @@ public class ModbusTcpHelper : IClientConnection
     }
 
     /// <summary>
-    /// ¶ÁÈ¡ÊäÈë¼Ä´æÆ÷ (¹¦ÄÜÂë 0x04)
+    /// è¯»å–è¾“å…¥å¯„å­˜å™¨ (åŠŸèƒ½ç  0x04)
     /// </summary>
-    /// <param name="startAddress">ÆğÊ¼µØÖ·</param>
-    /// <param name="quantity">ÊıÁ¿ (1-125)</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>¼Ä´æÆ÷ÖµÊı×é</returns>
+    /// <param name="startAddress">èµ·å§‹åœ°å€</param>
+    /// <param name="quantity">æ•°é‡ (1-125)</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>å¯„å­˜å™¨å€¼æ•°ç»„</returns>
     public async Task<ushort[]> ReadInputRegistersAsync(ushort startAddress, ushort quantity, CancellationToken cancellationToken = default)
     {
         if (quantity < 1 || quantity > 125)
-            throw new ArgumentException("ÊıÁ¿±ØĞëÔÚ 1-125 Ö®¼ä", nameof(quantity));
+            throw new ArgumentException("æ•°é‡å¿…é¡»åœ¨ 1-125 ä¹‹é—´", nameof(quantity));
 
         var request = BuildModbusRequest(0x04, startAddress, quantity);
         var response = await SendRequestAndReceiveResponseAsync(request, cancellationToken);
@@ -246,11 +246,11 @@ public class ModbusTcpHelper : IClientConnection
     }
 
     /// <summary>
-    /// Ğ´µ¥¸öÏßÈ¦ (¹¦ÄÜÂë 0x05)
+    /// å†™å•ä¸ªçº¿åœˆ (åŠŸèƒ½ç  0x05)
     /// </summary>
-    /// <param name="address">µØÖ·</param>
-    /// <param name="value">Öµ</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
+    /// <param name="address">åœ°å€</param>
+    /// <param name="value">å€¼</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
     public async Task WriteSingleCoilAsync(ushort address, bool value, CancellationToken cancellationToken = default)
     {
         ushort coilValue = value ? (ushort)0xFF00 : (ushort)0x0000;
@@ -259,11 +259,11 @@ public class ModbusTcpHelper : IClientConnection
     }
 
     /// <summary>
-    /// Ğ´µ¥¸ö¼Ä´æÆ÷ (¹¦ÄÜÂë 0x06)
+    /// å†™å•ä¸ªå¯„å­˜å™¨ (åŠŸèƒ½ç  0x06)
     /// </summary>
-    /// <param name="address">µØÖ·</param>
-    /// <param name="value">Öµ</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
+    /// <param name="address">åœ°å€</param>
+    /// <param name="value">å€¼</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
     public async Task WriteSingleRegisterAsync(ushort address, ushort value, CancellationToken cancellationToken = default)
     {
         var request = BuildModbusRequest(0x06, address, value);
@@ -271,30 +271,30 @@ public class ModbusTcpHelper : IClientConnection
     }
 
     /// <summary>
-    /// Ğ´¶à¸öÏßÈ¦ (¹¦ÄÜÂë 0x0F)
+    /// å†™å¤šä¸ªçº¿åœˆ (åŠŸèƒ½ç  0x0F)
     /// </summary>
-    /// <param name="startAddress">ÆğÊ¼µØÖ·</param>
-    /// <param name="values">ÏßÈ¦ÖµÊı×é</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
+    /// <param name="startAddress">èµ·å§‹åœ°å€</param>
+    /// <param name="values">çº¿åœˆå€¼æ•°ç»„</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
     public async Task WriteMultipleCoilsAsync(ushort startAddress, bool[] values, CancellationToken cancellationToken = default)
     {
         if (values.Length < 1 || values.Length > 1968)
-            throw new ArgumentException("ÊıÁ¿±ØĞëÔÚ 1-1968 Ö®¼ä", nameof(values));
+            throw new ArgumentException("æ•°é‡å¿…é¡»åœ¨ 1-1968 ä¹‹é—´", nameof(values));
 
         var request = BuildWriteMultipleCoilsRequest(startAddress, values);
         await SendRequestAndReceiveResponseAsync(request, cancellationToken);
     }
 
     /// <summary>
-    /// Ğ´¶à¸ö¼Ä´æÆ÷ (¹¦ÄÜÂë 0x10)
+    /// å†™å¤šä¸ªå¯„å­˜å™¨ (åŠŸèƒ½ç  0x10)
     /// </summary>
-    /// <param name="startAddress">ÆğÊ¼µØÖ·</param>
-    /// <param name="values">¼Ä´æÆ÷ÖµÊı×é</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
+    /// <param name="startAddress">èµ·å§‹åœ°å€</param>
+    /// <param name="values">å¯„å­˜å™¨å€¼æ•°ç»„</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
     public async Task WriteMultipleRegistersAsync(ushort startAddress, ushort[] values, CancellationToken cancellationToken = default)
     {
         if (values.Length < 1 || values.Length > 123)
-            throw new ArgumentException("ÊıÁ¿±ØĞëÔÚ 1-123 Ö®¼ä", nameof(values));
+            throw new ArgumentException("æ•°é‡å¿…é¡»åœ¨ 1-123 ä¹‹é—´", nameof(values));
 
         var request = BuildWriteMultipleRegistersRequest(startAddress, values);
         await SendRequestAndReceiveResponseAsync(request, cancellationToken);
@@ -302,22 +302,22 @@ public class ModbusTcpHelper : IClientConnection
 
     #endregion
 
-    #region ¸¨Öú·½·¨
+    #region è¾…åŠ©æ–¹æ³•
 
     /// <summary>
-    /// ¹¹½¨ Modbus ÇëÇó
+    /// æ„å»º Modbus è¯·æ±‚
     /// </summary>
     private byte[] BuildModbusRequest(byte functionCode, ushort startAddress, ushort quantity)
     {
         var transactionId = GetNextTransactionId();
         var request = new byte[12];
 
-        // MBAP Í·²¿
+        // MBAP å¤´éƒ¨
         request[0] = (byte)(transactionId >> 8);
         request[1] = (byte)(transactionId & 0xFF);
-        request[2] = 0x00; // Ğ­Òé±êÊ¶·û
+        request[2] = 0x00; // åè®®æ ‡è¯†ç¬¦
         request[3] = 0x00;
-        request[4] = 0x00; // ³¤¶È
+        request[4] = 0x00; // é•¿åº¦
         request[5] = 0x06;
         request[6] = _options.UnitId;
 
@@ -332,7 +332,7 @@ public class ModbusTcpHelper : IClientConnection
     }
 
     /// <summary>
-    /// ¹¹½¨Ğ´¶à¸öÏßÈ¦ÇëÇó
+    /// æ„å»ºå†™å¤šä¸ªçº¿åœˆè¯·æ±‚
     /// </summary>
     private byte[] BuildWriteMultipleCoilsRequest(ushort startAddress, bool[] values)
     {
@@ -340,7 +340,7 @@ public class ModbusTcpHelper : IClientConnection
         var byteCount = (values.Length + 7) / 8;
         var request = new byte[13 + byteCount];
 
-        // MBAP Í·²¿
+        // MBAP å¤´éƒ¨
         request[0] = (byte)(transactionId >> 8);
         request[1] = (byte)(transactionId & 0xFF);
         request[2] = 0x00;
@@ -358,7 +358,7 @@ public class ModbusTcpHelper : IClientConnection
         request[11] = (byte)(values.Length & 0xFF);
         request[12] = (byte)byteCount;
 
-        // Êı¾İ
+        // æ•°æ®
         for (int i = 0; i < values.Length; i++)
         {
             if (values[i])
@@ -371,7 +371,7 @@ public class ModbusTcpHelper : IClientConnection
     }
 
     /// <summary>
-    /// ¹¹½¨Ğ´¶à¸ö¼Ä´æÆ÷ÇëÇó
+    /// æ„å»ºå†™å¤šä¸ªå¯„å­˜å™¨è¯·æ±‚
     /// </summary>
     private byte[] BuildWriteMultipleRegistersRequest(ushort startAddress, ushort[] values)
     {
@@ -379,7 +379,7 @@ public class ModbusTcpHelper : IClientConnection
         var byteCount = values.Length * 2;
         var request = new byte[13 + byteCount];
 
-        // MBAP Í·²¿
+        // MBAP å¤´éƒ¨
         request[0] = (byte)(transactionId >> 8);
         request[1] = (byte)(transactionId & 0xFF);
         request[2] = 0x00;
@@ -397,7 +397,7 @@ public class ModbusTcpHelper : IClientConnection
         request[11] = (byte)(values.Length & 0xFF);
         request[12] = (byte)byteCount;
 
-        // Êı¾İ
+        // æ•°æ®
         for (int i = 0; i < values.Length; i++)
         {
             request[13 + i * 2] = (byte)(values[i] >> 8);
@@ -408,7 +408,7 @@ public class ModbusTcpHelper : IClientConnection
     }
 
     /// <summary>
-    /// ·¢ËÍÇëÇó²¢½ÓÊÕÏìÓ¦
+    /// å‘é€è¯·æ±‚å¹¶æ¥æ”¶å“åº”
     /// </summary>
     private async Task<byte[]> SendRequestAndReceiveResponseAsync(byte[] request, CancellationToken cancellationToken)
     {
@@ -417,16 +417,16 @@ public class ModbusTcpHelper : IClientConnection
         {
             if (!IsConnected || _networkStream == null)
             {
-                throw new InvalidOperationException("Modbus TCP Î´Á¬½Ó");
+                throw new InvalidOperationException("Modbus TCP æœªè¿æ¥");
             }
 
-            // ·¢ËÍÇëÇó
+            // å‘é€è¯·æ±‚
             await _networkStream.WriteAsync(request, cancellationToken);
             await _networkStream.FlushAsync(cancellationToken);
 
-            _logger.LogTrace("·¢ËÍ Modbus ÇëÇó: {Request}", BitConverter.ToString(request));
+            _logger.LogTrace("å‘é€ Modbus è¯·æ±‚: {Request}", BitConverter.ToString(request));
 
-            // ½ÓÊÕÏìÓ¦
+            // æ¥æ”¶å“åº”
             using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             timeoutCts.CancelAfter(_options.TransactionTimeout);
 
@@ -437,7 +437,7 @@ public class ModbusTcpHelper : IClientConnection
                 var response = new byte[bytesRead];
                 Array.Copy(buffer, 0, response, 0, bytesRead);
 
-                _logger.LogTrace("½ÓÊÕ Modbus ÏìÓ¦: {Response}", BitConverter.ToString(response));
+                _logger.LogTrace("æ¥æ”¶ Modbus å“åº”: {Response}", BitConverter.ToString(response));
 
                 ValidateResponse(request, response);
 
@@ -455,37 +455,37 @@ public class ModbusTcpHelper : IClientConnection
     }
 
     /// <summary>
-    /// ÑéÖ¤ÏìÓ¦
+    /// éªŒè¯å“åº”
     /// </summary>
     private void ValidateResponse(byte[] request, byte[] response)
     {
         if (response.Length < 8)
         {
-            throw new InvalidOperationException("ÏìÓ¦³¤¶È²»×ã");
+            throw new InvalidOperationException("å“åº”é•¿åº¦ä¸è¶³");
         }
 
-        // ¼ì²éÊÂÎñ ID
+        // æ£€æŸ¥äº‹åŠ¡ ID
         if (response[0] != request[0] || response[1] != request[1])
         {
-            throw new InvalidOperationException("ÊÂÎñ ID ²»Æ¥Åä");
+            throw new InvalidOperationException("äº‹åŠ¡ ID ä¸åŒ¹é…");
         }
 
-        // ¼ì²éµ¥Ôª ID
+        // æ£€æŸ¥å•å…ƒ ID
         if (response[6] != request[6])
         {
-            throw new InvalidOperationException("µ¥Ôª ID ²»Æ¥Åä");
+            throw new InvalidOperationException("å•å…ƒ ID ä¸åŒ¹é…");
         }
 
-        // ¼ì²é¹¦ÄÜÂë (Òì³£ÏìÓ¦)
+        // æ£€æŸ¥åŠŸèƒ½ç  (å¼‚å¸¸å“åº”)
         if ((response[7] & 0x80) != 0)
         {
             var exceptionCode = response[8];
-            throw new ModbusException($"Modbus Òì³£: ¹¦ÄÜÂë {response[7] & 0x7F}, Òì³£´úÂë {exceptionCode}");
+            throw new ModbusException($"Modbus å¼‚å¸¸: åŠŸèƒ½ç  {response[7] & 0x7F}, å¼‚å¸¸ä»£ç  {exceptionCode}");
         }
     }
 
     /// <summary>
-    /// ½âÎöÏßÈ¦ÏìÓ¦
+    /// è§£æçº¿åœˆå“åº”
     /// </summary>
     private bool[] ParseCoilsResponse(byte[] response, ushort quantity)
     {
@@ -503,7 +503,7 @@ public class ModbusTcpHelper : IClientConnection
     }
 
     /// <summary>
-    /// ½âÎö¼Ä´æÆ÷ÏìÓ¦
+    /// è§£æå¯„å­˜å™¨å“åº”
     /// </summary>
     private ushort[] ParseRegistersResponse(byte[] response, ushort quantity)
     {
@@ -519,7 +519,7 @@ public class ModbusTcpHelper : IClientConnection
     }
 
     /// <summary>
-    /// »ñÈ¡ÏÂÒ»¸öÊÂÎñ ID
+    /// è·å–ä¸‹ä¸€ä¸ªäº‹åŠ¡ ID
     /// </summary>
     private ushort GetNextTransactionId()
     {
@@ -527,7 +527,7 @@ public class ModbusTcpHelper : IClientConnection
     }
 
     /// <summary>
-    /// ¸ü¸ÄÁ¬½Ó×´Ì¬
+    /// æ›´æ”¹è¿æ¥çŠ¶æ€
     /// </summary>
     private void ChangeState(ConnectionState newState)
     {
@@ -536,7 +536,7 @@ public class ModbusTcpHelper : IClientConnection
             var oldState = _state;
             _state = newState;
             ConnectionStateChanged?.Invoke(this, new ConnectionStateChangedEventArgs(oldState, newState));
-            _logger.LogDebug("Á¬½Ó×´Ì¬´Ó {OldState} ±ä¸üÎª {NewState}", oldState, newState);
+            _logger.LogDebug("è¿æ¥çŠ¶æ€ä» {OldState} å˜æ›´ä¸º {NewState}", oldState, newState);
         }
     }
 
@@ -559,7 +559,7 @@ public class ModbusTcpHelper : IClientConnection
 }
 
 /// <summary>
-/// Modbus Òì³£
+/// Modbus å¼‚å¸¸
 /// </summary>
 public class ModbusException : Exception
 {

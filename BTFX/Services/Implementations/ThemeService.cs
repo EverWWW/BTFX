@@ -1,4 +1,4 @@
-using System.Windows;
+ï»¿using System.Windows;
 using System.Windows.Media;
 using BTFX.Common;
 using BTFX.Services.Interfaces;
@@ -7,36 +7,36 @@ using MaterialDesignThemes.Wpf;
 namespace BTFX.Services.Implementations;
 
 /// <summary>
-/// Ö÷Ìâ·şÎñÊµÏÖ
+/// ä¸»é¢˜æœåŠ¡å®ç°
 /// </summary>
 public class ThemeService : IThemeService
 {
     private readonly PaletteHelper _paletteHelper = new();
 
     /// <summary>
-    /// µ±Ç°Ö÷Ìâ
+    /// å½“å‰ä¸»é¢˜
     /// </summary>
     public AppTheme CurrentTheme { get; private set; } = AppTheme.Light;
 
     /// <summary>
-    /// µ±Ç°Ö÷ÌâÉ«£¨Ê®Áù½øÖÆ£©
+    /// å½“å‰ä¸»é¢˜è‰²ï¼ˆåå…­è¿›åˆ¶ï¼‰
     /// </summary>
     public string CurrentPrimaryColor { get; private set; } = "#FF009EDB";
 
     /// <summary>
-    /// Ö÷Ìâ±ä¸üÊÂ¼ş
+    /// ä¸»é¢˜å˜æ›´äº‹ä»¶
     /// </summary>
     public event EventHandler<AppTheme>? ThemeChanged;
 
     /// <summary>
-    /// Ö÷ÌâÉ«±ä¸üÊÂ¼ş
+    /// ä¸»é¢˜è‰²å˜æ›´äº‹ä»¶
     /// </summary>
     public event EventHandler<string>? PrimaryColorChanged;
 
     /// <summary>
-    /// Ó¦ÓÃÖ¸¶¨Ö÷Ìâ
+    /// åº”ç”¨æŒ‡å®šä¸»é¢˜
     /// </summary>
-    /// <param name="theme">Ö÷Ìâ</param>
+    /// <param name="theme">ä¸»é¢˜</param>
     public void ApplyTheme(AppTheme theme)
     {
         CurrentTheme = theme;
@@ -44,20 +44,20 @@ public class ThemeService : IThemeService
         var paletteHelper = new PaletteHelper();
         var currentTheme = paletteHelper.GetTheme();
 
-        // ÉèÖÃ»ù´¡Ö÷Ìâ
+        // è®¾ç½®åŸºç¡€ä¸»é¢˜
         currentTheme.SetBaseTheme(theme == AppTheme.Dark ? BaseTheme.Dark : BaseTheme.Light);
 
-        // Ó¦ÓÃÖ÷Ìâ
+        // åº”ç”¨ä¸»é¢˜
         paletteHelper.SetTheme(currentTheme);
 
-        // ´¥·¢ÊÂ¼ş
+        // è§¦å‘äº‹ä»¶
         ThemeChanged?.Invoke(this, theme);
 
         RefreshWindows();
     }
 
     /// <summary>
-    /// ÇĞ»»Ö÷Ìâ
+    /// åˆ‡æ¢ä¸»é¢˜
     /// </summary>
     public void ToggleTheme()
     {
@@ -66,9 +66,9 @@ public class ThemeService : IThemeService
     }
 
     /// <summary>
-    /// ÉèÖÃÖ÷É«µ÷
+    /// è®¾ç½®ä¸»è‰²è°ƒ
     /// </summary>
-    /// <param name="primaryColor">Ö÷É«µ÷</param>
+    /// <param name="primaryColor">ä¸»è‰²è°ƒ</param>
     public void SetPrimaryColor(Color primaryColor)
     {
         var paletteHelper = new PaletteHelper();
@@ -76,7 +76,7 @@ public class ThemeService : IThemeService
         theme.SetPrimaryColor(primaryColor);
         paletteHelper.SetTheme(theme);
 
-        // Í¬²½¸üĞÂ Application ¼¶±ğµÄ Brush ×ÊÔ´
+        // åŒæ­¥æ›´æ–° Application çº§åˆ«çš„ Brush èµ„æº
         Application.Current.Dispatcher.Invoke(() =>
         {
             Application.Current.Resources["MaterialDesign.Brush.Primary"] = new SolidColorBrush(primaryColor);
@@ -89,9 +89,9 @@ public class ThemeService : IThemeService
     }
 
     /// <summary>
-    /// ÉèÖÃ¸±É«µ÷
+    /// è®¾ç½®å‰¯è‰²è°ƒ
     /// </summary>
-    /// <param name="secondaryColor">¸±É«µ÷</param>
+    /// <param name="secondaryColor">å‰¯è‰²è°ƒ</param>
     public void SetSecondaryColor(Color secondaryColor)
     {
         var paletteHelper = new PaletteHelper();
@@ -101,7 +101,7 @@ public class ThemeService : IThemeService
     }
 
     /// <summary>
-    /// Ç¿ÖÆË¢ĞÂËùÓĞ´ò¿ªµÄ´°¿Ú
+    /// å¼ºåˆ¶åˆ·æ–°æ‰€æœ‰æ‰“å¼€çš„çª—å£
     /// </summary>
     private static void RefreshWindows()
     {
@@ -116,7 +116,7 @@ public class ThemeService : IThemeService
                 }
                 catch
                 {
-                    // ºöÂÔµ¥¸ö´°¿ÚË¢ĞÂÊ§°Ü
+                    // å¿½ç•¥å•ä¸ªçª—å£åˆ·æ–°å¤±è´¥
                 }
             }
         });

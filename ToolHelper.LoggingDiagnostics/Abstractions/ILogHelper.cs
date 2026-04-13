@@ -1,143 +1,143 @@
-namespace ToolHelper.LoggingDiagnostics.Abstractions;
+ï»¿namespace ToolHelper.LoggingDiagnostics.Abstractions;
 
 /// <summary>
-/// ÈÕÖ¾¼¶±ğÃ¶¾Ù
+/// æ—¥å¿—çº§åˆ«æšä¸¾
 /// </summary>
 public enum LogLevel
 {
-    /// <summary>¸ú×Ù¼¶±ğ - ×îÏêÏ¸µÄÈÕÖ¾</summary>
+    /// <summary>è·Ÿè¸ªçº§åˆ« - æœ€è¯¦ç»†çš„æ—¥å¿—</summary>
     Trace = 0,
-    /// <summary>µ÷ÊÔ¼¶±ğ</summary>
+    /// <summary>è°ƒè¯•çº§åˆ«</summary>
     Debug = 1,
-    /// <summary>ĞÅÏ¢¼¶±ğ</summary>
+    /// <summary>ä¿¡æ¯çº§åˆ«</summary>
     Information = 2,
-    /// <summary>¾¯¸æ¼¶±ğ</summary>
+    /// <summary>è­¦å‘Šçº§åˆ«</summary>
     Warning = 3,
-    /// <summary>´íÎó¼¶±ğ</summary>
+    /// <summary>é”™è¯¯çº§åˆ«</summary>
     Error = 4,
-    /// <summary>ÑÏÖØ´íÎó¼¶±ğ</summary>
+    /// <summary>ä¸¥é‡é”™è¯¯çº§åˆ«</summary>
     Critical = 5,
-    /// <summary>²»¼ÇÂ¼ÈÕÖ¾</summary>
+    /// <summary>ä¸è®°å½•æ—¥å¿—</summary>
     None = 6
 }
 
 /// <summary>
-/// ÈÕÖ¾ÌõÄ¿
+/// æ—¥å¿—æ¡ç›®
 /// </summary>
 public record LogEntry
 {
-    /// <summary>ÈÕÖ¾Ê±¼ä</summary>
+    /// <summary>æ—¥å¿—æ—¶é—´</summary>
     public DateTime Timestamp { get; init; } = DateTime.Now;
     
-    /// <summary>ÈÕÖ¾¼¶±ğ</summary>
+    /// <summary>æ—¥å¿—çº§åˆ«</summary>
     public LogLevel Level { get; init; }
     
-    /// <summary>ÈÕÖ¾Àà±ğ/À´Ô´</summary>
+    /// <summary>æ—¥å¿—ç±»åˆ«/æ¥æº</summary>
     public string Category { get; init; } = string.Empty;
     
-    /// <summary>ÈÕÖ¾ÏûÏ¢</summary>
+    /// <summary>æ—¥å¿—æ¶ˆæ¯</summary>
     public string Message { get; init; } = string.Empty;
     
-    /// <summary>Òì³£ĞÅÏ¢</summary>
+    /// <summary>å¼‚å¸¸ä¿¡æ¯</summary>
     public Exception? Exception { get; init; }
     
-    /// <summary>Ïß³ÌID</summary>
+    /// <summary>çº¿ç¨‹ID</summary>
     public int ThreadId { get; init; } = Environment.CurrentManagedThreadId;
     
-    /// <summary>¶îÍâÊôĞÔ</summary>
+    /// <summary>é¢å¤–å±æ€§</summary>
     public IDictionary<string, object>? Properties { get; init; }
 }
 
 /// <summary>
-/// ÈÕÖ¾¼ÇÂ¼½Ó¿Ú
-/// Ìá¹©·Ö¼¶¡¢·ÖÎÄ¼ş¡¢×Ô¶¯¹éµµµÄÈÕÖ¾¹¦ÄÜ
+/// æ—¥å¿—è®°å½•æ¥å£
+/// æä¾›åˆ†çº§ã€åˆ†æ–‡ä»¶ã€è‡ªåŠ¨å½’æ¡£çš„æ—¥å¿—åŠŸèƒ½
 /// </summary>
 public interface ILogHelper : IAsyncDisposable, IDisposable
 {
     /// <summary>
-    /// µ±Ç°×îµÍÈÕÖ¾¼¶±ğ
+    /// å½“å‰æœ€ä½æ—¥å¿—çº§åˆ«
     /// </summary>
     LogLevel MinimumLevel { get; set; }
 
     /// <summary>
-    /// ¼ÇÂ¼¸ú×ÙÈÕÖ¾
+    /// è®°å½•è·Ÿè¸ªæ—¥å¿—
     /// </summary>
-    /// <param name="message">ÈÕÖ¾ÏûÏ¢</param>
-    /// <param name="properties">¸½¼ÓÊôĞÔ</param>
+    /// <param name="message">æ—¥å¿—æ¶ˆæ¯</param>
+    /// <param name="properties">é™„åŠ å±æ€§</param>
     void Trace(string message, IDictionary<string, object>? properties = null);
 
     /// <summary>
-    /// ¼ÇÂ¼µ÷ÊÔÈÕÖ¾
+    /// è®°å½•è°ƒè¯•æ—¥å¿—
     /// </summary>
-    /// <param name="message">ÈÕÖ¾ÏûÏ¢</param>
-    /// <param name="properties">¸½¼ÓÊôĞÔ</param>
+    /// <param name="message">æ—¥å¿—æ¶ˆæ¯</param>
+    /// <param name="properties">é™„åŠ å±æ€§</param>
     void Debug(string message, IDictionary<string, object>? properties = null);
 
     /// <summary>
-    /// ¼ÇÂ¼ĞÅÏ¢ÈÕÖ¾
+    /// è®°å½•ä¿¡æ¯æ—¥å¿—
     /// </summary>
-    /// <param name="message">ÈÕÖ¾ÏûÏ¢</param>
-    /// <param name="properties">¸½¼ÓÊôĞÔ</param>
+    /// <param name="message">æ—¥å¿—æ¶ˆæ¯</param>
+    /// <param name="properties">é™„åŠ å±æ€§</param>
     void Information(string message, IDictionary<string, object>? properties = null);
 
     /// <summary>
-    /// ¼ÇÂ¼¾¯¸æÈÕÖ¾
+    /// è®°å½•è­¦å‘Šæ—¥å¿—
     /// </summary>
-    /// <param name="message">ÈÕÖ¾ÏûÏ¢</param>
-    /// <param name="properties">¸½¼ÓÊôĞÔ</param>
+    /// <param name="message">æ—¥å¿—æ¶ˆæ¯</param>
+    /// <param name="properties">é™„åŠ å±æ€§</param>
     void Warning(string message, IDictionary<string, object>? properties = null);
 
     /// <summary>
-    /// ¼ÇÂ¼´íÎóÈÕÖ¾
+    /// è®°å½•é”™è¯¯æ—¥å¿—
     /// </summary>
-    /// <param name="message">ÈÕÖ¾ÏûÏ¢</param>
-    /// <param name="exception">Òì³£ĞÅÏ¢</param>
-    /// <param name="properties">¸½¼ÓÊôĞÔ</param>
+    /// <param name="message">æ—¥å¿—æ¶ˆæ¯</param>
+    /// <param name="exception">å¼‚å¸¸ä¿¡æ¯</param>
+    /// <param name="properties">é™„åŠ å±æ€§</param>
     void Error(string message, Exception? exception = null, IDictionary<string, object>? properties = null);
 
     /// <summary>
-    /// ¼ÇÂ¼ÑÏÖØ´íÎóÈÕÖ¾
+    /// è®°å½•ä¸¥é‡é”™è¯¯æ—¥å¿—
     /// </summary>
-    /// <param name="message">ÈÕÖ¾ÏûÏ¢</param>
-    /// <param name="exception">Òì³£ĞÅÏ¢</param>
-    /// <param name="properties">¸½¼ÓÊôĞÔ</param>
+    /// <param name="message">æ—¥å¿—æ¶ˆæ¯</param>
+    /// <param name="exception">å¼‚å¸¸ä¿¡æ¯</param>
+    /// <param name="properties">é™„åŠ å±æ€§</param>
     void Critical(string message, Exception? exception = null, IDictionary<string, object>? properties = null);
 
     /// <summary>
-    /// Í¨ÓÃÈÕÖ¾¼ÇÂ¼·½·¨
+    /// é€šç”¨æ—¥å¿—è®°å½•æ–¹æ³•
     /// </summary>
-    /// <param name="level">ÈÕÖ¾¼¶±ğ</param>
-    /// <param name="message">ÈÕÖ¾ÏûÏ¢</param>
-    /// <param name="exception">Òì³£ĞÅÏ¢</param>
-    /// <param name="properties">¸½¼ÓÊôĞÔ</param>
+    /// <param name="level">æ—¥å¿—çº§åˆ«</param>
+    /// <param name="message">æ—¥å¿—æ¶ˆæ¯</param>
+    /// <param name="exception">å¼‚å¸¸ä¿¡æ¯</param>
+    /// <param name="properties">é™„åŠ å±æ€§</param>
     void Log(LogLevel level, string message, Exception? exception = null, IDictionary<string, object>? properties = null);
 
     /// <summary>
-    /// Òì²½¼ÇÂ¼ÈÕÖ¾
+    /// å¼‚æ­¥è®°å½•æ—¥å¿—
     /// </summary>
-    /// <param name="entry">ÈÕÖ¾ÌõÄ¿</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
+    /// <param name="entry">æ—¥å¿—æ¡ç›®</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
     ValueTask LogAsync(LogEntry entry, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Òì²½Ë¢ĞÂÈÕÖ¾»º³åÇø
+    /// å¼‚æ­¥åˆ·æ–°æ—¥å¿—ç¼“å†²åŒº
     /// </summary>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
     Task FlushAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// ÊÖ¶¯´¥·¢ÈÕÖ¾¹éµµ
+    /// æ‰‹åŠ¨è§¦å‘æ—¥å¿—å½’æ¡£
     /// </summary>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
     Task ArchiveAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// »ñÈ¡Ö¸¶¨Ê±¼ä·¶Î§µÄÈÕÖ¾
+    /// è·å–æŒ‡å®šæ—¶é—´èŒƒå›´çš„æ—¥å¿—
     /// </summary>
-    /// <param name="startTime">¿ªÊ¼Ê±¼ä</param>
-    /// <param name="endTime">½áÊøÊ±¼ä</param>
-    /// <param name="level">ÈÕÖ¾¼¶±ğÉ¸Ñ¡</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
+    /// <param name="startTime">å¼€å§‹æ—¶é—´</param>
+    /// <param name="endTime">ç»“æŸæ—¶é—´</param>
+    /// <param name="level">æ—¥å¿—çº§åˆ«ç­›é€‰</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
     IAsyncEnumerable<LogEntry> GetLogsAsync(
         DateTime startTime,
         DateTime endTime,
@@ -145,8 +145,8 @@ public interface ILogHelper : IAsyncDisposable, IDisposable
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// ´´½¨´øÀà±ğµÄÈÕÖ¾¼ÇÂ¼Æ÷
+    /// åˆ›å»ºå¸¦ç±»åˆ«çš„æ—¥å¿—è®°å½•å™¨
     /// </summary>
-    /// <param name="category">ÈÕÖ¾Àà±ğ</param>
+    /// <param name="category">æ—¥å¿—ç±»åˆ«</param>
     ILogHelper ForCategory(string category);
 }

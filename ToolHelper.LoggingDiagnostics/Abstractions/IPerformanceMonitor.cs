@@ -1,367 +1,367 @@
-namespace ToolHelper.LoggingDiagnostics.Abstractions;
+ï»¿namespace ToolHelper.LoggingDiagnostics.Abstractions;
 
 /// <summary>
-/// CPUÊ¹ÓÃĞÅÏ¢
+/// CPUä½¿ç”¨ä¿¡æ¯
 /// </summary>
 public record CpuUsageInfo
 {
-    /// <summary>²É¼¯Ê±¼ä</summary>
+    /// <summary>é‡‡é›†æ—¶é—´</summary>
     public DateTime Timestamp { get; init; } = DateTime.Now;
     
-    /// <summary>×ÜCPUÊ¹ÓÃÂÊ(0-100)</summary>
+    /// <summary>æ€»CPUä½¿ç”¨ç‡(0-100)</summary>
     public double TotalUsage { get; init; }
     
-    /// <summary>µ±Ç°½ø³ÌCPUÊ¹ÓÃÂÊ(0-100)</summary>
+    /// <summary>å½“å‰è¿›ç¨‹CPUä½¿ç”¨ç‡(0-100)</summary>
     public double ProcessUsage { get; init; }
     
-    /// <summary>´¦ÀíÆ÷ºËĞÄÊı</summary>
+    /// <summary>å¤„ç†å™¨æ ¸å¿ƒæ•°</summary>
     public int ProcessorCount { get; init; }
     
-    /// <summary>¸÷ºËĞÄÊ¹ÓÃÂÊ</summary>
+    /// <summary>å„æ ¸å¿ƒä½¿ç”¨ç‡</summary>
     public IReadOnlyList<double>? CoreUsages { get; init; }
 }
 
 /// <summary>
-/// ÄÚ´æÊ¹ÓÃĞÅÏ¢
+/// å†…å­˜ä½¿ç”¨ä¿¡æ¯
 /// </summary>
 public record MemoryUsageInfo
 {
-    /// <summary>²É¼¯Ê±¼ä</summary>
+    /// <summary>é‡‡é›†æ—¶é—´</summary>
     public DateTime Timestamp { get; init; } = DateTime.Now;
     
-    /// <summary>×ÜÎïÀíÄÚ´æ(×Ö½Ú)</summary>
+    /// <summary>æ€»ç‰©ç†å†…å­˜(å­—èŠ‚)</summary>
     public long TotalPhysicalMemory { get; init; }
     
-    /// <summary>¿ÉÓÃÎïÀíÄÚ´æ(×Ö½Ú)</summary>
+    /// <summary>å¯ç”¨ç‰©ç†å†…å­˜(å­—èŠ‚)</summary>
     public long AvailablePhysicalMemory { get; init; }
     
-    /// <summary>ÒÑÊ¹ÓÃÎïÀíÄÚ´æ(×Ö½Ú)</summary>
+    /// <summary>å·²ä½¿ç”¨ç‰©ç†å†…å­˜(å­—èŠ‚)</summary>
     public long UsedPhysicalMemory => TotalPhysicalMemory - AvailablePhysicalMemory;
     
-    /// <summary>ÎïÀíÄÚ´æÊ¹ÓÃÂÊ(0-100)</summary>
+    /// <summary>ç‰©ç†å†…å­˜ä½¿ç”¨ç‡(0-100)</summary>
     public double PhysicalMemoryUsage => TotalPhysicalMemory > 0 
         ? (double)UsedPhysicalMemory / TotalPhysicalMemory * 100 
         : 0;
     
-    /// <summary>µ±Ç°½ø³Ì¹¤×÷¼¯(×Ö½Ú)</summary>
+    /// <summary>å½“å‰è¿›ç¨‹å·¥ä½œé›†(å­—èŠ‚)</summary>
     public long ProcessWorkingSet { get; init; }
     
-    /// <summary>µ±Ç°½ø³ÌË½ÓĞÄÚ´æ(×Ö½Ú)</summary>
+    /// <summary>å½“å‰è¿›ç¨‹ç§æœ‰å†…å­˜(å­—èŠ‚)</summary>
     public long ProcessPrivateMemory { get; init; }
     
-    /// <summary>GC¶ÑÄÚ´æ(×Ö½Ú)</summary>
+    /// <summary>GCå †å†…å­˜(å­—èŠ‚)</summary>
     public long GCHeapSize { get; init; }
     
-    /// <summary>GC¸÷´ú´óĞ¡</summary>
+    /// <summary>GCå„ä»£å¤§å°</summary>
     public IReadOnlyList<long>? GCGenerationSizes { get; init; }
     
-    /// <summary>GC¸÷´ú»ØÊÕ´ÎÊı</summary>
+    /// <summary>GCå„ä»£å›æ”¶æ¬¡æ•°</summary>
     public IReadOnlyList<int>? GCCollectionCounts { get; init; }
 }
 
 /// <summary>
-/// ÍøÂçIOĞÅÏ¢
+/// ç½‘ç»œIOä¿¡æ¯
 /// </summary>
 public record NetworkIOInfo
 {
-    /// <summary>²É¼¯Ê±¼ä</summary>
+    /// <summary>é‡‡é›†æ—¶é—´</summary>
     public DateTime Timestamp { get; init; } = DateTime.Now;
     
-    /// <summary>½Ó¿ÚÃû³Æ</summary>
+    /// <summary>æ¥å£åç§°</summary>
     public string InterfaceName { get; init; } = string.Empty;
     
-    /// <summary>·¢ËÍ×Ö½ÚÊı</summary>
+    /// <summary>å‘é€å­—èŠ‚æ•°</summary>
     public long BytesSent { get; init; }
     
-    /// <summary>½ÓÊÕ×Ö½ÚÊı</summary>
+    /// <summary>æ¥æ”¶å­—èŠ‚æ•°</summary>
     public long BytesReceived { get; init; }
     
-    /// <summary>·¢ËÍËÙÂÊ(×Ö½Ú/Ãë)</summary>
+    /// <summary>å‘é€é€Ÿç‡(å­—èŠ‚/ç§’)</summary>
     public double SendRate { get; init; }
     
-    /// <summary>½ÓÊÕËÙÂÊ(×Ö½Ú/Ãë)</summary>
+    /// <summary>æ¥æ”¶é€Ÿç‡(å­—èŠ‚/ç§’)</summary>
     public double ReceiveRate { get; init; }
     
-    /// <summary>»î¶¯Á¬½ÓÊı</summary>
+    /// <summary>æ´»åŠ¨è¿æ¥æ•°</summary>
     public int ActiveConnections { get; init; }
 }
 
 /// <summary>
-/// ´ÅÅÌIOĞÅÏ¢
+/// ç£ç›˜IOä¿¡æ¯
 /// </summary>
 public record DiskIOInfo
 {
-    /// <summary>²É¼¯Ê±¼ä</summary>
+    /// <summary>é‡‡é›†æ—¶é—´</summary>
     public DateTime Timestamp { get; init; } = DateTime.Now;
     
-    /// <summary>Çı¶¯Æ÷Ãû³Æ</summary>
+    /// <summary>é©±åŠ¨å™¨åç§°</summary>
     public string DriveName { get; init; } = string.Empty;
     
-    /// <summary>×Ü¿Õ¼ä(×Ö½Ú)</summary>
+    /// <summary>æ€»ç©ºé—´(å­—èŠ‚)</summary>
     public long TotalSpace { get; init; }
     
-    /// <summary>¿ÉÓÃ¿Õ¼ä(×Ö½Ú)</summary>
+    /// <summary>å¯ç”¨ç©ºé—´(å­—èŠ‚)</summary>
     public long AvailableSpace { get; init; }
     
-    /// <summary>ÒÑÓÃ¿Õ¼ä(×Ö½Ú)</summary>
+    /// <summary>å·²ç”¨ç©ºé—´(å­—èŠ‚)</summary>
     public long UsedSpace => TotalSpace - AvailableSpace;
     
-    /// <summary>Ê¹ÓÃÂÊ(0-100)</summary>
+    /// <summary>ä½¿ç”¨ç‡(0-100)</summary>
     public double UsagePercentage => TotalSpace > 0 
         ? (double)UsedSpace / TotalSpace * 100 
         : 0;
     
-    /// <summary>¶ÁÈ¡ËÙÂÊ(×Ö½Ú/Ãë)</summary>
+    /// <summary>è¯»å–é€Ÿç‡(å­—èŠ‚/ç§’)</summary>
     public double ReadRate { get; init; }
     
-    /// <summary>Ğ´ÈëËÙÂÊ(×Ö½Ú/Ãë)</summary>
+    /// <summary>å†™å…¥é€Ÿç‡(å­—èŠ‚/ç§’)</summary>
     public double WriteRate { get; init; }
 }
 
 /// <summary>
-/// ÏµÍ³×ÛºÏĞÅÏ¢
+/// ç³»ç»Ÿç»¼åˆä¿¡æ¯
 /// </summary>
 public record SystemInfo
 {
-    /// <summary>²É¼¯Ê±¼ä</summary>
+    /// <summary>é‡‡é›†æ—¶é—´</summary>
     public DateTime Timestamp { get; init; } = DateTime.Now;
     
-    /// <summary>CPUĞÅÏ¢</summary>
+    /// <summary>CPUä¿¡æ¯</summary>
     public CpuUsageInfo Cpu { get; init; } = new();
     
-    /// <summary>ÄÚ´æĞÅÏ¢</summary>
+    /// <summary>å†…å­˜ä¿¡æ¯</summary>
     public MemoryUsageInfo Memory { get; init; } = new();
     
-    /// <summary>ÍøÂçIOĞÅÏ¢</summary>
+    /// <summary>ç½‘ç»œIOä¿¡æ¯</summary>
     public IReadOnlyList<NetworkIOInfo> NetworkIO { get; init; } = [];
     
-    /// <summary>´ÅÅÌIOĞÅÏ¢</summary>
+    /// <summary>ç£ç›˜IOä¿¡æ¯</summary>
     public IReadOnlyList<DiskIOInfo> DiskIO { get; init; } = [];
     
-    /// <summary>ÏµÍ³ÔËĞĞÊ±¼ä</summary>
+    /// <summary>ç³»ç»Ÿè¿è¡Œæ—¶é—´</summary>
     public TimeSpan SystemUptime { get; init; }
     
-    /// <summary>½ø³ÌÔËĞĞÊ±¼ä</summary>
+    /// <summary>è¿›ç¨‹è¿è¡Œæ—¶é—´</summary>
     public TimeSpan ProcessUptime { get; init; }
     
-    /// <summary>Ïß³ÌÊı</summary>
+    /// <summary>çº¿ç¨‹æ•°</summary>
     public int ThreadCount { get; init; }
     
-    /// <summary>¾ä±úÊı</summary>
+    /// <summary>å¥æŸ„æ•°</summary>
     public int HandleCount { get; init; }
 }
 
 /// <summary>
-/// ĞÔÄÜãĞÖµÅäÖÃ
+/// æ€§èƒ½é˜ˆå€¼é…ç½®
 /// </summary>
 public record PerformanceThreshold
 {
-    /// <summary>CPUÊ¹ÓÃÂÊ¾¯¸æãĞÖµ</summary>
+    /// <summary>CPUä½¿ç”¨ç‡è­¦å‘Šé˜ˆå€¼</summary>
     public double CpuWarningThreshold { get; init; } = 70;
     
-    /// <summary>CPUÊ¹ÓÃÂÊÑÏÖØãĞÖµ</summary>
+    /// <summary>CPUä½¿ç”¨ç‡ä¸¥é‡é˜ˆå€¼</summary>
     public double CpuCriticalThreshold { get; init; } = 90;
     
-    /// <summary>ÄÚ´æÊ¹ÓÃÂÊ¾¯¸æãĞÖµ</summary>
+    /// <summary>å†…å­˜ä½¿ç”¨ç‡è­¦å‘Šé˜ˆå€¼</summary>
     public double MemoryWarningThreshold { get; init; } = 70;
     
-    /// <summary>ÄÚ´æÊ¹ÓÃÂÊÑÏÖØãĞÖµ</summary>
+    /// <summary>å†…å­˜ä½¿ç”¨ç‡ä¸¥é‡é˜ˆå€¼</summary>
     public double MemoryCriticalThreshold { get; init; } = 90;
     
-    /// <summary>´ÅÅÌÊ¹ÓÃÂÊ¾¯¸æãĞÖµ</summary>
+    /// <summary>ç£ç›˜ä½¿ç”¨ç‡è­¦å‘Šé˜ˆå€¼</summary>
     public double DiskWarningThreshold { get; init; } = 80;
     
-    /// <summary>´ÅÅÌÊ¹ÓÃÂÊÑÏÖØãĞÖµ</summary>
+    /// <summary>ç£ç›˜ä½¿ç”¨ç‡ä¸¥é‡é˜ˆå€¼</summary>
     public double DiskCriticalThreshold { get; init; } = 95;
 }
 
 /// <summary>
-/// ĞÔÄÜ¸æ¾¯ÊÂ¼ş²ÎÊı
+/// æ€§èƒ½å‘Šè­¦äº‹ä»¶å‚æ•°
 /// </summary>
 public class PerformanceAlertEventArgs : EventArgs
 {
-    /// <summary>¸æ¾¯ÀàĞÍ</summary>
+    /// <summary>å‘Šè­¦ç±»å‹</summary>
     public PerformanceAlertType AlertType { get; init; }
     
-    /// <summary>¸æ¾¯¼¶±ğ</summary>
+    /// <summary>å‘Šè­¦çº§åˆ«</summary>
     public AlertLevel Level { get; init; }
     
-    /// <summary>µ±Ç°Öµ</summary>
+    /// <summary>å½“å‰å€¼</summary>
     public double CurrentValue { get; init; }
     
-    /// <summary>ãĞÖµ</summary>
+    /// <summary>é˜ˆå€¼</summary>
     public double Threshold { get; init; }
     
-    /// <summary>¸æ¾¯ÏûÏ¢</summary>
+    /// <summary>å‘Šè­¦æ¶ˆæ¯</summary>
     public string Message { get; init; } = string.Empty;
     
-    /// <summary>·¢ÉúÊ±¼ä</summary>
+    /// <summary>å‘ç”Ÿæ—¶é—´</summary>
     public DateTime Timestamp { get; init; } = DateTime.Now;
 }
 
 /// <summary>
-/// ĞÔÄÜ¸æ¾¯ÀàĞÍ
+/// æ€§èƒ½å‘Šè­¦ç±»å‹
 /// </summary>
 public enum PerformanceAlertType
 {
-    /// <summary>CPUÊ¹ÓÃÂÊ</summary>
+    /// <summary>CPUä½¿ç”¨ç‡</summary>
     CpuUsage,
-    /// <summary>ÄÚ´æÊ¹ÓÃÂÊ</summary>
+    /// <summary>å†…å­˜ä½¿ç”¨ç‡</summary>
     MemoryUsage,
-    /// <summary>´ÅÅÌÊ¹ÓÃÂÊ</summary>
+    /// <summary>ç£ç›˜ä½¿ç”¨ç‡</summary>
     DiskUsage,
-    /// <summary>ÍøÂçÁ÷Á¿</summary>
+    /// <summary>ç½‘ç»œæµé‡</summary>
     NetworkTraffic,
-    /// <summary>GCÑ¹Á¦</summary>
+    /// <summary>GCå‹åŠ›</summary>
     GCPressure
 }
 
 /// <summary>
-/// ¸æ¾¯¼¶±ğ
+/// å‘Šè­¦çº§åˆ«
 /// </summary>
 public enum AlertLevel
 {
-    /// <summary>Õı³£</summary>
+    /// <summary>æ­£å¸¸</summary>
     Normal,
-    /// <summary>¾¯¸æ</summary>
+    /// <summary>è­¦å‘Š</summary>
     Warning,
-    /// <summary>ÑÏÖØ</summary>
+    /// <summary>ä¸¥é‡</summary>
     Critical
 }
 
 /// <summary>
-/// ĞÔÄÜ¼à¿Ø½Ó¿Ú
-/// Ìá¹©CPU¡¢ÄÚ´æ¡¢ÍøÂçIOµÈÏµÍ³ĞÔÄÜ¼à¿Ø¹¦ÄÜ
+/// æ€§èƒ½ç›‘æ§æ¥å£
+/// æä¾›CPUã€å†…å­˜ã€ç½‘ç»œIOç­‰ç³»ç»Ÿæ€§èƒ½ç›‘æ§åŠŸèƒ½
 /// </summary>
 public interface IPerformanceMonitor : IAsyncDisposable, IDisposable
 {
     /// <summary>
-    /// ĞÔÄÜ¸æ¾¯ÊÂ¼ş
+    /// æ€§èƒ½å‘Šè­¦äº‹ä»¶
     /// </summary>
     event EventHandler<PerformanceAlertEventArgs>? PerformanceAlert;
 
     /// <summary>
-    /// Êı¾İ²É¼¯Íê³ÉÊÂ¼ş
+    /// æ•°æ®é‡‡é›†å®Œæˆäº‹ä»¶
     /// </summary>
     event EventHandler<SystemInfo>? DataCollected;
 
     /// <summary>
-    /// ÊÇ·ñÕıÔÚ¼à¿Ø
+    /// æ˜¯å¦æ­£åœ¨ç›‘æ§
     /// </summary>
     bool IsMonitoring { get; }
 
     /// <summary>
-    /// ²É¼¯¼ä¸ô
+    /// é‡‡é›†é—´éš”
     /// </summary>
     TimeSpan CollectionInterval { get; set; }
 
     /// <summary>
-    /// ĞÔÄÜãĞÖµÅäÖÃ
+    /// æ€§èƒ½é˜ˆå€¼é…ç½®
     /// </summary>
     PerformanceThreshold Threshold { get; set; }
 
     /// <summary>
-    /// Æô¶¯¼à¿Ø
+    /// å¯åŠ¨ç›‘æ§
     /// </summary>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
     Task StartAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Í£Ö¹¼à¿Ø
+    /// åœæ­¢ç›‘æ§
     /// </summary>
     Task StopAsync();
 
     /// <summary>
-    /// »ñÈ¡µ±Ç°CPUÊ¹ÓÃĞÅÏ¢
+    /// è·å–å½“å‰CPUä½¿ç”¨ä¿¡æ¯
     /// </summary>
-    /// <returns>CPUÊ¹ÓÃĞÅÏ¢</returns>
+    /// <returns>CPUä½¿ç”¨ä¿¡æ¯</returns>
     Task<CpuUsageInfo> GetCpuUsageAsync();
 
     /// <summary>
-    /// »ñÈ¡µ±Ç°ÄÚ´æÊ¹ÓÃĞÅÏ¢
+    /// è·å–å½“å‰å†…å­˜ä½¿ç”¨ä¿¡æ¯
     /// </summary>
-    /// <returns>ÄÚ´æÊ¹ÓÃĞÅÏ¢</returns>
+    /// <returns>å†…å­˜ä½¿ç”¨ä¿¡æ¯</returns>
     MemoryUsageInfo GetMemoryUsage();
 
     /// <summary>
-    /// »ñÈ¡µ±Ç°ÍøÂçIOĞÅÏ¢
+    /// è·å–å½“å‰ç½‘ç»œIOä¿¡æ¯
     /// </summary>
-    /// <returns>ÍøÂçIOĞÅÏ¢¼¯ºÏ</returns>
+    /// <returns>ç½‘ç»œIOä¿¡æ¯é›†åˆ</returns>
     IReadOnlyList<NetworkIOInfo> GetNetworkIO();
 
     /// <summary>
-    /// »ñÈ¡µ±Ç°´ÅÅÌIOĞÅÏ¢
+    /// è·å–å½“å‰ç£ç›˜IOä¿¡æ¯
     /// </summary>
-    /// <returns>´ÅÅÌIOĞÅÏ¢¼¯ºÏ</returns>
+    /// <returns>ç£ç›˜IOä¿¡æ¯é›†åˆ</returns>
     IReadOnlyList<DiskIOInfo> GetDiskIO();
 
     /// <summary>
-    /// »ñÈ¡ÏµÍ³×ÛºÏĞÅÏ¢
+    /// è·å–ç³»ç»Ÿç»¼åˆä¿¡æ¯
     /// </summary>
-    /// <returns>ÏµÍ³ĞÅÏ¢</returns>
+    /// <returns>ç³»ç»Ÿä¿¡æ¯</returns>
     Task<SystemInfo> GetSystemInfoAsync();
 
     /// <summary>
-    /// »ñÈ¡ÀúÊ·Êı¾İ
+    /// è·å–å†å²æ•°æ®
     /// </summary>
-    /// <param name="startTime">¿ªÊ¼Ê±¼ä</param>
-    /// <param name="endTime">½áÊøÊ±¼ä</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
-    /// <returns>ÀúÊ·Êı¾İ¼¯ºÏ</returns>
+    /// <param name="startTime">å¼€å§‹æ—¶é—´</param>
+    /// <param name="endTime">ç»“æŸæ—¶é—´</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
+    /// <returns>å†å²æ•°æ®é›†åˆ</returns>
     IAsyncEnumerable<SystemInfo> GetHistoryAsync(
         DateTime startTime,
         DateTime endTime,
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Ç¿ÖÆÖ´ĞĞGC
+    /// å¼ºåˆ¶æ‰§è¡ŒGC
     /// </summary>
-    /// <param name="generation">Òª»ØÊÕµÄ´úÊı£¬-1±íÊ¾È«²¿</param>
-    /// <param name="blocking">ÊÇ·ñ×èÈû</param>
+    /// <param name="generation">è¦å›æ”¶çš„ä»£æ•°ï¼Œ-1è¡¨ç¤ºå…¨éƒ¨</param>
+    /// <param name="blocking">æ˜¯å¦é˜»å¡</param>
     void ForceGC(int generation = -1, bool blocking = false);
 
     /// <summary>
-    /// »ñÈ¡GCÍ³¼ÆĞÅÏ¢
+    /// è·å–GCç»Ÿè®¡ä¿¡æ¯
     /// </summary>
-    /// <returns>GCÍ³¼Æ</returns>
+    /// <returns>GCç»Ÿè®¡</returns>
     GCStatistics GetGCStatistics();
 
     /// <summary>
-    /// Çå³ıÀúÊ·Êı¾İ
+    /// æ¸…é™¤å†å²æ•°æ®
     /// </summary>
-    /// <param name="beforeTime">Çå³ı´ËÊ±¼äÖ®Ç°µÄÊı¾İ</param>
+    /// <param name="beforeTime">æ¸…é™¤æ­¤æ—¶é—´ä¹‹å‰çš„æ•°æ®</param>
     void ClearHistory(DateTime beforeTime);
 }
 
 /// <summary>
-/// GCÍ³¼ÆĞÅÏ¢
+/// GCç»Ÿè®¡ä¿¡æ¯
 /// </summary>
 public record GCStatistics
 {
-    /// <summary>Gen0»ØÊÕ´ÎÊı</summary>
+    /// <summary>Gen0å›æ”¶æ¬¡æ•°</summary>
     public int Gen0Collections { get; init; }
     
-    /// <summary>Gen1»ØÊÕ´ÎÊı</summary>
+    /// <summary>Gen1å›æ”¶æ¬¡æ•°</summary>
     public int Gen1Collections { get; init; }
     
-    /// <summary>Gen2»ØÊÕ´ÎÊı</summary>
+    /// <summary>Gen2å›æ”¶æ¬¡æ•°</summary>
     public int Gen2Collections { get; init; }
     
-    /// <summary>×ÜÄÚ´æ</summary>
+    /// <summary>æ€»å†…å­˜</summary>
     public long TotalMemory { get; init; }
     
-    /// <summary>¶Ñ´óĞ¡</summary>
+    /// <summary>å †å¤§å°</summary>
     public long HeapSize { get; init; }
     
-    /// <summary>ËéÆ¬´óĞ¡</summary>
+    /// <summary>ç¢ç‰‡å¤§å°</summary>
     public long FragmentedBytes { get; init; }
     
-    /// <summary>GCÔİÍ£Ê±¼ä°Ù·Ö±È</summary>
+    /// <summary>GCæš‚åœæ—¶é—´ç™¾åˆ†æ¯”</summary>
     public double PauseTimePercentage { get; init; }
     
-    /// <summary>ÊÇ·ñÕıÔÚÑ¹Ëõ</summary>
+    /// <summary>æ˜¯å¦æ­£åœ¨å‹ç¼©</summary>
     public bool IsCompacting { get; init; }
     
-    /// <summary>ÊÇ·ñ²¢·¢Ä£Ê½</summary>
+    /// <summary>æ˜¯å¦å¹¶å‘æ¨¡å¼</summary>
     public bool IsConcurrent { get; init; }
 }

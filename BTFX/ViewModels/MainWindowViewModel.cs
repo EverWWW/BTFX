@@ -1,4 +1,4 @@
-using BTFX.Common;
+ï»¿using BTFX.Common;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -6,7 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 namespace BTFX.ViewModels;
 
 /// <summary>
-/// Ö÷´°¿ÚViewModel
+/// ä¸»çª—å£ViewModel
 /// </summary>
 public class MainWindowViewModel : ObservableObject
 {
@@ -19,11 +19,11 @@ public class MainWindowViewModel : ObservableObject
     private object? _currentView;
     private string _version = Constants.VERSION_DISPLAY;
     private bool _isFullscreen;
-    private string _userDisplayName = "ÓÎ¿Í";
+    private string _userDisplayName = "æ¸¸å®¢";
 
 
     /// <summary>
-    /// ´°¿Ú±êÌâ
+    /// çª—å£æ ‡é¢˜
     /// </summary>
     public string Title
     {
@@ -32,7 +32,7 @@ public class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// µ±Ç°ÊÓÍ¼
+    /// å½“å‰è§†å›¾
     /// </summary>
     public object? CurrentView
     {
@@ -41,7 +41,7 @@ public class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// °æ±¾ºÅ
+    /// ç‰ˆæœ¬å·
     /// </summary>
     public string Version
     {
@@ -50,7 +50,7 @@ public class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// ÊÇ·ñÈ«ÆÁ
+    /// æ˜¯å¦å…¨å±
     /// </summary>
     public bool IsFullscreen
     {
@@ -59,17 +59,17 @@ public class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// ÇĞ»»È«ÆÁÃüÁî
+    /// åˆ‡æ¢å…¨å±å‘½ä»¤
     /// </summary>
     public IRelayCommand ToggleFullscreenCommand { get; }
 
     /// <summary>
-    /// ÍË³öÈ«ÆÁÃüÁî
+    /// é€€å‡ºå…¨å±å‘½ä»¤
     /// </summary>
     public IRelayCommand ExitFullscreenCommand { get; }
 
     /// <summary>
-    /// µ±Ç°ÏÔÊ¾µÄÕËºÅÃû£¬µÇÂ¼ºó×Ô¶¯¸üĞÂ
+    /// å½“å‰æ˜¾ç¤ºçš„è´¦å·åï¼Œç™»å½•åè‡ªåŠ¨æ›´æ–°
     /// </summary>
     public string UserDisplayName
     {
@@ -78,13 +78,13 @@ public class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// ÊÇ·ñÕıÔÚÏÔÊ¾µÇÂ¼Ò³£¨µÇÂ¼Ò³Ê±Òş²Ø±êÌâÀ¸£©
+    /// æ˜¯å¦æ­£åœ¨æ˜¾ç¤ºç™»å½•é¡µï¼ˆç™»å½•é¡µæ—¶éšè—æ ‡é¢˜æ ï¼‰
     /// </summary>
     public bool IsLoginView => _navigationService.CurrentViewKey == "LoginViewModel"
                                || string.IsNullOrEmpty(_navigationService.CurrentViewKey);
 
     /// <summary>
-    /// ¹¹Ôìº¯Êı
+    /// æ„é€ å‡½æ•°
     /// </summary>
     public MainWindowViewModel(
         INavigationService navigationService,
@@ -97,11 +97,11 @@ public class MainWindowViewModel : ObservableObject
             _localizationService = localizationService;
             _sessionService = sessionService;
 
-            // ³õÊ¼»¯ÃüÁî
+            // åˆå§‹åŒ–å‘½ä»¤
             ToggleFullscreenCommand = new RelayCommand(ToggleFullscreen);
             ExitFullscreenCommand = new RelayCommand(ExitFullscreen);
 
-            // ¼àÌıµ¼º½·şÎñµÄÊÓÍ¼±ä»¯
+            // ç›‘å¬å¯¼èˆªæœåŠ¡çš„è§†å›¾å˜åŒ–
             if (_navigationService is ObservableObject observableNavigation)
             {
                 observableNavigation.PropertyChanged += (s, e) =>
@@ -118,18 +118,18 @@ public class MainWindowViewModel : ObservableObject
                 };
             }
 
-            // ¼àÌıÓïÑÔ±ä»¯£¬¸üĞÂ±êÌâ
+            // ç›‘å¬è¯­è¨€å˜åŒ–ï¼Œæ›´æ–°æ ‡é¢˜
             _localizationService.LanguageChanged += (s, e) =>
             {
                 Title = _localizationService.GetString("AppName");
             };
 
-            // ³õÊ¼»¯Ê±Á¢¼´Ó¦ÓÃµ±Ç°ÓïÑÔµÄ±êÌâ
+            // åˆå§‹åŒ–æ—¶ç«‹å³åº”ç”¨å½“å‰è¯­è¨€çš„æ ‡é¢˜
             Title = _localizationService.GetString("AppName");
         }
 
     /// <summary>
-    /// ÇĞ»»È«ÆÁ
+    /// åˆ‡æ¢å…¨å±
     /// </summary>
     private void ToggleFullscreen()
     {
@@ -137,7 +137,7 @@ public class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// ÍË³öÈ«ÆÁ
+    /// é€€å‡ºå…¨å±
     /// </summary>
     private void ExitFullscreen()
     {
@@ -145,7 +145,7 @@ public class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// ´Ó SessionService Ë¢ĞÂµ±Ç°ÕËºÅÏÔÊ¾Ãû³Æ
+    /// ä» SessionService åˆ·æ–°å½“å‰è´¦å·æ˜¾ç¤ºåç§°
     /// </summary>
     private void RefreshUserDisplayName()
     {
@@ -154,6 +154,6 @@ public class MainWindowViewModel : ObservableObject
             ? user.Name
             : !string.IsNullOrWhiteSpace(user?.Username)
                 ? user.Username
-                : "ÓÎ¿Í";
+                : "æ¸¸å®¢";
     }
 }

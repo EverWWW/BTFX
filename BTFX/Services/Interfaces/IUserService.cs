@@ -1,64 +1,64 @@
-using BTFX.Models;
+ï»¿using BTFX.Models;
 
 namespace BTFX.Services.Interfaces;
 
 /// <summary>
-/// ÓÃ»§·şÎñ½Ó¿Ú
+/// ç”¨æˆ·æœåŠ¡æ¥å£
 /// </summary>
 public interface IUserService
 {
     /// <summary>
-    /// »ñÈ¡ËùÓĞÓÃ»§
+    /// è·å–æ‰€æœ‰ç”¨æˆ·
     /// </summary>
-    /// <returns>ÓÃ»§ÁĞ±í</returns>
+    /// <returns>ç”¨æˆ·åˆ—è¡¨</returns>
     Task<List<User>> GetAllUsersAsync();
 
     /// <summary>
-    /// ¸ù¾İID»ñÈ¡ÓÃ»§
+    /// æ ¹æ®IDè·å–ç”¨æˆ·
     /// </summary>
-    /// <param name="id">ÓÃ»§ID</param>
-    /// <returns>ÓÃ»§ĞÅÏ¢</returns>
+    /// <param name="id">ç”¨æˆ·ID</param>
+    /// <returns>ç”¨æˆ·ä¿¡æ¯</returns>
     Task<User?> GetUserByIdAsync(int id);
 
     /// <summary>
-    /// ¸ù¾İÕËºÅ»ñÈ¡ÓÃ»§
+    /// æ ¹æ®è´¦å·è·å–ç”¨æˆ·
     /// </summary>
-    /// <param name="username">ÕËºÅ</param>
-    /// <returns>ÓÃ»§ĞÅÏ¢</returns>
+    /// <param name="username">è´¦å·</param>
+    /// <returns>ç”¨æˆ·ä¿¡æ¯</returns>
     Task<User?> GetUserByUsernameAsync(string username);
 
     /// <summary>
-    /// Ìí¼ÓÓÃ»§
+    /// æ·»åŠ ç”¨æˆ·
     /// </summary>
-    /// <param name="user">ÓÃ»§ĞÅÏ¢</param>
-    /// <returns>ĞÂÔöµÄÓÃ»§ID</returns>
+    /// <param name="user">ç”¨æˆ·ä¿¡æ¯</param>
+    /// <returns>æ–°å¢çš„ç”¨æˆ·ID</returns>
     Task<int> AddUserAsync(User user);
 
     /// <summary>
-    /// ¸üĞÂÓÃ»§ĞÅÏ¢
+    /// æ›´æ–°ç”¨æˆ·ä¿¡æ¯
     /// </summary>
-    /// <param name="user">ÓÃ»§ĞÅÏ¢</param>
-    /// <returns>ÊÇ·ñ³É¹¦</returns>
+    /// <param name="user">ç”¨æˆ·ä¿¡æ¯</param>
+    /// <returns>æ˜¯å¦æˆåŠŸ</returns>
     Task<bool> UpdateUserAsync(User user);
 
     /// <summary>
-    /// É¾³ıÓÃ»§
+    /// åˆ é™¤ç”¨æˆ·
     /// </summary>
-    /// <param name="id">ÓÃ»§ID</param>
-    /// <returns>ÊÇ·ñ³É¹¦</returns>
+    /// <param name="id">ç”¨æˆ·ID</param>
+    /// <returns>æ˜¯å¦æˆåŠŸ</returns>
     Task<bool> DeleteUserAsync(int id);
 
     /// <summary>
-    /// ¼ì²éÕËºÅÊÇ·ñ´æÔÚ
+    /// æ£€æŸ¥è´¦å·æ˜¯å¦å­˜åœ¨
     /// </summary>
-    /// <param name="username">ÕËºÅ</param>
-    /// <param name="excludeId">ÅÅ³ıµÄÓÃ»§ID£¨ÓÃÓÚ¸üĞÂÊ±¼ì²é£©</param>
-    /// <returns>ÊÇ·ñ´æÔÚ</returns>
+    /// <param name="username">è´¦å·</param>
+    /// <param name="excludeId">æ’é™¤çš„ç”¨æˆ·IDï¼ˆç”¨äºæ›´æ–°æ—¶æ£€æŸ¥ï¼‰</param>
+    /// <returns>æ˜¯å¦å­˜åœ¨</returns>
     Task<bool> IsUsernameExistsAsync(string username, int? excludeId = null);
 
     /// <summary>
-    /// ³õÊ¼»¯Ä¬ÈÏÓÃ»§
+    /// åˆå§‹åŒ–é»˜è®¤ç”¨æˆ·
     /// </summary>
-    /// <returns>ÊÇ·ñ³É¹¦</returns>
+    /// <returns>æ˜¯å¦æˆåŠŸ</returns>
     Task<bool> InitializeDefaultUsersAsync();
 }

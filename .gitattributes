@@ -61,3 +61,45 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+###############################################################################
+# Project text file rules
+#
+# Keep source and project files as text and normalize to CRLF on checkout.
+# Encoding is enforced by .editorconfig; gitattributes here focuses on Git text
+# behavior and binary detection.
+###############################################################################
+*.cs          text eol=crlf
+*.csproj      text eol=crlf
+*.sln         text eol=crlf
+*.props       text eol=crlf
+*.targets     text eol=crlf
+*.config      text eol=crlf
+*.xml         text eol=crlf
+*.xaml        text eol=crlf
+*.resx        text eol=crlf
+*.json        text eol=crlf
+*.yml         text eol=crlf
+*.yaml        text eol=crlf
+*.md          text eol=lf
+*.cmd         text eol=crlf
+*.bat         text eol=crlf
+*.ps1         text eol=crlf
+
+###############################################################################
+# Binary files
+###############################################################################
+*.png         binary
+*.jpg         binary
+*.jpeg        binary
+*.gif         binary
+*.bmp         binary
+*.ico         binary
+*.pdf         binary
+*.zip         binary
+*.7z          binary
+*.dll         binary
+*.exe         binary
+*.pdb         binary
+*.db          binary
+*.sqlite      binary

@@ -1,4 +1,4 @@
-using System.IO;
+ï»¿using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -9,7 +9,7 @@ using BTFX.Services.Interfaces;
 namespace BTFX.Services.Implementations;
 
 /// <summary>
-/// ÉèÖÃ·şÎñÊµÏÖ
+/// è®¾ç½®æœåŠ¡å®ç°
 /// </summary>
 public class SettingsService : ISettingsService
 {
@@ -17,12 +17,12 @@ public class SettingsService : ISettingsService
     private readonly JsonSerializerOptions _jsonOptions;
 
     /// <summary>
-    /// µ±Ç°ÉèÖÃ
+    /// å½“å‰è®¾ç½®
     /// </summary>
     public AppSettings CurrentSettings { get; private set; } = new();
 
     /// <summary>
-    /// ¹¹Ôìº¯Êı
+    /// æ„é€ å‡½æ•°
     /// </summary>
     public SettingsService()
     {
@@ -35,7 +35,7 @@ public class SettingsService : ISettingsService
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        // È·±£ÅäÖÃÄ¿Â¼´æÔÚ
+        // ç¡®ä¿é…ç½®ç›®å½•å­˜åœ¨
         if (!Directory.Exists(configDir))
         {
             Directory.CreateDirectory(configDir);
@@ -43,7 +43,7 @@ public class SettingsService : ISettingsService
     }
 
     /// <summary>
-    /// ¼ÓÔØÉèÖÃ
+    /// åŠ è½½è®¾ç½®
     /// </summary>
     public void LoadSettings()
     {
@@ -56,20 +56,20 @@ public class SettingsService : ISettingsService
             }
             else
             {
-                // ´´½¨Ä¬ÈÏÅäÖÃ
+                // åˆ›å»ºé»˜è®¤é…ç½®
                 CurrentSettings = new AppSettings();
                 SaveSettings();
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"¼ÓÔØÅäÖÃÊ§°Ü: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"åŠ è½½é…ç½®å¤±è´¥: {ex.Message}");
             CurrentSettings = new AppSettings();
         }
     }
 
     /// <summary>
-    /// ±£´æÉèÖÃ
+    /// ä¿å­˜è®¾ç½®
     /// </summary>
     public void SaveSettings()
     {
@@ -80,12 +80,12 @@ public class SettingsService : ISettingsService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"±£´æÅäÖÃÊ§°Ü: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"ä¿å­˜é…ç½®å¤±è´¥: {ex.Message}");
         }
     }
 
     /// <summary>
-    /// »ñÈ¡ÅäÖÃÖµ
+    /// è·å–é…ç½®å€¼
     /// </summary>
     public T GetValue<T>(string key, T defaultValue = default!)
     {
@@ -103,14 +103,14 @@ public class SettingsService : ISettingsService
         }
         catch
         {
-            // ºöÂÔÒì³£
+            // å¿½ç•¥å¼‚å¸¸
         }
 
         return defaultValue;
     }
 
     /// <summary>
-    /// ÉèÖÃÅäÖÃÖµ
+    /// è®¾ç½®é…ç½®å€¼
     /// </summary>
     public void SetValue<T>(string key, T value)
     {
@@ -125,12 +125,12 @@ public class SettingsService : ISettingsService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"ÉèÖÃÅäÖÃÖµÊ§°Ü: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"è®¾ç½®é…ç½®å€¼å¤±è´¥: {ex.Message}");
         }
     }
 
     /// <summary>
-    /// ±£´æµÇÂ¼Æ¾¾İ
+    /// ä¿å­˜ç™»å½•å‡­æ®
     /// </summary>
     public async Task SaveCredentialsAsync(string username, string password)
     {
@@ -142,7 +142,7 @@ public class SettingsService : ISettingsService
     }
 
     /// <summary>
-    /// ¼ÓÔØµÇÂ¼Æ¾¾İ
+    /// åŠ è½½ç™»å½•å‡­æ®
     /// </summary>
     public async Task<(string Username, string Password)?> LoadCredentialsAsync()
     {
@@ -158,7 +158,7 @@ public class SettingsService : ISettingsService
     }
 
     /// <summary>
-    /// Çå³ıµÇÂ¼Æ¾¾İ
+    /// æ¸…é™¤ç™»å½•å‡­æ®
     /// </summary>
     public async Task ClearCredentialsAsync()
     {
@@ -170,7 +170,7 @@ public class SettingsService : ISettingsService
     }
 
     /// <summary>
-    /// »ñÈ¡µ¥Î»Ãû³Æ
+    /// è·å–å•ä½åç§°
     /// </summary>
     public string GetUnitName()
     {
@@ -178,7 +178,7 @@ public class SettingsService : ISettingsService
     }
 
     /// <summary>
-    /// ÉèÖÃµ¥Î»Ãû³Æ
+    /// è®¾ç½®å•ä½åç§°
     /// </summary>
     public void SetUnitName(string name)
     {
@@ -187,7 +187,7 @@ public class SettingsService : ISettingsService
     }
 
     /// <summary>
-    /// »ñÈ¡LogoÂ·¾¶
+    /// è·å–Logoè·¯å¾„
     /// </summary>
     public string? GetLogoPath()
     {
@@ -195,7 +195,7 @@ public class SettingsService : ISettingsService
     }
 
     /// <summary>
-    /// ÉèÖÃLogoÂ·¾¶
+    /// è®¾ç½®Logoè·¯å¾„
     /// </summary>
     public void SetLogoPath(string? path)
     {
@@ -203,14 +203,14 @@ public class SettingsService : ISettingsService
         SaveSettings();
     }
 
-    #region ¼ÓÃÜ½âÃÜ¸¨Öú·½·¨
+    #region åŠ å¯†è§£å¯†è¾…åŠ©æ–¹æ³•
 
-    // ¼ÓÃÜÃÜÔ¿£¨Êµ¼ÊÏîÄ¿ÖĞÓ¦¸ÃÊ¹ÓÃ¸ü°²È«µÄ·½Ê½´æ´¢£©
+    // åŠ å¯†å¯†é’¥ï¼ˆå®é™…é¡¹ç›®ä¸­åº”è¯¥ä½¿ç”¨æ›´å®‰å…¨çš„æ–¹å¼å­˜å‚¨ï¼‰
     private static readonly byte[] Key = Encoding.UTF8.GetBytes("BTFX2026SecretK!");
     private static readonly byte[] IV = Encoding.UTF8.GetBytes("BTFX2026InitVec!");
 
     /// <summary>
-    /// ¼ÓÃÜÃÜÂë
+    /// åŠ å¯†å¯†ç 
     /// </summary>
     private static string EncryptPassword(string password)
     {
@@ -239,7 +239,7 @@ public class SettingsService : ISettingsService
     }
 
     /// <summary>
-    /// ½âÃÜÃÜÂë
+    /// è§£å¯†å¯†ç 
     /// </summary>
     private static string DecryptPassword(string encryptedPassword)
     {
@@ -266,10 +266,10 @@ public class SettingsService : ISettingsService
 
                 #endregion
 
-                #region ÉèÖÃµ¼Èëµ¼³ö
+                #region è®¾ç½®å¯¼å…¥å¯¼å‡º
 
                 /// <summary>
-                /// µ¼³öÉèÖÃÄ£ĞÍ£¨ÓÃÓÚµ¼³ö£¬²»º¬Ãô¸ĞÊı¾İ£©
+                /// å¯¼å‡ºè®¾ç½®æ¨¡å‹ï¼ˆç”¨äºå¯¼å‡ºï¼Œä¸å«æ•æ„Ÿæ•°æ®ï¼‰
                 /// </summary>
                 private class ExportableSettings
                 {
@@ -280,13 +280,13 @@ public class SettingsService : ISettingsService
                 }
 
                 /// <summary>
-                /// µ¼³öÉèÖÃµ½ÎÄ¼ş
+                /// å¯¼å‡ºè®¾ç½®åˆ°æ–‡ä»¶
                 /// </summary>
                 public async Task<bool> ExportSettingsAsync(string filePath)
                 {
                     try
                     {
-                        // ´´½¨¿Éµ¼³öµÄÉèÖÃ£¨²»º¬Æ¾¾İµÈÃô¸ĞĞÅÏ¢£©
+                        // åˆ›å»ºå¯å¯¼å‡ºçš„è®¾ç½®ï¼ˆä¸å«å‡­æ®ç­‰æ•æ„Ÿä¿¡æ¯ï¼‰
                         var exportableSettings = new ExportableSettings
                         {
                             Application = CurrentSettings.Application,
@@ -301,13 +301,13 @@ public class SettingsService : ISettingsService
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"µ¼³öÉèÖÃÊ§°Ü: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"å¯¼å‡ºè®¾ç½®å¤±è´¥: {ex.Message}");
                         return false;
                     }
                 }
 
                 /// <summary>
-                /// ´ÓÎÄ¼şµ¼ÈëÉèÖÃ
+                /// ä»æ–‡ä»¶å¯¼å…¥è®¾ç½®
                 /// </summary>
                 public async Task<bool> ImportSettingsAsync(string filePath)
                 {
@@ -326,7 +326,7 @@ public class SettingsService : ISettingsService
                             return false;
                         }
 
-                        // Ó¦ÓÃµ¼ÈëµÄÉèÖÃ£¨±£ÁôÆ¾¾İĞÅÏ¢£©
+                        // åº”ç”¨å¯¼å…¥çš„è®¾ç½®ï¼ˆä¿ç•™å‡­æ®ä¿¡æ¯ï¼‰
                         if (importedSettings.Application != null)
                         {
                             CurrentSettings.Application = importedSettings.Application;
@@ -342,7 +342,7 @@ public class SettingsService : ISettingsService
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"µ¼ÈëÉèÖÃÊ§°Ü: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"å¯¼å…¥è®¾ç½®å¤±è´¥: {ex.Message}");
                         return false;
                     }
                 }

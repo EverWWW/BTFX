@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+ï»¿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using ToolHelper.Communication.Extensions;
@@ -7,18 +7,18 @@ using ToolHelper.Communication.Http;
 namespace ToolHelperTest.Examples;
 
 /// <summary>
-/// HTTP ¿Í»§¶ËÊ¹ÓÃÊ¾Àı
-/// ÑİÊ¾ÈçºÎÊ¹ÓÃ HttpHelper ½øĞĞ HTTP Í¨ĞÅ
+/// HTTP å®¢æˆ·ç«¯ä½¿ç”¨ç¤ºä¾‹
+/// æ¼”ç¤ºå¦‚ä½•ä½¿ç”¨ HttpHelper è¿›è¡Œ HTTP é€šä¿¡
 /// </summary>
 public class HttpExample
 {
     /// <summary>
-    /// Ê¾Àı 1: »ù´¡ GET ÇëÇó
-    /// ÑİÊ¾×î¼òµ¥µÄ HTTP GET ÇëÇó
+    /// ç¤ºä¾‹ 1: åŸºç¡€ GET è¯·æ±‚
+    /// æ¼”ç¤ºæœ€ç®€å•çš„ HTTP GET è¯·æ±‚
     /// </summary>
     public static async Task BasicGetRequestAsync()
     {
-        // 1. ÅäÖÃÒÀÀµ×¢Èë
+        // 1. é…ç½®ä¾èµ–æ³¨å…¥
         var services = new ServiceCollection();
         services.AddLogging(builder =>
         {
@@ -26,11 +26,11 @@ public class HttpExample
             builder.SetMinimumLevel(LogLevel.Information);
         });
 
-        // 2. Ìí¼Ó HTTP ·şÎñ
+        // 2. æ·»åŠ  HTTP æœåŠ¡
         services.AddHttp(options =>
         {
             options.BaseAddress = "https://api.github.com";
-            options.Timeout = 30000; // 30 Ãë³¬Ê±
+            options.Timeout = 30000; // 30 ç§’è¶…æ—¶
         });
 
         var serviceProvider = services.BuildServiceProvider();
@@ -38,19 +38,19 @@ public class HttpExample
 
         try
         {
-            Console.WriteLine("=== HTTP GET ÇëÇóÊ¾Àı ===\n");
+            Console.WriteLine("=== HTTP GET è¯·æ±‚ç¤ºä¾‹ ===\n");
 
-            // 3. ·¢ËÍ GET ÇëÇó
-            Console.WriteLine("·¢ËÍ GET ÇëÇóµ½ GitHub API...");
+            // 3. å‘é€ GET è¯·æ±‚
+            Console.WriteLine("å‘é€ GET è¯·æ±‚åˆ° GitHub API...");
             var response = await httpHelper.GetAsync("/");
 
-            Console.WriteLine($"? ÇëÇó³É¹¦");
-            Console.WriteLine($"ÏìÓ¦³¤¶È: {response.Length} ×Ö½Ú");
-            Console.WriteLine($"ÄÚÈİÔ¤ÀÀ: {response.Substring(0, Math.Min(200, response.Length))}...");
+            Console.WriteLine($"? è¯·æ±‚æˆåŠŸ");
+            Console.WriteLine($"å“åº”é•¿åº¦: {response.Length} å­—èŠ‚");
+            Console.WriteLine($"å†…å®¹é¢„è§ˆ: {response.Substring(0, Math.Min(200, response.Length))}...");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"? ÇëÇóÊ§°Ü: {ex.Message}");
+            Console.WriteLine($"? è¯·æ±‚å¤±è´¥: {ex.Message}");
         }
         finally
         {
@@ -59,8 +59,8 @@ public class HttpExample
     }
 
     /// <summary>
-    /// Ê¾Àı 2: POST ÇëÇó·¢ËÍ JSON Êı¾İ
-    /// ÑİÊ¾ÈçºÎ·¢ËÍ POST ÇëÇóºÍ JSON Êı¾İ
+    /// ç¤ºä¾‹ 2: POST è¯·æ±‚å‘é€ JSON æ•°æ®
+    /// æ¼”ç¤ºå¦‚ä½•å‘é€ POST è¯·æ±‚å’Œ JSON æ•°æ®
     /// </summary>
     public static async Task PostJsonRequestAsync()
     {
@@ -74,28 +74,28 @@ public class HttpExample
         var httpHelper = serviceProvider.GetRequiredService<HttpHelper>();
         try
         {
-            Console.WriteLine("=== HTTP POST JSON ÇëÇóÊ¾Àı ===\n");
-            // ×¼±¸Òª·¢ËÍµÄÊı¾İ
+            Console.WriteLine("=== HTTP POST JSON è¯·æ±‚ç¤ºä¾‹ ===\n");
+            // å‡†å¤‡è¦å‘é€çš„æ•°æ®
             var postData = new
             {
-                title = "²âÊÔÎÄÕÂ",
-                body = "ÕâÊÇÒ»Æª²âÊÔÎÄÕÂµÄÄÚÈİ",
+                title = "æµ‹è¯•æ–‡ç« ",
+                body = "è¿™æ˜¯ä¸€ç¯‡æµ‹è¯•æ–‡ç« çš„å†…å®¹",
                 userId = 1
             };
-            Console.WriteLine($"·¢ËÍµÄÊı¾İ:");
-            Console.WriteLine($"  ±êÌâ: {postData.title}");
-            Console.WriteLine($"  ÄÚÈİ: {postData.body}\n");
+            Console.WriteLine($"å‘é€çš„æ•°æ®:");
+            Console.WriteLine($"  æ ‡é¢˜: {postData.title}");
+            Console.WriteLine($"  å†…å®¹: {postData.body}\n");
 
-            // ·¢ËÍ POST ÇëÇó
-            Console.WriteLine("·¢ËÍ POST ÇëÇó...");
+            // å‘é€ POST è¯·æ±‚
+            Console.WriteLine("å‘é€ POST è¯·æ±‚...");
             var response = await httpHelper.PostJsonAsync("/posts", postData);
 
-            Console.WriteLine($"? ÇëÇó³É¹¦");
-            Console.WriteLine($"ÏìÓ¦ÄÚÈİ:\n{response}");
+            Console.WriteLine($"? è¯·æ±‚æˆåŠŸ");
+            Console.WriteLine($"å“åº”å†…å®¹:\n{response}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"? ÇëÇóÊ§°Ü: {ex.Message}");
+            Console.WriteLine($"? è¯·æ±‚å¤±è´¥: {ex.Message}");
         }
         finally
         {
@@ -104,8 +104,8 @@ public class HttpExample
     }
 
     /// <summary>
-    /// Ê¾Àı 3: GET ÇëÇó²¢·´ĞòÁĞ»¯ JSON
-    /// ÑİÊ¾ÈçºÎ»ñÈ¡ºÍ½âÎö JSON ÏìÓ¦
+    /// ç¤ºä¾‹ 3: GET è¯·æ±‚å¹¶ååºåˆ—åŒ– JSON
+    /// æ¼”ç¤ºå¦‚ä½•è·å–å’Œè§£æ JSON å“åº”
     /// </summary>
     public static async Task GetAndDeserializeJsonAsync()
     {
@@ -121,29 +121,29 @@ public class HttpExample
 
         try
         {
-            Console.WriteLine("=== HTTP GET ²¢·´ĞòÁĞ»¯ JSON Ê¾Àı ===\n");
+            Console.WriteLine("=== HTTP GET å¹¶ååºåˆ—åŒ– JSON ç¤ºä¾‹ ===\n");
 
-            // »ñÈ¡ÓÃ»§ÁĞ±í
-            Console.WriteLine("»ñÈ¡ÓÃ»§ÁĞ±í...");
+            // è·å–ç”¨æˆ·åˆ—è¡¨
+            Console.WriteLine("è·å–ç”¨æˆ·åˆ—è¡¨...");
             var users = await httpHelper.GetAsync<List<User>>("/users");
 
-            Console.WriteLine($"? ¹²»ñÈ¡ {users?.Count ?? 0} ¸öÓÃ»§:\n");
+            Console.WriteLine($"? å…±è·å– {users?.Count ?? 0} ä¸ªç”¨æˆ·:\n");
 
             if (users != null)
             {
-                foreach (var user in users.Take(3)) // Ö»ÏÔÊ¾Ç° 3 ¸ö
+                foreach (var user in users.Take(3)) // åªæ˜¾ç¤ºå‰ 3 ä¸ª
                 {
-                    Console.WriteLine($"ÓÃ»§ #{user.Id}");
-                    Console.WriteLine($"  ĞÕÃû: {user.Name}");
-                    Console.WriteLine($"  ÓÊÏä: {user.Email}");
-                    Console.WriteLine($"  ÍøÕ¾: {user.Website}");
+                    Console.WriteLine($"ç”¨æˆ· #{user.Id}");
+                    Console.WriteLine($"  å§“å: {user.Name}");
+                    Console.WriteLine($"  é‚®ç®±: {user.Email}");
+                    Console.WriteLine($"  ç½‘ç«™: {user.Website}");
                     Console.WriteLine();
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"? ÇëÇóÊ§°Ü: {ex.Message}");
+            Console.WriteLine($"? è¯·æ±‚å¤±è´¥: {ex.Message}");
         }
         finally
         {
@@ -152,8 +152,8 @@ public class HttpExample
     }
 
     /// <summary>
-    /// Ê¾Àı 4: ÎÄ¼şÏÂÔØ
-    /// ÑİÊ¾ÈçºÎÏÂÔØÎÄ¼ş
+    /// ç¤ºä¾‹ 4: æ–‡ä»¶ä¸‹è½½
+    /// æ¼”ç¤ºå¦‚ä½•ä¸‹è½½æ–‡ä»¶
     /// </summary>
     public static async Task FileDownloadAsync()
     {
@@ -161,7 +161,7 @@ public class HttpExample
         services.AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Warning));
         services.AddHttp(options =>
         {
-            options.Timeout = 60000; // 60 Ãë³¬Ê±
+            options.Timeout = 60000; // 60 ç§’è¶…æ—¶
         });
 
         var serviceProvider = services.BuildServiceProvider();
@@ -169,32 +169,32 @@ public class HttpExample
 
         try
         {
-            Console.WriteLine("=== HTTP ÎÄ¼şÏÂÔØÊ¾Àı ===\n");
+            Console.WriteLine("=== HTTP æ–‡ä»¶ä¸‹è½½ç¤ºä¾‹ ===\n");
 
             var fileUrl = "https://jsonplaceholder.typicode.com/posts/1";
             var savePath = "downloaded_file.json";
 
-            Console.WriteLine($"ÏÂÔØÎÄ¼ş: {fileUrl}");
-            Console.WriteLine($"±£´æµ½: {savePath}\n");
+            Console.WriteLine($"ä¸‹è½½æ–‡ä»¶: {fileUrl}");
+            Console.WriteLine($"ä¿å­˜åˆ°: {savePath}\n");
 
-            // ÏÂÔØÎÄ¼ş
+            // ä¸‹è½½æ–‡ä»¶
             var fileSize = await httpHelper.DownloadFileAsync(fileUrl, savePath);
 
             var fileInfo = new FileInfo(savePath);
-            Console.WriteLine("? ÏÂÔØÍê³É£¡");
-            Console.WriteLine($"  ÎÄ¼ş´óĞ¡: {fileSize} ×Ö½Ú");
-            Console.WriteLine($"  ±£´æÂ·¾¶: {fileInfo.FullName}");
+            Console.WriteLine("? ä¸‹è½½å®Œæˆï¼");
+            Console.WriteLine($"  æ–‡ä»¶å¤§å°: {fileSize} å­—èŠ‚");
+            Console.WriteLine($"  ä¿å­˜è·¯å¾„: {fileInfo.FullName}");
 
-            // ÏÔÊ¾ÄÚÈİÔ¤ÀÀ
+            // æ˜¾ç¤ºå†…å®¹é¢„è§ˆ
             var content = await File.ReadAllTextAsync(savePath);
-            Console.WriteLine($"\nÎÄ¼şÄÚÈİ:\n{content}");
+            Console.WriteLine($"\næ–‡ä»¶å†…å®¹:\n{content}");
 
-            // ÇåÀí
+            // æ¸…ç†
             File.Delete(savePath);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"? ÏÂÔØÊ§°Ü: {ex.Message}");
+            Console.WriteLine($"? ä¸‹è½½å¤±è´¥: {ex.Message}");
         }
         finally
         {
@@ -203,8 +203,8 @@ public class HttpExample
     }
 
     /// <summary>
-    /// Ê¾Àı 5: ÎÄ¼şÉÏ´«
-    /// ÑİÊ¾ÈçºÎÉÏ´«ÎÄ¼ş
+    /// ç¤ºä¾‹ 5: æ–‡ä»¶ä¸Šä¼ 
+    /// æ¼”ç¤ºå¦‚ä½•ä¸Šä¼ æ–‡ä»¶
     /// </summary>
     public static async Task FileUploadAsync()
     {
@@ -220,29 +220,29 @@ public class HttpExample
 
         try
         {
-            Console.WriteLine("=== HTTP ÎÄ¼şÉÏ´«Ê¾Àı ===\n");
+            Console.WriteLine("=== HTTP æ–‡ä»¶ä¸Šä¼ ç¤ºä¾‹ ===\n");
 
-            // ´´½¨²âÊÔÎÄ¼ş
+            // åˆ›å»ºæµ‹è¯•æ–‡ä»¶
             var testFilePath = "test_upload.txt";
-            await File.WriteAllTextAsync(testFilePath, "ÕâÊÇÒ»¸ö²âÊÔÎÄ¼şÄÚÈİ\nTest file content");
+            await File.WriteAllTextAsync(testFilePath, "è¿™æ˜¯ä¸€ä¸ªæµ‹è¯•æ–‡ä»¶å†…å®¹\nTest file content");
 
-            Console.WriteLine($"×¼±¸ÉÏ´«ÎÄ¼ş: {testFilePath}");
-            Console.WriteLine($"ÎÄ¼ş´óĞ¡: {new FileInfo(testFilePath).Length} ×Ö½Ú\n");
+            Console.WriteLine($"å‡†å¤‡ä¸Šä¼ æ–‡ä»¶: {testFilePath}");
+            Console.WriteLine($"æ–‡ä»¶å¤§å°: {new FileInfo(testFilePath).Length} å­—èŠ‚\n");
 
-            // ÉÏ´«ÎÄ¼ş
-            Console.WriteLine("¿ªÊ¼ÉÏ´«...");
+            // ä¸Šä¼ æ–‡ä»¶
+            Console.WriteLine("å¼€å§‹ä¸Šä¼ ...");
             var response = await httpHelper.UploadFileAsync("/post", testFilePath, "file");
 
-            Console.WriteLine($"? ÉÏ´«Íê³É£¡");
-            Console.WriteLine($"ÏìÓ¦³¤¶È: {response.Length} ×Ö½Ú");
-            Console.WriteLine($"\nÏìÓ¦ÄÚÈİÔ¤ÀÀ:\n{response.Substring(0, Math.Min(500, response.Length))}...");
+            Console.WriteLine($"? ä¸Šä¼ å®Œæˆï¼");
+            Console.WriteLine($"å“åº”é•¿åº¦: {response.Length} å­—èŠ‚");
+            Console.WriteLine($"\nå“åº”å†…å®¹é¢„è§ˆ:\n{response.Substring(0, Math.Min(500, response.Length))}...");
 
-            // ÇåÀí²âÊÔÎÄ¼ş
+            // æ¸…ç†æµ‹è¯•æ–‡ä»¶
             File.Delete(testFilePath);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"? ÉÏ´«Ê§°Ü: {ex.Message}");
+            Console.WriteLine($"? ä¸Šä¼ å¤±è´¥: {ex.Message}");
         }
         finally
         {
@@ -251,8 +251,8 @@ public class HttpExample
     }
 
     /// <summary>
-    /// Ê¾Àı 6: RESTful API CRUD ²Ù×÷
-    /// ÑİÊ¾ÍêÕûµÄ CRUD ²Ù×÷
+    /// ç¤ºä¾‹ 6: RESTful API CRUD æ“ä½œ
+    /// æ¼”ç¤ºå®Œæ•´çš„ CRUD æ“ä½œ
     /// </summary>
     public static async Task RestfulApiCrudAsync()
     {
@@ -268,39 +268,39 @@ public class HttpExample
 
         try
         {
-            Console.WriteLine("=== RESTful API CRUD ²Ù×÷Ê¾Àı ===\n");
+            Console.WriteLine("=== RESTful API CRUD æ“ä½œç¤ºä¾‹ ===\n");
 
-            // 1. CREATE - ´´½¨ĞÂ×ÊÔ´
-            Console.WriteLine("1. CREATE - ´´½¨ĞÂÎÄÕÂ");
+            // 1. CREATE - åˆ›å»ºæ–°èµ„æº
+            Console.WriteLine("1. CREATE - åˆ›å»ºæ–°æ–‡ç« ");
             var newPost = new
             {
-                title = "ĞÂÎÄÕÂ±êÌâ",
-                body = "ĞÂÎÄÕÂÄÚÈİ",
+                title = "æ–°æ–‡ç« æ ‡é¢˜",
+                body = "æ–°æ–‡ç« å†…å®¹",
                 userId = 1
             };
 
             var createResponse = await httpHelper.PostJsonAsync("/posts", newPost);
             var createdPost = JsonSerializer.Deserialize<Post>(createResponse);
-            Console.WriteLine($"   ? ÒÑ´´½¨£¬ID: {createdPost?.Id}\n");
+            Console.WriteLine($"   ? å·²åˆ›å»ºï¼ŒID: {createdPost?.Id}\n");
 
-            // 2. READ - ¶ÁÈ¡×ÊÔ´
-            Console.WriteLine("2. READ - ¶ÁÈ¡ÎÄÕÂ");
+            // 2. READ - è¯»å–èµ„æº
+            Console.WriteLine("2. READ - è¯»å–æ–‡ç« ");
             var post = await httpHelper.GetAsync<Post>("/posts/1");
-            Console.WriteLine($"   ÎÄÕÂ #{post?.Id}: {post?.Title}");
+            Console.WriteLine($"   æ–‡ç«  #{post?.Id}: {post?.Title}");
             var bodyPreview = post?.Body?.Length > 50 ? post.Body.Substring(0, 50) : post?.Body ?? "";
-            Console.WriteLine($"   ÄÚÈİ: {bodyPreview}...\n");
+            Console.WriteLine($"   å†…å®¹: {bodyPreview}...\n");
 
-            // 3. UPDATE - ¸üĞÂ×ÊÔ´£¨×¢Òâ£ºAPI Ê¾Àı£©
-            Console.WriteLine("3. UPDATE - ¸üĞÂÎÄÕÂ£¨Ä£Äâ£©");
-            Console.WriteLine($"   ËµÃ÷: ¿ÉÊ¹ÓÃ PostJsonAsync ÅäºÏÌØ¶¨¶ËµãÊµÏÖ¸üĞÂ\n");
+            // 3. UPDATE - æ›´æ–°èµ„æºï¼ˆæ³¨æ„ï¼šAPI ç¤ºä¾‹ï¼‰
+            Console.WriteLine("3. UPDATE - æ›´æ–°æ–‡ç« ï¼ˆæ¨¡æ‹Ÿï¼‰");
+            Console.WriteLine($"   è¯´æ˜: å¯ä½¿ç”¨ PostJsonAsync é…åˆç‰¹å®šç«¯ç‚¹å®ç°æ›´æ–°\n");
 
-            // 4. DELETE - É¾³ı×ÊÔ´£¨×¢Òâ£ºAPI Ê¾Àı£©
-            Console.WriteLine("4. DELETE - É¾³ıÎÄÕÂ£¨Ä£Äâ£©");
-            Console.WriteLine($"   ËµÃ÷: ¿ÉÊ¹ÓÃ×Ô¶¨Òå HTTP ·½·¨ÊµÏÖÉ¾³ı");
+            // 4. DELETE - åˆ é™¤èµ„æºï¼ˆæ³¨æ„ï¼šAPI ç¤ºä¾‹ï¼‰
+            Console.WriteLine("4. DELETE - åˆ é™¤æ–‡ç« ï¼ˆæ¨¡æ‹Ÿï¼‰");
+            Console.WriteLine($"   è¯´æ˜: å¯ä½¿ç”¨è‡ªå®šä¹‰ HTTP æ–¹æ³•å®ç°åˆ é™¤");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"? ²Ù×÷Ê§°Ü: {ex.Message}");
+            Console.WriteLine($"? æ“ä½œå¤±è´¥: {ex.Message}");
         }
         finally
         {
@@ -309,8 +309,8 @@ public class HttpExample
     }
 
     /// <summary>
-    /// Ê¾Àı 7: ²¢·¢ÇëÇó
-    /// ÑİÊ¾ÈçºÎÍ¬Ê±·¢ËÍ¶à¸ö HTTP ÇëÇó
+    /// ç¤ºä¾‹ 7: å¹¶å‘è¯·æ±‚
+    /// æ¼”ç¤ºå¦‚ä½•åŒæ—¶å‘é€å¤šä¸ª HTTP è¯·æ±‚
     /// </summary>
     public static async Task ConcurrentRequestsAsync()
     {
@@ -326,25 +326,25 @@ public class HttpExample
 
         try
         {
-            Console.WriteLine("=== ²¢·¢ÇëÇóÊ¾Àı ===\n");
+            Console.WriteLine("=== å¹¶å‘è¯·æ±‚ç¤ºä¾‹ ===\n");
 
             var postIds = new[] { 1, 2, 3, 4, 5 };
-            Console.WriteLine($"Í¬Ê±ÇëÇó {postIds.Length} ÆªÎÄÕÂ...\n");
+            Console.WriteLine($"åŒæ—¶è¯·æ±‚ {postIds.Length} ç¯‡æ–‡ç« ...\n");
 
             var startTime = DateTime.Now;
 
-            // ´´½¨²¢·¢ÈÎÎñ
+            // åˆ›å»ºå¹¶å‘ä»»åŠ¡
             var tasks = postIds.Select(id => httpHelper.GetAsync<Post>($"/posts/{id}"));
 
-            // µÈ´ıËùÓĞÈÎÎñÍê³É
+            // ç­‰å¾…æ‰€æœ‰ä»»åŠ¡å®Œæˆ
             var posts = await Task.WhenAll(tasks);
 
             var elapsed = (DateTime.Now - startTime).TotalMilliseconds;
 
-            Console.WriteLine("? ÇëÇóÍê³É£¡");
-            Console.WriteLine($"×ÜºÄÊ±: {elapsed:F0} ms\n");
+            Console.WriteLine("? è¯·æ±‚å®Œæˆï¼");
+            Console.WriteLine($"æ€»è€—æ—¶: {elapsed:F0} ms\n");
 
-            Console.WriteLine("»ñÈ¡µÄÎÄÕÂ:");
+            Console.WriteLine("è·å–çš„æ–‡ç« :");
             foreach (var post in posts)
             {
                 Console.WriteLine($"  #{post?.Id}: {post?.Title}");
@@ -352,7 +352,7 @@ public class HttpExample
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"? ÇëÇóÊ§°Ü: {ex.Message}");
+            Console.WriteLine($"? è¯·æ±‚å¤±è´¥: {ex.Message}");
         }
         finally
         {
@@ -361,8 +361,8 @@ public class HttpExample
     }
 
     /// <summary>
-    /// Ê¾Àı 8: Êµ¼Ê API µ÷ÓÃ - GitHub API
-    /// ÑİÊ¾Êµ¼ÊÓ¦ÓÃ³¡¾°µÄ API µ÷ÓÃ
+    /// ç¤ºä¾‹ 8: å®é™… API è°ƒç”¨ - GitHub API
+    /// æ¼”ç¤ºå®é™…åº”ç”¨åœºæ™¯çš„ API è°ƒç”¨
     /// </summary>
     public static async Task RealWorldApiExampleAsync()
     {
@@ -383,24 +383,24 @@ public class HttpExample
 
         try
         {
-            Console.WriteLine("=== GitHub API Êµ¼ÊÓ¦ÓÃÊ¾Àı ===\n");
+            Console.WriteLine("=== GitHub API å®é™…åº”ç”¨ç¤ºä¾‹ ===\n");
 
-            // 1. »ñÈ¡²Ö¿âĞÅÏ¢
-            Console.WriteLine("1. »ñÈ¡ Microsoft/TypeScript ²Ö¿âĞÅÏ¢");
+            // 1. è·å–ä»“åº“ä¿¡æ¯
+            Console.WriteLine("1. è·å– Microsoft/TypeScript ä»“åº“ä¿¡æ¯");
             var repo = await httpHelper.GetAsync<GitHubRepo>("/repos/microsoft/typescript");
 
-            Console.WriteLine($"   ²Ö¿â: {repo?.FullName}");
-            Console.WriteLine($"   ÃèÊö: {repo?.Description}");
+            Console.WriteLine($"   ä»“åº“: {repo?.FullName}");
+            Console.WriteLine($"   æè¿°: {repo?.Description}");
             Console.WriteLine($"   Stars: {repo?.StargazersCount:N0}");
             Console.WriteLine($"   Forks: {repo?.ForksCount:N0}");
-            Console.WriteLine($"   ÓïÑÔ: {repo?.Language}\n");
+            Console.WriteLine($"   è¯­è¨€: {repo?.Language}\n");
 
-            // 2. ËÑË÷²Ö¿â
-            Console.WriteLine("2. ËÑË÷ C# HTTP Ïà¹Ø²Ö¿â");
+            // 2. æœç´¢ä»“åº“
+            Console.WriteLine("2. æœç´¢ C# HTTP ç›¸å…³ä»“åº“");
             var searchResult = await httpHelper.GetAsync<GitHubSearchResult>(
                 "/search/repositories?q=http+language:csharp&sort=stars&per_page=3");
 
-            Console.WriteLine($"   ¹²ÕÒµ½ {searchResult?.TotalCount:N0} ¸ö²Ö¿â£¬ÏÔÊ¾Ç° 3 ¸ö:\n");
+            Console.WriteLine($"   å…±æ‰¾åˆ° {searchResult?.TotalCount:N0} ä¸ªä»“åº“ï¼Œæ˜¾ç¤ºå‰ 3 ä¸ª:\n");
 
             if (searchResult?.Items != null)
             {
@@ -415,7 +415,7 @@ public class HttpExample
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"? API µ÷ÓÃÊ§°Ü: {ex.Message}");
+            Console.WriteLine($"? API è°ƒç”¨å¤±è´¥: {ex.Message}");
         }
         finally
         {
@@ -424,7 +424,7 @@ public class HttpExample
     }
 }
 
-// ===== Êı¾İÄ£ĞÍ =====
+// ===== æ•°æ®æ¨¡å‹ =====
 
 public class User
 {

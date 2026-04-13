@@ -1,60 +1,60 @@
-using BTFX.Models;
+ï»¿using BTFX.Models;
 
 namespace BTFX.Services.Interfaces;
 
 /// <summary>
-/// Éí·İÑéÖ¤·şÎñ½Ó¿Ú
+/// èº«ä»½éªŒè¯æœåŠ¡æ¥å£
 /// </summary>
 public interface IAuthenticationService
 {
     /// <summary>
-    /// µÇÂ¼
+    /// ç™»å½•
     /// </summary>
-    /// <param name="username">ÕËºÅ</param>
-    /// <param name="password">ÃÜÂë</param>
-    /// <returns>µÇÂ¼³É¹¦·µ»ØÓÃ»§ĞÅÏ¢£¬Ê§°Ü·µ»Ønull</returns>
+    /// <param name="username">è´¦å·</param>
+    /// <param name="password">å¯†ç </param>
+    /// <returns>ç™»å½•æˆåŠŸè¿”å›ç”¨æˆ·ä¿¡æ¯ï¼Œå¤±è´¥è¿”å›null</returns>
     Task<User?> LoginAsync(string username, string password);
 
     /// <summary>
-    /// ÓÎ¿ÍµÇÂ¼
+    /// æ¸¸å®¢ç™»å½•
     /// </summary>
-    /// <returns>ÓÎ¿ÍÓÃ»§ĞÅÏ¢</returns>
+    /// <returns>æ¸¸å®¢ç”¨æˆ·ä¿¡æ¯</returns>
     Task<User> GuestLoginAsync();
 
     /// <summary>
-    /// µÇ³ö
+    /// ç™»å‡º
     /// </summary>
     Task LogoutAsync();
 
     /// <summary>
-    /// ĞŞ¸ÄÃÜÂë
+    /// ä¿®æ”¹å¯†ç 
     /// </summary>
-    /// <param name="userId">ÓÃ»§ID</param>
-    /// <param name="oldPassword">¾ÉÃÜÂë</param>
-    /// <param name="newPassword">ĞÂÃÜÂë</param>
-    /// <returns>ÊÇ·ñ³É¹¦</returns>
+    /// <param name="userId">ç”¨æˆ·ID</param>
+    /// <param name="oldPassword">æ—§å¯†ç </param>
+    /// <param name="newPassword">æ–°å¯†ç </param>
+    /// <returns>æ˜¯å¦æˆåŠŸ</returns>
     Task<bool> ChangePasswordAsync(int userId, string oldPassword, string newPassword);
 
     /// <summary>
-    /// ÖØÖÃÃÜÂë
+    /// é‡ç½®å¯†ç 
     /// </summary>
-    /// <param name="userId">ÓÃ»§ID</param>
-    /// <param name="newPassword">ĞÂÃÜÂë</param>
-    /// <returns>ÊÇ·ñ³É¹¦</returns>
+    /// <param name="userId">ç”¨æˆ·ID</param>
+    /// <param name="newPassword">æ–°å¯†ç </param>
+    /// <returns>æ˜¯å¦æˆåŠŸ</returns>
     Task<bool> ResetPasswordAsync(int userId, string newPassword);
 
     /// <summary>
-    /// ÑéÖ¤ÃÜÂë
+    /// éªŒè¯å¯†ç 
     /// </summary>
-    /// <param name="password">Ã÷ÎÄÃÜÂë</param>
-    /// <param name="hashedPassword">¹şÏ£ÃÜÂë</param>
-    /// <returns>ÊÇ·ñÆ¥Åä</returns>
+    /// <param name="password">æ˜æ–‡å¯†ç </param>
+    /// <param name="hashedPassword">å“ˆå¸Œå¯†ç </param>
+    /// <returns>æ˜¯å¦åŒ¹é…</returns>
     bool VerifyPassword(string password, string hashedPassword);
 
     /// <summary>
-    /// ¹şÏ£ÃÜÂë
+    /// å“ˆå¸Œå¯†ç 
     /// </summary>
-    /// <param name="password">Ã÷ÎÄÃÜÂë</param>
-    /// <returns>¹şÏ£ºóµÄÃÜÂë</returns>
+    /// <param name="password">æ˜æ–‡å¯†ç </param>
+    /// <returns>å“ˆå¸Œåçš„å¯†ç </returns>
     string HashPassword(string password);
 }

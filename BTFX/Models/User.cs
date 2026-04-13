@@ -1,88 +1,88 @@
-using BTFX.Common;
+ï»¿using BTFX.Common;
 using SqlSugar;
 
 namespace BTFX.Models;
 
 /// <summary>
-/// ÓÃ»§Ä£ĞÍ
+/// ç”¨æˆ·æ¨¡å‹
 /// </summary>
 [SugarTable("Users")]
 public class User
 {
     /// <summary>
-    /// ÓÃ»§ID
+    /// ç”¨æˆ·ID
     /// </summary>
     [SugarColumn(IsPrimaryKey = true, IsIdentity = true)]
     public int Id { get; set; }
 
     /// <summary>
-    /// ÕËºÅ
+    /// è´¦å·
     /// </summary>
     [SugarColumn(Length = 50, IsNullable = false)]
     public string Username { get; set; } = string.Empty;
 
     /// <summary>
-    /// ÃÜÂë¹şÏ£
+    /// å¯†ç å“ˆå¸Œ
     /// </summary>
     [SugarColumn(Length = 200, IsNullable = false)]
     public string PasswordHash { get; set; } = string.Empty;
 
     /// <summary>
-    /// ÃÜÂëÑÎÖµ
+    /// å¯†ç ç›å€¼
     /// </summary>
     [SugarColumn(Length = 100, IsNullable = false)]
     public string PasswordSalt { get; set; } = string.Empty;
 
     /// <summary>
-    /// ĞÕÃû
+    /// å§“å
     /// </summary>
     [SugarColumn(Length = 50, IsNullable = false)]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// µç»°
+    /// ç”µè¯
     /// </summary>
     [SugarColumn(Length = 50, IsNullable = false)]
     public string Phone { get; set; } = string.Empty;
 
     /// <summary>
-    /// ½ÇÉ«
+    /// è§’è‰²
     /// </summary>
     [SugarColumn(IsNullable = false)]
     public UserRole Role { get; set; } = UserRole.Operator;
 
     /// <summary>
-    /// ¿ÆÊÒID
+    /// ç§‘å®¤ID
     /// </summary>
     [SugarColumn(IsNullable = true)]
     public int? DepartmentId { get; set; }
 
     /// <summary>
-    /// ÊÇ·ñÆôÓÃ
+    /// æ˜¯å¦å¯ç”¨
     /// </summary>
     [SugarColumn(IsNullable = false)]
     public bool IsEnabled { get; set; } = true;
 
     /// <summary>
-    /// ÊÇ·ñÄÚÖÃÕËºÅ£¨²»¿ÉÉ¾³ı£©
+    /// æ˜¯å¦å†…ç½®è´¦å·ï¼ˆä¸å¯åˆ é™¤ï¼‰
     /// </summary>
     [SugarColumn(IsNullable = false)]
     public bool IsBuiltIn { get; set; }
 
     /// <summary>
-    /// ×îºóµÇÂ¼Ê±¼ä
+    /// æœ€åç™»å½•æ—¶é—´
     /// </summary>
     [SugarColumn(IsNullable = true)]
     public DateTime? LastLoginAt { get; set; }
 
     /// <summary>
-    /// ´´½¨Ê±¼ä
+    /// åˆ›å»ºæ—¶é—´
     /// </summary>
     [SugarColumn(IsNullable = false)]
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     /// <summary>
-    /// ¸üĞÂÊ±¼ä
+    /// æ›´æ–°æ—¶é—´
     /// </summary>
     [SugarColumn(IsNullable = false)]
     public DateTime UpdatedAt { get; set; } = DateTime.Now;

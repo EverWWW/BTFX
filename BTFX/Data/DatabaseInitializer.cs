@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using BTFX.Common;
 using BTFX.Helpers;
 using BTFX.Models;

@@ -1,39 +1,39 @@
-using SqlSugar;
+锘縰sing SqlSugar;
 
 namespace BTFX.Models;
 
 /// <summary>
-/// 科室模型
+/// 绉戝妯″瀷
 /// </summary>
 [SugarTable("Departments")]
 public class Department
 {
     /// <summary>
-    /// 科室ID
+    /// 绉戝ID
     /// </summary>
     [SugarColumn(IsPrimaryKey = true, IsIdentity = true)]
     public int Id { get; set; }
 
     /// <summary>
-    /// 科室名称
+    /// 绉戝鍚嶇О
     /// </summary>
     [SugarColumn(Length = 100, IsNullable = false)]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// 科室电话
+    /// 绉戝鐢佃瘽
     /// </summary>
     [SugarColumn(Length = 50, IsNullable = true)]
     public string? Phone { get; set; }
 
     /// <summary>
-    /// 创建时间
+    /// 鍒涘缓鏃堕棿
     /// </summary>
     [SugarColumn(IsNullable = false)]
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     /// <summary>
-    /// 更新时间
+    /// 鏇存柊鏃堕棿
     /// </summary>
     [SugarColumn(IsNullable = false)]
     public DateTime UpdatedAt { get; set; } = DateTime.Now;

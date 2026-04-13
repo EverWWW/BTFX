@@ -1,41 +1,41 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+ï»¿using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BTFX.Services.Interfaces;
 
 /// <summary>
-/// µ¼º½·şÎñ½Ó¿Ú
+/// å¯¼èˆªæœåŠ¡æ¥å£
 /// </summary>
 public interface INavigationService
 {
     /// <summary>
-    /// µ±Ç°ÊÓÍ¼
+    /// å½“å‰è§†å›¾
     /// </summary>
     object? CurrentView { get; }
 
     /// <summary>
-    /// µ±Ç°ÊÓÍ¼¼üÃû
+    /// å½“å‰è§†å›¾é”®å
     /// </summary>
     string CurrentViewKey { get; }
 
     /// <summary>
-    /// ÊÇ·ñ¿ÉÒÔ·µ»Ø
+    /// æ˜¯å¦å¯ä»¥è¿”å›
     /// </summary>
     bool CanGoBack { get; }
 
     /// <summary>
-    /// µ¼º½µ½Ö¸¶¨ViewModel
+    /// å¯¼èˆªåˆ°æŒ‡å®šViewModel
     /// </summary>
-    /// <typeparam name="TViewModel">ViewModelÀàĞÍ</typeparam>
+    /// <typeparam name="TViewModel">ViewModelç±»å‹</typeparam>
     void NavigateTo<TViewModel>() where TViewModel : ObservableObject;
 
     /// <summary>
-    /// µ¼º½µ½Ö¸¶¨ÊÓÍ¼¼üÃû
+    /// å¯¼èˆªåˆ°æŒ‡å®šè§†å›¾é”®å
     /// </summary>
-    /// <param name="viewKey">ÊÓÍ¼¼üÃû</param>
+    /// <param name="viewKey">è§†å›¾é”®å</param>
     void NavigateTo(string viewKey);
 
     /// <summary>
-    /// ·µ»ØÉÏÒ»Ò³
+    /// è¿”å›ä¸Šä¸€é¡µ
     /// </summary>
     void GoBack();
 }

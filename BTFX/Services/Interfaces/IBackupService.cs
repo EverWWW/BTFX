@@ -1,50 +1,50 @@
-namespace BTFX.Services.Interfaces;
+ï»¿namespace BTFX.Services.Interfaces;
 
 /// <summary>
-/// ±¸·İ·şÎñ½Ó¿Ú
+/// å¤‡ä»½æœåŠ¡æ¥å£
 /// </summary>
 public interface IBackupService
 {
     /// <summary>
-    /// ´´½¨±¸·İ
+    /// åˆ›å»ºå¤‡ä»½
     /// </summary>
-    /// <returns>±¸·İÎÄ¼şÂ·¾¶</returns>
+    /// <returns>å¤‡ä»½æ–‡ä»¶è·¯å¾„</returns>
     Task<string> CreateBackupAsync();
 
     /// <summary>
-    /// »Ö¸´±¸·İ
+    /// æ¢å¤å¤‡ä»½
     /// </summary>
-    /// <param name="backupFilePath">±¸·İÎÄ¼şÂ·¾¶</param>
-    /// <returns>ÊÇ·ñ³É¹¦</returns>
+    /// <param name="backupFilePath">å¤‡ä»½æ–‡ä»¶è·¯å¾„</param>
+    /// <returns>æ˜¯å¦æˆåŠŸ</returns>
     Task<bool> RestoreBackupAsync(string backupFilePath);
 
     /// <summary>
-    /// »ñÈ¡ËùÓĞ±¸·İÎÄ¼ş
+    /// è·å–æ‰€æœ‰å¤‡ä»½æ–‡ä»¶
     /// </summary>
-    /// <returns>±¸·İÎÄ¼şÁĞ±í£¨ÎÄ¼şÃûºÍ´´½¨Ê±¼ä£©</returns>
+    /// <returns>å¤‡ä»½æ–‡ä»¶åˆ—è¡¨ï¼ˆæ–‡ä»¶åå’Œåˆ›å»ºæ—¶é—´ï¼‰</returns>
     Task<List<(string FileName, DateTime CreatedAt, long FileSizeBytes)>> GetBackupFilesAsync();
 
     /// <summary>
-    /// É¾³ı±¸·İÎÄ¼ş
+    /// åˆ é™¤å¤‡ä»½æ–‡ä»¶
     /// </summary>
-    /// <param name="fileName">ÎÄ¼şÃû</param>
-    /// <returns>ÊÇ·ñ³É¹¦</returns>
+    /// <param name="fileName">æ–‡ä»¶å</param>
+    /// <returns>æ˜¯å¦æˆåŠŸ</returns>
     Task<bool> DeleteBackupAsync(string fileName);
 
     /// <summary>
-    /// ÇåÀí¾É±¸·İ£¨±£ÁôÖ¸¶¨ÊıÁ¿µÄ×îĞÂ±¸·İ£©
+    /// æ¸…ç†æ—§å¤‡ä»½ï¼ˆä¿ç•™æŒ‡å®šæ•°é‡çš„æœ€æ–°å¤‡ä»½ï¼‰
     /// </summary>
-    /// <param name="retainCount">±£ÁôÊıÁ¿</param>
-    /// <returns>É¾³ıµÄÎÄ¼şÊıÁ¿</returns>
+    /// <param name="retainCount">ä¿ç•™æ•°é‡</param>
+    /// <returns>åˆ é™¤çš„æ–‡ä»¶æ•°é‡</returns>
     Task<int> CleanupOldBackupsAsync(int retainCount);
 
     /// <summary>
-    /// Æô¶¯×Ô¶¯±¸·İ
+    /// å¯åŠ¨è‡ªåŠ¨å¤‡ä»½
     /// </summary>
     void StartAutoBackup();
 
     /// <summary>
-    /// Í£Ö¹×Ô¶¯±¸·İ
+    /// åœæ­¢è‡ªåŠ¨å¤‡ä»½
     /// </summary>
     void StopAutoBackup();
 }

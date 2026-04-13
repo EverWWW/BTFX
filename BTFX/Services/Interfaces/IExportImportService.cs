@@ -1,43 +1,43 @@
-using BTFX.Common;
+ï»¿using BTFX.Common;
 using BTFX.Models;
 
 namespace BTFX.Services.Interfaces;
 
 /// <summary>
-/// µ¼³öµ¼Èë·şÎñ½Ó¿Ú
+/// å¯¼å‡ºå¯¼å…¥æœåŠ¡æ¥å£
 /// </summary>
 public interface IExportImportService
 {
     /// <summary>
-    /// µ¼³ö»¼ÕßÊı¾İ
+    /// å¯¼å‡ºæ‚£è€…æ•°æ®
     /// </summary>
-    /// <param name="patients">»¼ÕßÁĞ±í</param>
-    /// <param name="format">µ¼³ö¸ñÊ½</param>
-    /// <param name="filePath">ÎÄ¼şÂ·¾¶</param>
-    /// <returns>ÊÇ·ñ³É¹¦</returns>
+    /// <param name="patients">æ‚£è€…åˆ—è¡¨</param>
+    /// <param name="format">å¯¼å‡ºæ ¼å¼</param>
+    /// <param name="filePath">æ–‡ä»¶è·¯å¾„</param>
+    /// <returns>æ˜¯å¦æˆåŠŸ</returns>
     Task<bool> ExportPatientsAsync(List<Patient> patients, ExportFormat format, string filePath);
 
     /// <summary>
-    /// µ¼³ö²âÁ¿Êı¾İ
+    /// å¯¼å‡ºæµ‹é‡æ•°æ®
     /// </summary>
-    /// <param name="measurements">²âÁ¿¼ÇÂ¼ÁĞ±í</param>
-    /// <param name="format">µ¼³ö¸ñÊ½</param>
-    /// <param name="filePath">ÎÄ¼şÂ·¾¶</param>
-    /// <returns>ÊÇ·ñ³É¹¦</returns>
+    /// <param name="measurements">æµ‹é‡è®°å½•åˆ—è¡¨</param>
+    /// <param name="format">å¯¼å‡ºæ ¼å¼</param>
+    /// <param name="filePath">æ–‡ä»¶è·¯å¾„</param>
+    /// <returns>æ˜¯å¦æˆåŠŸ</returns>
     Task<bool> ExportMeasurementsAsync(List<MeasurementRecord> measurements, ExportFormat format, string filePath);
 
     /// <summary>
-    /// µ¼Èë»¼ÕßÊı¾İ
+    /// å¯¼å…¥æ‚£è€…æ•°æ®
     /// </summary>
-    /// <param name="filePath">ÎÄ¼şÂ·¾¶</param>
-    /// <returns>µ¼ÈëµÄ»¼ÕßÁĞ±í</returns>
+    /// <param name="filePath">æ–‡ä»¶è·¯å¾„</param>
+    /// <returns>å¯¼å…¥çš„æ‚£è€…åˆ—è¡¨</returns>
     Task<List<Patient>> ImportPatientsAsync(string filePath);
 
     /// <summary>
-    /// µ¼³ö±¨¸æÎªExcel
+    /// å¯¼å‡ºæŠ¥å‘Šä¸ºExcel
     /// </summary>
-    /// <param name="reportId">±¨¸æID</param>
-    /// <param name="filePath">ÎÄ¼şÂ·¾¶</param>
-    /// <returns>ÊÇ·ñ³É¹¦</returns>
+    /// <param name="reportId">æŠ¥å‘ŠID</param>
+    /// <param name="filePath">æ–‡ä»¶è·¯å¾„</param>
+    /// <returns>æ˜¯å¦æˆåŠŸ</returns>
     Task<bool> ExportReportToExcelAsync(int reportId, string filePath);
 }

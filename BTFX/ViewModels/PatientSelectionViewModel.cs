@@ -21,6 +21,9 @@ public partial class PatientSelectionViewModel : ObservableObject
     private readonly ISessionService _sessionService;
     private readonly ILocalizationService _localizationService;
     private readonly ILogHelper? _logHelper;
+    private const double PatientRowHeight = 60;
+    private const double PatientRowTopMargin = 7;
+    private const int MinimumPageSize = 1;
 
     [ObservableProperty]
     private ObservableCollection<Patient> _patients = new();
@@ -80,7 +83,7 @@ public partial class PatientSelectionViewModel : ObservableObject
     }
 
     private List<Patient> _allPatients = new();
-    private const int PageSize = Constants.PATIENT_PAGE_SIZE;
+    private int _pageSize = Constants.PATIENT_PAGE_SIZE;
 
     /// <summary>
     /// Constructor
@@ -159,7 +162,7 @@ public partial class PatientSelectionViewModel : ObservableObject
 
         var filteredList = filtered.ToList();//将过滤后的结果转换为列表以便后续处理
         TotalRecords = filteredList.Count;
-        TotalPages = (int)Math.Ceiling(TotalRecords / (double)PageSize);//计算总页数
+        TotalPages = TotalRecords == 0 ? 0 : (int)Math.Ceiling(TotalRecords / (double)_pageSize);//计算总页数
 
         // Ensure current page is valid
         if (CurrentPage > TotalPages && TotalPages > 0)
@@ -173,13 +176,13 @@ public partial class PatientSelectionViewModel : ObservableObject
 
         // Get current page data
         var pageData = filteredList
-            .Skip((CurrentPage - 1) * PageSize)
-            .Take(PageSize)
+            .Skip((CurrentPage - 1) * _pageSize)
+            .Take(_pageSize)
             .ToList();//使用Skip和Take方法获取当前页的数据
 
         Patients.Clear();
         PatientRows.Clear();
-        var startIndex = (CurrentPage - 1) * PageSize + 1;
+        var startIndex = (CurrentPage - 1) * _pageSize + 1;
         for (int i = 0; i < pageData.Count; i++)
         {
             Patients.Add(pageData[i]);
@@ -196,6 +199,40 @@ public partial class PatientSelectionViewModel : ObservableObject
 
         // 更新页码列表
         BuildPageNumbers();
+    }
+
+    /// <summary>
+    /// 根据列表可视区域高度动态更新每页条数。
+    /// </summary>
+    /// <param name="viewportHeight">列表可视区域高度。</param>
+    public void UpdatePageSize(double viewportHeight)
+    {
+        if (viewportHeight <= 0)
+        {
+            return;
+        }
+
+        var rowFullHeight = PatientRowHeight + PatientRowTopMargin;
+        var calculatedPageSize = Math.Max(MinimumPageSize, (int)Math.Floor((viewportHeight + PatientRowTopMargin) / rowFullHeight));
+
+        if (calculatedPageSize == _pageSize)
+        {
+            return;
+        }
+
+        _pageSize = calculatedPageSize;
+
+        if (TotalRecords > 0)
+        {
+            var maxPage = (int)Math.Ceiling(TotalRecords / (double)_pageSize);
+            if (CurrentPage > maxPage)
+            {
+                CurrentPage = maxPage;
+            }
+        }
+
+        ApplySearchFilter();
+        _logHelper?.Information($"患者列表每页条数已根据可视高度更新为 {_pageSize}。");
     }
 
     /// <summary>

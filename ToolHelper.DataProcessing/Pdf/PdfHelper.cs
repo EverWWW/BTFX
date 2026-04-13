@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+ï»¿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -8,9 +8,9 @@ using ToolHelper.DataProcessing.Configuration;
 namespace ToolHelper.DataProcessing.Pdf;
 
 /// <summary>
-/// PDF ÎÄ¼ş´¦Àí°ïÖúÀà
-/// Ìá¹© PDF Éú³É¡¢±¨±íÊä³öµÈ¹¦ÄÜ
-/// »ùÓÚ QuestPDF ÊµÏÖ
+/// PDF æ–‡ä»¶å¤„ç†å¸®åŠ©ç±»
+/// æä¾› PDF ç”Ÿæˆã€æŠ¥è¡¨è¾“å‡ºç­‰åŠŸèƒ½
+/// åŸºäº QuestPDF å®ç°
 /// </summary>
 public class PdfHelper
 {
@@ -19,32 +19,32 @@ public class PdfHelper
 
     static PdfHelper()
     {
-        // ÉèÖÃ QuestPDF Ğí¿ÉÖ¤£¨ÉçÇø°æÃâ·Ñ£©
+        // è®¾ç½® QuestPDF è®¸å¯è¯ï¼ˆç¤¾åŒºç‰ˆå…è´¹ï¼‰
         QuestPDF.Settings.License = LicenseType.Community;
     }
 
     /// <summary>
-    /// ¹¹Ôìº¯Êı
+    /// æ„é€ å‡½æ•°
     /// </summary>
-    /// <param name="options">PDFÅäÖÃÑ¡Ïî£¨¿ÉÑ¡£¬Ê¹ÓÃÄ¬ÈÏÅäÖÃÊ±¿ÉÎªnull£©</param>
-    /// <param name="logger">ÈÕÖ¾¼ÇÂ¼Æ÷£¨¿ÉÑ¡£©</param>
+    /// <param name="options">PDFé…ç½®é€‰é¡¹ï¼ˆå¯é€‰ï¼Œä½¿ç”¨é»˜è®¤é…ç½®æ—¶å¯ä¸ºnullï¼‰</param>
+    /// <param name="logger">æ—¥å¿—è®°å½•å™¨ï¼ˆå¯é€‰ï¼‰</param>
     public PdfHelper(IOptions<PdfOptions>? options = null, ILogger<PdfHelper>? logger = null)
     {
         _options = options?.Value ?? new PdfOptions();
         _logger = logger;
     }
 
-    #region PDF Éú³É
+    #region PDF ç”Ÿæˆ
 
     /// <summary>
-    /// Éú³É¼òµ¥ÎÄ±¾PDF
+    /// ç”Ÿæˆç®€å•æ–‡æœ¬PDF
     /// </summary>
-    /// <param name="filePath">Êä³öÎÄ¼şÂ·¾¶</param>
-    /// <param name="content">ÎÄ±¾ÄÚÈİ</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
+    /// <param name="filePath">è¾“å‡ºæ–‡ä»¶è·¯å¾„</param>
+    /// <param name="content">æ–‡æœ¬å†…å®¹</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
     public async Task GenerateTextPdfAsync(string filePath, string content, CancellationToken cancellationToken = default)
     {
-        _logger?.LogInformation("¿ªÊ¼Éú³ÉÎÄ±¾PDF: {FilePath}", filePath);
+        _logger?.LogInformation("å¼€å§‹ç”Ÿæˆæ–‡æœ¬PDF: {FilePath}", filePath);
 
         var directory = Path.GetDirectoryName(filePath);
         if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
@@ -76,25 +76,25 @@ public class PdfHelper
             });
         }).GeneratePdf(filePath);
 
-        _logger?.LogInformation("PDFÉú³ÉÍê³É");
+        _logger?.LogInformation("PDFç”Ÿæˆå®Œæˆ");
         await Task.CompletedTask;
     }
 
     /// <summary>
-    /// Éú³É±í¸ñPDF
+    /// ç”Ÿæˆè¡¨æ ¼PDF
     /// </summary>
-    /// <typeparam name="T">Êı¾İÀàĞÍ</typeparam>
-    /// <param name="filePath">Êä³öÎÄ¼şÂ·¾¶</param>
-    /// <param name="data">±í¸ñÊı¾İ</param>
-    /// <param name="title">±í¸ñ±êÌâ</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
+    /// <typeparam name="T">æ•°æ®ç±»å‹</typeparam>
+    /// <param name="filePath">è¾“å‡ºæ–‡ä»¶è·¯å¾„</param>
+    /// <param name="data">è¡¨æ ¼æ•°æ®</param>
+    /// <param name="title">è¡¨æ ¼æ ‡é¢˜</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
     public async Task GenerateTablePdfAsync<T>(
         string filePath,
         IEnumerable<T> data,
         string? title = null,
         CancellationToken cancellationToken = default) where T : class
     {
-        _logger?.LogInformation("¿ªÊ¼Éú³É±í¸ñPDF: {FilePath}", filePath);
+        _logger?.LogInformation("å¼€å§‹ç”Ÿæˆè¡¨æ ¼PDF: {FilePath}", filePath);
 
         var directory = Path.GetDirectoryName(filePath);
         if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
@@ -111,7 +111,7 @@ public class PdfHelper
             {
                 ConfigurePage(page);
 
-                // Ò³Ã¼
+                // é¡µçœ‰
                 page.Header().Column(column =>
                 {
                     var headerTitle = title ?? _options.Title;
@@ -126,10 +126,10 @@ public class PdfHelper
                     }
                 });
 
-                // ±í¸ñÄÚÈİ
+                // è¡¨æ ¼å†…å®¹
                 page.Content().Table(table =>
                 {
-                    // ¶¨ÒåÁĞ
+                    // å®šä¹‰åˆ—
                     table.ColumnsDefinition(columns =>
                     {
                         foreach (var prop in properties)
@@ -138,7 +138,7 @@ public class PdfHelper
                         }
                     });
 
-                    // ±íÍ·
+                    // è¡¨å¤´
                     table.Header(header =>
                     {
                         foreach (var prop in properties)
@@ -153,7 +153,7 @@ public class PdfHelper
                         }
                     });
 
-                    // Êı¾İĞĞ
+                    // æ•°æ®è¡Œ
                     foreach (var item in dataList)
                     {
                         foreach (var prop in properties)
@@ -168,24 +168,24 @@ public class PdfHelper
                     }
                 });
 
-                // Ò³½Å
+                // é¡µè„š
                 ConfigureFooter(page);
             });
         }).GeneratePdf(filePath);
 
-        _logger?.LogInformation("±í¸ñPDFÉú³ÉÍê³É£¬¹² {Count} ĞĞÊı¾İ", dataList.Count);
+        _logger?.LogInformation("è¡¨æ ¼PDFç”Ÿæˆå®Œæˆï¼Œå…± {Count} è¡Œæ•°æ®", dataList.Count);
         await Task.CompletedTask;
     }
 
     /// <summary>
-    /// Éú³É±¨±íPDF£¨°üº¬±êÌâ¡¢±í¸ñºÍÍ³¼ÆĞÅÏ¢£©
+    /// ç”ŸæˆæŠ¥è¡¨PDFï¼ˆåŒ…å«æ ‡é¢˜ã€è¡¨æ ¼å’Œç»Ÿè®¡ä¿¡æ¯ï¼‰
     /// </summary>
-    /// <typeparam name="T">Êı¾İÀàĞÍ</typeparam>
-    /// <param name="filePath">Êä³öÎÄ¼şÂ·¾¶</param>
-    /// <param name="data">±¨±íÊı¾İ</param>
-    /// <param name="reportTitle">±¨±í±êÌâ</param>
-    /// <param name="summary">Í³¼ÆĞÅÏ¢</param>
-    /// <param name="cancellationToken">È¡ÏûÁîÅÆ</param>
+    /// <typeparam name="T">æ•°æ®ç±»å‹</typeparam>
+    /// <param name="filePath">è¾“å‡ºæ–‡ä»¶è·¯å¾„</param>
+    /// <param name="data">æŠ¥è¡¨æ•°æ®</param>
+    /// <param name="reportTitle">æŠ¥è¡¨æ ‡é¢˜</param>
+    /// <param name="summary">ç»Ÿè®¡ä¿¡æ¯</param>
+    /// <param name="cancellationToken">å–æ¶ˆä»¤ç‰Œ</param>
     public async Task GenerateReportPdfAsync<T>(
         string filePath,
         IEnumerable<T> data,
@@ -193,7 +193,7 @@ public class PdfHelper
         Dictionary<string, string>? summary = null,
         CancellationToken cancellationToken = default) where T : class
     {
-        _logger?.LogInformation("¿ªÊ¼Éú³É±¨±íPDF: {FilePath}", filePath);
+        _logger?.LogInformation("å¼€å§‹ç”ŸæˆæŠ¥è¡¨PDF: {FilePath}", filePath);
 
         var directory = Path.GetDirectoryName(filePath);
         if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
@@ -210,7 +210,7 @@ public class PdfHelper
             {
                 ConfigurePage(page);
 
-                // Ò³Ã¼
+                // é¡µçœ‰
                 page.Header().Column(column =>
                 {
                     column.Item().Text(reportTitle)
@@ -220,20 +220,20 @@ public class PdfHelper
 
                     column.Item().PaddingVertical(5);
 
-                    column.Item().Text($"Éú³ÉÊ±¼ä: {DateTime.Now:yyyy-MM-dd HH:mm:ss}")
+                    column.Item().Text($"ç”Ÿæˆæ—¶é—´: {DateTime.Now:yyyy-MM-dd HH:mm:ss}")
                         .FontSize(10)
                         .AlignRight();
 
                     column.Item().PaddingVertical(10);
                 });
 
-                // ÄÚÈİ
+                // å†…å®¹
                 page.Content().Column(column =>
                 {
-                    // Í³¼ÆĞÅÏ¢
+                    // ç»Ÿè®¡ä¿¡æ¯
                     if (summary != null && summary.Count > 0)
                     {
-                        column.Item().Text("Í³¼ÆĞÅÏ¢")
+                        column.Item().Text("ç»Ÿè®¡ä¿¡æ¯")
                             .FontSize(16)
                             .Bold();
 
@@ -254,8 +254,8 @@ public class PdfHelper
                         column.Item().PaddingVertical(15);
                     }
 
-                    // Êı¾İ±í¸ñ
-                    column.Item().Text("ÏêÏ¸Êı¾İ")
+                    // æ•°æ®è¡¨æ ¼
+                    column.Item().Text("è¯¦ç»†æ•°æ®")
                         .FontSize(16)
                         .Bold();
 
@@ -263,7 +263,7 @@ public class PdfHelper
 
                     column.Item().Table(table =>
                     {
-                        // ¶¨ÒåÁĞ
+                        // å®šä¹‰åˆ—
                         table.ColumnsDefinition(columns =>
                         {
                             foreach (var prop in properties)
@@ -272,7 +272,7 @@ public class PdfHelper
                             }
                         });
 
-                        // ±íÍ·
+                        // è¡¨å¤´
                         table.Header(header =>
                         {
                             foreach (var prop in properties)
@@ -287,7 +287,7 @@ public class PdfHelper
                             }
                         });
 
-                        // Êı¾İĞĞ
+                        // æ•°æ®è¡Œ
                         int rowIndex = 0;
                         foreach (var item in dataList)
                         {
@@ -310,22 +310,22 @@ public class PdfHelper
                     });
                 });
 
-                // Ò³½Å
+                // é¡µè„š
                 ConfigureFooter(page);
             });
         }).GeneratePdf(filePath);
 
-        _logger?.LogInformation("±¨±íPDFÉú³ÉÍê³É");
+        _logger?.LogInformation("æŠ¥è¡¨PDFç”Ÿæˆå®Œæˆ");
         await Task.CompletedTask;
     }
 
     #endregion
 
-    #region Ë½ÓĞ¸¨Öú·½·¨
+    #region ç§æœ‰è¾…åŠ©æ–¹æ³•
 
     private void ConfigurePage(PageDescriptor page)
     {
-        // ÉèÖÃÒ³Ãæ´óĞ¡
+        // è®¾ç½®é¡µé¢å¤§å°
         page.Size(_options.PageSize.ToUpper() switch
         {
             "A3" => PageSizes.A3,
@@ -335,10 +335,10 @@ public class PdfHelper
             _ => PageSizes.A4
         });
 
-        // ÉèÖÃÒ³±ß¾à
+        // è®¾ç½®é¡µè¾¹è·
         page.Margin(_options.Margin, Unit.Millimetre);
 
-        // ÉèÖÃÄ¬ÈÏ×ÖÌå
+        // è®¾ç½®é»˜è®¤å­—ä½“
         page.DefaultTextStyle(x => x.FontSize(_options.FontSize));
     }
 
@@ -352,16 +352,16 @@ public class PdfHelper
                 {
                     row.RelativeItem().AlignCenter().Text(text =>
                     {
-                        text.Span("µÚ ");
+                        text.Span("ç¬¬ ");
                         text.CurrentPageNumber();
-                        text.Span(" Ò³");
+                        text.Span(" é¡µ");
                     });
                 }
 
                 if (!string.IsNullOrEmpty(_options.Author))
                 {
                     row.RelativeItem().AlignRight()
-                        .Text($"×÷Õß: {_options.Author}");
+                        .Text($"ä½œè€…: {_options.Author}");
                 }
             });
         }

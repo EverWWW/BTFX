@@ -1,33 +1,33 @@
-using SqlSugar;
+ï»¿using SqlSugar;
 
 namespace BTFX.Models;
 
 /// <summary>
-/// ÏµÍ³ÉèÖÃÄ£ĞÍ
+/// ç³»ç»Ÿè®¾ç½®æ¨¡å‹
 /// </summary>
 [SugarTable("SystemSettings")]
 public class SystemSetting
 {
     /// <summary>
-    /// ÉèÖÃ¼ü
+    /// è®¾ç½®é”®
     /// </summary>
     [SugarColumn(IsPrimaryKey = true, ColumnName = "Key", Length = 100)]
     public string SettingKey { get; set; } = string.Empty;
 
     /// <summary>
-    /// ÉèÖÃÖµ
+    /// è®¾ç½®å€¼
     /// </summary>
     [SugarColumn(ColumnName = "Value", ColumnDataType = "text", IsNullable = true)]
     public string? SettingValue { get; set; }
 
     /// <summary>
-    /// ÖµÀàĞÍ
+    /// å€¼ç±»å‹
     /// </summary>
     [SugarColumn(ColumnName = "ValueType", Length = 50, IsNullable = false)]
     public string ValueType { get; set; } = "string";
 
     /// <summary>
-    /// ¸üĞÂÊ±¼ä
+    /// æ›´æ–°æ—¶é—´
     /// </summary>
     [SugarColumn(IsNullable = false)]
     public DateTime UpdatedAt { get; set; } = DateTime.Now;

@@ -1,0 +1,33 @@
+# EditorConfig: https://editorconfig.org
+# 所有编辑器和工具统一遵守此配置，防止编码不一致导致乱码
+
+root = true
+
+# 默认规则：所有文件
+[*]
+indent_style = space
+indent_size = 4
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# C# 源文件：强制 UTF-8 with BOM
+# Visual Studio、Rider、VS Code（EditorConfig 插件）均会遵守此设置
+[*.cs]
+charset = utf-8-bom
+indent_size = 4
+
+# XML / XAML / 项目文件
+[*.{xml,xaml,csproj,props,targets,config,resx}]
+charset = utf-8-bom
+indent_size = 2
+
+# JSON / YAML
+[*.{json,yml,yaml}]
+charset = utf-8
+indent_size = 2
+
+# Markdown
+[*.md]
+charset = utf-8
+trim_trailing_whitespace = false

@@ -1,78 +1,78 @@
-namespace ToolHelper.Communication.Configuration;
+ï»¿namespace ToolHelper.Communication.Configuration;
 
 /// <summary>
-/// Modbus RTU Ğ­ÒéÅäÖÃÑ¡Ïî
+/// Modbus RTU åè®®é…ç½®é€‰é¡¹
 /// </summary>
 public class ModbusRtuOptions
 {
     /// <summary>
-    /// ´®¿ÚÃû³Æ (Èç COM1, COM2)
+    /// ä¸²å£åç§° (å¦‚ COM1, COM2)
     /// </summary>
     public string PortName { get; set; } = "COM1";
 
     /// <summary>
-    /// ²¨ÌØÂÊ
+    /// æ³¢ç‰¹ç‡
     /// </summary>
     public int BaudRate { get; set; } = 9600;
 
     /// <summary>
-    /// Êı¾İÎ» (5-8)
+    /// æ•°æ®ä½ (5-8)
     /// </summary>
     public int DataBits { get; set; } = 8;
 
     /// <summary>
-    /// Í£Ö¹Î»
+    /// åœæ­¢ä½
     /// </summary>
     public System.IO.Ports.StopBits StopBits { get; set; } = System.IO.Ports.StopBits.One;
 
     /// <summary>
-    /// ÆæÅ¼Ğ£ÑéÎ»
+    /// å¥‡å¶æ ¡éªŒä½
     /// </summary>
     public System.IO.Ports.Parity Parity { get; set; } = System.IO.Ports.Parity.None;
 
     /// <summary>
-    /// ´ÓÕ¾µØÖ· (Slave ID)
+    /// ä»ç«™åœ°å€ (Slave ID)
     /// </summary>
     public byte SlaveId { get; set; } = 1;
 
     /// <summary>
-    /// ¶ÁÈ¡³¬Ê± (ºÁÃë)
+    /// è¯»å–è¶…æ—¶ (æ¯«ç§’)
     /// </summary>
     public int ReadTimeout { get; set; } = 1000;
 
     /// <summary>
-    /// Ğ´Èë³¬Ê± (ºÁÃë)
+    /// å†™å…¥è¶…æ—¶ (æ¯«ç§’)
     /// </summary>
     public int WriteTimeout { get; set; } = 1000;
 
     /// <summary>
-    /// ½ÓÊÕ»º³åÇø´óĞ¡
+    /// æ¥æ”¶ç¼“å†²åŒºå¤§å°
     /// </summary>
     public int ReceiveBufferSize { get; set; } = 4096;
 
     /// <summary>
-    /// ·¢ËÍ»º³åÇø´óĞ¡
+    /// å‘é€ç¼“å†²åŒºå¤§å°
     /// </summary>
     public int SendBufferSize { get; set; } = 4096;
 
     /// <summary>
-    /// Ö¡¼ä¸ôÊ±¼ä (ºÁÃë)
-    /// ¸ù¾İ Modbus RTU ±ê×¼, Ó¦Îª 3.5 ¸ö×Ö·ûÊ±¼ä
+    /// å¸§é—´éš”æ—¶é—´ (æ¯«ç§’)
+    /// æ ¹æ® Modbus RTU æ ‡å‡†, åº”ä¸º 3.5 ä¸ªå­—ç¬¦æ—¶é—´
     /// </summary>
     public int FrameDelay { get; set; } = 10;
 
     /// <summary>
-    /// ÊÇ·ñÆôÓÃ CRC Ğ£Ñé
+    /// æ˜¯å¦å¯ç”¨ CRC æ ¡éªŒ
     /// </summary>
     public bool EnableCrcCheck { get; set; } = true;
 
     /// <summary>
-    /// ×î´óÖØÊÔ´ÎÊı
+    /// æœ€å¤§é‡è¯•æ¬¡æ•°
     /// </summary>
     public int MaxRetries { get; set; } = 3;
 
     /// <summary>
-    /// ÖØÊÔ¼ä¸ô (ºÁÃë)
+    /// é‡è¯•é—´éš” (æ¯«ç§’)
     /// </summary>
     public int RetryInterval { get; set; } = 100;
 }

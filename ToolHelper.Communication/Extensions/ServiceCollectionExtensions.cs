@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+ï»¿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using ToolHelper.Communication.Bluetooth;
 using ToolHelper.Communication.Configuration;
@@ -12,15 +12,15 @@ using ToolHelper.Communication.WebSocket;
 namespace ToolHelper.Communication.Extensions;
 
 /// <summary>
-/// Í¨ĞÅÄ£¿éÒÀÀµ×¢ÈëÀ©Õ¹
+/// é€šä¿¡æ¨¡å—ä¾èµ–æ³¨å…¥æ‰©å±•
 /// </summary>
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Ìí¼ÓÍ¨ĞÅÄ£¿éËùÓĞ·şÎñ
+    /// æ·»åŠ é€šä¿¡æ¨¡å—æ‰€æœ‰æœåŠ¡
     /// </summary>
-    /// <param name="services">·şÎñ¼¯ºÏ</param>
-    /// <returns>·şÎñ¼¯ºÏ</returns>
+    /// <param name="services">æœåŠ¡é›†åˆ</param>
+    /// <returns>æœåŠ¡é›†åˆ</returns>
     public static IServiceCollection AddCommunication(this IServiceCollection services)
     {
         services.AddTcpClient();
@@ -37,11 +37,11 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Ìí¼Ó TCP ¿Í»§¶Ë·şÎñ
+    /// æ·»åŠ  TCP å®¢æˆ·ç«¯æœåŠ¡
     /// </summary>
-    /// <param name="services">·şÎñ¼¯ºÏ</param>
-    /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-    /// <returns>·şÎñ¼¯ºÏ</returns>
+    /// <param name="services">æœåŠ¡é›†åˆ</param>
+    /// <param name="configure">é…ç½®å§”æ‰˜</param>
+    /// <returns>æœåŠ¡é›†åˆ</returns>
     public static IServiceCollection AddTcpClient(
         this IServiceCollection services,
         Action<TcpClientOptions>? configure = null)
@@ -57,11 +57,11 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Ìí¼Ó TCP ·şÎñÆ÷·şÎñ
+    /// æ·»åŠ  TCP æœåŠ¡å™¨æœåŠ¡
     /// </summary>
-    /// <param name="services">·şÎñ¼¯ºÏ</param>
-    /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-    /// <returns>·şÎñ¼¯ºÏ</returns>
+    /// <param name="services">æœåŠ¡é›†åˆ</param>
+    /// <param name="configure">é…ç½®å§”æ‰˜</param>
+    /// <returns>æœåŠ¡é›†åˆ</returns>
     public static IServiceCollection AddTcpServer(
         this IServiceCollection services,
         Action<TcpServerOptions>? configure = null)
@@ -77,11 +77,11 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Ìí¼Ó UDP ·şÎñ
+    /// æ·»åŠ  UDP æœåŠ¡
     /// </summary>
-    /// <param name="services">·şÎñ¼¯ºÏ</param>
-    /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-    /// <returns>·şÎñ¼¯ºÏ</returns>
+    /// <param name="services">æœåŠ¡é›†åˆ</param>
+    /// <param name="configure">é…ç½®å§”æ‰˜</param>
+    /// <returns>æœåŠ¡é›†åˆ</returns>
     public static IServiceCollection AddUdp(
         this IServiceCollection services,
         Action<UdpOptions>? configure = null)
@@ -97,11 +97,11 @@ public static class ServiceCollectionExtensions
     }
 
         /// <summary>
-        /// Ìí¼Ó HTTP ·şÎñ
+        /// æ·»åŠ  HTTP æœåŠ¡
         /// </summary>
-        /// <param name="services">·şÎñ¼¯ºÏ</param>
-        /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-        /// <returns>·şÎñ¼¯ºÏ</returns>
+        /// <param name="services">æœåŠ¡é›†åˆ</param>
+        /// <param name="configure">é…ç½®å§”æ‰˜</param>
+        /// <returns>æœåŠ¡é›†åˆ</returns>
         public static IServiceCollection AddHttp(
             this IServiceCollection services,
             Action<HttpOptions>? configure = null)
@@ -117,11 +117,11 @@ public static class ServiceCollectionExtensions
         }
 
         /// <summary>
-        /// Ìí¼Ó´®¿ÚÍ¨ĞÅ·şÎñ
+        /// æ·»åŠ ä¸²å£é€šä¿¡æœåŠ¡
         /// </summary>
-        /// <param name="services">·şÎñ¼¯ºÏ</param>
-        /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-        /// <returns>·şÎñ¼¯ºÏ</returns>
+        /// <param name="services">æœåŠ¡é›†åˆ</param>
+        /// <param name="configure">é…ç½®å§”æ‰˜</param>
+        /// <returns>æœåŠ¡é›†åˆ</returns>
         public static IServiceCollection AddSerialPort(
             this IServiceCollection services,
             Action<SerialPortOptions>? configure = null)
@@ -137,11 +137,11 @@ public static class ServiceCollectionExtensions
         }
 
         /// <summary>
-        /// Ìí¼Ó WebSocket ·şÎñ
+        /// æ·»åŠ  WebSocket æœåŠ¡
         /// </summary>
-        /// <param name="services">·şÎñ¼¯ºÏ</param>
-        /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-        /// <returns>·şÎñ¼¯ºÏ</returns>
+        /// <param name="services">æœåŠ¡é›†åˆ</param>
+        /// <param name="configure">é…ç½®å§”æ‰˜</param>
+        /// <returns>æœåŠ¡é›†åˆ</returns>
         public static IServiceCollection AddWebSocket(
             this IServiceCollection services,
             Action<WebSocketOptions>? configure = null)
@@ -157,11 +157,11 @@ public static class ServiceCollectionExtensions
         }
 
         /// <summary>
-        /// Ìí¼Ó WebSocket ·şÎñ¶Ë·şÎñ
+        /// æ·»åŠ  WebSocket æœåŠ¡ç«¯æœåŠ¡
         /// </summary>
-        /// <param name="services">·şÎñ¼¯ºÏ</param>
-        /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-        /// <returns>·şÎñ¼¯ºÏ</returns>
+        /// <param name="services">æœåŠ¡é›†åˆ</param>
+        /// <param name="configure">é…ç½®å§”æ‰˜</param>
+        /// <returns>æœåŠ¡é›†åˆ</returns>
         public static IServiceCollection AddWebSocketServer(
             this IServiceCollection services,
             Action<WebSocketServerOptions>? configure = null)
@@ -177,11 +177,11 @@ public static class ServiceCollectionExtensions
         }
 
         /// <summary>
-        /// Ìí¼Ó Modbus TCP ·şÎñ
+        /// æ·»åŠ  Modbus TCP æœåŠ¡
         /// </summary>
-        /// <param name="services">·şÎñ¼¯ºÏ</param>
-        /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-        /// <returns>·şÎñ¼¯ºÏ</returns>
+        /// <param name="services">æœåŠ¡é›†åˆ</param>
+        /// <param name="configure">é…ç½®å§”æ‰˜</param>
+        /// <returns>æœåŠ¡é›†åˆ</returns>
         public static IServiceCollection AddModbusTcp(
             this IServiceCollection services,
             Action<ModbusTcpOptions>? configure = null)
@@ -197,11 +197,11 @@ public static class ServiceCollectionExtensions
         }
 
         /// <summary>
-        /// Ìí¼Ó Modbus RTU ·şÎñ
+        /// æ·»åŠ  Modbus RTU æœåŠ¡
         /// </summary>
-        /// <param name="services">·şÎñ¼¯ºÏ</param>
-        /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-        /// <returns>·şÎñ¼¯ºÏ</returns>
+        /// <param name="services">æœåŠ¡é›†åˆ</param>
+        /// <param name="configure">é…ç½®å§”æ‰˜</param>
+        /// <returns>æœåŠ¡é›†åˆ</returns>
         public static IServiceCollection AddModbusRtu(
             this IServiceCollection services,
             Action<ModbusRtuOptions>? configure = null)
@@ -217,11 +217,11 @@ public static class ServiceCollectionExtensions
                 }
 
                 /// <summary>
-                /// Ìí¼ÓÀ¶ÑÀÍ¨Ñ¶·şÎñ
+                /// æ·»åŠ è“ç‰™é€šè®¯æœåŠ¡
                 /// </summary>
-                /// <param name="services">·şÎñ¼¯ºÏ</param>
-                /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-                /// <returns>·şÎñ¼¯ºÏ</returns>
+                /// <param name="services">æœåŠ¡é›†åˆ</param>
+                /// <param name="configure">é…ç½®å§”æ‰˜</param>
+                /// <returns>æœåŠ¡é›†åˆ</returns>
                 public static IServiceCollection AddBluetooth(
                     this IServiceCollection services,
                     Action<BluetoothOptions>? configure = null)

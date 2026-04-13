@@ -1,4 +1,4 @@
-using BTFX.Common;
+ï»¿using BTFX.Common;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -7,7 +7,7 @@ using ToolHelper.LoggingDiagnostics.Abstractions;
 namespace BTFX.ViewModels;
 
 /// <summary>
-/// µÇÂ¼½çÃæViewModel
+/// ç™»å½•ç•Œé¢ViewModel
 /// </summary>
 public partial class LoginViewModel : ObservableObject
 {
@@ -42,7 +42,7 @@ public partial class LoginViewModel : ObservableObject
     private string _version = Constants.VERSION_DISPLAY;
 
     /// <summary>
-    /// ¹¹Ôìº¯Êı
+    /// æ„é€ å‡½æ•°
     /// </summary>
     public LoginViewModel(
         IAuthenticationService authenticationService,
@@ -55,7 +55,7 @@ public partial class LoginViewModel : ObservableObject
         _sessionService = sessionService;
         _settingsService = settingsService;
 
-        // ³¢ÊÔ»ñÈ¡ÈÕÖ¾·şÎñ£¨¿ÉÑ¡£©
+        // å°è¯•è·å–æ—¥å¿—æœåŠ¡ï¼ˆå¯é€‰ï¼‰
         try
         {
             _logHelper = App.Services?.GetService(typeof(ToolHelper.LoggingDiagnostics.Abstractions.ILogHelper)) 
@@ -63,12 +63,12 @@ public partial class LoginViewModel : ObservableObject
         }
         catch { }
 
-        // ¼ÓÔØ¼Ç×¡µÄÃÜÂë
+        // åŠ è½½è®°ä½çš„å¯†ç 
         LoadRememberedCredentials();
     }
 
     /// <summary>
-    /// ¼ÓÔØ¼Ç×¡µÄÆ¾¾İ
+    /// åŠ è½½è®°ä½çš„å‡­æ®
     /// </summary>
     private void LoadRememberedCredentials()
     {
@@ -76,55 +76,55 @@ public partial class LoginViewModel : ObservableObject
         {
             var settings = _settingsService.CurrentSettings;
 
-            _logHelper?.Information($"¿ªÊ¼¼ÓÔØ¼Ç×¡ÃÜÂë: RememberPassword={settings.Credentials.RememberPassword}, Username={settings.Credentials.Username}, HashLength={settings.Credentials.PasswordHash?.Length ?? 0}");
+            _logHelper?.Information($"å¼€å§‹åŠ è½½è®°ä½å¯†ç : RememberPassword={settings.Credentials.RememberPassword}, Username={settings.Credentials.Username}, HashLength={settings.Credentials.PasswordHash?.Length ?? 0}");
 
             if (settings.Credentials.RememberPassword && !string.IsNullOrEmpty(settings.Credentials.Username))
             {
-                // ²»¼ÓÔØ admin ÕË»§µÄÃÜÂë
+                // ä¸åŠ è½½ admin è´¦æˆ·çš„å¯†ç 
                 if (settings.Credentials.Username.Equals("admin", StringComparison.OrdinalIgnoreCase))
                 {
-                    _logHelper?.Information("Ìø¹ı admin ÕË»§µÄÃÜÂë¼ÓÔØ");
+                    _logHelper?.Information("è·³è¿‡ admin è´¦æˆ·çš„å¯†ç åŠ è½½");
                     return;
                 }
 
                 Username = settings.Credentials.Username;
                 RememberPassword = true;
 
-                // ½âÂëÃÜÂë£¨Base64£©
+                // è§£ç å¯†ç ï¼ˆBase64ï¼‰
                 if (!string.IsNullOrEmpty(settings.Credentials.PasswordHash))
                 {
                     try
                     {
                         var passwordBytes = Convert.FromBase64String(settings.Credentials.PasswordHash);
                         Password = System.Text.Encoding.UTF8.GetString(passwordBytes);
-                        _logHelper?.Information($"³É¹¦¼ÓÔØ¼Ç×¡µÄÃÜÂë: ÓÃ»§={Username}, ÃÜÂë³¤¶È={Password.Length}");
+                        _logHelper?.Information($"æˆåŠŸåŠ è½½è®°ä½çš„å¯†ç : ç”¨æˆ·={Username}, å¯†ç é•¿åº¦={Password.Length}");
                     }
                     catch (Exception ex)
                     {
-                        // Èç¹û½âÂëÊ§°Ü£¬¿ÉÄÜÊÇ¾É¸ñÊ½£¬Çå¿Õ
+                        // å¦‚æœè§£ç å¤±è´¥ï¼Œå¯èƒ½æ˜¯æ—§æ ¼å¼ï¼Œæ¸…ç©º
                         Password = string.Empty;
-                        _logHelper?.Warning($"ÃÜÂë½âÂëÊ§°Ü: {ex.Message}");
+                        _logHelper?.Warning($"å¯†ç è§£ç å¤±è´¥: {ex.Message}");
                     }
                 }
             }
             else
             {
-                _logHelper?.Information("Ã»ÓĞ¼Ç×¡µÄÃÜÂëĞÅÏ¢");
+                _logHelper?.Information("æ²¡æœ‰è®°ä½çš„å¯†ç ä¿¡æ¯");
             }
         }
         catch (Exception ex)
         {
-            _logHelper?.Error($"¼ÓÔØ¼Ç×¡µÄÆ¾¾İÊ§°Ü", ex);
+            _logHelper?.Error($"åŠ è½½è®°ä½çš„å‡­æ®å¤±è´¥", ex);
         }
     }
 
     /// <summary>
-    /// ÊÇ·ñ¿ÉÒÔµÇÂ¼
+    /// æ˜¯å¦å¯ä»¥ç™»å½•
     /// </summary>
     private bool CanLogin() => !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password) && !IsLoggingIn;
 
     /// <summary>
-    /// ÇĞ»»ÃÜÂë¿É¼ûĞÔ
+    /// åˆ‡æ¢å¯†ç å¯è§æ€§
     /// </summary>
     [RelayCommand]
     private void TogglePasswordVisibility()
@@ -133,7 +133,7 @@ public partial class LoginViewModel : ObservableObject
     }
 
     /// <summary>
-    /// µÇÂ¼ÃüÁî
+    /// ç™»å½•å‘½ä»¤
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanLogin))]
     private async Task LoginAsync()
@@ -143,33 +143,33 @@ public partial class LoginViewModel : ObservableObject
             ErrorMessage = string.Empty;
             IsLoggingIn = true;
 
-            // ÑéÖ¤ÕËºÅÃÜÂë¸ñÊ½
+            // éªŒè¯è´¦å·å¯†ç æ ¼å¼
             if (!ValidateInput())
             {
                 return;
             }
 
-            // µ÷ÓÃÈÏÖ¤·şÎñ
+            // è°ƒç”¨è®¤è¯æœåŠ¡
             var user = await _authenticationService.LoginAsync(Username.Trim(), Password.Trim());
 
             if (user == null)
             {
-                ErrorMessage = "ÕËºÅ»òÃÜÂë²»ÕıÈ·";
-                _logHelper?.Warning($"µÇÂ¼Ê§°Ü£ºÕËºÅ»òÃÜÂë²»ÕıÈ· - ÕËºÅ: {Username}");
+                ErrorMessage = "è´¦å·æˆ–å¯†ç ä¸æ­£ç¡®";
+                _logHelper?.Warning($"ç™»å½•å¤±è´¥ï¼šè´¦å·æˆ–å¯†ç ä¸æ­£ç¡® - è´¦å·: {Username}");
                 return;
             }
 
             if (!user.IsEnabled)
             {
-                ErrorMessage = "¸ÃÕË»§ÒÑ±»½ûÓÃ";
-                _logHelper?.Warning($"µÇÂ¼Ê§°Ü£ºÕË»§ÒÑ½ûÓÃ - ÕËºÅ: {Username}");
+                ErrorMessage = "è¯¥è´¦æˆ·å·²è¢«ç¦ç”¨";
+                _logHelper?.Warning($"ç™»å½•å¤±è´¥ï¼šè´¦æˆ·å·²ç¦ç”¨ - è´¦å·: {Username}");
                 return;
             }
 
-            // µÇÂ¼³É¹¦
+            // ç™»å½•æˆåŠŸ
             _sessionService.SetCurrentUser(user);
 
-            // ±£´æ¼Ç×¡ÃÜÂë£¨²»±£´æ admin ÕË»§µÄÃÜÂë£©
+            // ä¿å­˜è®°ä½å¯†ç ï¼ˆä¸ä¿å­˜ admin è´¦æˆ·çš„å¯†ç ï¼‰
             if (RememberPassword && !Username.Trim().Equals("admin", StringComparison.OrdinalIgnoreCase))
             {
                 try
@@ -178,17 +178,17 @@ public partial class LoginViewModel : ObservableObject
                     settings.Credentials.RememberPassword = true;
                     settings.Credentials.Username = Username.Trim();
 
-                    // ±àÂëÃÜÂë£¨Ê¹ÓÃBase64£©
+                    // ç¼–ç å¯†ç ï¼ˆä½¿ç”¨Base64ï¼‰
                     var passwordBytes = System.Text.Encoding.UTF8.GetBytes(Password.Trim());
                     settings.Credentials.PasswordHash = Convert.ToBase64String(passwordBytes);
 
                     _settingsService.SaveSettings();
 
-                    _logHelper?.Information($"ÒÑ±£´æ¼Ç×¡ÃÜÂë: ÓÃ»§={Username.Trim()}, Hash³¤¶È={settings.Credentials.PasswordHash.Length}");
+                    _logHelper?.Information($"å·²ä¿å­˜è®°ä½å¯†ç : ç”¨æˆ·={Username.Trim()}, Hashé•¿åº¦={settings.Credentials.PasswordHash.Length}");
                 }
                 catch (Exception ex)
                 {
-                    _logHelper?.Error($"±£´æ¼Ç×¡ÃÜÂëÊ§°Ü", ex);
+                    _logHelper?.Error($"ä¿å­˜è®°ä½å¯†ç å¤±è´¥", ex);
                 }
             }
             else
@@ -201,29 +201,29 @@ public partial class LoginViewModel : ObservableObject
                     settings.Credentials.PasswordHash = string.Empty;
                     _settingsService.SaveSettings();
 
-                    _logHelper?.Information("ÒÑÇå³ı¼Ç×¡ÃÜÂë");
+                    _logHelper?.Information("å·²æ¸…é™¤è®°ä½å¯†ç ");
                 }
                 catch (Exception ex)
                 {
-                    _logHelper?.Error("Çå³ı¼Ç×¡ÃÜÂëÊ§°Ü", ex);
+                    _logHelper?.Error("æ¸…é™¤è®°ä½å¯†ç å¤±è´¥", ex);
                 }
             }
 
-            _logHelper?.Information($"ÓÃ»§µÇÂ¼³É¹¦", new Dictionary<string, object>
+            _logHelper?.Information($"ç”¨æˆ·ç™»å½•æˆåŠŸ", new Dictionary<string, object>
             {
                 ["UserId"] = user.Id,
                 ["Username"] = user.Username,
                 ["Role"] = user.Role.ToString()
             });
 
-            // µ¼º½µ½»¼ÕßÑ¡Ôñ½çÃæ
-            // ×¢Òâ£ºÓÎ¿ÍÄ£Ê½½«ÔÚÓÎ¿ÍµÇÂ¼ÃüÁîÖĞÖ±½Óµ¼º½µ½Ö÷½çÃæ
+            // å¯¼èˆªåˆ°æ‚£è€…é€‰æ‹©ç•Œé¢
+            // æ³¨æ„ï¼šæ¸¸å®¢æ¨¡å¼å°†åœ¨æ¸¸å®¢ç™»å½•å‘½ä»¤ä¸­ç›´æ¥å¯¼èˆªåˆ°ä¸»ç•Œé¢
             _navigationService.NavigateTo("PatientSelectionViewModel");
         }
         catch (Exception ex)
         {
-            ErrorMessage = "µÇÂ¼Ê§°Ü£¬ÇëÉÔºóÖØÊÔ";
-            _logHelper?.Error("µÇÂ¼Òì³£", ex, new Dictionary<string, object>
+            ErrorMessage = "ç™»å½•å¤±è´¥ï¼Œè¯·ç¨åé‡è¯•";
+            _logHelper?.Error("ç™»å½•å¼‚å¸¸", ex, new Dictionary<string, object>
             {
                 ["Username"] = Username
             });
@@ -235,7 +235,7 @@ public partial class LoginViewModel : ObservableObject
     }
 
     /// <summary>
-    /// ÓÎ¿ÍµÇÂ¼ÃüÁî
+    /// æ¸¸å®¢ç™»å½•å‘½ä»¤
     /// </summary>
     [RelayCommand]
     private async Task GuestLoginAsync()
@@ -248,15 +248,15 @@ public partial class LoginViewModel : ObservableObject
             var guestUser = await _authenticationService.GuestLoginAsync();
             _sessionService.SetCurrentUser(guestUser);
 
-            _logHelper?.Information("ÓÎ¿ÍµÇÂ¼³É¹¦");
+            _logHelper?.Information("æ¸¸å®¢ç™»å½•æˆåŠŸ");
 
-            // ÓÎ¿ÍÖ±½Ó½øÈëÖ÷½çÃæ£¬Ìø¹ı»¼ÕßÑ¡Ôñ
+            // æ¸¸å®¢ç›´æ¥è¿›å…¥ä¸»ç•Œé¢ï¼Œè·³è¿‡æ‚£è€…é€‰æ‹©
             _navigationService.NavigateTo("MainContainerViewModel");
         }
         catch (Exception ex)
         {
-            ErrorMessage = "ÓÎ¿ÍµÇÂ¼Ê§°Ü£¬ÇëÉÔºóÖØÊÔ";
-            _logHelper?.Error("ÓÎ¿ÍµÇÂ¼Òì³£", ex);
+            ErrorMessage = "æ¸¸å®¢ç™»å½•å¤±è´¥ï¼Œè¯·ç¨åé‡è¯•";
+            _logHelper?.Error("æ¸¸å®¢ç™»å½•å¼‚å¸¸", ex);
             }
             finally
             {
@@ -265,31 +265,31 @@ public partial class LoginViewModel : ObservableObject
         }
 
         /// <summary>
-        /// ÑéÖ¤ÊäÈë
+        /// éªŒè¯è¾“å…¥
         /// </summary>
         private bool ValidateInput()
     {
         var username = Username.Trim();
         var password = Password.Trim();
 
-        // ¼ì²éÇ°ºó¿Õ¸ñ
+        // æ£€æŸ¥å‰åç©ºæ ¼
         if (Username != username || Password != password)
         {
-            ErrorMessage = "ÕËºÅ»òÃÜÂë²»ÕıÈ·";
+            ErrorMessage = "è´¦å·æˆ–å¯†ç ä¸æ­£ç¡®";
             return false;
         }
 
-        // ÑéÖ¤ÕËºÅ³¤¶È
+        // éªŒè¯è´¦å·é•¿åº¦
         if (username.Length < Constants.USERNAME_MIN_LENGTH || username.Length > Constants.USERNAME_MAX_LENGTH)
         {
-            ErrorMessage = "ÕËºÅ»òÃÜÂë²»ÕıÈ·";
+            ErrorMessage = "è´¦å·æˆ–å¯†ç ä¸æ­£ç¡®";
             return false;
         }
 
-        // ÑéÖ¤ÃÜÂë³¤¶È
+        // éªŒè¯å¯†ç é•¿åº¦
         if (password.Length < Constants.PASSWORD_MIN_LENGTH || password.Length > Constants.PASSWORD_MAX_LENGTH)
         {
-            ErrorMessage = "ÕËºÅ»òÃÜÂë²»ÕıÈ·";
+            ErrorMessage = "è´¦å·æˆ–å¯†ç ä¸æ­£ç¡®";
             return false;
         }
 

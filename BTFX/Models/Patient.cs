@@ -1,112 +1,112 @@
-using BTFX.Common;
+ï»¿using BTFX.Common;
 using SqlSugar;
 
 namespace BTFX.Models;
 
 /// <summary>
-/// »¼ÕßÄ£ĞÍ
+/// æ‚£è€…æ¨¡å‹
 /// </summary>
 [SugarTable("Patients")]
 public class Patient
 {
     /// <summary>
-    /// »¼ÕßID
+    /// æ‚£è€…ID
     /// </summary>
     [SugarColumn(IsPrimaryKey = true, IsIdentity = true)]
     public int Id { get; set; }
 
     /// <summary>
-    /// ĞÕÃû
+    /// å§“å
     /// </summary>
     [SugarColumn(Length = 50, IsNullable = false)]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// ĞÔ±ğ
+    /// æ€§åˆ«
     /// </summary>
     [SugarColumn(IsNullable = false)]
     public Gender Gender { get; set; } = Gender.Male;
 
     /// <summary>
-    /// ³öÉúÈÕÆÚ
+    /// å‡ºç”Ÿæ—¥æœŸ
     /// </summary>
     [SugarColumn(IsNullable = true)]
     public DateTime? BirthDate { get; set; }
 
     /// <summary>
-    /// µç»°
+    /// ç”µè¯
     /// </summary>
     [SugarColumn(Length = 50, IsNullable = false)]
     public string Phone { get; set; } = string.Empty;
 
     /// <summary>
-    /// Ö¤¼şºÅ
+    /// è¯ä»¶å·
     /// </summary>
     [SugarColumn(Length = 50, IsNullable = true)]
     public string? IdNumber { get; set; }
 
     /// <summary>
-    /// ×¡ÔººÅ
+    /// ä½é™¢å·
     /// </summary>
     [SugarColumn(Length = 50, IsNullable = true)]
     public string? HospitalNumber { get; set; }
 
     /// <summary>
-    /// Éí¸ß (cm)
+    /// èº«é«˜ (cm)
     /// </summary>
     [SugarColumn(IsNullable = true)]
     public double? Height { get; set; }
 
     /// <summary>
-    /// ÌåÖØ (kg)
+    /// ä½“é‡ (kg)
     /// </summary>
     [SugarColumn(IsNullable = true)]
     public double? Weight { get; set; }
 
     /// <summary>
-    /// µØÖ·
+    /// åœ°å€
     /// </summary>
     [SugarColumn(Length = 500, IsNullable = true)]
     public string? Address { get; set; }
 
     /// <summary>
-    /// ²¡Ê·
+    /// ç—…å²
     /// </summary>
     [SugarColumn(ColumnDataType = "text", IsNullable = true)]
     public string? MedicalHistory { get; set; }
 
     /// <summary>
-    /// ±¸×¢
+    /// å¤‡æ³¨
     /// </summary>
     [SugarColumn(ColumnDataType = "text", IsNullable = true)]
     public string? Remark { get; set; }
 
     /// <summary>
-    /// ×´Ì¬
+    /// çŠ¶æ€
     /// </summary>
     [SugarColumn(IsNullable = false)]
     public PatientStatus Status { get; set; } = PatientStatus.Active;
 
     /// <summary>
-    /// ´´½¨ÈËID
+    /// åˆ›å»ºäººID
     /// </summary>
     [SugarColumn(IsNullable = false)]
     public int CreatedBy { get; set; }
 
     /// <summary>
-    /// ´´½¨Ê±¼ä
+    /// åˆ›å»ºæ—¶é—´
     /// </summary>
     [SugarColumn(IsNullable = false)]
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     /// <summary>
-    /// ¸üĞÂÊ±¼ä
+    /// æ›´æ–°æ—¶é—´
     /// </summary>
     [SugarColumn(IsNullable = false)]
     public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
     /// <summary>
-    /// ¼ÆËãÄêÁä
+    /// è®¡ç®—å¹´é¾„
     /// </summary>
     [SugarColumn(IsIgnore = true)]
     public int? Age
@@ -122,8 +122,8 @@ public class Patient
     }
 
     /// <summary>
-    /// ĞÔ±ğÏÔÊ¾ÎÄ±¾
+    /// æ€§åˆ«æ˜¾ç¤ºæ–‡æœ¬
     /// </summary>
     [SugarColumn(IsIgnore = true)]
-    public string GenderDisplay => Gender == Gender.Male ? "ÄĞ" : "Å®";
+    public string GenderDisplay => Gender == Gender.Male ? "ç”·" : "å¥³";
 }

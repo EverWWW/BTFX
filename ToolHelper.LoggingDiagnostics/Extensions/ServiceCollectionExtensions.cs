@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+ï»¿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using ToolHelper.LoggingDiagnostics.Abstractions;
 using ToolHelper.LoggingDiagnostics.Alarm;
@@ -11,16 +11,16 @@ using ToolHelper.LoggingDiagnostics.Tracing;
 namespace ToolHelper.LoggingDiagnostics.Extensions;
 
 /// <summary>
-/// ÈÕÖ¾Õï¶ÏÄ£¿éÒÀÀµ×¢ÈëÀ©Õ¹
+/// æ—¥å¿—è¯Šæ–­æ¨¡å—ä¾èµ–æ³¨å…¥æ‰©å±•
 /// </summary>
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Ìí¼ÓËùÓĞÈÕÖ¾Õï¶Ï·şÎñ
+    /// æ·»åŠ æ‰€æœ‰æ—¥å¿—è¯Šæ–­æœåŠ¡
     /// </summary>
-    /// <param name="services">·şÎñ¼¯ºÏ</param>
-    /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-    /// <returns>·şÎñ¼¯ºÏ</returns>
+    /// <param name="services">æœåŠ¡é›†åˆ</param>
+    /// <param name="configure">é…ç½®å§”æ‰˜</param>
+    /// <returns>æœåŠ¡é›†åˆ</returns>
     /// <example>
     /// <code>
     /// services.AddLoggingDiagnostics(options => {
@@ -38,7 +38,7 @@ public static class ServiceCollectionExtensions
         var builder = new LoggingDiagnosticsBuilder(services);
         configure?.Invoke(builder);
 
-        // ×¢²áËùÓĞ·şÎñ
+        // æ³¨å†Œæ‰€æœ‰æœåŠ¡
         services.AddLogHelper(options => 
         {
             var logOptions = builder.LogOptions;
@@ -127,11 +127,11 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Ìí¼ÓÈÕÖ¾°ïÖúÀà·şÎñ
+    /// æ·»åŠ æ—¥å¿—å¸®åŠ©ç±»æœåŠ¡
     /// </summary>
-    /// <param name="services">·şÎñ¼¯ºÏ</param>
-    /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-    /// <returns>·şÎñ¼¯ºÏ</returns>
+    /// <param name="services">æœåŠ¡é›†åˆ</param>
+    /// <param name="configure">é…ç½®å§”æ‰˜</param>
+    /// <returns>æœåŠ¡é›†åˆ</returns>
     public static IServiceCollection AddLogHelper(
         this IServiceCollection services,
         Action<LogOptions>? configure = null)
@@ -151,11 +151,11 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Ìí¼Ó×·×Ù°ïÖúÀà·şÎñ
+    /// æ·»åŠ è¿½è¸ªå¸®åŠ©ç±»æœåŠ¡
     /// </summary>
-    /// <param name="services">·şÎñ¼¯ºÏ</param>
-    /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-    /// <returns>·şÎñ¼¯ºÏ</returns>
+    /// <param name="services">æœåŠ¡é›†åˆ</param>
+    /// <param name="configure">é…ç½®å§”æ‰˜</param>
+    /// <returns>æœåŠ¡é›†åˆ</returns>
     public static IServiceCollection AddTraceHelper(
         this IServiceCollection services,
         Action<TraceOptions>? configure = null)
@@ -175,11 +175,11 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Ìí¼Ó´íÎóÂë¹ÜÀí·şÎñ
+    /// æ·»åŠ é”™è¯¯ç ç®¡ç†æœåŠ¡
     /// </summary>
-    /// <param name="services">·şÎñ¼¯ºÏ</param>
-    /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-    /// <returns>·şÎñ¼¯ºÏ</returns>
+    /// <param name="services">æœåŠ¡é›†åˆ</param>
+    /// <param name="configure">é…ç½®å§”æ‰˜</param>
+    /// <returns>æœåŠ¡é›†åˆ</returns>
     public static IServiceCollection AddErrorCodeManager(
         this IServiceCollection services,
         Action<ErrorCodeOptions>? configure = null)
@@ -199,11 +199,11 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Ìí¼Ó±¨¾¯°ïÖúÀà·şÎñ
+    /// æ·»åŠ æŠ¥è­¦å¸®åŠ©ç±»æœåŠ¡
     /// </summary>
-    /// <param name="services">·şÎñ¼¯ºÏ</param>
-    /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-    /// <returns>·şÎñ¼¯ºÏ</returns>
+    /// <param name="services">æœåŠ¡é›†åˆ</param>
+    /// <param name="configure">é…ç½®å§”æ‰˜</param>
+    /// <returns>æœåŠ¡é›†åˆ</returns>
     public static IServiceCollection AddAlarmHelper(
         this IServiceCollection services,
         Action<AlarmOptions>? configure = null)
@@ -223,11 +223,11 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Ìí¼ÓĞÔÄÜ¼à¿Ø·şÎñ
+    /// æ·»åŠ æ€§èƒ½ç›‘æ§æœåŠ¡
     /// </summary>
-    /// <param name="services">·şÎñ¼¯ºÏ</param>
-    /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-    /// <returns>·şÎñ¼¯ºÏ</returns>
+    /// <param name="services">æœåŠ¡é›†åˆ</param>
+    /// <param name="configure">é…ç½®å§”æ‰˜</param>
+    /// <returns>æœåŠ¡é›†åˆ</returns>
     public static IServiceCollection AddPerformanceMonitor(
         this IServiceCollection services,
         Action<PerformanceMonitorOptions>? configure = null)
@@ -247,11 +247,11 @@ public static class ServiceCollectionExtensions
             }
 
             /// <summary>
-            /// Ìí¼ÓÈÕÖ¾µ¼³öÖúÊÖ·şÎñ
+            /// æ·»åŠ æ—¥å¿—å¯¼å‡ºåŠ©æ‰‹æœåŠ¡
             /// </summary>
-            /// <param name="services">·şÎñ¼¯ºÏ</param>
-            /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-            /// <returns>·şÎñ¼¯ºÏ</returns>
+            /// <param name="services">æœåŠ¡é›†åˆ</param>
+            /// <param name="configure">é…ç½®å§”æ‰˜</param>
+            /// <returns>æœåŠ¡é›†åˆ</returns>
             public static IServiceCollection AddLogExportHelper(
                 this IServiceCollection services,
                 Action<LogExportOptions>? configure = null)
@@ -272,34 +272,34 @@ public static class ServiceCollectionExtensions
         }
 
 /// <summary>
-/// ÈÕÖ¾Õï¶ÏÅäÖÃ¹¹½¨Æ÷
+/// æ—¥å¿—è¯Šæ–­é…ç½®æ„å»ºå™¨
 /// </summary>
 public class LoggingDiagnosticsBuilder
 {
     private readonly IServiceCollection _services;
 
     /// <summary>
-    /// ÈÕÖ¾ÅäÖÃÑ¡Ïî
+    /// æ—¥å¿—é…ç½®é€‰é¡¹
     /// </summary>
     public LogOptions LogOptions { get; } = new();
 
     /// <summary>
-    /// ×·×ÙÅäÖÃÑ¡Ïî
+    /// è¿½è¸ªé…ç½®é€‰é¡¹
     /// </summary>
     public TraceOptions TraceOptions { get; } = new();
 
     /// <summary>
-    /// ´íÎóÂëÅäÖÃÑ¡Ïî
+    /// é”™è¯¯ç é…ç½®é€‰é¡¹
     /// </summary>
     public ErrorCodeOptions ErrorCodeOptions { get; } = new();
 
     /// <summary>
-    /// ±¨¾¯ÅäÖÃÑ¡Ïî
+    /// æŠ¥è­¦é…ç½®é€‰é¡¹
     /// </summary>
     public AlarmOptions AlarmOptions { get; } = new();
 
     /// <summary>
-    /// ĞÔÄÜ¼à¿ØÅäÖÃÑ¡Ïî
+    /// æ€§èƒ½ç›‘æ§é…ç½®é€‰é¡¹
     /// </summary>
     public PerformanceMonitorOptions PerformanceMonitorOptions { get; } = new();
 
@@ -309,10 +309,10 @@ public class LoggingDiagnosticsBuilder
     }
 
     /// <summary>
-    /// ÅäÖÃÈÕÖ¾Ñ¡Ïî
+    /// é…ç½®æ—¥å¿—é€‰é¡¹
     /// </summary>
-    /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-    /// <returns>¹¹½¨Æ÷</returns>
+    /// <param name="configure">é…ç½®å§”æ‰˜</param>
+    /// <returns>æ„å»ºå™¨</returns>
     public LoggingDiagnosticsBuilder ConfigureLog(Action<LogOptions> configure)
     {
         configure(LogOptions);
@@ -320,10 +320,10 @@ public class LoggingDiagnosticsBuilder
     }
 
     /// <summary>
-    /// ÅäÖÃ×·×ÙÑ¡Ïî
+    /// é…ç½®è¿½è¸ªé€‰é¡¹
     /// </summary>
-    /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-    /// <returns>¹¹½¨Æ÷</returns>
+    /// <param name="configure">é…ç½®å§”æ‰˜</param>
+    /// <returns>æ„å»ºå™¨</returns>
     public LoggingDiagnosticsBuilder ConfigureTrace(Action<TraceOptions> configure)
     {
         configure(TraceOptions);
@@ -331,10 +331,10 @@ public class LoggingDiagnosticsBuilder
     }
 
     /// <summary>
-    /// ÅäÖÃ´íÎóÂëÑ¡Ïî
+    /// é…ç½®é”™è¯¯ç é€‰é¡¹
     /// </summary>
-    /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-    /// <returns>¹¹½¨Æ÷</returns>
+    /// <param name="configure">é…ç½®å§”æ‰˜</param>
+    /// <returns>æ„å»ºå™¨</returns>
     public LoggingDiagnosticsBuilder ConfigureErrorCode(Action<ErrorCodeOptions> configure)
     {
         configure(ErrorCodeOptions);
@@ -342,10 +342,10 @@ public class LoggingDiagnosticsBuilder
     }
 
     /// <summary>
-    /// ÅäÖÃ±¨¾¯Ñ¡Ïî
+    /// é…ç½®æŠ¥è­¦é€‰é¡¹
     /// </summary>
-    /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-    /// <returns>¹¹½¨Æ÷</returns>
+    /// <param name="configure">é…ç½®å§”æ‰˜</param>
+    /// <returns>æ„å»ºå™¨</returns>
     public LoggingDiagnosticsBuilder ConfigureAlarm(Action<AlarmOptions> configure)
     {
         configure(AlarmOptions);
@@ -353,10 +353,10 @@ public class LoggingDiagnosticsBuilder
     }
 
     /// <summary>
-    /// ÅäÖÃĞÔÄÜ¼à¿ØÑ¡Ïî
+    /// é…ç½®æ€§èƒ½ç›‘æ§é€‰é¡¹
     /// </summary>
-    /// <param name="configure">ÅäÖÃÎ¯ÍĞ</param>
-    /// <returns>¹¹½¨Æ÷</returns>
+    /// <param name="configure">é…ç½®å§”æ‰˜</param>
+    /// <returns>æ„å»ºå™¨</returns>
     public LoggingDiagnosticsBuilder ConfigurePerformance(Action<PerformanceMonitorOptions> configure)
     {
         configure(PerformanceMonitorOptions);
