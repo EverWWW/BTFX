@@ -59,6 +59,19 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Resources\Images\Device\deviceImage.jpeg" />
+    <None Remove="Resources\Images\NavigationItem\baogao1.png" />
+    <None Remove="Resources\Images\NavigationItem\baogao2.png" />
+    <None Remove="Resources\Images\NavigationItem\celiangpinggu1.png" />
+    <None Remove="Resources\Images\NavigationItem\celiangpinggu2.png" />
+    <None Remove="Resources\Images\NavigationItem\chongzhi.png" />
+    <None Remove="Resources\Images\NavigationItem\chuangjianceliang.png" />
+    <None Remove="Resources\Images\NavigationItem\genghuanhuanzhe.png" />
+    <None Remove="Resources\Images\NavigationItem\lianjie.png" />
+    <None Remove="Resources\Images\NavigationItem\shezhi1.png" />
+    <None Remove="Resources\Images\NavigationItem\shezhi2.png" />
+    <None Remove="Resources\Images\NavigationItem\shujuguanli1.png" />
+    <None Remove="Resources\Images\NavigationItem\shujuguanli2.png" />
+    <None Remove="Resources\Images\NavigationItem\weilianjie.png" />
     <None Remove="Resources\Images\PatientSelectionView\bianji.png" />
     <None Remove="Resources\Images\PatientSelectionView\daochu.png" />
     <None Remove="Resources\Images\PatientSelectionView\daoru.png" />
@@ -99,6 +112,20 @@
     <Resource Include="Resources\Images\Logo\logo3.png" />
     <Resource Include="Resources\Images\Logo\logo4.png" />
     <Resource Include="Resources\Images\Logo\logo5.png" />
+    <Resource Include="Resources\Images\NavigationItem\baogao1.png" />
+    <Resource Include="Resources\Images\NavigationItem\baogao2.png" />
+    <Resource Include="Resources\Images\NavigationItem\celiangpinggu1.png" />
+    <Resource Include="Resources\Images\NavigationItem\celiangpinggu2.png" />
+    <Resource Include="Resources\Images\NavigationItem\chongzhi.png" />
+    <Resource Include="Resources\Images\NavigationItem\chuangjianceliang.png" />
+    <Resource Include="Resources\Images\NavigationItem\genghuanhuanzhe.png" />
+    <Resource Include="Resources\Images\NavigationItem\lianjie.png" />
+    <Resource Include="Resources\Images\NavigationItem\tuichu.png" />
+    <Resource Include="Resources\Images\NavigationItem\shezhi1.png" />
+    <Resource Include="Resources\Images\NavigationItem\shezhi2.png" />
+    <Resource Include="Resources\Images\NavigationItem\shujuguanli1.png" />
+    <Resource Include="Resources\Images\NavigationItem\shujuguanli2.png" />
+    <Resource Include="Resources\Images\NavigationItem\weilianjie.png" />
     <Resource Include="Resources\Images\PatientSelectionView\bianji.png" />
     <Resource Include="Resources\Images\PatientSelectionView\daochu.png" />
     <Resource Include="Resources\Images\PatientSelectionView\daoru.png" />

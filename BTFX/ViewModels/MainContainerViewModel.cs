@@ -102,6 +102,11 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private bool _isGuestMode;
 
+    /// <summary>
+    /// 当前患者性别是否显示
+    /// </summary>
+    public bool IsCurrentPatientGenderVisible => !IsGuestMode;
+
     #endregion
 
     #region 状态栏属性
@@ -331,6 +336,9 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
                 item.IsEnabled = !IsGuestMode;
             }
         }
+
+        OnPropertyChanged(nameof(IsCurrentPatientGenderVisible));
+        UpdatePatientInfo();
     }
 
     /// <summary>
@@ -338,6 +346,15 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     /// </summary>
     private void UpdatePatientInfo()
     {
+        if (IsGuestMode)
+        {
+            HasCurrentPatient = false;
+            CurrentPatientName = "游客";
+            CurrentPatientGender = string.Empty;
+            CurrentPatientAge = null;
+            return;
+        }
+
         var patient = _sessionService.CurrentPatient;
         HasCurrentPatient = patient != null;
 

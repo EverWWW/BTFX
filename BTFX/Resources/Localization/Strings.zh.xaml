@@ -37,7 +37,7 @@
     <system:String x:Key="YearsOld">岁</system:String>
     <system:String x:Key="SelectMenuToStart">请选择左侧菜单开始操作</system:String>
 
-    <!-- 星期几 -->
+    <!--  星期几  -->
     <system:String x:Key="Monday">星期一</system:String>
     <system:String x:Key="Tuesday">星期二</system:String>
     <system:String x:Key="Wednesday">星期三</system:String>
@@ -363,22 +363,22 @@
     <system:String x:Key="DaysAgoLogs">天前的日志</system:String>
     <system:String x:Key="AllRightsReserved">版权所有</system:String>
 
-    <!-- ========== 测量评估模块 (MA.*) ========== -->
+    <!--  ========== 测量评估模块 (MA.*) ==========  -->
 
-    <!-- 公共 -->
+    <!--  公共  -->
     <system:String x:Key="MA.Common.MeasurementAssessment">测量评估</system:String>
     <system:String x:Key="MA.Common.Step">步骤</system:String>
     <system:String x:Key="MA.Common.OpenFolder">打开文件夹</system:String>
     <system:String x:Key="MA.Common.Optional">（可选）</system:String>
     <system:String x:Key="MA.Common.NotAvailable">—</system:String>
 
-    <!-- StepBar -->
+    <!--  StepBar  -->
     <system:String x:Key="MA.StepBar.Step1">新建测量</system:String>
     <system:String x:Key="MA.StepBar.Step2">导入/采集</system:String>
     <system:String x:Key="MA.StepBar.Step3">回放检查</system:String>
     <system:String x:Key="MA.StepBar.Step4">分析结果</system:String>
 
-    <!-- Step1 新建测量 -->
+    <!--  Step1 新建测量  -->
     <system:String x:Key="MA.Step1.Title">新建本次测量</system:String>
     <system:String x:Key="MA.Step1.Card.BasicInfo">本次测量信息</system:String>
     <system:String x:Key="MA.Step1.MeasurementName">测量名称</system:String>
@@ -397,7 +397,7 @@
     <system:String x:Key="MA.Step1.CreateButton">创建本次测量</system:String>
     <system:String x:Key="MA.Step1.Validation.WalkwayLengthInvalid">请输入有效的步道长度（正数）。</system:String>
 
-    <!-- Step2 导入/采集 -->
+    <!--  Step2 导入/采集  -->
     <system:String x:Key="MA.Step2.Title">导入/采集视频</system:String>
     <system:String x:Key="MA.Step2.Tab.Import">导入视频</system:String>
     <system:String x:Key="MA.Step2.Tab.Capture">实时采集</system:String>
@@ -430,7 +430,7 @@
     <system:String x:Key="MA.Step2.VideoFilter">视频文件</system:String>
     <system:String x:Key="MA.Step2.SelectVideoTitle">选择视频文件</system:String>
 
-    <!-- Step3 回放检查 -->
+    <!--  Step3 回放检查  -->
     <system:String x:Key="MA.Step3.Title">回放检查</system:String>
     <system:String x:Key="MA.Step3.FrontView">正面视角</system:String>
     <system:String x:Key="MA.Step3.SideView">侧面视角</system:String>
@@ -457,7 +457,7 @@
     <system:String x:Key="MA.Step3.GoAnalyze.DisabledReason">需要至少一个视频才可进入分析。</system:String>
     <system:String x:Key="MA.Step3.BackToImport">返回导入</system:String>
 
-    <!-- Step4 分析评估 -->
+    <!--  Step4 分析评估  -->
     <system:String x:Key="MA.Step4.Title">分析评估</system:String>
     <system:String x:Key="MA.Step4.ReadyTitle">分析就绪</system:String>
     <system:String x:Key="MA.Step4.ReadyDesc">请确认以下前置条件，然后开始分析</system:String>
@@ -470,7 +470,7 @@
     <system:String x:Key="MA.Step4.StatusMessage">状态消息</system:String>
     <system:String x:Key="MA.Step4.StageProgress">阶段进度</system:String>
 
-    <!-- Step4 前置条件 -->
+    <!--  Step4 前置条件  -->
     <system:String x:Key="MA.Step4.Prereq.FrontVideo">正面视频已就绪</system:String>
     <system:String x:Key="MA.Step4.Prereq.SideVideo">侧面视频已就绪</system:String>
     <system:String x:Key="MA.Step4.Prereq.PatientHeight">患者身高已填写</system:String>
@@ -478,14 +478,14 @@
     <system:String x:Key="MA.Step4.Prereq.CameraDistance">相机距离已配置</system:String>
     <system:String x:Key="MA.Step4.Prereq.AlgorithmExe">算法程序可用</system:String>
 
-    <!-- Step4 分析选项 -->
+    <!--  Step4 分析选项  -->
     <system:String x:Key="MA.Step4.Options.Title">分析选项</system:String>
     <system:String x:Key="MA.Step4.Options.GaitEvents">计算步态事件参数</system:String>
     <system:String x:Key="MA.Step4.Options.Kinematics">计算运动学参数</system:String>
     <system:String x:Key="MA.Step4.Options.ExportCsv">导出 CSV 文件</system:String>
     <system:String x:Key="MA.Step4.Options.SmoothCurve">曲线平滑处理</system:String>
 
-    <!-- Step4 按钮 -->
+    <!--  Step4 按钮  -->
     <system:String x:Key="MA.Step4.Btn.StartAnalyze">开始分析</system:String>
     <system:String x:Key="MA.Step4.Btn.CancelAnalyze">取消分析</system:String>
     <system:String x:Key="MA.Step4.Btn.RetryAnalyze">重新分析</system:String>
@@ -495,10 +495,10 @@
     <system:String x:Key="MA.Step4.Btn.ViewLog">查看日志</system:String>
     <system:String x:Key="MA.Step4.Btn.GoToStep2">返回步骤2</system:String>
 
-    <!-- Step4 视频控制 -->
+    <!--  Step4 视频控制  -->
     <system:String x:Key="MA.Step4.Video.PlaybackSpeed">播放速度</system:String>
 
-    <!-- Step4 结果参数 -->
+    <!--  Step4 结果参数  -->
     <system:String x:Key="MA.Step4.Param.GaitEvents">步态事件参数</system:String>
     <system:String x:Key="MA.Step4.Param.GaitCycleDuration">步态周期</system:String>
     <system:String x:Key="MA.Step4.Param.StanceTime">站立相</system:String>
@@ -515,7 +515,7 @@
     <system:String x:Key="MA.Step4.Param.PelvisRom">骨盆ROM</system:String>
     <system:String x:Key="MA.Step4.Chart.Title">关节角度曲线</system:String>
 
-    <!-- Step4 质量评估 -->
+    <!--  Step4 质量评估  -->
     <system:String x:Key="MA.Step4.Quality.Title">质量评估</system:String>
     <system:String x:Key="MA.Step4.Quality.Confidence">关键点置信度</system:String>
     <system:String x:Key="MA.Step4.Quality.ValidFrameRatio">有效帧比例</system:String>
@@ -528,21 +528,21 @@
     <system:String x:Key="MA.Step4.Quality.GradeGood">数据质量良好，部分指标需关注</system:String>
     <system:String x:Key="MA.Step4.Quality.GradePoor">数据质量较差，建议重新采集</system:String>
 
-    <!-- Step4 降级提示 -->
+    <!--  Step4 降级提示  -->
     <system:String x:Key="MA.Step4.Video.Unavailable">视频预览不可用</system:String>
     <system:String x:Key="MA.Step4.Video.UnavailableHint">视频文件缺失或加载失败，请切换到参数概览查看数据</system:String>
     <system:String x:Key="MA.Step4.Chart.Unavailable">曲线数据不可用</system:String>
     <system:String x:Key="MA.Step4.Chart.UnavailableHint">关节角度 CSV 文件缺失，请切换到参数概览查看数据</system:String>
 
-    <!-- Step4 错误信息 -->
+    <!--  Step4 错误信息  -->
     <system:String x:Key="MA.Step4.Error.Code">错误码</system:String>
     <system:String x:Key="MA.Step4.Error.Description">错误描述</system:String>
     <system:String x:Key="MA.Step4.Error.Suggestion">修复建议</system:String>
 
-    <!-- Step4 任务日志 -->
+    <!--  Step4 任务日志  -->
     <system:String x:Key="MA.Step4.Log.Title">任务日志</system:String>
 
-    <!-- InfoPanel 右侧信息栏 -->
+    <!--  InfoPanel 右侧信息栏  -->
     <system:String x:Key="MA.Info.Patient.Title">当前患者</system:String>
     <system:String x:Key="MA.Info.Measurement.Title">本次测量</system:String>
     <system:String x:Key="MA.Info.Video.Title">视频状态</system:String>
@@ -563,7 +563,7 @@
     <system:String x:Key="MA.Info.CreateTime">创建时间</system:String>
     <system:String x:Key="MA.Info.OpenMeasurementFolder">打开测量目录</system:String>
 
-    <!-- TaskDrawer 任务抽屉 -->
+    <!--  TaskDrawer 任务抽屉  -->
     <system:String x:Key="MA.Task.Title">任务中心</system:String>
     <system:String x:Key="MA.Task.CurrentTask">当前任务</system:String>
     <system:String x:Key="MA.Task.Progress">进度</system:String>
@@ -573,7 +573,7 @@
     <system:String x:Key="MA.Task.NoTask">暂无任务。</system:String>
     <system:String x:Key="MA.Task.Analyzing">正在分析...</system:String>
 
-    <!-- Dialog 弹窗 -->
+    <!--  Dialog 弹窗  -->
     <system:String x:Key="MA.Dialog.VideoIncomplete.Title">视频不完整</system:String>
     <system:String x:Key="MA.Dialog.VideoIncomplete.Content">仅导入一个视角视频，可进入回放检查，但无法进行分析。是否继续？</system:String>
     <system:String x:Key="MA.Dialog.VideoIncomplete.Continue">继续</system:String>
@@ -583,7 +583,7 @@
     <system:String x:Key="MA.Dialog.CancelAnalysis.Title">取消分析</system:String>
     <system:String x:Key="MA.Dialog.CancelAnalysis.Content">确定要取消当前分析任务吗？</system:String>
 
-    <!-- Snackbar 轻提示 -->
+    <!--  Snackbar 轻提示  -->
     <system:String x:Key="MA.Snackbar.ImportSuccess">导入成功。</system:String>
     <system:String x:Key="MA.Snackbar.AnalysisStarted">分析已开始。</system:String>
     <system:String x:Key="MA.Snackbar.AnalysisCompleted">分析完成。</system:String>
@@ -593,7 +593,7 @@
     <system:String x:Key="MA.Snackbar.VideoCleared">视频已清除。</system:String>
     <system:String x:Key="MA.Snackbar.SelectPatientFirst">请先选择患者。</system:String>
 
-    <!-- 状态 -->
+    <!--  状态  -->
     <system:String x:Key="MA.Status.NotRun">未运行</system:String>
     <system:String x:Key="MA.Status.Running">运行中</system:String>
     <system:String x:Key="MA.Status.Completed">已完成</system:String>

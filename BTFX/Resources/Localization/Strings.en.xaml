@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:system="clr-namespace:System;assembly=mscorlib">
 
     <system:String x:Key="AppName">Gait Intelligent Analysis System</system:String>
     <system:String x:Key="AppNameShort">BTFX</system:String>
@@ -36,7 +37,7 @@
     <system:String x:Key="YearsOld">years old</system:String>
     <system:String x:Key="SelectMenuToStart">Please select a menu on the left to start</system:String>
 
-    <!-- Days of Week -->
+    <!--  Days of Week  -->
     <system:String x:Key="Monday">Monday</system:String>
     <system:String x:Key="Tuesday">Tuesday</system:String>
     <system:String x:Key="Wednesday">Wednesday</system:String>
@@ -128,14 +129,14 @@
     <system:String x:Key="Cadence">Cadence (steps/min)</system:String>
     <system:String x:Key="Speed">Speed (m/s)</system:String>
 
-    <!-- Navigation Menu -->
+    <!--  Navigation Menu  -->
     <system:String x:Key="NavMeasurement">Measurement</system:String>
     <system:String x:Key="NavDataManagement">Data Management</system:String>
     <system:String x:Key="NavReport">Reports</system:String>
     <system:String x:Key="NavSettings">Settings</system:String>
     <system:String x:Key="NavDevTest">Dev Test</system:String>
 
-    <!-- Device Status -->
+    <!--  Device Status  -->
     <system:String x:Key="DeviceConnected">Connected</system:String>
     <system:String x:Key="DeviceConnecting">Connecting...</system:String>
     <system:String x:Key="DeviceDisconnected">Disconnected</system:String>
@@ -172,7 +173,7 @@
     <system:String x:Key="GeneratingReport">Generating Report...</system:String>
     <system:String x:Key="SelectReportFromLeft">Please select a report on the left to view</system:String>
     <system:String x:Key="MeasurementDate">Measurement Date</system:String>
-    
+
 
     <system:String x:Key="Settings">Settings</system:String>
     <system:String x:Key="GeneralSettings">General Settings</system:String>
@@ -294,14 +295,14 @@
     <system:String x:Key="Weekly">Weekly</system:String>
     <system:String x:Key="Monthly">Monthly</system:String>
 
-    <!-- Settings Page -->
+    <!--  Settings Page  -->
     <system:String x:Key="SettingsTitle">Settings</system:String>
     <system:String x:Key="GeneralSettingsTab">General</system:String>
     <system:String x:Key="DeviceConfigTab">Device Config</system:String>
     <system:String x:Key="DataManagementTab">Data Management</system:String>
     <system:String x:Key="SystemInfoTab">System Info</system:String>
 
-    <!-- General Settings -->
+    <!--  General Settings  -->
     <system:String x:Key="LanguageSettings">Language Settings</system:String>
     <system:String x:Key="SelectLanguage">Select Language</system:String>
     <system:String x:Key="ThemeSettings">Theme Settings</system:String>
@@ -312,10 +313,10 @@
     <system:String x:Key="ImportSettings">Import Settings</system:String>
     <system:String x:Key="SettingsExportImportHint">Export will save general and organization settings (excluding user data)</system:String>
 
-    <!-- Device Config -->
+    <!--  Device Config  -->
     <system:String x:Key="DeviceConfigDeveloping">Device configuration is under development...</system:String>
 
-    <!-- User Management -->
+    <!--  User Management  -->
     <system:String x:Key="RowNumber">No.</system:String>
     <system:String x:Key="Account">Account</system:String>
     <system:String x:Key="RealName">Name</system:String>
@@ -326,7 +327,7 @@
     <system:String x:Key="EnableUser">Enable</system:String>
     <system:String x:Key="Description">Description</system:String>
 
-    <!-- Unit Settings -->
+    <!--  Unit Settings  -->
     <system:String x:Key="EnterUnitName">Enter organization name</system:String>
     <system:String x:Key="UnitLogo">Organization Logo</system:String>
     <system:String x:Key="SelectImage">Select Image</system:String>
@@ -334,7 +335,7 @@
     <system:String x:Key="NoLogo">No Logo</system:String>
     <system:String x:Key="LogoSizeHint">PNG/JPG format, max 300KB</system:String>
 
-    <!-- Data Management -->
+    <!--  Data Management  -->
     <system:String x:Key="AutoBackupSettings">Auto Backup</system:String>
     <system:String x:Key="EnableAutoBackup">Enable auto backup</system:String>
     <system:String x:Key="SaveBackupSettings">Save Backup Settings</system:String>
@@ -344,7 +345,7 @@
     <system:String x:Key="Size">Size</system:String>
     <system:String x:Key="RefreshList">Refresh List</system:String>
 
-    <!-- System Info -->
+    <!--  System Info  -->
     <system:String x:Key="AppInfo">Application Info</system:String>
     <system:String x:Key="AppNameLabel">App Name:</system:String>
     <system:String x:Key="VersionLabel">Version:</system:String>
@@ -362,22 +363,22 @@
     <system:String x:Key="DaysAgoLogs">days ago</system:String>
     <system:String x:Key="AllRightsReserved">All Rights Reserved</system:String>
 
-    <!-- ========== Measurement Assessment Module (MA.*) ========== -->
+    <!--  ========== Measurement Assessment Module (MA.*) ==========  -->
 
-    <!-- Common -->
+    <!--  Common  -->
     <system:String x:Key="MA.Common.MeasurementAssessment">Measurement Assessment</system:String>
     <system:String x:Key="MA.Common.Step">Step</system:String>
     <system:String x:Key="MA.Common.OpenFolder">Open Folder</system:String>
     <system:String x:Key="MA.Common.Optional">(Optional)</system:String>
     <system:String x:Key="MA.Common.NotAvailable">—</system:String>
 
-    <!-- StepBar -->
+    <!--  StepBar  -->
     <system:String x:Key="MA.StepBar.Step1">Create Measurement</system:String>
     <system:String x:Key="MA.StepBar.Step2">Import / Capture</system:String>
     <system:String x:Key="MA.StepBar.Step3">Review</system:String>
     <system:String x:Key="MA.StepBar.Step4">Analyze</system:String>
 
-    <!-- Step1 Create Measurement -->
+    <!--  Step1 Create Measurement  -->
     <system:String x:Key="MA.Step1.Title">Create a New Measurement</system:String>
     <system:String x:Key="MA.Step1.Card.BasicInfo">Measurement Info</system:String>
     <system:String x:Key="MA.Step1.MeasurementName">Measurement Name</system:String>
@@ -396,7 +397,7 @@
     <system:String x:Key="MA.Step1.CreateButton">Create Measurement</system:String>
     <system:String x:Key="MA.Step1.Validation.WalkwayLengthInvalid">Please enter a valid walkway length (positive number).</system:String>
 
-    <!-- Step2 Import/Capture -->
+    <!--  Step2 Import/Capture  -->
     <system:String x:Key="MA.Step2.Title">Import / Capture Videos</system:String>
     <system:String x:Key="MA.Step2.Tab.Import">Import</system:String>
     <system:String x:Key="MA.Step2.Tab.Capture">Capture</system:String>
@@ -429,7 +430,7 @@
     <system:String x:Key="MA.Step2.VideoFilter">Video Files</system:String>
     <system:String x:Key="MA.Step2.SelectVideoTitle">Select Video File</system:String>
 
-    <!-- Step3 Review -->
+    <!--  Step3 Review  -->
     <system:String x:Key="MA.Step3.Title">Review</system:String>
     <system:String x:Key="MA.Step3.FrontView">Front View</system:String>
     <system:String x:Key="MA.Step3.SideView">Side View</system:String>
@@ -456,7 +457,7 @@
     <system:String x:Key="MA.Step3.GoAnalyze.DisabledReason">At least one video is required for analysis.</system:String>
     <system:String x:Key="MA.Step3.BackToImport">Back to Import</system:String>
 
-    <!-- Step4 Analyze & Evaluate -->
+    <!--  Step4 Analyze & Evaluate  -->
     <system:String x:Key="MA.Step4.Title">Analyze &amp; Evaluate</system:String>
     <system:String x:Key="MA.Step4.ReadyTitle">Ready to Analyze</system:String>
     <system:String x:Key="MA.Step4.ReadyDesc">Please verify the prerequisites below, then start analysis</system:String>
@@ -469,7 +470,7 @@
     <system:String x:Key="MA.Step4.StatusMessage">Status Message</system:String>
     <system:String x:Key="MA.Step4.StageProgress">Stage Progress</system:String>
 
-    <!-- Step4 Prerequisites -->
+    <!--  Step4 Prerequisites  -->
     <system:String x:Key="MA.Step4.Prereq.FrontVideo">Front video ready</system:String>
     <system:String x:Key="MA.Step4.Prereq.SideVideo">Side video ready</system:String>
     <system:String x:Key="MA.Step4.Prereq.PatientHeight">Patient height provided</system:String>
@@ -477,14 +478,14 @@
     <system:String x:Key="MA.Step4.Prereq.CameraDistance">Camera distance configured</system:String>
     <system:String x:Key="MA.Step4.Prereq.AlgorithmExe">Algorithm executable available</system:String>
 
-    <!-- Step4 Analysis Options -->
+    <!--  Step4 Analysis Options  -->
     <system:String x:Key="MA.Step4.Options.Title">Analysis Options</system:String>
     <system:String x:Key="MA.Step4.Options.GaitEvents">Compute gait event parameters</system:String>
     <system:String x:Key="MA.Step4.Options.Kinematics">Compute kinematic parameters</system:String>
     <system:String x:Key="MA.Step4.Options.ExportCsv">Export CSV files</system:String>
     <system:String x:Key="MA.Step4.Options.SmoothCurve">Smooth curves</system:String>
 
-    <!-- Step4 Buttons -->
+    <!--  Step4 Buttons  -->
     <system:String x:Key="MA.Step4.Btn.StartAnalyze">Start Analysis</system:String>
     <system:String x:Key="MA.Step4.Btn.CancelAnalyze">Cancel Analysis</system:String>
     <system:String x:Key="MA.Step4.Btn.RetryAnalyze">Retry Analysis</system:String>
@@ -494,10 +495,10 @@
     <system:String x:Key="MA.Step4.Btn.ViewLog">View Log</system:String>
     <system:String x:Key="MA.Step4.Btn.GoToStep2">Back to Step 2</system:String>
 
-    <!-- Step4 Video Control -->
+    <!--  Step4 Video Control  -->
     <system:String x:Key="MA.Step4.Video.PlaybackSpeed">Playback Speed</system:String>
 
-    <!-- Step4 Result Parameters -->
+    <!--  Step4 Result Parameters  -->
     <system:String x:Key="MA.Step4.Param.GaitEvents">Gait Event Parameters</system:String>
     <system:String x:Key="MA.Step4.Param.GaitCycleDuration">Gait Cycle</system:String>
     <system:String x:Key="MA.Step4.Param.StanceTime">Stance Phase</system:String>
@@ -514,7 +515,7 @@
     <system:String x:Key="MA.Step4.Param.PelvisRom">Pelvis ROM</system:String>
     <system:String x:Key="MA.Step4.Chart.Title">Joint Angle Curves</system:String>
 
-    <!-- Step4 Quality Assessment -->
+    <!--  Step4 Quality Assessment  -->
     <system:String x:Key="MA.Step4.Quality.Title">Quality Assessment</system:String>
     <system:String x:Key="MA.Step4.Quality.Confidence">Keypoint Confidence</system:String>
     <system:String x:Key="MA.Step4.Quality.ValidFrameRatio">Valid Frame Ratio</system:String>
@@ -527,21 +528,21 @@
     <system:String x:Key="MA.Step4.Quality.GradeGood">Good data quality, some indicators need attention</system:String>
     <system:String x:Key="MA.Step4.Quality.GradePoor">Poor data quality, re-capture recommended</system:String>
 
-    <!-- Step4 Degradation Hints -->
+    <!--  Step4 Degradation Hints  -->
     <system:String x:Key="MA.Step4.Video.Unavailable">Video preview unavailable</system:String>
     <system:String x:Key="MA.Step4.Video.UnavailableHint">Video file missing or failed to load, switch to Parameter Overview</system:String>
     <system:String x:Key="MA.Step4.Chart.Unavailable">Chart data unavailable</system:String>
     <system:String x:Key="MA.Step4.Chart.UnavailableHint">Joint angle CSV file missing, switch to Parameter Overview</system:String>
 
-    <!-- Step4 Error Info -->
+    <!--  Step4 Error Info  -->
     <system:String x:Key="MA.Step4.Error.Code">Error Code</system:String>
     <system:String x:Key="MA.Step4.Error.Description">Error Description</system:String>
     <system:String x:Key="MA.Step4.Error.Suggestion">Suggested Fix</system:String>
 
-    <!-- Step4 Task Log -->
+    <!--  Step4 Task Log  -->
     <system:String x:Key="MA.Step4.Log.Title">Task Log</system:String>
 
-    <!-- InfoPanel -->
+    <!--  InfoPanel  -->
     <system:String x:Key="MA.Info.Patient.Title">Current Patient</system:String>
     <system:String x:Key="MA.Info.Measurement.Title">Current Measurement</system:String>
     <system:String x:Key="MA.Info.Video.Title">Video Status</system:String>
@@ -562,7 +563,7 @@
     <system:String x:Key="MA.Info.CreateTime">Created At</system:String>
     <system:String x:Key="MA.Info.OpenMeasurementFolder">Open Measurement Folder</system:String>
 
-    <!-- TaskDrawer -->
+    <!--  TaskDrawer  -->
     <system:String x:Key="MA.Task.Title">Tasks</system:String>
     <system:String x:Key="MA.Task.CurrentTask">Current Task</system:String>
     <system:String x:Key="MA.Task.Progress">Progress</system:String>
@@ -572,7 +573,7 @@
     <system:String x:Key="MA.Task.NoTask">No task.</system:String>
     <system:String x:Key="MA.Task.Analyzing">Analyzing...</system:String>
 
-    <!-- Dialog -->
+    <!--  Dialog  -->
     <system:String x:Key="MA.Dialog.VideoIncomplete.Title">Incomplete Video</system:String>
     <system:String x:Key="MA.Dialog.VideoIncomplete.Content">Only one view video is imported. You can review, but analysis is unavailable. Continue?</system:String>
     <system:String x:Key="MA.Dialog.VideoIncomplete.Continue">Continue</system:String>
@@ -582,7 +583,7 @@
     <system:String x:Key="MA.Dialog.CancelAnalysis.Title">Cancel Analysis</system:String>
     <system:String x:Key="MA.Dialog.CancelAnalysis.Content">Are you sure you want to cancel the current analysis task?</system:String>
 
-    <!-- Snackbar -->
+    <!--  Snackbar  -->
     <system:String x:Key="MA.Snackbar.ImportSuccess">Import successful.</system:String>
     <system:String x:Key="MA.Snackbar.AnalysisStarted">Analysis started.</system:String>
     <system:String x:Key="MA.Snackbar.AnalysisCompleted">Analysis completed.</system:String>
@@ -592,7 +593,7 @@
     <system:String x:Key="MA.Snackbar.VideoCleared">Video cleared.</system:String>
     <system:String x:Key="MA.Snackbar.SelectPatientFirst">Please select a patient first.</system:String>
 
-    <!-- Status -->
+    <!--  Status  -->
     <system:String x:Key="MA.Status.NotRun">Not Run</system:String>
     <system:String x:Key="MA.Status.Running">Running</system:String>
     <system:String x:Key="MA.Status.Completed">Completed</system:String>
