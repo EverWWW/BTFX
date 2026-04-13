@@ -85,6 +85,15 @@
     <None Remove="Resources\Images\PatientSelectionView\you.png" />
     <None Remove="Resources\Images\PatientSelectionView\zhanghaotubiao.png" />
     <None Remove="Resources\Images\PatientSelectionView\zuo.png" />
+    <None Remove="Resources\Images\DataManagement\bianji.png" />
+    <None Remove="Resources\Images\DataManagement\daichuli.png" />
+    <None Remove="Resources\Images\DataManagement\piliangdaochu.png" />
+    <None Remove="Resources\Images\DataManagement\rili.png" />
+    <None Remove="Resources\Images\DataManagement\shanchu.png" />
+    <None Remove="Resources\Images\DataManagement\shanchu2.png" />
+    <None Remove="Resources\Images\DataManagement\sousuo.png" />
+    <None Remove="Resources\Images\DataManagement\xiangqing.png" />
+    <None Remove="Resources\Images\DataManagement\yiwancheng.png" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\Themes\" />
@@ -139,6 +148,15 @@
     <Resource Include="Resources\Images\PatientSelectionView\you.png" />
     <Resource Include="Resources\Images\PatientSelectionView\zhanghaotubiao.png" />
     <Resource Include="Resources\Images\PatientSelectionView\zuo.png" />
+    <Resource Include="Resources\Images\DataManagement\bianji.png" />
+    <Resource Include="Resources\Images\DataManagement\daichuli.png" />
+    <Resource Include="Resources\Images\DataManagement\piliangdaochu.png" />
+    <Resource Include="Resources\Images\DataManagement\rili.png" />
+    <Resource Include="Resources\Images\DataManagement\shanchu.png" />
+    <Resource Include="Resources\Images\DataManagement\shanchu2.png" />
+    <Resource Include="Resources\Images\DataManagement\sousuo.png" />
+    <Resource Include="Resources\Images\DataManagement\xiangqing.png" />
+    <Resource Include="Resources\Images\DataManagement\yiwancheng.png" />
   </ItemGroup>
 
 </Project>

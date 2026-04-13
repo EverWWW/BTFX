@@ -1,8 +1,12 @@
 ﻿using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Markup;
+using System.Windows;
+using System.Windows.Media;
 using BTFX.Services.Interfaces;
 using BTFX.ViewModels;
+using System.ComponentModel;
 
 namespace BTFX.Views;
 
@@ -12,6 +16,19 @@ namespace BTFX.Views;
 public partial class DataManagementView : UserControl
 {
     private bool _isUpdatingSelection = false; // 防止递归更新
+
+    private void StatusComboBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is ComboBox comboBox)
+        {
+            comboBox.Focus();
+            if (!comboBox.IsDropDownOpen)
+            {
+                comboBox.IsDropDownOpen = true;
+                e.Handled = true;
+            }
+        }
+    }
 
     public DataManagementView()
     {
@@ -31,71 +48,181 @@ public partial class DataManagementView : UserControl
         Unloaded += DataManagementView_Unloaded;
     }
 
-    private void DataManagementView_Loaded(object sender, System.Windows.RoutedEventArgs e)
+    private void DataManagementView_Loaded(object sender, RoutedEventArgs e)
     {
-        // Set DatePicker language based on current culture
-        SetDatePickerLanguage();
+        // 初始同步日期显示
+        SyncDateDisplay();
 
-        // Subscribe to language changes if localization service is available
+        // 监听 ViewModel 属性变化以同步日期显示
+        if (DataContext is INotifyPropertyChanged npc)
+        {
+            npc.PropertyChanged += ViewModel_PropertyChanged;
+        }
+
+        // 设置日历语言
+        SetCalendarLanguage();
+
         if (App.Services?.GetService(typeof(ILocalizationService)) is ILocalizationService localizationService)
         {
             localizationService.LanguageChanged += OnLanguageChanged;
         }
     }
 
-    private void DataManagementView_Unloaded(object sender, System.Windows.RoutedEventArgs e)
+    private void DataManagementView_Unloaded(object sender, RoutedEventArgs e)
     {
-        // Unsubscribe from language changes
+        if (DataContext is INotifyPropertyChanged npc)
+        {
+            npc.PropertyChanged -= ViewModel_PropertyChanged;
+        }
+
         if (App.Services?.GetService(typeof(ILocalizationService)) is ILocalizationService localizationService)
         {
             localizationService.LanguageChanged -= OnLanguageChanged;
         }
 
-        // Dispose ViewModel if it implements IDisposable
         if (DataContext is IDisposable disposable)
         {
             disposable.Dispose();
         }
     }
 
-    private void OnLanguageChanged(object? sender, Common.AppLanguage language)
+    private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        SetDatePickerLanguage();
+        if (e.PropertyName is nameof(DataManagementViewModel.FilterStartDate)
+            or nameof(DataManagementViewModel.FilterEndDate))
+        {
+            SyncDateDisplay();
+        }
     }
 
-    private void SetDatePickerLanguage()
+    /// <summary>
+    /// 同步日期文本显示和清空按钮可见性
+    /// </summary>
+    private void SyncDateDisplay()
     {
-        // Get all DatePickers in the view
-        var datePickers = FindVisualChildren<DatePicker>(this);
+        if (DataContext is not DataManagementViewModel vm) return;
 
-        // Set language based on current UI culture
+        if (vm.FilterStartDate.HasValue)
+        {
+            StartDateText.Text = vm.FilterStartDate.Value.ToString("yyyy.MM.dd");
+            StartDateText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#555555"));
+        }
+        else
+        {
+            StartDateText.Text = "0000.00.00";
+            StartDateText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#BBBBBB"));
+        }
+
+        if (vm.FilterEndDate.HasValue)
+        {
+            EndDateText.Text = vm.FilterEndDate.Value.ToString("yyyy.MM.dd");
+            EndDateText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#555555"));
+        }
+        else
+        {
+            EndDateText.Text = "0000.00.00";
+            EndDateText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#BBBBBB"));
+        }
+
+        // 用 Opacity + IsHitTestVisible 控制清空按钮显隐，不改变布局
+        var hasDate = vm.FilterStartDate.HasValue || vm.FilterEndDate.HasValue;
+        DateClearButton.Opacity = hasDate ? 1.0 : 0.0;
+        DateClearButton.IsHitTestVisible = hasDate;
+    }
+
+    /// <summary>
+    /// 点击起始日期区域，打开起始日期日历
+    /// </summary>
+    private void StartDateButton_Click(object sender, RoutedEventArgs e)
+    {
+        // 同步当前选中日期到日历
+        if (DataContext is DataManagementViewModel vm && vm.FilterStartDate.HasValue)
+        {
+            StartDateCalendar.SelectedDate = vm.FilterStartDate;
+            StartDateCalendar.DisplayDate = vm.FilterStartDate.Value;
+        }
+        else
+        {
+            StartDateCalendar.SelectedDate = null;
+        }
+
+        StartDatePopup.IsOpen = true;
+        e.Handled = true;
+    }
+
+    /// <summary>
+    /// 点击截止日期区域，打开截止日期日历
+    /// </summary>
+    private void EndDateButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is DataManagementViewModel vm && vm.FilterEndDate.HasValue)
+        {
+            EndDateCalendar.SelectedDate = vm.FilterEndDate;
+            EndDateCalendar.DisplayDate = vm.FilterEndDate.Value;
+        }
+        else
+        {
+            EndDateCalendar.SelectedDate = null;
+        }
+
+        EndDatePopup.IsOpen = true;
+        e.Handled = true;
+    }
+
+    /// <summary>
+    /// 起始日期日历选择事件
+    /// </summary>
+    private void StartDateCalendar_SelectedDatesChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (StartDateCalendar.SelectedDate.HasValue && DataContext is DataManagementViewModel vm)
+        {
+            vm.FilterStartDate = StartDateCalendar.SelectedDate.Value;
+            StartDatePopup.IsOpen = false;
+        }
+    }
+
+    /// <summary>
+    /// 截止日期日历选择事件
+    /// </summary>
+    private void EndDateCalendar_SelectedDatesChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (EndDateCalendar.SelectedDate.HasValue && DataContext is DataManagementViewModel vm)
+        {
+            vm.FilterEndDate = EndDateCalendar.SelectedDate.Value;
+            EndDatePopup.IsOpen = false;
+        }
+    }
+
+    /// <summary>
+    /// 清空所有日期
+    /// </summary>
+    private void DateClearButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is DataManagementViewModel vm)
+        {
+            vm.FilterStartDate = null;
+            vm.FilterEndDate = null;
+        }
+
+        StartDateCalendar.SelectedDate = null;
+        EndDateCalendar.SelectedDate = null;
+        StartDatePopup.IsOpen = false;
+        EndDatePopup.IsOpen = false;
+        e.Handled = true;
+    }
+
+    private void OnLanguageChanged(object? sender, Common.AppLanguage language)
+    {
+        SetCalendarLanguage();
+    }
+
+    private void SetCalendarLanguage()
+    {
         var culture = System.Threading.Thread.CurrentThread.CurrentUICulture;
         var xmlLanguage = XmlLanguage.GetLanguage(culture.Name);
 
-        foreach (var datePicker in datePickers)
-        {
-            datePicker.Language = xmlLanguage;
-        }
-    }
-
-    private static IEnumerable<T> FindVisualChildren<T>(System.Windows.DependencyObject depObj) where T : System.Windows.DependencyObject
-    {
-        if (depObj == null) yield break;
-
-        for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(depObj); i++)
-        {
-            var child = System.Windows.Media.VisualTreeHelper.GetChild(depObj, i);
-
-            if (child is T typedChild)
-            {
-                yield return typedChild;
-            }
-
-            foreach (var childOfChild in FindVisualChildren<T>(child))
-            {
-                yield return childOfChild;
-            }
-        }
+        StartDateCalendar.Language = xmlLanguage;
+        EndDateCalendar.Language = xmlLanguage;
     }
 
     /// <summary>

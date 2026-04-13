@@ -138,6 +138,39 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
     private int _selectedCount;
 
     /// <summary>
+    /// 分页页码集合
+    /// </summary>
+    private ObservableCollection<PageItem> _dataPageNumbers = new();
+
+    public ObservableCollection<PageItem> DataPageNumbers
+    {
+        get => _dataPageNumbers;
+        set => SetProperty(ref _dataPageNumbers, value);
+    }
+
+    /// <summary>
+    /// 是否允许上一页
+    /// </summary>
+    private bool _canPagePrevious;
+
+    public bool CanPagePrevious
+    {
+        get => _canPagePrevious;
+        set => SetProperty(ref _canPagePrevious, value);
+    }
+
+    /// <summary>
+    /// 是否允许下一页
+    /// </summary>
+    private bool _canPageNext;
+
+    public bool CanPageNext
+    {
+        get => _canPageNext;
+        set => SetProperty(ref _canPageNext, value);
+    }
+
+    /// <summary>
     /// 跳转页码输入
     /// </summary>
     [ObservableProperty]
@@ -146,7 +179,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
     /// <summary>
     /// 每页记录数
     /// </summary>
-    private const int PageSize = Constants.DEFAULT_PAGE_SIZE;
+    private const int PageSize = Constants.PATIENT_PAGE_SIZE;
 
     #endregion
 
@@ -276,6 +309,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
 
                 // 更新选中状态
                 UpdateSelectionState();
+                BuildPageNumbers();
             });
 
             _logHelper?.Information($"加载测量数据：第{CurrentPage}页，共{TotalRecords}条，已选中{_globalSelectedIds.Count}条");
@@ -305,6 +339,50 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// 构建分页页码项集合（支持省略号）
+    /// </summary>
+    private void BuildPageNumbers()
+    {
+        DataPageNumbers.Clear();
+        if (TotalPages <= 0)
+        {
+            return;
+        }
+
+        var pagesToShow = new SortedSet<int> { 1, TotalPages };
+        for (var page = Math.Max(1, CurrentPage - 1); page <= Math.Min(TotalPages, CurrentPage + 1); page++)
+        {
+            pagesToShow.Add(page);
+        }
+
+        var previousPage = 0;
+        foreach (var page in pagesToShow)
+        {
+            if (previousPage > 0 && page - previousPage > 1)
+            {
+                DataPageNumbers.Add(new PageItem
+                {
+                    DisplayText = "...",
+                    IsEllipsis = true,
+                    PageNumber = -1
+                });
+            }
+
+            DataPageNumbers.Add(new PageItem
+            {
+                DisplayText = page.ToString(),
+                PageNumber = page,
+                IsCurrent = page == CurrentPage
+            });
+
+            previousPage = page;
+        }
+
+        CanPagePrevious = CurrentPage > 1;
+        CanPageNext = CurrentPage < TotalPages;
     }
 
     /// <summary>
@@ -486,6 +564,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             var success = await _measurementService.DeleteMeasurementAsync(item.Record.Id);
             if (success)
             {
+                _globalSelectedIds.Remove(item.Record.Id);
                 await LoadDataAsync();
                 _logHelper?.Information($"删除测量记录：ID={item.Record.Id}");
                 System.Windows.MessageBox.Show("删除成功！", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
@@ -645,15 +724,14 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
     {
         if (!CanDelete) return;
 
-        var selectedItems = MeasurementRecords.Where(r => r.IsSelected).ToList();
-        if (selectedItems.Count == 0)
+        if (_globalSelectedIds.Count == 0)
         {
             System.Windows.MessageBox.Show("请先选择要删除的记录", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
             return;
         }
 
         var result = System.Windows.MessageBox.Show(
-            $"确定要删除选中的 {selectedItems.Count} 条记录吗？\n此操作不可恢复。",
+            $"确定要删除选中的 {_globalSelectedIds.Count} 条记录吗？\n此操作不可恢复。",
             "确认批量删除",
             System.Windows.MessageBoxButton.YesNo,
             System.Windows.MessageBoxImage.Warning);
@@ -662,8 +740,9 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
 
         try
         {
-            var ids = selectedItems.Select(r => r.Record.Id);
+            var ids = _globalSelectedIds.ToList();
             var count = await _measurementService.DeleteMeasurementsAsync(ids);
+            _globalSelectedIds.Clear();
             await LoadDataAsync();
             _logHelper?.Information($"批量删除测量记录：{count}条");
             System.Windows.MessageBox.Show($"成功删除 {count} 条记录！", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
@@ -716,6 +795,22 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
         {
             GoToPageInput = CurrentPage.ToString();
         }
+    }
+
+    /// <summary>
+    /// 页码跳转命令
+    /// </summary>
+    [RelayCommand]
+    private async Task GoToPageNumberAsync(int pageNumber)
+    {
+        if (pageNumber < 1 || pageNumber > TotalPages || pageNumber == CurrentPage)
+        {
+            return;
+        }
+
+        CurrentPage = pageNumber;
+        GoToPageInput = pageNumber.ToString();
+        await LoadDataAsync();
     }
 
         /// <summary>
@@ -801,6 +896,27 @@ public partial class MeasurementRecordItem : ObservableObject
         MeasurementStatus.Failed => "测量失败",
         _ => "--"
     };
+
+    /// <summary>
+    /// 状态图标
+    /// </summary>
+    public string StatusIcon => Record.Status == MeasurementStatus.Completed
+        ? "/Resources/Images/DataManagement/yiwancheng.png"
+        : "/Resources/Images/DataManagement/daichuli.png";
+
+    /// <summary>
+    /// 状态背景色
+    /// </summary>
+    public string StatusBackground => Record.Status == MeasurementStatus.Completed
+        ? "#E9F7E3"
+        : "#FDF4E6";
+
+    /// <summary>
+    /// 状态前景色
+    /// </summary>
+    public string StatusForeground => Record.Status == MeasurementStatus.Completed
+        ? "#44BE13"
+        : "#FF932D";
 
     /// <summary>
     /// 状态颜色
