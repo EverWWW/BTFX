@@ -1,5 +1,9 @@
-﻿using System.Windows.Controls;
+﻿using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Markup;
+using System.Windows.Media;
 using BTFX.Services.Interfaces;
 using BTFX.ViewModels;
 
@@ -10,6 +14,8 @@ namespace BTFX.Views;
 /// </summary>
 public partial class ReportView : UserControl
 {
+    private bool _isUpdatingSelection;
+
     public ReportView()
     {
         InitializeComponent();
@@ -28,15 +34,23 @@ public partial class ReportView : UserControl
         Unloaded += ReportView_Unloaded;
     }
 
-    private void ReportView_Loaded(object sender, System.Windows.RoutedEventArgs e)
+    private void ReportView_Loaded(object sender, RoutedEventArgs e)
     {
-        // 如果应用正在关闭，不执行任何操作
-        if (App.IsShuttingDown) return;
+        if (App.IsShuttingDown)
+        {
+            return;
+        }
 
-        // Set DatePicker language based on current culture
+        SyncReportDateDisplay();
+
+        if (DataContext is INotifyPropertyChanged npc)
+        {
+            npc.PropertyChanged += ViewModel_PropertyChanged;
+        }
+
         SetDatePickerLanguage();
+        SetCalendarLanguage();
 
-        // Subscribe to language changes if localization service is available
         try
         {
             if (App.Services?.GetService(typeof(ILocalizationService)) is ILocalizationService localizationService)
@@ -50,12 +64,18 @@ public partial class ReportView : UserControl
         }
     }
 
-    private void ReportView_Unloaded(object sender, System.Windows.RoutedEventArgs e)
+    private void ReportView_Unloaded(object sender, RoutedEventArgs e)
     {
-        // 如果应用正在关闭，不执行任何操作
-        if (App.IsShuttingDown) return;
+        if (App.IsShuttingDown)
+        {
+            return;
+        }
 
-        // Unsubscribe from language changes
+        if (DataContext is INotifyPropertyChanged npc)
+        {
+            npc.PropertyChanged -= ViewModel_PropertyChanged;
+        }
+
         try
         {
             if (App.Services?.GetService(typeof(ILocalizationService)) is ILocalizationService localizationService)
@@ -67,25 +87,190 @@ public partial class ReportView : UserControl
         {
             // 忽略关闭时的异常
         }
+    }
 
-        // 注意：不在这里调用 Dispose，因为 Unloaded 在导航时也会触发
-        // ViewModel 的生命周期应由 DI 容器或应用程序关闭时统一管理
-        // Dispose 会在应用程序退出时通过 App.OnExit 进行处理
+    private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(ReportViewModel.ReportFilterStartDate)
+            or nameof(ReportViewModel.ReportFilterEndDate))
+        {
+            SyncReportDateDisplay();
+        }
+    }
+
+    private void ReportListViewport_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (DataContext is ReportViewModel viewModel)
+        {
+            viewModel.UpdateReportPageSize(e.NewSize.Height);
+        }
+    }
+
+    private void SyncReportDateDisplay()
+    {
+        if (DataContext is not ReportViewModel vm)
+        {
+            return;
+        }
+
+        if (vm.ReportFilterStartDate.HasValue)
+        {
+            ReportStartDateText.Text = vm.ReportFilterStartDate.Value.ToString("yyyy.MM.dd");
+            ReportStartDateText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#555555"));
+        }
+        else
+        {
+            ReportStartDateText.Text = "0000.00.00";
+            ReportStartDateText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#BBBBBB"));
+        }
+
+        if (vm.ReportFilterEndDate.HasValue)
+        {
+            ReportEndDateText.Text = vm.ReportFilterEndDate.Value.ToString("yyyy.MM.dd");
+            ReportEndDateText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#555555"));
+        }
+        else
+        {
+            ReportEndDateText.Text = "0000.00.00";
+            ReportEndDateText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#BBBBBB"));
+        }
+
+        var hasDate = vm.ReportFilterStartDate.HasValue || vm.ReportFilterEndDate.HasValue;
+        ReportDateClearButton.Opacity = hasDate ? 1.0 : 0.0;
+        ReportDateClearButton.IsHitTestVisible = hasDate;
+    }
+
+    private void ReportStartDateButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is ReportViewModel vm && vm.ReportFilterStartDate.HasValue)
+        {
+            ReportStartDateCalendar.SelectedDate = vm.ReportFilterStartDate;
+            ReportStartDateCalendar.DisplayDate = vm.ReportFilterStartDate.Value;
+        }
+        else
+        {
+            ReportStartDateCalendar.SelectedDate = null;
+        }
+
+        ReportStartDatePopup.IsOpen = true;
+        e.Handled = true;
+    }
+
+    private void ReportEndDateButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is ReportViewModel vm && vm.ReportFilterEndDate.HasValue)
+        {
+            ReportEndDateCalendar.SelectedDate = vm.ReportFilterEndDate;
+            ReportEndDateCalendar.DisplayDate = vm.ReportFilterEndDate.Value;
+        }
+        else
+        {
+            ReportEndDateCalendar.SelectedDate = null;
+        }
+
+        ReportEndDatePopup.IsOpen = true;
+        e.Handled = true;
+    }
+
+    private void ReportStartDateCalendar_SelectedDatesChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (DataContext is ReportViewModel vm && ReportStartDateCalendar.SelectedDate.HasValue)
+        {
+            vm.ReportFilterStartDate = ReportStartDateCalendar.SelectedDate.Value;
+            ReportStartDatePopup.IsOpen = false;
+        }
+    }
+
+    private void ReportEndDateCalendar_SelectedDatesChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (DataContext is ReportViewModel vm && ReportEndDateCalendar.SelectedDate.HasValue)
+        {
+            vm.ReportFilterEndDate = ReportEndDateCalendar.SelectedDate.Value;
+            ReportEndDatePopup.IsOpen = false;
+        }
+    }
+
+    private void ReportDateClearButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is ReportViewModel vm)
+        {
+            vm.ReportFilterStartDate = null;
+            vm.ReportFilterEndDate = null;
+        }
+
+        ReportStartDateCalendar.SelectedDate = null;
+        ReportEndDateCalendar.SelectedDate = null;
+        ReportStartDatePopup.IsOpen = false;
+        ReportEndDatePopup.IsOpen = false;
+        e.Handled = true;
+    }
+
+    private void AllSelectCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isUpdatingSelection)
+        {
+            return;
+        }
+
+        _isUpdatingSelection = true;
+        try
+        {
+            if (DataContext is ReportViewModel viewModel)
+            {
+                var shouldSelectAll = viewModel.SelectAllState != 2;
+                viewModel.ApplySelectAll(shouldSelectAll);
+            }
+        }
+        finally
+        {
+            _isUpdatingSelection = false;
+        }
+    }
+
+    private void ItemCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
+    {
+        if (_isUpdatingSelection)
+        {
+            return;
+        }
+
+        _isUpdatingSelection = true;
+        try
+        {
+            if (sender is CheckBox checkBox && checkBox.DataContext is ReportItem item && DataContext is ReportViewModel viewModel)
+            {
+                viewModel.OnReportSelectionChanged(item);
+            }
+        }
+        finally
+        {
+            _isUpdatingSelection = false;
+        }
     }
 
     private void OnLanguageChanged(object? sender, Common.AppLanguage language)
     {
-        // 如果应用正在关闭，不执行任何操作
-        if (App.IsShuttingDown) return;
+        if (App.IsShuttingDown)
+        {
+            return;
+        }
+
         SetDatePickerLanguage();
+        SetCalendarLanguage();
+    }
+
+    private void SetCalendarLanguage()
+    {
+        var culture = System.Threading.Thread.CurrentThread.CurrentUICulture;
+        var xmlLanguage = XmlLanguage.GetLanguage(culture.Name);
+
+        ReportStartDateCalendar.Language = xmlLanguage;
+        ReportEndDateCalendar.Language = xmlLanguage;
     }
 
     private void SetDatePickerLanguage()
     {
-        // Get all DatePickers in the view
         var datePickers = FindVisualChildren<DatePicker>(this);
-
-        // Set language based on current UI culture
         var culture = System.Threading.Thread.CurrentThread.CurrentUICulture;
         var xmlLanguage = XmlLanguage.GetLanguage(culture.Name);
 
@@ -95,14 +280,16 @@ public partial class ReportView : UserControl
         }
     }
 
-    private static IEnumerable<T> FindVisualChildren<T>(System.Windows.DependencyObject depObj) where T : System.Windows.DependencyObject
+    private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
     {
-        if (depObj == null) yield break;
-
-        for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(depObj); i++)
+        if (depObj == null)
         {
-            var child = System.Windows.Media.VisualTreeHelper.GetChild(depObj, i);
+            yield break;
+        }
 
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+        {
+            var child = VisualTreeHelper.GetChild(depObj, i);
             if (child is T typedChild)
             {
                 yield return typedChild;

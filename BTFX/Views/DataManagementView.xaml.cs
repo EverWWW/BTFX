@@ -228,7 +228,7 @@ public partial class DataManagementView : UserControl
     /// <summary>
     /// 全选复选框状态变化事件
     /// </summary>
-    private void AllSelectCheckBox_CheckedChanged(object sender, System.Windows.RoutedEventArgs e)
+    private void AllSelectCheckBox_Click(object sender, System.Windows.RoutedEventArgs e)
     {
         if (_isUpdatingSelection) return;
 
@@ -272,6 +272,14 @@ public partial class DataManagementView : UserControl
         finally
         {
             _isUpdatingSelection = false;
+        }
+    }
+
+    private async void DataListViewport_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (DataContext is DataManagementViewModel viewModel)
+        {
+            await viewModel.UpdatePageSizeAsync(e.NewSize.Height);
         }
     }
 

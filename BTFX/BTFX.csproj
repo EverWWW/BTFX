@@ -94,6 +94,8 @@
     <None Remove="Resources\Images\DataManagement\sousuo.png" />
     <None Remove="Resources\Images\DataManagement\xiangqing.png" />
     <None Remove="Resources\Images\DataManagement\yiwancheng.png" />
+    <None Remove="Resources\Images\Report\daishengcheng.png" />
+    <None Remove="Resources\Images\Report\zanwushuju.png" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\Themes\" />
@@ -157,6 +159,8 @@
     <Resource Include="Resources\Images\DataManagement\sousuo.png" />
     <Resource Include="Resources\Images\DataManagement\xiangqing.png" />
     <Resource Include="Resources\Images\DataManagement\yiwancheng.png" />
+    <Resource Include="Resources\Images\Report\daishengcheng.png" />
+    <Resource Include="Resources\Images\Report\zanwushuju.png" />
   </ItemGroup>
 
 </Project>

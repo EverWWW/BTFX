@@ -21,6 +21,13 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     private readonly ILogHelper? _logHelper;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private volatile bool _disposed;
+    private readonly HashSet<int> _selectedReportIds = new();
+    private List<Report> _filteredReports = new();
+    private bool _isUpdatingSelection;
+    private const int MaxReportPageSize = 7;
+    private const double ReportRowHeight = 60d;
+    private const double ReportRowSpacing = 8d;
+    private const int MinimumReportPageSize = 1;
 
     #region 模式切换
 
@@ -73,6 +80,115 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     /// </summary>
     [ObservableProperty]
     private DateTime? _reportFilterEndDate;
+
+    /// <summary>
+    /// 是否全选
+    /// </summary>
+    private bool _isAllSelected;
+
+    public bool IsAllSelected
+    {
+        get => _isAllSelected;
+        private set => SetProperty(ref _isAllSelected, value);
+    }
+
+    private bool? _headerSelectionState = false;
+
+    public bool? HeaderSelectionState
+    {
+        get => _headerSelectionState;
+        private set => SetProperty(ref _headerSelectionState, value);
+    }
+
+    /// <summary>
+    /// 表头全选状态：0=未选，1=部分选，2=全选。
+    /// </summary>
+    public int SelectAllState
+    {
+        get
+        {
+            var selectedCount = SelectedReportCount;
+            if (selectedCount == 0) return 0;
+            return selectedCount == Reports.Count ? 2 : 1;
+        }
+    }
+
+    /// <summary>
+    /// 当前页已选报告数
+    /// </summary>
+    public int SelectedReportCount => Reports.Count(r => r.IsSelected);
+
+    #endregion
+
+    #region 报告分页
+
+    /// <summary>
+    /// 当前页码
+    /// </summary>
+    private int _currentPage = 1;
+
+    public int CurrentPage
+    {
+        get => _currentPage;
+        set => SetProperty(ref _currentPage, value);
+    }
+
+    /// <summary>
+    /// 总页数
+    /// </summary>
+    private int _totalPages;
+
+    public int TotalPages
+    {
+        get => _totalPages;
+        set => SetProperty(ref _totalPages, value);
+    }
+
+    /// <summary>
+    /// 总记录数
+    /// </summary>
+    private int _totalRecords;
+
+    public int TotalRecords
+    {
+        get => _totalRecords;
+        set => SetProperty(ref _totalRecords, value);
+    }
+
+    /// <summary>
+    /// 报告分页页码集合
+    /// </summary>
+    private ObservableCollection<PageItem> _reportPageNumbers = new();
+
+    public ObservableCollection<PageItem> ReportPageNumbers
+    {
+        get => _reportPageNumbers;
+        set => SetProperty(ref _reportPageNumbers, value);
+    }
+
+    /// <summary>
+    /// 是否允许上一页
+    /// </summary>
+    private bool _canPagePrevious;
+
+    public bool CanPagePrevious
+    {
+        get => _canPagePrevious;
+        set => SetProperty(ref _canPagePrevious, value);
+    }
+
+    /// <summary>
+    /// 是否允许下一页
+    /// </summary>
+    private bool _canPageNext;
+
+    public bool CanPageNext
+    {
+        get => _canPageNext;
+        set => SetProperty(ref _canPageNext, value);
+    }
+
+    private int _reportPageSize = MaxReportPageSize;
 
     #endregion
 
@@ -364,6 +480,22 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         }
     }
 
+    partial void OnReportFilterStartDateChanged(DateTime? value)
+    {
+        if (value.HasValue && ReportFilterEndDate.HasValue && value.Value > ReportFilterEndDate.Value)
+        {
+            ReportFilterEndDate = value;
+        }
+    }
+
+    partial void OnReportFilterEndDateChanged(DateTime? value)
+    {
+        if (value.HasValue && ReportFilterStartDate.HasValue && value.Value < ReportFilterStartDate.Value)
+        {
+            ReportFilterStartDate = value;
+        }
+    }
+
     #endregion
 
     #region 命令
@@ -374,6 +506,8 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task SearchReportsAsync()
     {
+        CurrentPage = 1;
+        _selectedReportIds.Clear();
         await LoadReportsAsync();
     }
 
@@ -386,7 +520,28 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         ReportFilterPatientName = string.Empty;
         ReportFilterStartDate = null;
         ReportFilterEndDate = null;
+        CurrentPage = 1;
+        _selectedReportIds.Clear();
         await LoadReportsAsync();
+    }
+
+    /// <summary>
+    /// 清空报告姓名筛选命令
+    /// </summary>
+    [RelayCommand]
+    private void ClearReportPatientName()
+    {
+        ReportFilterPatientName = string.Empty;
+    }
+
+    /// <summary>
+    /// 清空报告日期筛选命令
+    /// </summary>
+    [RelayCommand]
+    private void ClearReportDateRange()
+    {
+        ReportFilterStartDate = null;
+        ReportFilterEndDate = null;
     }
 
     /// <summary>
@@ -690,7 +845,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task DeleteReportAsync(ReportItem? item)
     {
-        if (item == null || !CanDeleteReport || _disposed || App.IsShuttingDown) return;
+        if (item == null || _disposed || App.IsShuttingDown) return;
 
         var result = System.Windows.MessageBox.Show(
             $"确定要删除报告 {item.Report.ReportNumber} 吗？此操作不可恢复！",
@@ -702,6 +857,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
         try
         {
+            _selectedReportIds.Remove(item.Report.Id);
             var success = await _reportService.DeleteReportAsync(item.Report.Id);
 
             if (_disposed || App.IsShuttingDown) return;
@@ -736,6 +892,184 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         }
     }
 
+    /// <summary>
+    /// 全部导出选中的报告命令。
+    /// </summary>
+    [RelayCommand]
+    private void ExportSelectedReports()
+    {
+        if (SelectedReportCount <= 0 || _disposed || App.IsShuttingDown)
+        {
+            return;
+        }
+
+        System.Windows.MessageBox.Show("全部导出功能暂未实现。", "提示",
+            System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+    }
+
+    /// <summary>
+    /// 上一页命令
+    /// </summary>
+    [RelayCommand]
+    private void PreviousPage()
+    {
+        if (CurrentPage <= 1)
+        {
+            return;
+        }
+
+        CurrentPage--;
+        RefreshPagedReports();
+    }
+
+    /// <summary>
+    /// 下一页命令
+    /// </summary>
+    [RelayCommand]
+    private void NextPage()
+    {
+        if (CurrentPage >= TotalPages)
+        {
+            return;
+        }
+
+        CurrentPage++;
+        RefreshPagedReports();
+    }
+
+    /// <summary>
+    /// 页码跳转命令
+    /// </summary>
+    [RelayCommand]
+    private void GoToPageNumber(int pageNumber)
+    {
+        if (pageNumber < 1 || pageNumber > TotalPages || pageNumber == CurrentPage)
+        {
+            return;
+        }
+
+        CurrentPage = pageNumber;
+        RefreshPagedReports();
+    }
+
+    /// <summary>
+    /// 全选命令
+    /// </summary>
+    [RelayCommand]
+    private void SelectAll()
+    {
+        if (_isUpdatingSelection)
+        {
+            return;
+        }
+
+        try
+        {
+            _isUpdatingSelection = true;
+            foreach (var item in Reports)
+            {
+                item.IsSelected = IsAllSelected;
+                if (IsAllSelected)
+                {
+                    _selectedReportIds.Add(item.Report.Id);
+                }
+                else
+                {
+                    _selectedReportIds.Remove(item.Report.Id);
+                }
+            }
+
+            OnPropertyChanged(nameof(SelectedReportCount));
+        }
+        finally
+        {
+            _isUpdatingSelection = false;
+        }
+    }
+
+    /// <summary>
+    /// 应用当前页全选状态
+    /// </summary>
+    public void ApplySelectAll(bool isSelected)
+    {
+        ApplySelectAllInternal(isSelected);
+    }
+
+    private void ApplySelectAllInternal(bool isSelected)
+    {
+        if (_isUpdatingSelection)
+        {
+            return;
+        }
+
+        try
+        {
+            _isUpdatingSelection = true;
+            foreach (var item in Reports)
+            {
+                item.IsSelected = isSelected;
+                if (isSelected)
+                {
+                    _selectedReportIds.Add(item.Report.Id);
+                }
+                else
+                {
+                    _selectedReportIds.Remove(item.Report.Id);
+                }
+            }
+
+            IsAllSelected = isSelected;
+            HeaderSelectionState = isSelected;
+
+            OnPropertyChanged(nameof(SelectedReportCount));
+            OnPropertyChanged(nameof(SelectAllState));
+        }
+        finally
+        {
+            _isUpdatingSelection = false;
+        }
+    }
+
+    /// <summary>
+    /// 根据列表可视高度更新每页容量，最大不超过 6 条。
+    /// </summary>
+    /// <param name="viewportHeight">列表内容区可视高度。</param>
+    public void UpdateReportPageSize(double viewportHeight)
+    {
+        if (viewportHeight <= 0)
+        {
+            return;
+        }
+
+        var effectiveViewportHeight = Math.Min(viewportHeight, MaxReportPageSize * (ReportRowHeight + ReportRowSpacing) - ReportRowSpacing);
+        var rowFullHeight = ReportRowHeight + ReportRowSpacing;
+        var calculatedPageSize = Math.Max(MinimumReportPageSize, (int)Math.Floor((effectiveViewportHeight + ReportRowSpacing) / rowFullHeight));
+        var newPageSize = Math.Min(MaxReportPageSize, calculatedPageSize);
+
+        if (newPageSize == _reportPageSize)
+        {
+            return;
+        }
+
+        _reportPageSize = newPageSize;
+
+        if (_filteredReports.Count == 0)
+        {
+            TotalPages = 0;
+            CurrentPage = 1;
+            BuildReportPageNumbers();
+            return;
+        }
+
+        TotalPages = (int)Math.Ceiling(_filteredReports.Count / (double)_reportPageSize);
+        if (CurrentPage > TotalPages)
+        {
+            CurrentPage = TotalPages;
+        }
+
+        RefreshPagedReports();
+    }
+
     #endregion
 
     #region 私有方法
@@ -763,11 +1097,24 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             {
                 if (_disposed) return;
 
-                Reports.Clear();
-                int rowNumber = 1;
-                foreach (var report in reports)
+                _filteredReports = reports.ToList();
+                TotalRecords = _filteredReports.Count;
+                TotalPages = TotalRecords == 0 ? 0 : (int)Math.Ceiling(TotalRecords / (double)_reportPageSize);
+
+                if (TotalPages == 0)
                 {
-                    Reports.Add(new ReportItem(report, rowNumber++));
+                    CurrentPage = 1;
+                }
+                else if (CurrentPage > TotalPages)
+                {
+                    CurrentPage = TotalPages;
+                }
+
+                RefreshPagedReports();
+
+                if (_currentPreviewReport != null && _filteredReports.All(r => r.Id != _currentPreviewReport.Id))
+                {
+                    ClearPreview();
                 }
             });
 
@@ -784,11 +1131,164 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                 _logHelper?.Error("加载报告列表失败", ex);
             }
         }
-            finally
-            {
-                TryInvokeOnUI(() => IsLoading = false);
-            }
+        finally
+        {
+            TryInvokeOnUI(() => IsLoading = false);
         }
+    }
+
+    /// <summary>
+    /// 刷新当前页的报告列表
+    /// </summary>
+    private void RefreshPagedReports()
+    {
+        if (_disposed || App.IsShuttingDown)
+        {
+            return;
+        }
+
+        Reports.Clear();
+
+        if (_filteredReports.Count == 0)
+        {
+            BuildReportPageNumbers();
+            UpdateSelectionState();
+            return;
+        }
+
+        var pageReports = _filteredReports
+            .Skip((CurrentPage - 1) * _reportPageSize)
+            .Take(_reportPageSize)
+            .ToList();
+
+        var rowNumber = (CurrentPage - 1) * _reportPageSize + 1;
+        foreach (var report in pageReports)
+        {
+            var item = new ReportItem(report, rowNumber++)
+            {
+                IsSelected = _selectedReportIds.Contains(report.Id)
+            };
+
+            Reports.Add(item);
+        }
+
+        BuildReportPageNumbers();
+        UpdateSelectionState();
+    }
+
+    /// <summary>
+    /// 构建报告分页页码集合
+    /// </summary>
+    private void BuildReportPageNumbers()
+    {
+        ReportPageNumbers.Clear();
+        if (TotalPages <= 0)
+        {
+            CanPagePrevious = false;
+            CanPageNext = false;
+            return;
+        }
+
+        var pagesToShow = new SortedSet<int> { 1, TotalPages };
+        for (var page = Math.Max(1, CurrentPage - 1); page <= Math.Min(TotalPages, CurrentPage + 1); page++)
+        {
+            pagesToShow.Add(page);
+        }
+
+        var previousPage = 0;
+        foreach (var page in pagesToShow)
+        {
+            if (previousPage > 0 && page - previousPage > 1)
+            {
+                ReportPageNumbers.Add(new PageItem
+                {
+                    DisplayText = "...",
+                    IsEllipsis = true,
+                    PageNumber = -1
+                });
+            }
+
+            ReportPageNumbers.Add(new PageItem
+            {
+                DisplayText = page.ToString(),
+                PageNumber = page,
+                IsCurrent = page == CurrentPage
+            });
+
+            previousPage = page;
+        }
+
+        CanPagePrevious = CurrentPage > 1;
+        CanPageNext = CurrentPage < TotalPages;
+    }
+
+    /// <summary>
+    /// 更新勾选状态
+    /// </summary>
+    private void UpdateSelectionState()
+    {
+        if (_isUpdatingSelection)
+        {
+            return;
+        }
+
+        try
+        {
+            _isUpdatingSelection = true;
+            var selectedCount = Reports.Count(r => r.IsSelected);
+            var newIsAllSelected = Reports.Count > 0 && selectedCount == Reports.Count;
+            bool? newHeaderSelectionState = selectedCount == 0 ? false : newIsAllSelected ? true : null;
+
+            IsAllSelected = newIsAllSelected;
+            HeaderSelectionState = newHeaderSelectionState;
+
+            OnPropertyChanged(nameof(SelectedReportCount));
+            OnPropertyChanged(nameof(SelectAllState));
+        }
+        finally
+        {
+            _isUpdatingSelection = false;
+        }
+    }
+
+    /// <summary>
+    /// 单项勾选状态变化
+    /// </summary>
+    /// <param name="item">报告行</param>
+    public void OnReportSelectionChanged(ReportItem item)
+    {
+        if (_isUpdatingSelection)
+        {
+            return;
+        }
+
+        try
+        {
+            _isUpdatingSelection = true;
+            if (item.IsSelected)
+            {
+                _selectedReportIds.Add(item.Report.Id);
+            }
+            else
+            {
+                _selectedReportIds.Remove(item.Report.Id);
+            }
+
+            var selectedCount = Reports.Count(r => r.IsSelected);
+            var newIsAllSelected = Reports.Count > 0 && selectedCount == Reports.Count;
+            bool? newHeaderSelectionState = selectedCount == 0 ? false : newIsAllSelected ? true : null;
+
+            IsAllSelected = newIsAllSelected;
+            HeaderSelectionState = newHeaderSelectionState;
+
+            OnPropertyChanged(nameof(SelectedReportCount));
+            OnPropertyChanged(nameof(SelectAllState));
+        }
+        finally
+        {
+            _isUpdatingSelection = false;
+        }
+    }
 
         /// <summary>
         /// 加载测量数据列表（仅已完成的测量）
@@ -1075,6 +1575,17 @@ public partial class ReportItem : ObservableObject
     public int RowNumber { get; }
 
     /// <summary>
+    /// 是否勾选
+    /// </summary>
+    private bool _isSelected;
+
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetProperty(ref _isSelected, value);
+    }
+
+    /// <summary>
     /// 报告编号
     /// </summary>
     public string ReportNumber => Report.ReportNumber;
@@ -1094,21 +1605,47 @@ public partial class ReportItem : ObservableObject
     /// </summary>
     public string StatusDisplay => Report.Status switch
     {
-        ReportStatus.Draft => "草稿",
-        ReportStatus.Completed => "已完成",
-        ReportStatus.Printed => "已打印",
-        _ => "未知"
+        ReportStatus.Draft => "待生成",
+        ReportStatus.Completed => "已生成",
+        ReportStatus.Printed => "已生成",
+        _ => "待生成"
     };
+
+    /// <summary>
+    /// 状态图标
+    /// </summary>
+    public string StatusIcon => Report.Status == ReportStatus.Draft
+        ? "/Resources/Images/Report/daishengcheng.png"
+        : "/Resources/Images/DataManagement/yiwancheng.png";
+
+    /// <summary>
+    /// 状态背景
+    /// </summary>
+    public string StatusBackground => Report.Status == ReportStatus.Draft
+        ? "#E1E1E1"
+        : "#E9F7E3";
+
+    /// <summary>
+    /// 状态前景色
+    /// </summary>
+    public string StatusForeground => Report.Status == ReportStatus.Draft
+        ? "#9E9E9E"
+        : "#44BE13";
+
+    /// <summary>
+    /// 详情提示
+    /// </summary>
+    public string DetailHint => $"查看 {PatientName} 的报告详情";
 
     /// <summary>
     /// 状态颜色
     /// </summary>
     public string StatusColor => Report.Status switch
     {
-        ReportStatus.Draft => "#FF9800",      // 橙色
-        ReportStatus.Completed => "#4CAF50",  // 绿色
-        ReportStatus.Printed => "#2196F3",    // 蓝色
-        _ => "#9E9E9E"                        // 灰色
+        ReportStatus.Draft => "#9E9E9E",
+        ReportStatus.Completed => "#44BE13",
+        ReportStatus.Printed => "#44BE13",
+        _ => "#9E9E9E"
     };
 
     public ReportItem(Report report, int rowNumber)

@@ -70,7 +70,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
-                        <Border Background="Transparent" Padding="4">
+                        <Border Padding="4" Background="Transparent">
                             <Image
                                 Width="22"
                                 Height="22"
@@ -85,7 +85,7 @@
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="CheckBox">
-                                <Border Background="Transparent" Padding="4">
+                                <Border Padding="4" Background="Transparent">
                                     <Image
                                         Width="22"
                                         Height="22"
@@ -99,9 +99,9 @@
             </Style.Triggers>
         </Style>
 
-        <!-- 日期范围框中单个日期的样式：使用 Button + Popup + Calendar，不使用 DatePicker -->
+        <!--  日期范围框中单个日期的样式：使用 Button + Popup + Calendar，不使用 DatePicker  -->
 
-        <!-- 状态下拉框：外层 Border 画完整圆角框，内层 Grid 分左右两列（文字 + 箭头） -->
+        <!--  状态下拉框：外层 Border 画完整圆角框，内层 Grid 分左右两列（文字 + 箭头）  -->
         <Style x:Key="FilterComboBoxStyle" TargetType="ComboBox">
             <Setter Property="Foreground" Value="#555555" />
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
@@ -159,7 +159,7 @@
                             Width="{TemplateBinding Width}"
                             Height="{TemplateBinding Height}"
                             SnapsToDevicePixels="True">
-                            <!-- ToggleButton 铺满整个控件，既是可视外框也是点击区域 -->
+                            <!--  ToggleButton 铺满整个控件，既是可视外框也是点击区域  -->
                             <ToggleButton
                                 x:Name="ToggleButton"
                                 Width="{TemplateBinding Width}"
@@ -182,7 +182,7 @@
                                             BorderThickness="{Binding BorderThickness, RelativeSource={RelativeSource AncestorType=ComboBox}}"
                                             CornerRadius="16"
                                             SnapsToDevicePixels="True">
-                                            <!-- 箭头放在右侧 -->
+                                            <!--  箭头放在右侧  -->
                                             <Path
                                                 Width="12"
                                                 Height="7"
@@ -203,7 +203,7 @@
                                 </ToggleButton.Template>
                             </ToggleButton>
 
-                            <!-- 选中项文字：叠加在 ToggleButton 之上，不接收点击 -->
+                            <!--  选中项文字：叠加在 ToggleButton 之上，不接收点击  -->
                             <ContentPresenter
                                 x:Name="ContentSite"
                                 Margin="18,0,40,0"
@@ -214,7 +214,7 @@
                                 ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
                                 IsHitTestVisible="False" />
 
-                            <!-- 下拉弹出层 -->
+                            <!--  下拉弹出层  -->
                             <Popup
                                 x:Name="PART_Popup"
                                 AllowsTransparency="True"
@@ -261,9 +261,7 @@
                             Height="38"
                             Background="Transparent"
                             CornerRadius="19">
-                            <ContentPresenter
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center" />
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -291,9 +289,7 @@
                             x:Name="ArrowBorder"
                             Background="{TemplateBinding Background}"
                             CornerRadius="8">
-                            <ContentPresenter
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center" />
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -321,9 +317,7 @@
                             x:Name="PageBorder"
                             Background="{TemplateBinding Background}"
                             CornerRadius="8">
-                            <ContentPresenter
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center" />
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -338,9 +332,9 @@
 
     <Grid>
         <Border
+            MinHeight="760"
             MaxWidth="1720"
             MaxHeight="840"
-            MinHeight="760"
             Margin="0,0,0,0"
             Padding="40,30,40,28"
             HorizontalAlignment="Stretch"
@@ -375,7 +369,7 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- ==================== 日期范围控件（完全不使用 DatePicker） ==================== -->
+                    <!--  ==================== 日期范围控件（完全不使用 DatePicker） ====================  -->
                     <Border
                         Grid.Column="0"
                         Width="500"
@@ -386,26 +380,26 @@
                         CornerRadius="16">
                         <Grid Margin="18,0,12,0">
                             <Grid.ColumnDefinitions>
-                                <!-- 起始日期文本 -->
+                                <!--  起始日期文本  -->
                                 <ColumnDefinition Width="*" />
-                                <!-- 起始日期日历图标 -->
+                                <!--  起始日期日历图标  -->
                                 <ColumnDefinition Width="Auto" />
-                                <!-- 分隔符 -->
+                                <!--  分隔符  -->
                                 <ColumnDefinition Width="34" />
-                                <!-- 截止日期文本 -->
+                                <!--  截止日期文本  -->
                                 <ColumnDefinition Width="*" />
-                                <!-- 截止日期日历图标 -->
+                                <!--  截止日期日历图标  -->
                                 <ColumnDefinition Width="Auto" />
-                                <!-- 清空按钮（固定占位） -->
+                                <!--  清空按钮（固定占位）  -->
                                 <ColumnDefinition Width="32" />
                             </Grid.ColumnDefinitions>
 
-                            <!-- 起始日期文本 -->
+                            <!--  起始日期文本  -->
                             <Button
                                 x:Name="StartDateButton"
                                 Grid.Column="0"
-                                HorizontalContentAlignment="Left"
                                 VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Click="StartDateButton_Click"
@@ -414,9 +408,7 @@
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
                                         <Border Background="Transparent">
-                                            <ContentPresenter
-                                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                VerticalAlignment="Center" />
+                                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
                                         </Border>
                                     </ControlTemplate>
                                 </Button.Template>
@@ -448,7 +440,7 @@
                                 </Border>
                             </Popup>
 
-                            <!-- 起始日期日历图标（常驻） -->
+                            <!--  起始日期日历图标（常驻）  -->
                             <Button
                                 Grid.Column="1"
                                 Width="28"
@@ -473,7 +465,7 @@
                                     Source="/Resources/Images/DataManagement/rili.png" />
                             </Button>
 
-                            <!-- 分隔符 -->
+                            <!--  分隔符  -->
                             <TextBlock
                                 Grid.Column="2"
                                 HorizontalAlignment="Center"
@@ -481,14 +473,14 @@
                                 FontFamily="{StaticResource AppFont}"
                                 FontSize="22"
                                 Foreground="#D1D1D1"
-                                Text="—" />
+                                Text=" — " />
 
-                            <!-- 截止日期文本 -->
+                            <!--  截止日期文本  -->
                             <Button
                                 x:Name="EndDateButton"
                                 Grid.Column="3"
-                                HorizontalContentAlignment="Left"
                                 VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Click="EndDateButton_Click"
@@ -497,9 +489,7 @@
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
                                         <Border Background="Transparent">
-                                            <ContentPresenter
-                                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                VerticalAlignment="Center" />
+                                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
                                         </Border>
                                     </ControlTemplate>
                                 </Button.Template>
@@ -531,7 +521,7 @@
                                 </Border>
                             </Popup>
 
-                            <!-- 截止日期日历图标（常驻） -->
+                            <!--  截止日期日历图标（常驻）  -->
                             <Button
                                 Grid.Column="4"
                                 Width="28"
@@ -556,7 +546,7 @@
                                     Source="/Resources/Images/DataManagement/rili.png" />
                             </Button>
 
-                            <!-- 清空按钮（固定列宽，不改变 Visibility，用 Opacity 控制显隐） -->
+                            <!--  清空按钮（固定列宽，不改变 Visibility，用 Opacity 控制显隐）  -->
                             <Button
                                 x:Name="DateClearButton"
                                 Grid.Column="5"
@@ -594,11 +584,11 @@
                         </Grid>
                     </Border>
 
-                    <!-- ==================== 状态下拉框 ==================== -->
+                    <!--  ==================== 状态下拉框 ====================  -->
                     <StackPanel
                         Grid.Column="2"
-                        Orientation="Horizontal"
-                        VerticalAlignment="Center">
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
                         <TextBlock
                             Width="44"
                             VerticalAlignment="Center"
@@ -621,14 +611,14 @@
                         Grid.Column="4"
                         Width="180"
                         Height="68"
-                        Command="{Binding SearchCommand}"
                         Background="#403B5B"
                         BorderThickness="0"
+                        Command="{Binding SearchCommand}"
                         Cursor="Hand"
                         Foreground="White"
                         Tag="24"
                         Template="{StaticResource RoundedButtonTemplate}">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                             <Image
                                 Width="24"
                                 Height="24"
@@ -663,28 +653,80 @@
                             <ColumnDefinition Width="0.8*" />
                         </Grid.ColumnDefinitions>
 
-                        <CheckBox
+                        <Button
                             Grid.Column="0"
+                            Click="AllSelectCheckBox_Click"
+                            Cursor="Hand"
                             HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Checked="AllSelectCheckBox_CheckedChanged"
-                            IsChecked="{Binding IsAllSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                            Style="{StaticResource SelectCheckBoxStyle}"
-                            Unchecked="AllSelectCheckBox_CheckedChanged" />
+                            VerticalAlignment="Center">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Padding="4" Background="Transparent">
+                                        <Image
+                                            Width="22"
+                                            Height="22"
+                                            RenderOptions.BitmapScalingMode="HighQuality">
+                                            <Image.Style>
+                                                <Style TargetType="Image">
+                                                    <Setter Property="Source" Value="/Resources/Images/PatientSelectionView/xuanzekuang.png" />
+                                                    <Setter Property="Opacity" Value="1" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding SelectAllState}" Value="2">
+                                                            <Setter Property="Source" Value="/Resources/Images/PatientSelectionView/xuanzhongkuang.png" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding SelectAllState}" Value="1">
+                                                            <Setter Property="Source" Value="/Resources/Images/PatientSelectionView/xuanzhongkuang.png" />
+                                                            <Setter Property="Opacity" Value="0.5" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Image.Style>
+                                        </Image>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
 
-                        <TextBlock Grid.Column="1" Style="{StaticResource HeaderTextStyle}" Text="编号" />
-                        <TextBlock Grid.Column="2" Style="{StaticResource HeaderTextStyle}" Text="姓名" />
-                        <TextBlock Grid.Column="3" Style="{StaticResource HeaderTextStyle}" Text="性别" />
-                        <TextBlock Grid.Column="4" Style="{StaticResource HeaderTextStyle}" Text="年龄" />
-                        <TextBlock Grid.Column="5" Style="{StaticResource HeaderTextStyle}" Text="测量日期" />
-                        <TextBlock Grid.Column="6" Style="{StaticResource HeaderTextStyle}" Text="状态" />
-                        <TextBlock Grid.Column="7" Style="{StaticResource HeaderTextStyle}" Text="详情" />
-                        <TextBlock Grid.Column="8" Style="{StaticResource HeaderTextStyle}" Text="操作" />
-                        <TextBlock Grid.Column="9" Style="{StaticResource HeaderTextStyle}" Text="删除" />
+                        <TextBlock
+                            Grid.Column="1"
+                            Style="{StaticResource HeaderTextStyle}"
+                            Text="编号" />
+                        <TextBlock
+                            Grid.Column="2"
+                            Style="{StaticResource HeaderTextStyle}"
+                            Text="姓名" />
+                        <TextBlock
+                            Grid.Column="3"
+                            Style="{StaticResource HeaderTextStyle}"
+                            Text="性别" />
+                        <TextBlock
+                            Grid.Column="4"
+                            Style="{StaticResource HeaderTextStyle}"
+                            Text="年龄" />
+                        <TextBlock
+                            Grid.Column="5"
+                            Style="{StaticResource HeaderTextStyle}"
+                            Text="测量日期" />
+                        <TextBlock
+                            Grid.Column="6"
+                            Style="{StaticResource HeaderTextStyle}"
+                            Text="状态" />
+                        <TextBlock
+                            Grid.Column="7"
+                            Style="{StaticResource HeaderTextStyle}"
+                            Text="详情" />
+                        <TextBlock
+                            Grid.Column="8"
+                            Style="{StaticResource HeaderTextStyle}"
+                            Text="操作" />
+                        <TextBlock
+                            Grid.Column="9"
+                            Style="{StaticResource HeaderTextStyle}"
+                            Text="删除" />
                     </Grid>
                 </Border>
 
-                <Grid Grid.Row="3">
+                <Grid x:Name="DataListViewport" Grid.Row="3" MaxHeight="468" VerticalAlignment="Stretch" SizeChanged="DataListViewport_SizeChanged">
                     <ItemsControl ItemsSource="{Binding MeasurementRecords}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -723,11 +765,26 @@
                                             Style="{StaticResource SelectCheckBoxStyle}"
                                             Unchecked="ItemCheckBox_CheckedChanged" />
 
-                                        <TextBlock Grid.Column="1" Style="{StaticResource RowTextStyle}" Text="{Binding RowNumber}" />
-                                        <TextBlock Grid.Column="2" Style="{StaticResource RowTextStyle}" Text="{Binding PatientName}" />
-                                        <TextBlock Grid.Column="3" Style="{StaticResource RowTextStyle}" Text="{Binding GenderDisplay}" />
-                                        <TextBlock Grid.Column="4" Style="{StaticResource RowTextStyle}" Text="{Binding AgeDisplay}" />
-                                        <TextBlock Grid.Column="5" Style="{StaticResource RowTextStyle}" Text="{Binding MeasurementDateDisplay}" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Style="{StaticResource RowTextStyle}"
+                                            Text="{Binding RowNumber}" />
+                                        <TextBlock
+                                            Grid.Column="2"
+                                            Style="{StaticResource RowTextStyle}"
+                                            Text="{Binding PatientName}" />
+                                        <TextBlock
+                                            Grid.Column="3"
+                                            Style="{StaticResource RowTextStyle}"
+                                            Text="{Binding GenderDisplay}" />
+                                        <TextBlock
+                                            Grid.Column="4"
+                                            Style="{StaticResource RowTextStyle}"
+                                            Text="{Binding AgeDisplay}" />
+                                        <TextBlock
+                                            Grid.Column="5"
+                                            Style="{StaticResource RowTextStyle}"
+                                            Text="{Binding MeasurementDateDisplay}" />
 
                                         <Border
                                             Grid.Column="6"
@@ -737,7 +794,10 @@
                                             VerticalAlignment="Center"
                                             Background="{Binding StatusBackground}"
                                             CornerRadius="20">
-                                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <StackPanel
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Orientation="Horizontal">
                                                 <Image
                                                     Width="18"
                                                     Height="18"
@@ -850,16 +910,16 @@
                     <StackPanel
                         Grid.Column="0"
                         HorizontalAlignment="Left"
-                        Orientation="Horizontal"
                         VerticalAlignment="Center"
+                        Orientation="Horizontal"
                         Visibility="{Binding CanBatchOperation, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Button
                             Width="160"
                             Height="48"
-                            Command="{Binding BatchExportCommand}"
                             Background="#FFFFFF"
                             BorderBrush="#403B5B"
                             BorderThickness="1"
+                            Command="{Binding BatchExportCommand}"
                             Cursor="Hand"
                             Tag="24"
                             Template="{StaticResource RoundedButtonTemplate}"
@@ -874,7 +934,7 @@
                                     </Style.Triggers>
                                 </Style>
                             </Button.Style>
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                                 <Image
                                     Width="22"
                                     Height="22"
@@ -895,10 +955,10 @@
                             Width="160"
                             Height="48"
                             Margin="22,0,0,0"
-                            Command="{Binding BatchDeleteCommand}"
                             Background="#FFFFFF"
                             BorderBrush="#FF0000"
                             BorderThickness="1"
+                            Command="{Binding BatchDeleteCommand}"
                             Cursor="Hand"
                             Tag="24"
                             Template="{StaticResource RoundedButtonTemplate}"
@@ -913,7 +973,7 @@
                                     </Style.Triggers>
                                 </Style>
                             </Button.Style>
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                                 <Image
                                     Width="22"
                                     Height="22"
@@ -934,12 +994,12 @@
                     <StackPanel
                         Grid.Column="1"
                         HorizontalAlignment="Center"
-                        Orientation="Horizontal"
-                        VerticalAlignment="Center">
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
                         <Button
+                            Margin="0,0,30,0"
                             Command="{Binding PreviousPageCommand}"
                             IsEnabled="{Binding CanPagePrevious}"
-                            Margin="0,0,30,0"
                             Style="{StaticResource PageArrowButtonStyle}">
                             <Image
                                 Width="20"
@@ -1008,9 +1068,9 @@
                                         </Border>
 
                                         <Button
+                                            HorizontalAlignment="Center"
                                             Command="{Binding DataContext.GoToPageNumberCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                            CommandParameter="{Binding PageNumber}"
-                                            HorizontalAlignment="Center">
+                                            CommandParameter="{Binding PageNumber}">
                                             <Button.Style>
                                                 <Style BasedOn="{StaticResource PageNumberButtonStyle}" TargetType="Button">
                                                     <Setter Property="Visibility" Value="Visible" />
@@ -1037,9 +1097,9 @@
                         </ItemsControl>
 
                         <Button
+                            Margin="30,0,0,0"
                             Command="{Binding NextPageCommand}"
                             IsEnabled="{Binding CanPageNext}"
-                            Margin="30,0,0,0"
                             Style="{StaticResource PageArrowButtonStyle}">
                             <Image
                                 Width="20"

@@ -101,7 +101,22 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
     public bool IsAllSelected
     {
         get => _isAllSelected;
-        set => SetProperty(ref _isAllSelected, value);
+        private set => SetProperty(ref _isAllSelected, value);
+    }
+
+    /// <summary>
+    /// 全选状态：0=未选，1=部分选，2=全选。
+    /// </summary>
+    public int SelectAllState
+    {
+        get
+        {
+            if (MeasurementRecords.Count == 0) return 0;
+
+            var currentPageSelectedCount = MeasurementRecords.Count(r => r.IsSelected);
+            if (currentPageSelectedCount == 0) return 0;
+            return currentPageSelectedCount == MeasurementRecords.Count ? 2 : 1;
+        }
     }
 
     /// <summary>
@@ -179,7 +194,11 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
     /// <summary>
     /// 每页记录数
     /// </summary>
-    private const int PageSize = Constants.PATIENT_PAGE_SIZE;
+    private const int MaxPageSize = 7;
+    private const int MinimumPageSize = 1;
+    private const double RowHeight = 60d;
+    private const double RowSpacing = 8d;
+    private int _pageSize = MaxPageSize;
 
     #endregion
 
@@ -272,7 +291,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
                 FilterEndDate,
                 SelectedStatusOption?.Value,
                 CurrentPage,
-                PageSize);
+                _pageSize);
 
             if (_cancellationTokenSource.Token.IsCancellationRequested) return;
 
@@ -282,7 +301,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
                 if (_disposed) return;
 
                 TotalRecords = totalCount;
-                TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize);
+                TotalPages = (int)Math.Ceiling(totalCount / (double)_pageSize);
                 if (TotalPages < 1) TotalPages = 1;
 
                 // 确保当前页有效
@@ -293,7 +312,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
 
                 // 转换为视图项
                 MeasurementRecords.Clear();
-                int rowNumber = (CurrentPage - 1) * PageSize + 1;
+                int rowNumber = (CurrentPage - 1) * _pageSize + 1;
                 foreach (var record in records)
                 {
                     var item = new MeasurementRecordItem(record, rowNumber++);
@@ -386,6 +405,39 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
+    /// 根据列表可视高度更新每页容量，最大不超过 7 条。
+    /// </summary>
+    /// <param name="viewportHeight">列表内容区可视高度。</param>
+    public async Task UpdatePageSizeAsync(double viewportHeight)
+    {
+        if (viewportHeight <= 0 || _disposed)
+        {
+            return;
+        }
+
+        var effectiveViewportHeight = Math.Min(viewportHeight, MaxPageSize * (RowHeight + RowSpacing) - RowSpacing);
+        var rowFullHeight = RowHeight + RowSpacing;
+        var calculatedPageSize = Math.Max(MinimumPageSize, (int)Math.Floor((effectiveViewportHeight + RowSpacing) / rowFullHeight));
+        var newPageSize = Math.Min(MaxPageSize, calculatedPageSize);
+
+        if (newPageSize == _pageSize)
+        {
+            return;
+        }
+
+        _pageSize = newPageSize;
+
+        var recalculatedTotalPages = TotalRecords <= 0 ? 1 : Math.Max(1, (int)Math.Ceiling(TotalRecords / (double)_pageSize));
+        if (CurrentPage > recalculatedTotalPages)
+        {
+            CurrentPage = recalculatedTotalPages;
+        }
+
+        GoToPageInput = CurrentPage.ToString();
+        await LoadDataAsync();
+    }
+
+    /// <summary>
     /// 更新选中状态
     /// </summary>
     private void UpdateSelectionState()
@@ -408,6 +460,8 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
                 _isAllSelected = newIsAllSelected;
                 OnPropertyChanged(nameof(IsAllSelected));
             }
+
+            OnPropertyChanged(nameof(SelectAllState));
         }
         finally
         {
@@ -591,7 +645,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
 
             // 注意：IsAllSelected 在此时已经被UI更新了
             // 所以这里直接使用 IsAllSelected 的新值即可
-            var shouldSelectAll = IsAllSelected;
+            var shouldSelectAll = SelectAllState != 2;
 
             foreach (var item in MeasurementRecords)
             {
@@ -610,6 +664,8 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
 
             // 更新选中数量
             SelectedCount = _globalSelectedIds.Count;
+            IsAllSelected = shouldSelectAll;
+            OnPropertyChanged(nameof(SelectAllState));
         }
         finally
         {
@@ -649,6 +705,8 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
                 _isAllSelected = newIsAllSelected;
                 OnPropertyChanged(nameof(IsAllSelected));
             }
+
+            OnPropertyChanged(nameof(SelectAllState));
         }
         finally
         {
