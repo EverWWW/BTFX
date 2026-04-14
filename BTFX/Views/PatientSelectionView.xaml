@@ -11,6 +11,11 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/Styles/SelectionStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
         <!-- 页面级按钮模板（圆角 16） -->
         <ControlTemplate x:Key="PlainButtonTemplate" TargetType="Button">
             <Border x:Name="border"
@@ -97,6 +102,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid>
@@ -384,35 +390,7 @@
                     <!-- 全选按钮（可点击） -->
                     <Button Grid.Column="0"
                             Command="{Binding ToggleSelectAllCommand}"
-                            Cursor="Hand"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Background="Transparent" Padding="4">
-                                    <Image Width="22" Height="22"
-                                           RenderOptions.BitmapScalingMode="HighQuality">
-                                        <Image.Style>
-                                            <Style TargetType="Image">
-                                                <Setter Property="Source" Value="/Resources/Images/PatientSelectionView/xuanzekuang.png" />
-                                                <Style.Triggers>
-                                                    <!-- 全选状态 -->
-                                                    <DataTrigger Binding="{Binding SelectAllState}" Value="2">
-                                                        <Setter Property="Source" Value="/Resources/Images/PatientSelectionView/xuanzhongkuang.png" />
-                                                    </DataTrigger>
-                                                    <!-- 半选状态：也显示选中图标 -->
-                                                    <DataTrigger Binding="{Binding SelectAllState}" Value="1">
-                                                        <Setter Property="Source" Value="/Resources/Images/PatientSelectionView/xuanzhongkuang.png" />
-                                                        <Setter Property="Opacity" Value="0.5" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Image.Style>
-                                    </Image>
-                                </Border>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
+                            Style="{StaticResource HeaderSelectIconButtonStyle}" />
 
                     <TextBlock Grid.Column="1" Text="编号"
                                FontFamily="{StaticResource AppFont}" FontSize="22" Foreground="#666666"

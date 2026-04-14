@@ -83,6 +83,7 @@ public partial class PatientSelectionViewModel : ObservableObject
     }
 
     private List<Patient> _allPatients = new();
+    private readonly HashSet<int> _selectedPatientIds = new();
     private int _pageSize = Constants.PATIENT_PAGE_SIZE;
 
     /// <summary>
@@ -189,9 +190,14 @@ public partial class PatientSelectionViewModel : ObservableObject
             PatientRows.Add(new PatientRowItem
             {
                 DisplayIndex = startIndex + i,
-                Patient = pageData[i]
+                Patient = pageData[i],
+                IsChecked = _selectedPatientIds.Contains(pageData[i].Id)
             });
         }
+
+        SelectedPatient = PatientRows.FirstOrDefault(r => r.IsChecked)?.Patient;
+        OnPropertyChanged(nameof(SelectedCount));
+        OnPropertyChanged(nameof(SelectAllState));
 
         // 更新分页导航状态
         CanGoPrevious = CurrentPage > 1;
@@ -274,6 +280,7 @@ public partial class PatientSelectionViewModel : ObservableObject
     private void Search()
     {
         CurrentPage = 1;
+        _selectedPatientIds.Clear();
         ApplySearchFilter();
         _logHelper?.Information($"Search patients: {SearchText}");
     }
@@ -515,9 +522,8 @@ public partial class PatientSelectionViewModel : ObservableObject
         if (isDoubleClick)
         {
             // 双击：直接选中并进入
-            foreach (var r in PatientRows)
-                r.IsChecked = false;
             row.IsChecked = true;
+            _selectedPatientIds.Add(row.Patient.Id);
             SelectedPatient = row.Patient;
             OnPropertyChanged(nameof(SelectedCount));
             OnPropertyChanged(nameof(SelectAllState));
@@ -527,10 +533,17 @@ public partial class PatientSelectionViewModel : ObservableObject
 
         // 单击：切换选中状态
         var newState = !row.IsChecked;
-        foreach (var r in PatientRows)
-            r.IsChecked = false;
         row.IsChecked = newState;
-        SelectedPatient = newState ? row.Patient : null;
+        if (newState)
+        {
+            _selectedPatientIds.Add(row.Patient.Id);
+        }
+        else
+        {
+            _selectedPatientIds.Remove(row.Patient.Id);
+        }
+
+        SelectedPatient = PatientRows.FirstOrDefault(r => r.IsChecked)?.Patient;
         OnPropertyChanged(nameof(SelectedCount));
         OnPropertyChanged(nameof(SelectAllState));
     }
@@ -557,7 +570,18 @@ public partial class PatientSelectionViewModel : ObservableObject
     {
         var allSelected = SelectAllState == 2;
         foreach (var r in PatientRows)
+        {
             r.IsChecked = !allSelected;
+            if (!allSelected)
+            {
+                _selectedPatientIds.Add(r.Patient.Id);
+            }
+            else
+            {
+                _selectedPatientIds.Remove(r.Patient.Id);
+            }
+        }
+
         SelectedPatient = allSelected ? null : PatientRows.FirstOrDefault()?.Patient;
         OnPropertyChanged(nameof(SelectedCount));
         OnPropertyChanged(nameof(SelectAllState));
@@ -571,6 +595,7 @@ public partial class PatientSelectionViewModel : ObservableObject
     {
         SearchText = string.Empty;
         CurrentPage = 1;
+        _selectedPatientIds.Clear();
         ApplySearchFilter();
     }
 

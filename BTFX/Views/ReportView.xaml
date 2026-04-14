@@ -13,6 +13,11 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/Styles/SelectionStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
         <ControlTemplate x:Key="RoundedButtonTemplate" TargetType="Button">
@@ -200,6 +205,7 @@
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         </Style>
+        </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid>
@@ -607,36 +613,7 @@
                                     <Button
                                         Grid.Column="0"
                                         Click="AllSelectCheckBox_Click"
-                                        Cursor="Hand"
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center">
-                                        <Button.Template>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border Background="Transparent" Padding="4">
-                                                    <Image
-                                                        Width="22"
-                                                        Height="22"
-                                                        RenderOptions.BitmapScalingMode="HighQuality">
-                                                        <Image.Style>
-                                                            <Style TargetType="Image">
-                                                                <Setter Property="Source" Value="/Resources/Images/PatientSelectionView/xuanzekuang.png" />
-                                                                <Setter Property="Opacity" Value="1" />
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding SelectAllState}" Value="2">
-                                                                        <Setter Property="Source" Value="/Resources/Images/PatientSelectionView/xuanzhongkuang.png" />
-                                                                    </DataTrigger>
-                                                                    <DataTrigger Binding="{Binding SelectAllState}" Value="1">
-                                                                        <Setter Property="Source" Value="/Resources/Images/PatientSelectionView/xuanzhongkuang.png" />
-                                                                        <Setter Property="Opacity" Value="0.5" />
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </Image.Style>
-                                                    </Image>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Button.Template>
-                                    </Button>
+                                        Style="{StaticResource HeaderSelectIconButtonStyle}" />
 
                                     <TextBlock Grid.Column="1" Style="{StaticResource HeaderTextStyle}" Text="编号" />
                                     <TextBlock Grid.Column="2" Style="{StaticResource HeaderTextStyle}" Text="姓名" />
