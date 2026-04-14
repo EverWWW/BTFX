@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Media;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
@@ -31,14 +31,14 @@ public partial class GeneralSettingsViewModel : ObservableObject
 
     public ObservableCollection<LanguageOption> LanguageOptions { get; } =
     [
-        new() { Value = Common.AppLanguage.ChineseSimplified, Display = "简体中文" },
-        new() { Value = Common.AppLanguage.English, Display = "English" }
+        new() { Value = Common.AppLanguage.ChineseSimplified, Display = "中文" },
+        new() { Value = Common.AppLanguage.English, Display = "英文" }
     ];
 
     public ObservableCollection<ThemeOption> ThemeOptions { get; } =
     [
-        new() { Value = Common.AppTheme.Light, Display = "浅色主题", IconKind = "WhiteBalanceSunny" },
-        new() { Value = Common.AppTheme.Dark, Display = "深色主题", IconKind = "WeatherNight" }
+        new() { Value = Common.AppTheme.Light, Display = "浅色模式", IconKind = "WhiteBalanceSunny" },
+        new() { Value = Common.AppTheme.Dark, Display = "深色模式", IconKind = "WeatherNight" }
     ];
 
     /// <summary>
@@ -46,16 +46,18 @@ public partial class GeneralSettingsViewModel : ObservableObject
     /// </summary>
     public ObservableCollection<ThemeColorOption> ThemeColorOptions { get; } =
     [
-        new() { ColorHex = "#FF009EDB", DisplayName = "天蓝" },
-        new() { ColorHex = "#FF2196F3", DisplayName = "蓝色" },
-        new() { ColorHex = "#FF3F51B5", DisplayName = "靛蓝" },
-        new() { ColorHex = "#FF673AB7", DisplayName = "紫色" },
-        new() { ColorHex = "#FF009688", DisplayName = "青色" },
-        new() { ColorHex = "#FF4CAF50", DisplayName = "绿色" },
-        new() { ColorHex = "#FFFF9800", DisplayName = "橙色" },
-        new() { ColorHex = "#FFE91E63", DisplayName = "粉红" },
-        new() { ColorHex = "#FFF44336", DisplayName = "红色" },
-        new() { ColorHex = "#FF607D8B", DisplayName = "蓝灰" }
+        new() { ColorHex = "#403B5B", DisplayName = "深紫灰" },
+        new() { ColorHex = "#1677FF", DisplayName = "经典蓝" },
+        new() { ColorHex = "#3B82F6", DisplayName = "亮蓝" },
+        new() { ColorHex = "#10B981", DisplayName = "青绿" },
+        new() { ColorHex = "#22C55E", DisplayName = "草绿" },
+        new() { ColorHex = "#F97316", DisplayName = "橙色" },
+        new() { ColorHex = "#F59E0B", DisplayName = "琥珀" },
+        new() { ColorHex = "#EC4899", DisplayName = "玫红" },
+        new() { ColorHex = "#8B5CF6", DisplayName = "紫罗兰" },
+        new() { ColorHex = "#A855F7", DisplayName = "亮紫" },
+        new() { ColorHex = "#DC2626", DisplayName = "深红" },
+        new() { ColorHex = "#64748B", DisplayName = "蓝灰" }
     ];
 
     public GeneralSettingsViewModel(

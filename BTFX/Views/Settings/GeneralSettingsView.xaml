@@ -4,155 +4,441 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:BTFX.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:BTFX.Views.Settings"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:vm="clr-namespace:BTFX.ViewModels"
     d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
     d:DesignHeight="600"
-    d:DesignWidth="500"
+    d:DesignWidth="1400"
     mc:Ignorable="d">
 
     <UserControl.Resources>
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         <converters:StringToColorBrushConverter x:Key="StringToColorBrushConverter" />
+
+        <Style x:Key="SettingsSectionCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="#FAFAFA" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="24,22,24,24" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+        </Style>
+
+        <Style x:Key="SettingsSectionTitleTextStyle" TargetType="TextBlock">
+            <Setter Property="Height" Value="33" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="Foreground" Value="#403B5B" />
+            <Setter Property="LineHeight" Value="33" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="SettingsComboBoxItemStyle" TargetType="ComboBoxItem">
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Foreground" Value="#403B5B" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border
+                            x:Name="ItemBorder"
+                            Padding="18,12"
+                            Background="Transparent"
+                            CornerRadius="10">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#F0F4F9" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#EEF2F7" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SettingsComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Width" Value="320" />
+            <Setter Property="Height" Value="68" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Foreground" Value="#555555" />
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#D1D1D1" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+            <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="ItemContainerStyle" Value="{StaticResource SettingsComboBoxItemStyle}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" SnapsToDevicePixels="True">
+                            <ToggleButton
+                                x:Name="ToggleButton"
+                                Width="{TemplateBinding Width}"
+                                Height="{TemplateBinding Height}"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Stretch"
+                                ClickMode="Press"
+                                Cursor="Hand"
+                                Focusable="False"
+                                IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                OverridesDefaultStyle="True">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border
+                                            x:Name="OuterBorder"
+                                            Background="{Binding Background, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                            BorderBrush="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                            BorderThickness="{Binding BorderThickness, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                            CornerRadius="16"
+                                            SnapsToDevicePixels="True">
+                                            <Path
+                                                Width="12"
+                                                Height="7"
+                                                Margin="0,0,20,0"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                Data="M0,0 L6,6 L12,0"
+                                                Fill="Transparent"
+                                                Stroke="#B3B7C4"
+                                                StrokeThickness="1.5" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="OuterBorder" Property="BorderBrush" Value="#B0B0B0" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+
+                            <ContentPresenter
+                                x:Name="ContentSite"
+                                Margin="20,0,44,0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding SelectionBoxItem}"
+                                ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                IsHitTestVisible="False" />
+
+                            <Popup
+                                x:Name="PART_Popup"
+                                AllowsTransparency="True"
+                                Focusable="False"
+                                IsOpen="{TemplateBinding IsDropDownOpen}"
+                                Placement="Bottom"
+                                PlacementTarget="{Binding ElementName=ToggleButton}"
+                                PopupAnimation="Fade">
+                                <Border
+                                    MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                    Margin="0,6,0,0"
+                                    Padding="8"
+                                    Background="White"
+                                    BorderBrush="#E2E5EC"
+                                    BorderThickness="1"
+                                    CornerRadius="16">
+                                    <Border.Effect>
+                                        <DropShadowEffect
+                                            BlurRadius="18"
+                                            Direction="270"
+                                            Opacity="0.08"
+                                            ShadowDepth="6" />
+                                    </Border.Effect>
+                                    <ScrollViewer MaxHeight="260" CanContentScroll="True">
+                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ThemeColorButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="48" />
+            <Setter Property="Height" Value="48" />
+            <Setter Property="Margin" Value="0,0,32,0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid Width="48" Height="48">
+                            <Border
+                                x:Name="SelectionBorder"
+                                Width="48"
+                                Height="48"
+                                Background="Transparent"
+                                BorderBrush="Transparent"
+                                BorderThickness="0"
+                                CornerRadius="16" />
+                            <Border
+                                Width="28"
+                                Height="28"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Background="{Binding ColorHex, Converter={StaticResource StringToColorBrushConverter}}"
+                                CornerRadius="10" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                <Setter TargetName="SelectionBorder" Property="Background" Value="#FFFFFF" />
+                                <Setter TargetName="SelectionBorder" Property="BorderBrush" Value="#403B5B" />
+                                <Setter TargetName="SelectionBorder" Property="BorderThickness" Value="1" />
+                            </DataTrigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Opacity" Value="0.88" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SettingsActionButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="200" />
+            <Setter Property="Height" Value="68" />
+            <Setter Property="Background" Value="#F0F4F9" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ButtonBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="16">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.9" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.78" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
-    <ScrollViewer Padding="24" VerticalScrollBarVisibility="Auto">
-        <StackPanel MaxWidth="600">
-            <!--  语言设置  -->
-            <TextBlock
-                Margin="0,0,0,16"
-                FontSize="16"
-                FontWeight="Medium"
-                Text="{DynamicResource LanguageSettings}" />
-            <ComboBox
-                Width="200"
-                HorizontalAlignment="Left"
-                md:HintAssist.Hint="{DynamicResource SelectLanguage}"
-                DisplayMemberPath="Display"
-                ItemsSource="{Binding LanguageOptions}"
-                SelectedItem="{Binding SelectedLanguage}"
-                Style="{StaticResource MaterialDesignOutlinedComboBox}" />
+    <Grid Margin="18,8,18,18">
+        <Grid
+            MaxWidth="1640"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Top">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="200" />
+                <RowDefinition Height="20" />
+                <RowDefinition Height="200" />
+                <RowDefinition Height="20" />
+                <RowDefinition Height="225" />
+            </Grid.RowDefinitions>
 
-            <!--  主题设置  -->
-            <TextBlock
-                Margin="0,32,0,16"
-                FontSize="16"
-                FontWeight="Medium"
-                Text="{DynamicResource ThemeSettings}" />
-            <StackPanel Orientation="Horizontal">
-                <ItemsControl ItemsSource="{Binding ThemeOptions}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <RadioButton
-                                Margin="0,0,16,0"
-                                GroupName="ThemeGroup"
-                                IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                Style="{StaticResource MaterialDesignChoiceChipOutlineRadioButton}">
-                                <StackPanel Orientation="Horizontal">
-                                    <md:PackIcon
-                                        Margin="0,0,8,0"
-                                        VerticalAlignment="Center"
-                                        Kind="{Binding IconKind}" />
-                                    <TextBlock VerticalAlignment="Center" Text="{Binding Display}" />
-                                </StackPanel>
-                            </RadioButton>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
+            <Border
+                Grid.Row="0"
+                Height="200"
+                Style="{StaticResource SettingsSectionCardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-            <!--  主题色设置  -->
-            <TextBlock
-                Margin="0,32,0,16"
-                FontSize="16"
-                FontWeight="Medium"
-                Text="{DynamicResource ThemeColorSettings}" />
-            <ItemsControl ItemsSource="{Binding ThemeColorOptions}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Border
+                            Width="4"
+                            Height="16"
+                            Margin="0,8,12,0"
+                            Background="#E4004A"
+                            CornerRadius="8" />
+                        <TextBlock Style="{StaticResource SettingsSectionTitleTextStyle}" Text="语言设置" />
+                    </StackPanel>
+
+                    <ComboBox
+                        Grid.Row="1"
+                        Width="320"
+                        Margin="0,18,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        DisplayMemberPath="Display"
+                        ItemsSource="{Binding LanguageOptions}"
+                        SelectedItem="{Binding SelectedLanguage}"
+                        Style="{StaticResource SettingsComboBoxStyle}" />
+                </Grid>
+            </Border>
+
+            <Border
+                Grid.Row="2"
+                Height="200"
+                Style="{StaticResource SettingsSectionCardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Border
+                            Width="4"
+                            Height="16"
+                            Margin="0,8,12,0"
+                            Background="#E4004A"
+                            CornerRadius="8" />
+                        <TextBlock Style="{StaticResource SettingsSectionTitleTextStyle}" Text="主题设置" />
+                    </StackPanel>
+
+                    <Grid Grid.Row="1" Margin="0,18,0,0" VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="320" />
+                            <ColumnDefinition Width="72" />
+                            <ColumnDefinition Width="92" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <ComboBox
+                            Width="320"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            DisplayMemberPath="Display"
+                            ItemsSource="{Binding ThemeOptions}"
+                            SelectedItem="{Binding SelectedTheme}"
+                            Style="{StaticResource SettingsComboBoxStyle}" />
+
+                        <TextBlock
+                            Grid.Column="2"
+                            FontFamily="{StaticResource AppFont}"
+                            FontSize="24"
+                            Foreground="#403B5B"
+                            Text="主题色"
+                            VerticalAlignment="Center" />
+
+                        <Border
+                            Grid.Column="3"
+                            Padding="18,8"
+                            Background="#FFFFFF"
+                            CornerRadius="18"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center">
+                            <ItemsControl ItemsSource="{Binding ThemeColorOptions}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button
+                                            Style="{StaticResource ThemeColorButtonStyle}"
+                                            Command="{Binding DataContext.ApplyThemeColorCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip="{Binding DisplayName}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <Border
+                Grid.Row="4"
+                Height="225"
+                Style="{StaticResource SettingsSectionCardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Border
+                            Width="4"
+                            Height="16"
+                            Margin="0,8,12,0"
+                            Background="#E4004A"
+                            CornerRadius="8" />
+                        <TextBlock Style="{StaticResource SettingsSectionTitleTextStyle}" Text="设置导入/导出" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Margin="0,34,0,0" Orientation="Horizontal">
                         <Button
-                            Width="48"
-                            Height="48"
-                            Margin="0,0,12,12"
-                            Padding="0"
-                            HorizontalContentAlignment="Center"
-                            VerticalContentAlignment="Center"
-                            Command="{Binding DataContext.ApplyThemeColorCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                            CommandParameter="{Binding}"
-                            Cursor="Hand"
-                            ToolTip="{Binding DisplayName}">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Grid>
-                                        <!--  选中时的外圈  -->
-                                        <Border
-                                            Width="48"
-                                            Height="48"
-                                            BorderBrush="{Binding ColorHex, Converter={StaticResource StringToColorBrushConverter}}"
-                                            BorderThickness="3"
-                                            CornerRadius="24"
-                                            Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                        <!--  色块圆形  -->
-                                        <Border
-                                            Width="36"
-                                            Height="36"
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            Background="{Binding ColorHex, Converter={StaticResource StringToColorBrushConverter}}"
-                                            CornerRadius="18" />
-                                        <!--  选中勾号  -->
-                                        <md:PackIcon
-                                            Width="18"
-                                            Height="18"
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            Foreground="White"
-                                            Kind="Check"
-                                            Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                    </Grid>
-                                </ControlTemplate>
-                            </Button.Template>
+                            Margin="0,0,72,0"
+                            Command="{Binding ExportSettingsCommand}"
+                            IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
+                            Style="{StaticResource SettingsActionButtonStyle}">
+                            <StackPanel Orientation="Horizontal">
+                                <Image
+                                    Width="24"
+                                    Height="24"
+                                    Margin="0,0,12,0"
+                                    Source="/Resources/Images/Settings/daochushezhi.png" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="22"
+                                    Foreground="#403B5B"
+                                    Text="导出设置" />
+                            </StackPanel>
                         </Button>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
 
-            <!--  设置导入导出  -->
-            <TextBlock
-                Margin="0,32,0,16"
-                FontSize="16"
-                FontWeight="Medium"
-                Text="{DynamicResource SettingsExportImport}" />
-            <StackPanel Orientation="Horizontal">
-                <Button
-                    Margin="0,0,8,0"
-                    Command="{Binding ExportSettingsCommand}"
-                    Content="{DynamicResource ExportSettings}"
-                    IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
-                    Style="{StaticResource MaterialDesignOutlinedButton}" />
-                <Button
-                    Command="{Binding ImportSettingsCommand}"
-                    Content="{DynamicResource ImportSettings}"
-                    IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
-                    Style="{StaticResource MaterialDesignOutlinedButton}" />
-            </StackPanel>
-            <TextBlock
-                Margin="0,8,0,0"
-                FontSize="12"
-                Foreground="{DynamicResource MaterialDesignBodyLight}"
-                Text="{DynamicResource SettingsExportImportHint}" />
-        </StackPanel>
-    </ScrollViewer>
+                        <Button
+                            Command="{Binding ImportSettingsCommand}"
+                            IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
+                            Style="{StaticResource SettingsActionButtonStyle}">
+                            <StackPanel Orientation="Horizontal">
+                                <Image
+                                    Width="24"
+                                    Height="24"
+                                    Margin="0,0,12,0"
+                                    Source="/Resources/Images/Settings/daorushezhi.png" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="22"
+                                    Foreground="#403B5B"
+                                    Text="导入设置" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
 </UserControl>

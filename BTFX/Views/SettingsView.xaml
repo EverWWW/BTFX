@@ -7,9 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:settings="clr-namespace:BTFX.Views.Settings"
-     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:vm="clr-namespace:BTFX.ViewModels"
-    xmlns:vmSettings="clr-namespace:BTFX.ViewModels.Settings"
     d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
     d:DesignHeight="600"
     d:DesignWidth="900"
@@ -17,47 +15,69 @@
 
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <sys:Double x:Key="TabHeaderWidth">100</sys:Double>
-        <sys:Double x:Key="TabHeaderHeight">70</sys:Double>
 
-        <!-- 左侧导航栏宽度（这个才是关键） -->
-        <sys:Double x:Key="SettingsTabPanelWidth">70</sys:Double>
+        <Style x:Key="SettingsTopTabHeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="MinWidth" Value="96" />
+            <Setter Property="Height" Value="33" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Foreground" Value="#403B5B" />
+            <Setter Property="LineHeight" Value="33" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextWrapping" Value="NoWrap" />
+        </Style>
 
-        <!-- 自定义 TabItem 样式 - 控制宽度、居中和选中背景色 -->
-        <Style x:Key="SettingsTabItemStyle" TargetType="TabItem" BasedOn="{StaticResource MaterialDesignNavigationRailTabItem}">
-            <Setter Property="Width" Value="{StaticResource TabHeaderWidth}" />
-            <Setter Property="Height" Value="{StaticResource TabHeaderHeight}" />
-            <Setter Property="HorizontalContentAlignment" Value="Center" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Style x:Key="SettingsTopTabItemStyle" TargetType="TabItem">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,0,20,0" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabItem">
-                        <Border x:Name="mainBorder"
-                                Width="{TemplateBinding Width}"
-                                Height="{TemplateBinding Height}"
-                                Background="Transparent"
-                                CornerRadius="4"
-                                Margin="0,2">
-                            <ContentPresenter 
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                ContentSource="Header" />
+                        <Border Background="Transparent">
+                            <Grid Width="176" SnapsToDevicePixels="True">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="40" />
+                                    <RowDefinition Height="33" />
+                                    <RowDefinition Height="18" />
+                                    <RowDefinition Height="4" />
+                                </Grid.RowDefinitions>
+
+                                <ContentPresenter
+                                    Grid.Row="1"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    ContentSource="Header" />
+
+                                <Border
+                                    x:Name="SelectedUnderline"
+                                    Grid.Row="3"
+                                    Width="140"
+                                    Height="4"
+                                    HorizontalAlignment="Center"
+                                    Background="#E4004A"
+                                    CornerRadius="2"
+                                    Opacity="0" />
+                            </Grid>
                         </Border>
+
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="mainBorder" Property="Background" Value="{DynamicResource MaterialDesign.Brush.Card.Background}" />
+                                <Setter TargetName="SelectedUnderline" Property="Opacity" Value="1" />
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="mainBorder" Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Light}" />
-                                <Setter TargetName="mainBorder" Property="Opacity" Value="0.1" />
+                                <Setter Property="Opacity" Value="0.88" />
                             </Trigger>
                             <MultiTrigger>
                                 <MultiTrigger.Conditions>
                                     <Condition Property="IsSelected" Value="True" />
                                     <Condition Property="IsMouseOver" Value="True" />
                                 </MultiTrigger.Conditions>
-                                <Setter TargetName="mainBorder" Property="Background" Value="{DynamicResource MaterialDesign.Brush.Card.Background}" />
-                                <Setter TargetName="mainBorder" Property="Opacity" Value="1" />
+                                <Setter Property="Opacity" Value="1" />
                             </MultiTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -65,154 +85,106 @@
             </Setter>
         </Style>
 
-        <!-- 自定义 NavigationRail TabControl 样式 - 控制左侧导航栏宽度 -->
-        <Style x:Key="SettingsTabControlStyle" TargetType="TabControl" BasedOn="{StaticResource MaterialDesignNavigationRailTabControl}">
-            <Setter Property="ItemContainerStyle" Value="{StaticResource SettingsTabItemStyle}" />
+        <Style x:Key="SettingsTopTabControlStyle" TargetType="TabControl">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="ItemContainerStyle" Value="{StaticResource SettingsTopTabItemStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabControl">
-                        <Grid KeyboardNavigation.TabNavigation="Local">
-                            <Grid.ColumnDefinitions>
-                                <!-- 左侧导航栏宽度在这里控制 -->
-                                <ColumnDefinition Width="100" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <!-- TabPanel（左侧导航按钮所在区域） -->
-                            <Border Grid.Column="0" 
-                                    Background="{DynamicResource MaterialDesign.Brush.Background}">
-                                <TabPanel 
-                                    HorizontalAlignment="Center"
-                                    x:Name="HeaderPanel"
-                                    Panel.ZIndex="1"
-                                    IsItemsHost="True"
-                                    KeyboardNavigation.TabIndex="1" />
+                        <Grid Background="White" KeyboardNavigation.TabNavigation="Local">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Border
+                                Padding="12,0,12,0"
+                                Background="White"
+                                BorderThickness="0">
+                                <ScrollViewer
+                                    HorizontalScrollBarVisibility="Auto"
+                                    VerticalScrollBarVisibility="Disabled"
+                                    CanContentScroll="False"
+                                    Focusable="False">
+                                    <TabPanel
+                                        x:Name="HeaderPanel"
+                                        HorizontalAlignment="Left"
+                                        IsItemsHost="True"
+                                        KeyboardNavigation.TabIndex="1"
+                                        Panel.ZIndex="1" />
+                                </ScrollViewer>
                             </Border>
-                            <!-- 右侧内容区域 -->
-                            <Border 
-                                 Grid.Column="1"
-                                 x:Name="ContentPanel"
-                                 KeyboardNavigation.TabIndex="2"
-                                VerticalAlignment="Top"
-                                 Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
-                                <ContentPresenter 
-                                     x:Name="PART_SelectedContentHost"
-                                     Margin="{TemplateBinding Padding}"
-                                     ContentSource="SelectedContent"
-                                     SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+
+                            <Border
+                                Grid.Row="1"
+                                Background="White"
+                                BorderThickness="0"
+                                KeyboardNavigation.TabIndex="2">
+                                <ContentPresenter
+                                    x:Name="PART_SelectedContentHost"
+                                    Margin="0"
+                                    ContentSource="SelectedContent"
+                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                             </Border>
                         </Grid>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
-        <!-- Tab Header StackPanel 样式 -->
-        <Style x:Key="TabHeaderStackPanelStyle" TargetType="StackPanel">
-            <Setter Property="Width" Value="{StaticResource TabHeaderWidth}" />
-            <Setter Property="Height" Value="{StaticResource TabHeaderHeight}" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-        </Style>
-
-        <!-- Tab Header PackIcon 样式 -->
-        <Style x:Key="TabHeaderIconStyle" TargetType="md:PackIcon">
-            <Setter Property="Margin" Value="0,10,0,0" />
-            <Setter Property="Width" Value="24" />
-            <Setter Property="Height" Value="24" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-        </Style>
-
-        <!-- Tab Header TextBlock 样式 -->
-        <Style x:Key="TabHeaderTextStyle" TargetType="TextBlock">
-            <Setter Property="Margin" Value="4,4,4,0" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
-            <Setter Property="FontSize" Value="10" />
-            <Setter Property="TextAlignment" Value="Center" />
-            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-        </Style>
-
     </UserControl.Resources>
 
-    <Grid Margin="16">
-        <md:Card Padding="0">
-            <TabControl    SelectedIndex="{Binding SelectedTabIndex}" Style="{StaticResource SettingsTabControlStyle}">
-                <!--  通用设置Tab  -->
+    <Grid Margin="0" Background="Transparent">
+        <TabControl SelectedIndex="{Binding SelectedTabIndex}" Style="{StaticResource SettingsTopTabControlStyle}">
                 <TabItem>
-                    <TabItem.Header >
-                        <StackPanel  Style="{StaticResource TabHeaderStackPanelStyle}">
-                            <md:PackIcon Kind="Cog" Style="{StaticResource TabHeaderIconStyle}" />
-                            <TextBlock Text="{DynamicResource GeneralSettingsTab}" Style="{StaticResource TabHeaderTextStyle}" />
-                        </StackPanel>
+                    <TabItem.Header>
+                        <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource GeneralSettingsTab}" />
                     </TabItem.Header>
                     <settings:GeneralSettingsView DataContext="{Binding GeneralSettingsViewModel}" />
                 </TabItem>
 
-                <!--  设备配置Tab  -->
                 <TabItem Visibility="{Binding ShowDeviceConfigTab, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TabItem.Header>
-                        <StackPanel Style="{StaticResource TabHeaderStackPanelStyle}">
-                            <md:PackIcon Kind="Video" Style="{StaticResource TabHeaderIconStyle}" />
-                            <TextBlock Text="{DynamicResource DeviceConfigTab}" Style="{StaticResource TabHeaderTextStyle}" />
-                        </StackPanel>
+                        <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource DeviceConfigTab}" />
                     </TabItem.Header>
                     <settings:DeviceConfigView DataContext="{Binding}" />
                 </TabItem>
 
-                <!--  用户管理Tab  -->
                 <TabItem Visibility="{Binding ShowUserManagementTab, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TabItem.Header>
-                        <StackPanel Style="{StaticResource TabHeaderStackPanelStyle}">
-                            <md:PackIcon Style="{StaticResource TabHeaderIconStyle}" Kind="AccountMultiple" />
-                            <TextBlock Text="{DynamicResource UserManagement}"  Style="{StaticResource TabHeaderTextStyle }"/>
-                        </StackPanel>
+                        <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource UserManagement}" />
                     </TabItem.Header>
                     <settings:UserManagementView DataContext="{Binding UserManagementViewModel}" />
                 </TabItem>
 
-                <!--  科室管理Tab  -->
                 <TabItem Visibility="{Binding ShowDepartmentTab, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TabItem.Header>
-                        <StackPanel Style="{StaticResource TabHeaderStackPanelStyle}">
-                            <md:PackIcon Style="{StaticResource TabHeaderIconStyle}" Kind="Domain" />
-                            <TextBlock Text="{DynamicResource DepartmentManagement}" Style="{StaticResource TabHeaderTextStyle}" />
-                        </StackPanel>
+                        <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource DepartmentManagement}" />
                     </TabItem.Header>
                     <settings:DepartmentManagementView DataContext="{Binding DepartmentManagementViewModel}" />
                 </TabItem>
 
-                <!--  单位设置Tab  -->
-                <TabItem  Visibility="{Binding ShowUnitSettingsTab, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TabItem Visibility="{Binding ShowUnitSettingsTab, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TabItem.Header>
-                        <StackPanel Style="{StaticResource TabHeaderStackPanelStyle}">
-                            <md:PackIcon Style="{StaticResource TabHeaderIconStyle}" Kind="OfficeBuildingMarker" />
-                            <TextBlock Text="{DynamicResource UnitSettings}" Style="{StaticResource TabHeaderTextStyle}" />
-                        </StackPanel>
+                        <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource UnitSettings}" />
                     </TabItem.Header>
                     <settings:UnitSettingsView DataContext="{Binding UnitSettingsViewModel}" />
                 </TabItem>
 
-                <!--  数据管理Tab  -->
                 <TabItem Visibility="{Binding ShowDataManagementTab, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TabItem.Header>
-                        <StackPanel Style="{StaticResource TabHeaderStackPanelStyle}">
-                            <md:PackIcon Style="{StaticResource TabHeaderIconStyle}" Kind="DatabaseCog" />
-                            <TextBlock Text="{DynamicResource DataManagementTab}" Style="{StaticResource TabHeaderTextStyle}" />
-                        </StackPanel>
+                        <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource DataManagementTab}" />
                     </TabItem.Header>
                     <settings:DataManagementSettingsView DataContext="{Binding DataManagementSettingsViewModel}" />
                 </TabItem>
 
-                <!--  系统信息Tab  -->
                 <TabItem>
                     <TabItem.Header>
-                        <StackPanel Style="{StaticResource TabHeaderStackPanelStyle}">
-                            <md:PackIcon Style="{StaticResource TabHeaderIconStyle}" Kind="InformationOutline" />
-                            <TextBlock Text="{DynamicResource SystemInfoTab}" Style="{StaticResource TabHeaderTextStyle}" />
-                        </StackPanel>
+                        <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource SystemInfoTab}" />
                     </TabItem.Header>
                     <settings:SystemInfoView DataContext="{Binding SystemInfoViewModel}" />
                 </TabItem>
             </TabControl>
-        </md:Card>
     </Grid>
 </UserControl>
