@@ -83,7 +83,10 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ComboBox">
-                        <Grid Width="{TemplateBinding Width}" Height="{TemplateBinding Height}" SnapsToDevicePixels="True">
+                        <Grid
+                            Width="{TemplateBinding Width}"
+                            Height="{TemplateBinding Height}"
+                            SnapsToDevicePixels="True">
                             <ToggleButton
                                 x:Name="ToggleButton"
                                 Width="{TemplateBinding Width}"
@@ -324,7 +327,10 @@
                         <TextBlock Style="{StaticResource SettingsSectionTitleTextStyle}" Text="主题设置" />
                     </StackPanel>
 
-                    <Grid Grid.Row="1" Margin="0,18,0,0" VerticalAlignment="Center">
+                    <Grid
+                        Grid.Row="1"
+                        Margin="0,18,0,0"
+                        VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="320" />
                             <ColumnDefinition Width="72" />
@@ -343,19 +349,19 @@
 
                         <TextBlock
                             Grid.Column="2"
+                            VerticalAlignment="Center"
                             FontFamily="{StaticResource AppFont}"
                             FontSize="24"
                             Foreground="#403B5B"
-                            Text="主题色"
-                            VerticalAlignment="Center" />
+                            Text="主题色" />
 
                         <Border
                             Grid.Column="3"
                             Padding="18,8"
-                            Background="#FFFFFF"
-                            CornerRadius="18"
                             HorizontalAlignment="Left"
-                            VerticalAlignment="Center">
+                            VerticalAlignment="Center"
+                            Background="#FFFFFF"
+                            CornerRadius="18">
                             <ItemsControl ItemsSource="{Binding ThemeColorOptions}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -365,9 +371,9 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Button
-                                            Style="{StaticResource ThemeColorButtonStyle}"
                                             Command="{Binding DataContext.ApplyThemeColorCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                             CommandParameter="{Binding}"
+                                            Style="{StaticResource ThemeColorButtonStyle}"
                                             ToolTip="{Binding DisplayName}" />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -397,7 +403,10 @@
                         <TextBlock Style="{StaticResource SettingsSectionTitleTextStyle}" Text="设置导入/导出" />
                     </StackPanel>
 
-                    <StackPanel Grid.Row="1" Margin="0,34,0,0" Orientation="Horizontal">
+                    <StackPanel
+                        Grid.Row="1"
+                        Margin="0,34,0,0"
+                        Orientation="Horizontal">
                         <Button
                             Margin="0,0,72,0"
                             Command="{Binding ExportSettingsCommand}"

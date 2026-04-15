@@ -4,129 +4,771 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:BTFX.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:BTFX.Views.Settings"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:vm="clr-namespace:BTFX.ViewModels"
     d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
-    d:DesignHeight="600"
-    d:DesignWidth="700"
+    d:DesignHeight="760"
+    d:DesignWidth="1380"
     mc:Ignorable="d">
 
     <UserControl.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
         <converters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+
+        <Style x:Key="SectionCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="#FAFAFA" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="20,0" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+        </Style>
+
+        <Style x:Key="SectionTitleTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="Foreground" Value="#403B5B" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="StatusTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="22" />
+            <Setter Property="Foreground" Value="#403B5B" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="CardFieldLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Foreground" Value="#666666" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+
+        <Style x:Key="CompactOutlinedTextBoxStyle" BasedOn="{StaticResource MaterialDesignOutlinedTextBox}" TargetType="TextBox">
+            <Setter Property="Height" Value="44" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="18" />
+        </Style>
+
+        <Style x:Key="RoundedInputTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Height" Value="48" />
+            <Setter Property="Padding" Value="16,0" />
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#D8D8D8" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="Foreground" Value="#403B5B" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border
+                            x:Name="InputBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="16">
+                            <ScrollViewer
+                                x:Name="PART_ContentHost"
+                                Margin="0"
+                                VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="InputBorder" Property="BorderBrush" Value="#403B5B" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernSwitchStyle" TargetType="ToggleButton">
+            <Setter Property="Width" Value="96" />
+            <Setter Property="Height" Value="48" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Background" Value="#CCCCCC" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Grid>
+                            <Border
+                                x:Name="SwitchTrack"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="24" />
+                            <Border
+                                x:Name="SwitchThumb"
+                                Width="40"
+                                Height="40"
+                                Margin="4"
+                                HorizontalAlignment="Left"
+                                Background="White"
+                                CornerRadius="20">
+                                <TextBlock
+                                    x:Name="SwitchText"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="18"
+                                    FontWeight="Medium"
+                                    Foreground="#666666"
+                                    Text="关" />
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="SwitchTrack" Property="Background" Value="#44BE13" />
+                                <Setter TargetName="SwitchThumb" Property="HorizontalAlignment" Value="Right" />
+                                <Setter TargetName="SwitchText" Property="Text" Value="开" />
+                                <Setter TargetName="SwitchText" Property="Foreground" Value="#44BE13" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryActionButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="132" />
+            <Setter Property="Height" Value="48" />
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#403B5B" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ButtonBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="16">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#F7F6FB" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.82" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PrimaryActionButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="180" />
+            <Setter Property="Height" Value="68" />
+            <Setter Property="Background" Value="#403B5B" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ButtonBorder"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="16">
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.92" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.82" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="RefreshTextButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="RefreshBorder" Background="Transparent" CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="RefreshBorder" Property="Background" Value="#FFF1F6" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="RefreshBorder" Property="Opacity" Value="0.75" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="HistoryHeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="22" />
+            <Setter Property="Foreground" Value="#666666" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="HistoryRowTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Foreground" Value="#555555" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+
+        <Style x:Key="RestoreTextButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Padding" Value="4,0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="RestoreBorder" Background="Transparent" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="RestoreBorder" Property="Background" Value="#EEF3F8" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="RestoreBorder" Property="Opacity" Value="0.75" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.4" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DeleteIconButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="38" />
+            <Setter Property="Height" Value="38" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="DeleteBorder"
+                            Width="38"
+                            Height="38"
+                            Background="Transparent"
+                            CornerRadius="19">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="DeleteBorder" Property="Background" Value="#FFF1F6" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.35" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PageArrowButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="40" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ArrowBorder"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ArrowBorder" Property="Background" Value="#F0F0F0" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.35" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PageNumberButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="44" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="PageBorder"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="PageBorder" Property="Background" Value="#F0F0F0" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
-    <ScrollViewer Padding="24" VerticalScrollBarVisibility="Auto">
-        <StackPanel MaxWidth="600">
-            <!--  自动备份设置  -->
-            <TextBlock
-                Margin="0,0,0,16"
-                FontSize="16"
-                FontWeight="Medium"
-                Text="{DynamicResource AutoBackupSettings}" />
-            <StackPanel Orientation="Horizontal">
-                <ToggleButton IsChecked="{Binding AutoBackupEnabled}" Style="{StaticResource MaterialDesignSwitchToggleButton}" />
-                <TextBlock
-                    Margin="8,0,0,0"
-                    VerticalAlignment="Center"
-                    Text="{DynamicResource EnableAutoBackup}" />
-            </StackPanel>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="40,10,40,10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="20" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="20" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-            <StackPanel
-                Margin="0,16,0,0"
-                Orientation="Horizontal"
-                Visibility="{Binding AutoBackupEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <StackPanel Margin="0,0,24,0">
-                    <TextBlock Margin="0,0,0,8" Text="{DynamicResource BackupTime}" />
-                    <TextBox
-                        Width="100"
-                        md:HintAssist.Hint="HH:mm"
-                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                        Text="{Binding BackupTime}" />
-                </StackPanel>
-                <StackPanel>
-                    <TextBlock Margin="0,0,0,8" Text="{DynamicResource RetainCount}" />
-                    <TextBox
-                        Width="80"
-                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                        Text="{Binding BackupRetainCount}" />
-                </StackPanel>
-            </StackPanel>
+            <Border Grid.Row="0" MinHeight="100" Style="{StaticResource SectionCardStyle}">
+                <Grid Height="100">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="40" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-            <Button
-                Margin="0,16,0,0"
-                HorizontalAlignment="Left"
-                Command="{Binding SaveBackupSettingsCommand}"
-                Content="{DynamicResource SaveBackupSettings}"
-                Style="{StaticResource MaterialDesignOutlinedButton}" />
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border
+                            Width="4"
+                            Height="16"
+                            Margin="0,0,12,0"
+                            Background="#E4004A"
+                            CornerRadius="8" />
+                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="自动备份" />
+                    </StackPanel>
 
-            <!--  手动备份  -->
-            <TextBlock
-                Margin="0,32,0,16"
-                FontSize="16"
-                FontWeight="Medium"
-                Text="{DynamicResource ManualBackup}" />
-            <Button
-                HorizontalAlignment="Left"
-                Command="{Binding BackupNowCommand}"
-                Content="{DynamicResource BackupNow}"
-                IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
-                Style="{StaticResource MaterialDesignRaisedButton}" />
+                    <ToggleButton
+                        Grid.Column="2"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        IsChecked="{Binding AutoBackupEnabled}"
+                        IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
+                        Style="{StaticResource ModernSwitchStyle}" />
 
-            <!--  备份历史  -->
-            <TextBlock
-                Margin="0,32,0,16"
-                FontSize="16"
-                FontWeight="Medium"
-                Text="{DynamicResource BackupHistory}" />
-            <DataGrid
-                MaxHeight="200"
-                AutoGenerateColumns="False"
-                CanUserAddRows="False"
-                CanUserDeleteRows="False"
-                HeadersVisibility="Column"
-                IsReadOnly="True"
-                ItemsSource="{Binding BackupHistory}"
-                RowHeight="36"
-                Style="{StaticResource MaterialDesignDataGrid}">
-                <DataGrid.Columns>
-                    <DataGridTextColumn
-                        Width="200"
-                        Binding="{Binding FileName}"
-                        ElementStyle="{StaticResource CenteredTextColumnStyle}"
-                        Header="{DynamicResource FileName}" />
-                    <DataGridTextColumn
-                        Width="150"
-                        Binding="{Binding CreatedAtDisplay}"
-                        ElementStyle="{StaticResource CenteredTextColumnStyle}"
-                        Header="{DynamicResource CreatedAt}" />
-                    <DataGridTextColumn
-                        Width="100"
-                        Binding="{Binding FileSizeDisplay}"
-                        ElementStyle="{StaticResource CenteredTextColumnStyle}"
-                        Header="{DynamicResource Size}" />
-                    <DataGridTemplateColumn Width="*" Header="{DynamicResource Operations}">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Button
-                                    VerticalAlignment="Center"
-                                    Command="{Binding DataContext.RestoreBackupCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                    CommandParameter="{Binding}"
-                                    Content="{DynamicResource Restore}"
-                                    Style="{StaticResource MaterialDesignFlatButton}" />
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
-            <Button
-                Margin="0,8,0,0"
-                HorizontalAlignment="Left"
-                Command="{Binding LoadBackupHistoryCommand}"
-                Content="{DynamicResource RefreshList}"
-                Style="{StaticResource MaterialDesignFlatButton}" />
-        </StackPanel>
+                    <TextBlock Grid.Column="4" VerticalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style BasedOn="{StaticResource StatusTextStyle}" TargetType="TextBlock">
+                                <Setter Property="Text" Value="已关闭自动备份" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding AutoBackupEnabled}" Value="True">
+                                        <Setter Property="Text" Value="已开启自动备份" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <StackPanel
+                        Grid.Column="6"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        Visibility="{Binding AutoBackupEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock
+                                Margin="0,0,12,0"
+                                Style="{StaticResource CardFieldLabelStyle}"
+                                Text="备份时间"
+                                VerticalAlignment="Center" />
+                            <TextBox
+                                Width="140"
+                                Style="{StaticResource RoundedInputTextBoxStyle}"
+                                Text="{Binding BackupTime}" />
+                        </StackPanel>
+
+                        <StackPanel Margin="24,0,0,0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock
+                                Margin="0,0,12,0"
+                                Style="{StaticResource CardFieldLabelStyle}"
+                                Text="保留数量"
+                                VerticalAlignment="Center" />
+                            <TextBox
+                                Width="120"
+                                Style="{StaticResource RoundedInputTextBoxStyle}"
+                                Text="{Binding BackupRetainCount}" />
+                        </StackPanel>
+
+                        <Button
+                            Margin="24,0,0,0"
+                            Command="{Binding SaveBackupSettingsCommand}"
+                            Style="{StaticResource SecondaryActionButtonStyle}">
+                            <TextBlock
+                                FontFamily="{StaticResource AppFont}"
+                                FontSize="18"
+                                Foreground="#403B5B"
+                                Text="保存设置" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="2" Height="108" Style="{StaticResource SectionCardStyle}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border
+                            Width="4"
+                            Height="16"
+                            Margin="0,0,12,0"
+                            Background="#E4004A"
+                            CornerRadius="8" />
+                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="手动备份" />
+
+                        <Button
+                            Grid.Column="2"
+                            Margin="40,0,12,0"
+                            Command="{Binding BackupNowCommand}"
+                            IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
+                            Style="{StaticResource PrimaryActionButtonStyle}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Image
+                                    Width="24"
+                                    Height="24"
+                                    Margin="0,0,10,0"
+                                    RenderOptions.BitmapScalingMode="HighQuality"
+                                    Source="pack://application:,,,/Resources/Images/Settings/beifen.png" />
+                                <TextBlock
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="22"
+                                    FontWeight="Medium"
+                                    Foreground="White"
+                                    Text="立即备份"
+                                    VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Border Grid.Row="4" MinHeight="437" Style="{StaticResource SectionCardStyle}">
+                <Grid Margin="0,20,0,20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="20" />
+                        <RowDefinition Height="60" />
+                        <RowDefinition Height="8" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="20" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <DockPanel Grid.Row="0" LastChildFill="False">
+                        <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Border
+                                Width="4"
+                                Height="16"
+                                Margin="0,0,12,0"
+                                Background="#E4004A"
+                                CornerRadius="8" />
+                            <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="备份历史" />
+                        </StackPanel>
+
+                        <Button
+                            Margin="40,0,0,0"
+                            Command="{Binding LoadBackupHistoryCommand}"
+                            Style="{StaticResource RefreshTextButtonStyle}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Image
+                                    Width="22"
+                                    Height="22"
+                                    Margin="0,0,8,0"
+                                    RenderOptions.BitmapScalingMode="HighQuality"
+                                    Source="pack://application:,,,/Resources/Images/Settings/shuaxinhong.png" />
+                                <TextBlock
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="22"
+                                    Foreground="#E4004A"
+                                    Text="刷新"
+                                    VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </DockPanel>
+
+                    <Border Grid.Row="2" Background="#FFFFFF" CornerRadius="8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0.9*" />
+                                <ColumnDefinition Width="2.4*" />
+                                <ColumnDefinition Width="1.1*" />
+                                <ColumnDefinition Width="1.8*" />
+                                <ColumnDefinition Width="0.9*" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Style="{StaticResource HistoryHeaderTextStyle}" Text="编号" />
+                            <TextBlock Grid.Column="1" Style="{StaticResource HistoryHeaderTextStyle}" Text="文件名称" />
+                            <TextBlock Grid.Column="2" Style="{StaticResource HistoryHeaderTextStyle}" Text="大小" />
+                            <TextBlock Grid.Column="3" Style="{StaticResource HistoryHeaderTextStyle}" Text="备份时间" />
+                            <TextBlock Grid.Column="4" Style="{StaticResource HistoryHeaderTextStyle}" Text="删除" />
+                        </Grid>
+                    </Border>
+
+                    <Grid x:Name="BackupHistoryViewport" Grid.Row="4" VerticalAlignment="Stretch">
+                        <ItemsControl VerticalAlignment="Top" ItemsSource="{Binding BackupHistory}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border
+                                        Height="60"
+                                        Margin="0,8,0,0"
+                                        Background="#FFFFFF"
+                                        CornerRadius="8"
+                                        SnapsToDevicePixels="True">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="0.9*" />
+                                                <ColumnDefinition Width="2.4*" />
+                                                <ColumnDefinition Width="1.1*" />
+                                                <ColumnDefinition Width="1.8*" />
+                                                <ColumnDefinition Width="0.9*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0" Style="{StaticResource HistoryRowTextStyle}" Text="{Binding RowNumber}" />
+
+                                            <StackPanel
+                                                Grid.Column="1"
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal"
+                                                VerticalAlignment="Center">
+                                                <TextBlock
+                                                    MaxWidth="260"
+                                                    Style="{StaticResource HistoryRowTextStyle}"
+                                                    Text="{Binding FileName}" />
+                                                <Button
+                                                    Margin="12,0,0,0"
+                                                    Command="{Binding DataContext.RestoreBackupCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource RestoreTextButtonStyle}">
+                                                    <TextBlock
+                                                        FontFamily="{StaticResource AppFont}"
+                                                        FontSize="16"
+                                                        Foreground="#403B5B"
+                                                        Text="恢复" />
+                                                </Button>
+                                            </StackPanel>
+
+                                            <TextBlock Grid.Column="2" Style="{StaticResource HistoryRowTextStyle}" Text="{Binding FileSizeDisplay}" />
+                                            <TextBlock Grid.Column="3" Style="{StaticResource HistoryRowTextStyle}" Text="{Binding CreatedAtDisplay}" />
+
+                                            <Button
+                                                Grid.Column="4"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Command="{Binding DataContext.DeleteBackupCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource DeleteIconButtonStyle}">
+                                                <Image
+                                                    Width="28"
+                                                    Height="28"
+                                                    RenderOptions.BitmapScalingMode="HighQuality"
+                                                    Source="/Resources/Images/DataManagement/shanchu2.png" />
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontFamily="{StaticResource AppFont}"
+                            FontSize="20"
+                            Foreground="#A0A0A0"
+                            IsHitTestVisible="False"
+                            Text="暂无备份记录"
+                            Visibility="{Binding BackupHistory.Count, Converter={StaticResource CountToVisibilityConverter}, ConverterParameter=Inverse, FallbackValue=Collapsed}" />
+                    </Grid>
+
+                    <StackPanel
+                        Grid.Row="6"
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center">
+                        <Button
+                            Margin="0,0,30,0"
+                            Command="{Binding PreviousPageCommand}"
+                            IsEnabled="{Binding CanGoPrevious}"
+                            Style="{StaticResource PageArrowButtonStyle}">
+                            <Image
+                                Width="20"
+                                Height="20"
+                                RenderOptions.BitmapScalingMode="HighQuality"
+                                Source="/Resources/Images/PatientSelectionView/zuo.png" />
+                        </Button>
+
+                        <ItemsControl Margin="4,0" ItemsSource="{Binding PageNumbers}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Width="65" Height="40">
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            FontFamily="Roboto"
+                                            FontSize="22"
+                                            FontWeight="Medium"
+                                            Foreground="#999999"
+                                            Text="...">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsEllipsis}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+
+                                        <Border
+                                            Width="44"
+                                            Height="40"
+                                            HorizontalAlignment="Center"
+                                            Background="#403B5B"
+                                            CornerRadius="8">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <MultiDataTrigger>
+                                                            <MultiDataTrigger.Conditions>
+                                                                <Condition Binding="{Binding IsCurrent}" Value="True" />
+                                                                <Condition Binding="{Binding IsEllipsis}" Value="False" />
+                                                            </MultiDataTrigger.Conditions>
+                                                            <Setter Property="Visibility" Value="Visible" />
+                                                        </MultiDataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                FontFamily="Roboto"
+                                                FontSize="22"
+                                                FontWeight="Medium"
+                                                Foreground="White"
+                                                Text="{Binding DisplayText}" />
+                                        </Border>
+
+                                        <Button
+                                            Width="44"
+                                            Height="40"
+                                            HorizontalAlignment="Center"
+                                            Command="{Binding DataContext.GoToPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding PageNumber}">
+                                            <Button.Style>
+                                                <Style BasedOn="{StaticResource PageNumberButtonStyle}" TargetType="Button">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsEllipsis}" Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                            <TextBlock
+                                                FontFamily="Roboto"
+                                                FontSize="22"
+                                                FontWeight="Medium"
+                                                Foreground="#555555"
+                                                Text="{Binding DisplayText}" />
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Button
+                            Margin="30,0,0,0"
+                            Command="{Binding NextPageCommand}"
+                            IsEnabled="{Binding CanGoNext}"
+                            Style="{StaticResource PageArrowButtonStyle}">
+                            <Image
+                                Width="20"
+                                Height="20"
+                                RenderOptions.BitmapScalingMode="HighQuality"
+                                Source="/Resources/Images/PatientSelectionView/you.png" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
     </ScrollViewer>
 </UserControl>

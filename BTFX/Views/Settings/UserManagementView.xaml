@@ -191,53 +191,56 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+        <StackPanel
+            Grid.Row="0"
+            VerticalAlignment="Center"
+            Orientation="Horizontal">
             <Button
-                Command="{Binding AddUserCommand}"
                 Background="#403B5B"
+                Command="{Binding AddUserCommand}"
                 Foreground="White"
                 Style="{StaticResource ToolbarButtonTemplateStyle}">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                     <TextBlock
                         Margin="0,0,12,0"
+                        VerticalAlignment="Center"
                         FontFamily="Segoe UI Symbol"
                         FontSize="24"
                         Foreground="White"
-                        Text="+"
-                        VerticalAlignment="Center" />
+                        Text="+" />
                     <TextBlock
+                        VerticalAlignment="Center"
                         FontFamily="{StaticResource AppFont}"
                         FontSize="22"
                         FontWeight="Medium"
                         Foreground="White"
-                        Text="添加"
-                        VerticalAlignment="Center" />
+                        Text="添加" />
                 </StackPanel>
             </Button>
 
             <Button
                 Margin="32,0,0,0"
-                Command="{Binding LoadUsersCommand}"
                 Background="#FFFFFF"
                 BorderBrush="#403B5B"
                 BorderThickness="1"
+                Command="{Binding LoadUsersCommand}"
                 Foreground="#403B5B"
                 Style="{StaticResource ToolbarButtonTemplateStyle}">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                     <TextBlock
                         Margin="0,0,12,0"
+                        VerticalAlignment="Center"
                         FontFamily="Segoe MDL2 Assets"
                         FontSize="20"
                         Foreground="#403B5B"
-                        Text="&#xE72C;"
-                        VerticalAlignment="Center" />
+                        Text="&#xE72C;" />
                     <TextBlock
+                        VerticalAlignment="Center"
                         FontFamily="{StaticResource AppFont}"
                         FontSize="22"
                         FontWeight="Medium"
                         Foreground="#403B5B"
-                        Text="刷新"
-                        VerticalAlignment="Center" />
+                        Text="刷新" />
                 </StackPanel>
             </Button>
         </StackPanel>
@@ -250,7 +253,10 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <Border Grid.Row="0" Background="#FAFAFA" CornerRadius="8">
+            <Border
+                Grid.Row="0"
+                Background="#FAFAFA"
+                CornerRadius="8">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="0.9*" />
@@ -265,20 +271,53 @@
                         <ColumnDefinition Width="0.7*" />
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="0" Style="{StaticResource HeaderTextStyle}" Text="编号" />
-                    <TextBlock Grid.Column="1" Style="{StaticResource HeaderTextStyle}" Text="账号" />
-                    <TextBlock Grid.Column="2" Style="{StaticResource HeaderTextStyle}" Text="姓名" />
-                    <TextBlock Grid.Column="3" Style="{StaticResource HeaderTextStyle}" Text="角色" />
-                    <TextBlock Grid.Column="4" Style="{StaticResource HeaderTextStyle}" Text="科室" />
-                    <TextBlock Grid.Column="5" Style="{StaticResource HeaderTextStyle}" Text="状态" />
-                    <TextBlock Grid.Column="6" Style="{StaticResource HeaderTextStyle}" Text="最后登录日期" />
-                    <TextBlock Grid.Column="7" Style="{StaticResource HeaderTextStyle}" Text="重置密码" />
-                    <TextBlock Grid.Column="8" Style="{StaticResource HeaderTextStyle}" Text="编辑" />
-                    <TextBlock Grid.Column="9" Style="{StaticResource HeaderTextStyle}" Text="删除" />
+                    <TextBlock
+                        Grid.Column="0"
+                        Style="{StaticResource HeaderTextStyle}"
+                        Text="编号" />
+                    <TextBlock
+                        Grid.Column="1"
+                        Style="{StaticResource HeaderTextStyle}"
+                        Text="账号" />
+                    <TextBlock
+                        Grid.Column="2"
+                        Style="{StaticResource HeaderTextStyle}"
+                        Text="姓名" />
+                    <TextBlock
+                        Grid.Column="3"
+                        Style="{StaticResource HeaderTextStyle}"
+                        Text="角色" />
+                    <TextBlock
+                        Grid.Column="4"
+                        Style="{StaticResource HeaderTextStyle}"
+                        Text="科室" />
+                    <TextBlock
+                        Grid.Column="5"
+                        Style="{StaticResource HeaderTextStyle}"
+                        Text="状态" />
+                    <TextBlock
+                        Grid.Column="6"
+                        Style="{StaticResource HeaderTextStyle}"
+                        Text="最后登录日期" />
+                    <TextBlock
+                        Grid.Column="7"
+                        Style="{StaticResource HeaderTextStyle}"
+                        Text="重置密码" />
+                    <TextBlock
+                        Grid.Column="8"
+                        Style="{StaticResource HeaderTextStyle}"
+                        Text="编辑" />
+                    <TextBlock
+                        Grid.Column="9"
+                        Style="{StaticResource HeaderTextStyle}"
+                        Text="删除" />
                 </Grid>
             </Border>
 
-            <Grid x:Name="UserListViewport" Grid.Row="1" VerticalAlignment="Stretch">
+            <Grid
+                x:Name="UserListViewport"
+                Grid.Row="1"
+                VerticalAlignment="Stretch">
                 <ItemsControl VerticalAlignment="Top" ItemsSource="{Binding Users}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -309,11 +348,26 @@
                                         <ColumnDefinition Width="0.7*" />
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBlock Grid.Column="0" Style="{StaticResource RowTextStyle}" Text="{Binding RowNumber}" />
-                                    <TextBlock Grid.Column="1" Style="{StaticResource RowTextStyle}" Text="{Binding Username}" />
-                                    <TextBlock Grid.Column="2" Style="{StaticResource RowTextStyle}" Text="{Binding Name}" />
-                                    <TextBlock Grid.Column="3" Style="{StaticResource RowTextStyle}" Text="{Binding RoleDisplay}" />
-                                    <TextBlock Grid.Column="4" Style="{StaticResource RowTextStyle}" Text="{Binding DepartmentName}" />
+                                    <TextBlock
+                                        Grid.Column="0"
+                                        Style="{StaticResource RowTextStyle}"
+                                        Text="{Binding RowNumber}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Style="{StaticResource RowTextStyle}"
+                                        Text="{Binding Username}" />
+                                    <TextBlock
+                                        Grid.Column="2"
+                                        Style="{StaticResource RowTextStyle}"
+                                        Text="{Binding Name}" />
+                                    <TextBlock
+                                        Grid.Column="3"
+                                        Style="{StaticResource RowTextStyle}"
+                                        Text="{Binding RoleDisplay}" />
+                                    <TextBlock
+                                        Grid.Column="4"
+                                        Style="{StaticResource RowTextStyle}"
+                                        Text="{Binding DepartmentName}" />
 
                                     <Border
                                         Grid.Column="5"
@@ -332,8 +386,14 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
-                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
-                                            <Image Width="18" Height="18" RenderOptions.BitmapScalingMode="HighQuality">
+                                        <StackPanel
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Orientation="Horizontal">
+                                            <Image
+                                                Width="18"
+                                                Height="18"
+                                                RenderOptions.BitmapScalingMode="HighQuality">
                                                 <Image.Style>
                                                     <Style TargetType="Image">
                                                         <Setter Property="Source" Value="/Resources/Images/DataManagement/yiwancheng.png" />
@@ -345,7 +405,13 @@
                                                     </Style>
                                                 </Image.Style>
                                             </Image>
-                                            <TextBlock Margin="8,0,0,0" FontFamily="{StaticResource AppFont}" FontSize="18" FontWeight="Medium" VerticalAlignment="Center" Text="{Binding StatusDisplay}">
+                                            <TextBlock
+                                                Margin="8,0,0,0"
+                                                VerticalAlignment="Center"
+                                                FontFamily="{StaticResource AppFont}"
+                                                FontSize="18"
+                                                FontWeight="Medium"
+                                                Text="{Binding StatusDisplay}">
                                                 <TextBlock.Style>
                                                     <Style TargetType="TextBlock">
                                                         <Setter Property="Foreground" Value="#44BE13" />
@@ -360,7 +426,10 @@
                                         </StackPanel>
                                     </Border>
 
-                                    <TextBlock Grid.Column="6" Style="{StaticResource RowTextStyle}" Text="{Binding LastLoginDisplay}" />
+                                    <TextBlock
+                                        Grid.Column="6"
+                                        Style="{StaticResource RowTextStyle}"
+                                        Text="{Binding LastLoginDisplay}" />
 
                                     <Button
                                         Grid.Column="7"
@@ -369,7 +438,7 @@
                                         Command="{Binding DataContext.ResetPasswordCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                         CommandParameter="{Binding}"
                                         Style="{StaticResource ResetPasswordButtonStyle}">
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                                             <Image
                                                 Width="18"
                                                 Height="18"
@@ -377,12 +446,12 @@
                                                 Source="/Resources/Images/Settings/chongzhimima.png" />
                                             <TextBlock
                                                 Margin="6,0,0,0"
+                                                VerticalAlignment="Center"
                                                 FontFamily="{StaticResource AppFont}"
                                                 FontSize="18"
                                                 FontWeight="Medium"
                                                 Foreground="#403B5B"
-                                                Text="重置密码"
-                                                VerticalAlignment="Center" />
+                                                Text="重置密码" />
                                         </StackPanel>
                                     </Button>
 
@@ -436,8 +505,8 @@
             <StackPanel
                 Grid.Row="3"
                 HorizontalAlignment="Center"
-                Orientation="Horizontal"
-                VerticalAlignment="Center">
+                VerticalAlignment="Center"
+                Orientation="Horizontal">
                 <Button
                     Margin="0,0,30,0"
                     Command="{Binding PreviousPageCommand}"
@@ -450,7 +519,7 @@
                         Source="/Resources/Images/PatientSelectionView/zuo.png" />
                 </Button>
 
-                <ItemsControl ItemsSource="{Binding PageNumbers}" Margin="4,0">
+                <ItemsControl Margin="4,0" ItemsSource="{Binding PageNumbers}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal" />
