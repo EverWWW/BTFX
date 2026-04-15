@@ -1,6 +1,8 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using System.Linq;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
+using BTFX.ViewModels;
 using BTFX.Views.Dialogs;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -14,9 +16,21 @@ namespace BTFX.ViewModels.Settings;
 /// </summary>
 public partial class DepartmentManagementViewModel : ObservableObject
 {
+    private const double DepartmentRowHeight = 60;
+    private const double DepartmentRowTopMargin = 8;
+    private const int MinimumPageSize = 2;
+    private const int MaximumPageSize = 6;
+
     private readonly IDepartmentService _departmentService;
     private readonly ILocalizationService _localizationService;
     private readonly ILogHelper? _logHelper;
+    private readonly List<DepartmentItem> _allDepartments = [];
+    private bool _isUpdatingSelection;
+
+    private ObservableCollection<PageItem> _pageNumbers = [];
+    private int _currentPage = 1;
+    private int _totalPages = 1;
+    private int _pageSize = MaximumPageSize;
 
     [ObservableProperty]
     private ObservableCollection<DepartmentItem> _departments = [];
@@ -26,6 +40,38 @@ public partial class DepartmentManagementViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _isLoading;
+
+    public ObservableCollection<PageItem> PageNumbers => _pageNumbers;
+
+    public int CurrentPage
+    {
+        get => _currentPage;
+        private set
+        {
+            if (SetProperty(ref _currentPage, value))
+            {
+                OnPropertyChanged(nameof(CanGoPrevious));
+                OnPropertyChanged(nameof(CanGoNext));
+            }
+        }
+    }
+
+    public int TotalPages
+    {
+        get => _totalPages;
+        private set
+        {
+            if (SetProperty(ref _totalPages, value))
+            {
+                OnPropertyChanged(nameof(CanGoPrevious));
+                OnPropertyChanged(nameof(CanGoNext));
+            }
+        }
+    }
+
+    public bool CanGoPrevious => _currentPage > 1;
+
+    public bool CanGoNext => _currentPage < _totalPages;
 
     public DepartmentManagementViewModel(
         IDepartmentService departmentService,
@@ -47,12 +93,15 @@ public partial class DepartmentManagementViewModel : ObservableObject
             IsLoading = true;
             var departments = await _departmentService.GetAllDepartmentsAsync();
 
-            Departments.Clear();
-            int rowNumber = 1;
+            _allDepartments.Clear();
+            var rowNumber = 1;
             foreach (var dept in departments)
             {
-                Departments.Add(new DepartmentItem(dept, rowNumber++));
+                _allDepartments.Add(new DepartmentItem(dept, rowNumber++));
             }
+
+            CurrentPage = 1;
+            RefreshPagedDepartments();
 
             _logHelper?.Information($"加载科室列表：共{departments.Count}个");
         }
@@ -142,6 +191,175 @@ public partial class DepartmentManagementViewModel : ObservableObject
             _logHelper?.Error($"删除科室失败: {item.Department.Name}", ex);
             System.Windows.MessageBox.Show($"删除失败：{ex.Message}", "错误",
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        }
+    }
+
+    [RelayCommand]
+    private void PreviousPage()
+    {
+        if (!CanGoPrevious)
+        {
+            return;
+        }
+
+        CurrentPage--;
+        RefreshPagedDepartments();
+    }
+
+    [RelayCommand]
+    private void NextPage()
+    {
+        if (!CanGoNext)
+        {
+            return;
+        }
+
+        CurrentPage++;
+        RefreshPagedDepartments();
+    }
+
+    [RelayCommand]
+    private void GoToPage(int pageNumber)
+    {
+        if (pageNumber < 1 || pageNumber > TotalPages || pageNumber == CurrentPage)
+        {
+            return;
+        }
+
+        CurrentPage = pageNumber;
+        RefreshPagedDepartments();
+    }
+
+    /// <summary>
+    /// 根据列表可视区域高度动态更新每页条数。
+    /// </summary>
+    /// <param name="viewportHeight">列表可视区域高度。</param>
+    public void UpdatePageSize(double viewportHeight)
+    {
+        if (viewportHeight <= 0)
+        {
+            return;
+        }
+
+        var rowFullHeight = DepartmentRowHeight + DepartmentRowTopMargin;
+        var calculatedPageSize = Math.Clamp(
+            (int)Math.Floor((viewportHeight + DepartmentRowTopMargin) / rowFullHeight),
+            MinimumPageSize,
+            MaximumPageSize);
+
+        if (calculatedPageSize == _pageSize)
+        {
+            return;
+        }
+
+        _pageSize = calculatedPageSize;
+
+        if (_allDepartments.Count > 0)
+        {
+            var maxPage = (int)Math.Ceiling(_allDepartments.Count / (double)_pageSize);
+            if (CurrentPage > maxPage)
+            {
+                CurrentPage = maxPage;
+            }
+        }
+
+        RefreshPagedDepartments();
+        _logHelper?.Information($"科室列表每页条数已根据可视高度更新为 {_pageSize}。");
+    }
+
+    private void RefreshPagedDepartments()
+    {
+        foreach (var item in _allDepartments)
+        {
+            item.IsChecked = false;
+        }
+
+        Departments.Clear();
+
+        TotalPages = _allDepartments.Count == 0
+            ? 1
+            : (int)Math.Ceiling(_allDepartments.Count / (double)_pageSize);
+
+        if (CurrentPage > TotalPages)
+        {
+            CurrentPage = TotalPages;
+        }
+
+        if (CurrentPage < 1)
+        {
+            CurrentPage = 1;
+        }
+
+        foreach (var item in _allDepartments.Skip((CurrentPage - 1) * _pageSize).Take(_pageSize))
+        {
+            item.IsChecked = SelectedDepartment != null && ReferenceEquals(item, SelectedDepartment);
+            Departments.Add(item);
+        }
+
+        if (SelectedDepartment != null && !Departments.Contains(SelectedDepartment))
+        {
+            SelectedDepartment = null;
+        }
+
+        BuildPageNumbers();
+    }
+
+    private void BuildPageNumbers()
+    {
+        PageNumbers.Clear();
+        if (TotalPages <= 0)
+        {
+            return;
+        }
+
+        var pagesToShow = new SortedSet<int> { 1, TotalPages };
+        for (var page = Math.Max(1, CurrentPage - 1); page <= Math.Min(TotalPages, CurrentPage + 1); page++)
+        {
+            pagesToShow.Add(page);
+        }
+
+        var previousPage = 0;
+        foreach (var page in pagesToShow)
+        {
+            if (previousPage > 0 && page - previousPage > 1)
+            {
+                PageNumbers.Add(new PageItem
+                {
+                    DisplayText = "...",
+                    IsEllipsis = true,
+                    PageNumber = -1
+                });
+            }
+
+            PageNumbers.Add(new PageItem
+            {
+                DisplayText = page.ToString(),
+                PageNumber = page,
+                IsCurrent = page == CurrentPage
+            });
+
+            previousPage = page;
+        }
+    }
+
+    partial void OnSelectedDepartmentChanged(DepartmentItem? value)
+    {
+        if (_isUpdatingSelection)
+        {
+            return;
+        }
+
+        try
+        {
+            _isUpdatingSelection = true;
+            foreach (var item in _allDepartments)
+            {
+                item.IsChecked = value != null && ReferenceEquals(item, value);
+            }
+        }
+        finally
+        {
+            _isUpdatingSelection = false;
         }
     }
 }

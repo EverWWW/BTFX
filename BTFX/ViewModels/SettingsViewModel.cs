@@ -180,9 +180,13 @@ public partial class SettingsViewModel : ObservableObject
             public int RowNumber { get; }
 
             public string Name => Department.Name;
-            public string Description => "--"; // 暂时返回默认值，等待模型添加Description字段
+            public string Code => string.IsNullOrWhiteSpace(Department.Code) ? "--" : Department.Code;
+            public string Description => string.IsNullOrWhiteSpace(Department.Description) ? "--" : Department.Description;
             public string Phone => Department.Phone ?? "--";
             public string CreatedAtDisplay => Department.CreatedAt.ToString(BtfxConstants.DATETIME_LIST_FORMAT);
+
+            [ObservableProperty]
+            private bool _isChecked;
 
             public DepartmentItem(Department department, int rowNumber)
             {

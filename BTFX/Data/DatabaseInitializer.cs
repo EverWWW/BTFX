@@ -19,7 +19,7 @@ public class DatabaseInitializer
     /// <summary>
     /// 当前数据库目标版本号。每次结构变更时递增，并在 <see cref="UpgradeDatabaseAsync"/> 中添加对应迁移逻辑。
     /// </summary>
-    public const int CurrentDatabaseVersion = 4;
+    public const int CurrentDatabaseVersion = 5;
 
     private readonly string _databasePath;
     private readonly ILogHelper? _logHelper;
@@ -430,6 +430,10 @@ public class DatabaseInitializer
                 case 4:
                     UpgradeToV4(db);
                     break;
+
+                case 5:
+                    UpgradeToV5(db);
+                    break;
             }
         }
 
@@ -557,6 +561,34 @@ public class DatabaseInitializer
         }
 
         _logHelper?.Information("v4 升级完成。");
+    }
+
+    /// <summary>
+    /// 升级到 v5：为 Departments 表添加 Code 和 Description 字段。
+    /// </summary>
+    private void UpgradeToV5(SqliteSugarHelper db)
+    {
+        _logHelper?.Information("升级到 v5：为 Departments 表添加 Code 和 Description 字段...");
+
+        var alterStatements = new[]
+        {
+            "ALTER TABLE Departments ADD COLUMN Code TEXT;",
+            "ALTER TABLE Departments ADD COLUMN Description TEXT;"
+        };
+
+        foreach (var sql in alterStatements)
+        {
+            try
+            {
+                db.ExecuteSql(sql);
+            }
+            catch (Exception ex)
+            {
+                _logHelper?.Debug($"v5 迁移跳过（列可能已存在）：{ex.Message}");
+            }
+        }
+
+        _logHelper?.Information("v5 升级完成。");
     }
 
     /// <summary>

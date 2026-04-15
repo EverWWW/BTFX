@@ -21,6 +21,18 @@ public class Department
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
+    /// 科室代码
+    /// </summary>
+    [SugarColumn(Length = 50, IsNullable = true)]
+    public string? Code { get; set; }
+
+    /// <summary>
+    /// 科室描述
+    /// </summary>
+    [SugarColumn(Length = 200, IsNullable = true)]
+    public string? Description { get; set; }
+
+    /// <summary>
     /// 科室电话
     /// </summary>
     [SugarColumn(Length = 50, IsNullable = true)]

@@ -38,6 +38,26 @@ public class DepartmentEditViewModel : ObservableObject
         set => SetProperty(ref _name, value);
     }
 
+    private string _code = string.Empty;
+    /// <summary>
+    /// 科室代码
+    /// </summary>
+    public string Code
+    {
+        get => _code;
+        set => SetProperty(ref _code, value);
+    }
+
+    private string _description = string.Empty;
+    /// <summary>
+    /// 科室描述
+    /// </summary>
+    public string Description
+    {
+        get => _description;
+        set => SetProperty(ref _description, value);
+    }
+
     private string _phone = string.Empty;
     /// <summary>
     /// 科室电话
@@ -113,6 +133,8 @@ public class DepartmentEditViewModel : ObservableObject
         if (_originalDepartment != null)
         {
             Name = _originalDepartment.Name;
+            Code = _originalDepartment.Code ?? string.Empty;
+            Description = _originalDepartment.Description ?? string.Empty;
             Phone = _originalDepartment.Phone ?? string.Empty;
         }
     }
@@ -139,6 +161,8 @@ public class DepartmentEditViewModel : ObservableObject
         {
             var department = _originalDepartment ?? new Department();
             department.Name = Name.Trim();
+            department.Code = string.IsNullOrWhiteSpace(Code) ? null : Code.Trim();
+            department.Description = string.IsNullOrWhiteSpace(Description) ? null : Description.Trim();
             department.Phone = string.IsNullOrWhiteSpace(Phone) ? null : Phone.Trim();
             department.UpdatedAt = DateTime.Now;
 
@@ -191,6 +215,18 @@ public class DepartmentEditViewModel : ObservableObject
         if (Name.Length > Constants.DEPARTMENT_NAME_MAX_LENGTH)
         {
             ValidationError = $"科室名称不能超过{Constants.DEPARTMENT_NAME_MAX_LENGTH}个字符";
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(Code) && Code.Trim().Length > 20)
+        {
+            ValidationError = "科室代码不能超过20个字符";
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(Description) && Description.Trim().Length > 200)
+        {
+            ValidationError = "科室描述不能超过200个字符";
             return false;
         }
 

@@ -3,94 +3,433 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:BTFX.Views.Settings"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:vm="clr-namespace:BTFX.ViewModels"
     d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
-    d:DesignHeight="500"
-    d:DesignWidth="800"
+    d:DesignHeight="760"
+    d:DesignWidth="1380"
     mc:Ignorable="d">
 
-    <Grid Margin="24">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <Style x:Key="ToolbarButtonTemplateStyle" TargetType="Button">
+                <Setter Property="Width" Value="180" />
+                <Setter Property="Height" Value="68" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border
+                                x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="16"
+                                SnapsToDevicePixels="True">
+                                <ContentPresenter
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    RecognizesAccessKey="True" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.9" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.76" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="ActionIconButtonStyle" TargetType="Button">
+                <Setter Property="Width" Value="38" />
+                <Setter Property="Height" Value="38" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border
+                                x:Name="ActionBorder"
+                                Width="38"
+                                Height="38"
+                                Background="Transparent"
+                                CornerRadius="19">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ActionBorder" Property="Background" Value="#EEF3F8" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.35" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+                <Setter Property="FontSize" Value="22" />
+                <Setter Property="Foreground" Value="#666666" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+
+            <Style x:Key="RowTextStyle" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+                <Setter Property="FontSize" Value="20" />
+                <Setter Property="Foreground" Value="#555555" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            </Style>
+
+            <Style x:Key="PageArrowButtonStyle" TargetType="Button">
+                <Setter Property="Width" Value="40" />
+                <Setter Property="Height" Value="40" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border
+                                x:Name="ArrowBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ArrowBorder" Property="Background" Value="#F0F0F0" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.35" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="PageNumberButtonStyle" TargetType="Button">
+                <Setter Property="Width" Value="44" />
+                <Setter Property="Height" Value="40" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border
+                                x:Name="PageBorder"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="PageBorder" Property="Background" Value="#F0F0F0" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Margin="40,40,40,40">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="20" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!--  工具栏  -->
-        <StackPanel
-            Grid.Row="0"
-            Margin="0,0,0,16"
-            Orientation="Horizontal">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
             <Button
-                Margin="0,0,8,0"
                 Command="{Binding AddDepartmentCommand}"
-                Content="{DynamicResource AddDepartment}"
-                Style="{StaticResource MaterialDesignRaisedButton}" />
+                Background="#403B5B"
+                Foreground="White"
+                Style="{StaticResource ToolbarButtonTemplateStyle}">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock
+                        Margin="0,0,12,0"
+                        FontFamily="Segoe UI Symbol"
+                        FontSize="24"
+                        Foreground="White"
+                        Text="+"
+                        VerticalAlignment="Center" />
+                    <TextBlock
+                        FontFamily="{StaticResource AppFont}"
+                        FontSize="22"
+                        FontWeight="Medium"
+                        Foreground="White"
+                        Text="添加"
+                        VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+
             <Button
+                Margin="32,0,0,0"
                 Command="{Binding LoadDepartmentsCommand}"
-                Content="{DynamicResource Refresh}"
-                Style="{StaticResource MaterialDesignOutlinedButton}" />
+                Background="#FFFFFF"
+                BorderBrush="#403B5B"
+                BorderThickness="1"
+                Foreground="#403B5B"
+                Style="{StaticResource ToolbarButtonTemplateStyle}">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock
+                        Margin="0,0,12,0"
+                        FontFamily="Segoe MDL2 Assets"
+                        FontSize="20"
+                        Foreground="#403B5B"
+                        Text="&#xE72C;"
+                        VerticalAlignment="Center" />
+                    <TextBlock
+                        FontFamily="{StaticResource AppFont}"
+                        FontSize="22"
+                        FontWeight="Medium"
+                        Foreground="#403B5B"
+                        Text="刷新"
+                        VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
         </StackPanel>
 
-        <!--  科室列表  -->
-        <DataGrid
-            Grid.Row="1"
-            AutoGenerateColumns="False"
-            CanUserAddRows="False"
-            CanUserDeleteRows="False"
-            HeadersVisibility="Column"
-            IsReadOnly="True"
-            ItemsSource="{Binding Departments}"
-            RowHeight="44"
-            SelectedItem="{Binding SelectedDepartment}"
-            SelectionMode="Single"
-            Style="{StaticResource MaterialDesignDataGrid}">
-            <DataGrid.Columns>
-                <DataGridTextColumn
-                    Width="50"
-                    Binding="{Binding RowNumber}"
-                    ElementStyle="{StaticResource CenteredTextColumnStyle}"
-                    Header="{DynamicResource RowNumber}" />
-                <DataGridTextColumn
-                    Width="150"
-                    Binding="{Binding Name}"
-                    ElementStyle="{StaticResource CenteredTextColumnStyle}"
-                    Header="{DynamicResource DepartmentName}" />
-                <DataGridTextColumn
-                    Width="*"
-                    Binding="{Binding Description}"
-                    ElementStyle="{StaticResource CenteredTextColumnStyle}"
-                    Header="{DynamicResource Description}" />
-                <DataGridTextColumn
-                    Width="150"
-                    Binding="{Binding CreatedAtDisplay}"
-                    ElementStyle="{StaticResource CenteredTextColumnStyle}"
-                    Header="{DynamicResource CreatedAt}" />
-                <DataGridTemplateColumn Width="150" Header="{DynamicResource Operations}">
-                    <DataGridTemplateColumn.CellTemplate>
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="60" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="32" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="#FAFAFA" CornerRadius="8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="0.9*" />
+                        <ColumnDefinition Width="1.4*" />
+                        <ColumnDefinition Width="1.2*" />
+                        <ColumnDefinition Width="2.0*" />
+                        <ColumnDefinition Width="1.5*" />
+                        <ColumnDefinition Width="0.7*" />
+                        <ColumnDefinition Width="0.7*" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Style="{StaticResource HeaderTextStyle}" Text="编号" />
+                    <TextBlock Grid.Column="1" Style="{StaticResource HeaderTextStyle}" Text="科室名称" />
+                    <TextBlock Grid.Column="2" Style="{StaticResource HeaderTextStyle}" Text="科室代码" />
+                    <TextBlock Grid.Column="3" Style="{StaticResource HeaderTextStyle}" Text="描述" />
+                    <TextBlock Grid.Column="4" Style="{StaticResource HeaderTextStyle}" Text="创建时间" />
+                    <TextBlock Grid.Column="5" Style="{StaticResource HeaderTextStyle}" Text="编辑" />
+                    <TextBlock Grid.Column="6" Style="{StaticResource HeaderTextStyle}" Text="删除" />
+                </Grid>
+            </Border>
+
+            <Grid x:Name="DepartmentListViewport" Grid.Row="1" VerticalAlignment="Stretch">
+                <ItemsControl VerticalAlignment="Top" ItemsSource="{Binding Departments}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Orientation="Horizontal">
-                                <Button
-                                    Command="{Binding DataContext.EditDepartmentCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                    CommandParameter="{Binding}"
-                                    Content="{DynamicResource Edit}"
-                                    Style="{StaticResource MaterialDesignFlatButton}" />
-                                <Button
-                                    Command="{Binding DataContext.DeleteDepartmentCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                    CommandParameter="{Binding}"
-                                    Content="{DynamicResource Delete}"
-                                    Foreground="{DynamicResource MaterialDesign.Brush.ValidationError}"
-                                    Style="{StaticResource MaterialDesignFlatButton}" />
-                            </StackPanel>
+                            <Border
+                                x:Name="RowBorder"
+                                Height="60"
+                                Margin="0,8,0,0"
+                                Background="#FAFAFA"
+                                CornerRadius="8"
+                                MouseLeftButtonUp="RowBorder_MouseLeftButtonUp"
+                                SnapsToDevicePixels="True">
+                                <Grid VerticalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="0.9*" />
+                                        <ColumnDefinition Width="1.4*" />
+                                        <ColumnDefinition Width="1.2*" />
+                                        <ColumnDefinition Width="2.0*" />
+                                        <ColumnDefinition Width="1.5*" />
+                                        <ColumnDefinition Width="0.7*" />
+                                        <ColumnDefinition Width="0.7*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" Style="{StaticResource RowTextStyle}" Text="{Binding RowNumber}" />
+                                    <TextBlock Grid.Column="1" Style="{StaticResource RowTextStyle}" Text="{Binding Name}" />
+                                    <TextBlock Grid.Column="2" Style="{StaticResource RowTextStyle}" Text="{Binding Code}" />
+                                    <TextBlock Grid.Column="3" Style="{StaticResource RowTextStyle}" Text="{Binding Description}" />
+                                    <TextBlock Grid.Column="4" Style="{StaticResource RowTextStyle}" Text="{Binding CreatedAtDisplay}" />
+
+                                    <Button
+                                        Grid.Column="5"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Command="{Binding DataContext.EditDepartmentCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"
+                                        Style="{StaticResource ActionIconButtonStyle}">
+                                        <Image
+                                            Width="28"
+                                            Height="28"
+                                            RenderOptions.BitmapScalingMode="HighQuality"
+                                            Source="/Resources/Images/DataManagement/bianji.png" />
+                                    </Button>
+
+                                    <Button
+                                        Grid.Column="6"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Command="{Binding DataContext.DeleteDepartmentCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"
+                                        Style="{StaticResource ActionIconButtonStyle}">
+                                        <Image
+                                            Width="28"
+                                            Height="28"
+                                            RenderOptions.BitmapScalingMode="HighQuality"
+                                            Source="/Resources/Images/DataManagement/shanchu2.png" />
+                                    </Button>
+                                </Grid>
+                            </Border>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding IsChecked}" Value="True">
+                                    <Setter TargetName="RowBorder" Property="Background" Value="#F0F4F9" />
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
                         </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+
+            <StackPanel
+                Grid.Row="3"
+                HorizontalAlignment="Center"
+                Orientation="Horizontal"
+                VerticalAlignment="Center">
+                <Button
+                    Margin="0,0,30,0"
+                    Command="{Binding PreviousPageCommand}"
+                    IsEnabled="{Binding CanGoPrevious}"
+                    Style="{StaticResource PageArrowButtonStyle}">
+                    <Image
+                        Width="20"
+                        Height="20"
+                        RenderOptions.BitmapScalingMode="HighQuality"
+                        Source="/Resources/Images/PatientSelectionView/zuo.png" />
+                </Button>
+
+                <ItemsControl Margin="4,0" ItemsSource="{Binding PageNumbers}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Width="65" Height="40">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontFamily="Roboto"
+                                    FontSize="22"
+                                    FontWeight="Medium"
+                                    Foreground="#999999"
+                                    Text="...">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsEllipsis}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <Border
+                                    Width="44"
+                                    Height="40"
+                                    HorizontalAlignment="Center"
+                                    Background="#403B5B"
+                                    CornerRadius="8">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding IsCurrent}" Value="True" />
+                                                        <Condition Binding="{Binding IsEllipsis}" Value="False" />
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </MultiDataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontFamily="Roboto"
+                                        FontSize="22"
+                                        FontWeight="Medium"
+                                        Foreground="White"
+                                        Text="{Binding DisplayText}" />
+                                </Border>
+
+                                <Button
+                                    Width="44"
+                                    Height="40"
+                                    HorizontalAlignment="Center"
+                                    Command="{Binding DataContext.GoToPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding PageNumber}">
+                                    <Button.Style>
+                                        <Style BasedOn="{StaticResource PageNumberButtonStyle}" TargetType="Button">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsEllipsis}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    <TextBlock
+                                        FontFamily="Roboto"
+                                        FontSize="22"
+                                        FontWeight="Medium"
+                                        Foreground="#555555"
+                                        Text="{Binding DisplayText}" />
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Button
+                    Margin="30,0,0,0"
+                    Command="{Binding NextPageCommand}"
+                    IsEnabled="{Binding CanGoNext}"
+                    Style="{StaticResource PageArrowButtonStyle}">
+                    <Image
+                        Width="20"
+                        Height="20"
+                        RenderOptions.BitmapScalingMode="HighQuality"
+                        Source="/Resources/Images/PatientSelectionView/you.png" />
+                </Button>
+            </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>
