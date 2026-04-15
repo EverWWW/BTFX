@@ -247,6 +247,8 @@
     <system:String x:Key="SaveFailed">保存失败</system:String>
     <system:String x:Key="DeleteSuccess">删除成功</system:String>
     <system:String x:Key="DeleteFailed">删除失败</system:String>
+    <system:String x:Key="ConfirmDeleteUserMessage">确定要删除用户“{0}”吗？此操作不可恢复。</system:String>
+    <system:String x:Key="BuiltInUserDeleteNotAllowed">内置账号不允许删除。</system:String>
     <system:String x:Key="OperationSuccess">操作成功</system:String>
     <system:String x:Key="OperationFailed">操作失败</system:String>
     <system:String x:Key="NoData">暂无数据</system:String>

@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Windows.Threading;
+using BTFX.ViewModels;
+using BTFX.ViewModels.Settings;
 
 namespace BTFX.Views.Settings
 {
@@ -21,6 +15,76 @@ namespace BTFX.Views.Settings
         public UserManagementView()
         {
             InitializeComponent();
+
+            Loaded += OnLoaded;
+            SizeChanged += OnSizeChanged;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            UpdatePageSizeFromViewport();
+            Dispatcher.BeginInvoke(UpdatePageSizeFromViewport, DispatcherPriority.Loaded);
+        }
+
+        private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (Math.Abs(e.PreviousSize.Height - e.NewSize.Height) < 0.5)
+            {
+                return;
+            }
+
+            UpdatePageSizeFromViewport();
+            Dispatcher.BeginInvoke(UpdatePageSizeFromViewport, DispatcherPriority.Loaded);
+        }
+
+        private void RowBorder_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (DataContext is not UserManagementViewModel viewModel)
+            {
+                return;
+            }
+
+            if (IsClickFromButton(e.OriginalSource as DependencyObject))
+            {
+                return;
+            }
+
+            if (sender is Border { DataContext: UserItem item })
+            {
+                viewModel.SelectedUser = item;
+            }
+        }
+
+        private static bool IsClickFromButton(DependencyObject? source)
+        {
+            while (source != null)
+            {
+                if (source is Button)
+                {
+                    return true;
+                }
+
+                source = System.Windows.Media.VisualTreeHelper.GetParent(source);
+            }
+
+            return false;
+        }
+
+        private void UpdatePageSizeFromViewport()
+        {
+            if (DataContext is not UserManagementViewModel viewModel)
+            {
+                return;
+            }
+
+            var viewport = FindName("UserListViewport") as FrameworkElement;
+            var viewportHeight = viewport?.ActualHeight ?? 0;
+            if (viewportHeight <= 0)
+            {
+                return;
+            }
+
+            viewModel.UpdatePageSize(viewportHeight);
         }
     }
 }

@@ -58,7 +58,7 @@ public static class Constants
     /// <summary>
     /// 默认密码
     /// </summary>
-    public const string DEFAULT_PASSWORD = "688626";
+    public const string DEFAULT_PASSWORD = "123456";
 
     /// <summary>
     /// 管理员账号

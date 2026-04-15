@@ -172,59 +172,6 @@ public partial class SettingsViewModel : ObservableObject
         }
 
         /// <summary>
-        /// 用户列表项
-        /// </summary>
-        public partial class UserItem : ObservableObject
-        {
-            public User User { get; }
-            public int RowNumber { get; }
-
-            public string Username => User.Username;
-            public string Name => User.Name ?? "--";
-            public string RoleDisplay => GetLocalizedRole(User.Role);
-            public string Phone => User.Phone ?? "--";
-            public string DepartmentName => "--"; // TODO: 需要从数据库加载
-            public string StatusDisplay => User.IsEnabled ? GetLocalizedString("Enabled") : GetLocalizedString("Disabled");
-            public string StatusColor => User.IsEnabled ? "#4CAF50" : "#9E9E9E";
-            public string CreatedAtDisplay => User.CreatedAt.ToString(BtfxConstants.DATETIME_LIST_FORMAT);
-            public string LastLoginDisplay => User.LastLoginAt?.ToString(BtfxConstants.DATETIME_LIST_FORMAT) ?? GetLocalizedString("NeverLoggedIn");
-
-            public bool IsBuiltIn => User.Username == BtfxConstants.ADMIN_USERNAME ||
-                                     User.Username == BtfxConstants.USER_USERNAME ||
-                                     User.Username == BtfxConstants.GUEST_USERNAME;
-
-            public UserItem(User user, int rowNumber)
-            {
-                User = user;
-                RowNumber = rowNumber;
-            }
-
-            private static string GetLocalizedString(string key)
-            {
-                try
-                {
-                    var resource = System.Windows.Application.Current.FindResource(key);
-                    return resource?.ToString() ?? key;
-                }
-                catch
-                {
-                    return key;
-                }
-            }
-
-            private static string GetLocalizedRole(UserRole role)
-            {
-                return role switch
-                {
-                    UserRole.Administrator => GetLocalizedString("Administrator"),
-                    UserRole.Operator => GetLocalizedString("Operator"),
-                    UserRole.Guest => GetLocalizedString("Guest"),
-                    _ => "--"
-                };
-            }
-        }
-
-        /// <summary>
         /// 科室列表项
         /// </summary>
         public partial class DepartmentItem : ObservableObject
