@@ -17,7 +17,7 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </UserControl.Resources>
 
-    <Grid Margin="8" MinWidth="350">
+    <Grid MinWidth="350" Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -57,6 +57,7 @@
                 <TextBox
                     Height="80"
                     Margin="0,0,0,16"
+                    VerticalContentAlignment="Top"
                     md:HintAssist.Hint="描述"
                     md:HintAssist.IsFloating="True"
                     AcceptsReturn="True"
@@ -64,7 +65,6 @@
                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
                     Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
                     TextWrapping="Wrap"
-                    VerticalContentAlignment="Top"
                     VerticalScrollBarVisibility="Auto" />
 
                 <!--  验证错误提示  -->

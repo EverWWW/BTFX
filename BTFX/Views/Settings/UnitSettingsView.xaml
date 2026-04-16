@@ -198,15 +198,13 @@
                     <TextBlock
                         Grid.Column="0"
                         Margin="0,42,0,0"
-                        Style="{StaticResource SectionLabelTextStyle}"
                         FontFamily="Roboto"
                         FontSize="20"
+                        Style="{StaticResource SectionLabelTextStyle}"
                         Text="LOGO" />
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
-                        <Button
-                            Command="{Binding SelectLogoCommand}"
-                            Style="{StaticResource UploadFrameButtonStyle}">
+                        <Button Command="{Binding SelectLogoCommand}" Style="{StaticResource UploadFrameButtonStyle}">
                             <Grid>
                                 <Image
                                     Margin="10"

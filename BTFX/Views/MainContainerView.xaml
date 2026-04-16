@@ -122,7 +122,7 @@
 
         <Style x:Key="NavigationTextStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="22" />
+            <Setter Property="FontSize" Value="18" />
             <Setter Property="FontWeight" Value="Medium" />
             <Setter Property="Foreground" Value="#403B5B" />
             <Setter Property="HorizontalAlignment" Value="Center" />
@@ -308,7 +308,7 @@
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
-                                    <StackPanel Margin="0,0,0,48" VerticalAlignment="Center">
+                                    <StackPanel Margin="0,0,0,30" VerticalAlignment="Center">
                                         <Border Style="{StaticResource NavigationCardStyle}">
                                             <Grid>
                                                 <Image Style="{StaticResource NavigationIconStyle}" />

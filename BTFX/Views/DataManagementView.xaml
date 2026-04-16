@@ -810,8 +810,8 @@
                                             Style="{StaticResource ActionIconButtonStyle}"
                                             Visibility="{Binding DataContext.CanExport, RelativeSource={RelativeSource AncestorType=ItemsControl}, Converter={StaticResource BooleanToVisibilityConverter}}">
                                             <Image
-                                                Width="28"
-                                                Height="28"
+                                                Width="22"
+                                                Height="22"
                                                 RenderOptions.BitmapScalingMode="HighQuality"
                                                 Source="/Resources/Images/DataManagement/piliangdaochu.png" />
                                         </Button>

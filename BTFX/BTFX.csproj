@@ -98,8 +98,11 @@
     <None Remove="Resources\Images\Report\zanwushuju.png" />
     <None Remove="Resources\Images\Settings\beifen.png" />
     <None Remove="Resources\Images\Settings\chongzhimima.png" />
+    <None Remove="Resources\Images\Settings\dakaiwenjian.png" />
+    <None Remove="Resources\Images\Settings\daochu.png" />
     <None Remove="Resources\Images\Settings\daochushezhi.png" />
     <None Remove="Resources\Images\Settings\daorushezhi.png" />
+    <None Remove="Resources\Images\Settings\qingli.png" />
     <None Remove="Resources\Images\Settings\shuaxinhong.png" />
     <None Remove="Resources\Images\Settings\yijinyong.png" />
   </ItemGroup>
@@ -169,8 +172,11 @@
     <Resource Include="Resources\Images\Report\zanwushuju.png" />
     <Resource Include="Resources\Images\Settings\beifen.png" />
     <Resource Include="Resources\Images\Settings\chongzhimima.png" />
+    <Resource Include="Resources\Images\Settings\dakaiwenjian.png" />
+    <Resource Include="Resources\Images\Settings\daochu.png" />
     <Resource Include="Resources\Images\Settings\daochushezhi.png" />
     <Resource Include="Resources\Images\Settings\daorushezhi.png" />
+    <Resource Include="Resources\Images\Settings\qingli.png" />
     <Resource Include="Resources\Images\Settings\shuaxinhong.png" />
     <Resource Include="Resources\Images\Settings\yijinyong.png" />
   </ItemGroup>

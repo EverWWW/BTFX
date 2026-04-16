@@ -47,7 +47,10 @@
             <Setter Property="Margin" Value="0,0,0,8" />
         </Style>
 
-        <Style x:Key="CompactOutlinedTextBoxStyle" BasedOn="{StaticResource MaterialDesignOutlinedTextBox}" TargetType="TextBox">
+        <Style
+            x:Key="CompactOutlinedTextBoxStyle"
+            BasedOn="{StaticResource MaterialDesignOutlinedTextBox}"
+            TargetType="TextBox">
             <Setter Property="Height" Value="44" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
@@ -156,9 +159,7 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="16">
-                            <ContentPresenter
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center" />
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -190,9 +191,7 @@
                             x:Name="ButtonBorder"
                             Background="{TemplateBinding Background}"
                             CornerRadius="16">
-                            <ContentPresenter
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center" />
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -218,7 +217,10 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="RefreshBorder" Background="Transparent" CornerRadius="8">
+                        <Border
+                            x:Name="RefreshBorder"
+                            Background="Transparent"
+                            CornerRadius="8">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -262,7 +264,10 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="RestoreBorder" Background="Transparent" CornerRadius="6">
+                        <Border
+                            x:Name="RestoreBorder"
+                            Background="Transparent"
+                            CornerRadius="6">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -375,7 +380,10 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Border Grid.Row="0" MinHeight="100" Style="{StaticResource SectionCardStyle}">
+            <Border
+                Grid.Row="0"
+                MinHeight="100"
+                Style="{StaticResource SectionCardStyle}">
                 <Grid Height="100">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -387,7 +395,10 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
                         <Border
                             Width="4"
                             Height="16"
@@ -421,27 +432,30 @@
                     <StackPanel
                         Grid.Column="6"
                         HorizontalAlignment="Right"
-                        Orientation="Horizontal"
                         VerticalAlignment="Center"
+                        Orientation="Horizontal"
                         Visibility="{Binding AutoBackupEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                             <TextBlock
                                 Margin="0,0,12,0"
+                                VerticalAlignment="Center"
                                 Style="{StaticResource CardFieldLabelStyle}"
-                                Text="备份时间"
-                                VerticalAlignment="Center" />
+                                Text="备份时间" />
                             <TextBox
                                 Width="140"
                                 Style="{StaticResource RoundedInputTextBoxStyle}"
                                 Text="{Binding BackupTime}" />
                         </StackPanel>
 
-                        <StackPanel Margin="24,0,0,0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <StackPanel
+                            Margin="24,0,0,0"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
                             <TextBlock
                                 Margin="0,0,12,0"
+                                VerticalAlignment="Center"
                                 Style="{StaticResource CardFieldLabelStyle}"
-                                Text="保留数量"
-                                VerticalAlignment="Center" />
+                                Text="保留数量" />
                             <TextBox
                                 Width="120"
                                 Style="{StaticResource RoundedInputTextBoxStyle}"
@@ -462,7 +476,10 @@
                 </Grid>
             </Border>
 
-            <Border Grid.Row="2" Height="108" Style="{StaticResource SectionCardStyle}">
+            <Border
+                Grid.Row="2"
+                Height="108"
+                Style="{StaticResource SectionCardStyle}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -470,7 +487,10 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
                         <Border
                             Width="4"
                             Height="16"
@@ -485,7 +505,7 @@
                             Command="{Binding BackupNowCommand}"
                             IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
                             Style="{StaticResource PrimaryActionButtonStyle}">
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                                 <Image
                                     Width="24"
                                     Height="24"
@@ -493,19 +513,22 @@
                                     RenderOptions.BitmapScalingMode="HighQuality"
                                     Source="pack://application:,,,/Resources/Images/Settings/beifen.png" />
                                 <TextBlock
+                                    VerticalAlignment="Center"
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="22"
                                     FontWeight="Medium"
                                     Foreground="White"
-                                    Text="立即备份"
-                                    VerticalAlignment="Center" />
+                                    Text="立即备份" />
                             </StackPanel>
                         </Button>
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <Border Grid.Row="4" MinHeight="437" Style="{StaticResource SectionCardStyle}">
+            <Border
+                Grid.Row="4"
+                MinHeight="437"
+                Style="{StaticResource SectionCardStyle}">
                 <Grid Margin="0,20,0,20">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -518,7 +541,10 @@
                     </Grid.RowDefinitions>
 
                     <DockPanel Grid.Row="0" LastChildFill="False">
-                        <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                        <StackPanel
+                            VerticalAlignment="Center"
+                            DockPanel.Dock="Left"
+                            Orientation="Horizontal">
                             <Border
                                 Width="4"
                                 Height="16"
@@ -532,7 +558,7 @@
                             Margin="40,0,0,0"
                             Command="{Binding LoadBackupHistoryCommand}"
                             Style="{StaticResource RefreshTextButtonStyle}">
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                                 <Image
                                     Width="22"
                                     Height="22"
@@ -540,16 +566,19 @@
                                     RenderOptions.BitmapScalingMode="HighQuality"
                                     Source="pack://application:,,,/Resources/Images/Settings/shuaxinhong.png" />
                                 <TextBlock
+                                    VerticalAlignment="Center"
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="22"
                                     Foreground="#E4004A"
-                                    Text="刷新"
-                                    VerticalAlignment="Center" />
+                                    Text="刷新" />
                             </StackPanel>
                         </Button>
                     </DockPanel>
 
-                    <Border Grid.Row="2" Background="#FFFFFF" CornerRadius="8">
+                    <Border
+                        Grid.Row="2"
+                        Background="#FFFFFF"
+                        CornerRadius="8">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="0.9*" />
@@ -559,15 +588,33 @@
                                 <ColumnDefinition Width="0.9*" />
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Grid.Column="0" Style="{StaticResource HistoryHeaderTextStyle}" Text="编号" />
-                            <TextBlock Grid.Column="1" Style="{StaticResource HistoryHeaderTextStyle}" Text="文件名称" />
-                            <TextBlock Grid.Column="2" Style="{StaticResource HistoryHeaderTextStyle}" Text="大小" />
-                            <TextBlock Grid.Column="3" Style="{StaticResource HistoryHeaderTextStyle}" Text="备份时间" />
-                            <TextBlock Grid.Column="4" Style="{StaticResource HistoryHeaderTextStyle}" Text="删除" />
+                            <TextBlock
+                                Grid.Column="0"
+                                Style="{StaticResource HistoryHeaderTextStyle}"
+                                Text="编号" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Style="{StaticResource HistoryHeaderTextStyle}"
+                                Text="文件名称" />
+                            <TextBlock
+                                Grid.Column="2"
+                                Style="{StaticResource HistoryHeaderTextStyle}"
+                                Text="大小" />
+                            <TextBlock
+                                Grid.Column="3"
+                                Style="{StaticResource HistoryHeaderTextStyle}"
+                                Text="备份时间" />
+                            <TextBlock
+                                Grid.Column="4"
+                                Style="{StaticResource HistoryHeaderTextStyle}"
+                                Text="删除" />
                         </Grid>
                     </Border>
 
-                    <Grid x:Name="BackupHistoryViewport" Grid.Row="4" VerticalAlignment="Stretch">
+                    <Grid
+                        x:Name="BackupHistoryViewport"
+                        Grid.Row="4"
+                        VerticalAlignment="Stretch">
                         <ItemsControl VerticalAlignment="Top" ItemsSource="{Binding BackupHistory}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -591,13 +638,16 @@
                                                 <ColumnDefinition Width="0.9*" />
                                             </Grid.ColumnDefinitions>
 
-                                            <TextBlock Grid.Column="0" Style="{StaticResource HistoryRowTextStyle}" Text="{Binding RowNumber}" />
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                Style="{StaticResource HistoryRowTextStyle}"
+                                                Text="{Binding RowNumber}" />
 
                                             <StackPanel
                                                 Grid.Column="1"
                                                 HorizontalAlignment="Center"
-                                                Orientation="Horizontal"
-                                                VerticalAlignment="Center">
+                                                VerticalAlignment="Center"
+                                                Orientation="Horizontal">
                                                 <TextBlock
                                                     MaxWidth="260"
                                                     Style="{StaticResource HistoryRowTextStyle}"
@@ -615,8 +665,14 @@
                                                 </Button>
                                             </StackPanel>
 
-                                            <TextBlock Grid.Column="2" Style="{StaticResource HistoryRowTextStyle}" Text="{Binding FileSizeDisplay}" />
-                                            <TextBlock Grid.Column="3" Style="{StaticResource HistoryRowTextStyle}" Text="{Binding CreatedAtDisplay}" />
+                                            <TextBlock
+                                                Grid.Column="2"
+                                                Style="{StaticResource HistoryRowTextStyle}"
+                                                Text="{Binding FileSizeDisplay}" />
+                                            <TextBlock
+                                                Grid.Column="3"
+                                                Style="{StaticResource HistoryRowTextStyle}"
+                                                Text="{Binding CreatedAtDisplay}" />
 
                                             <Button
                                                 Grid.Column="4"
@@ -651,8 +707,8 @@
                     <StackPanel
                         Grid.Row="6"
                         HorizontalAlignment="Center"
-                        Orientation="Horizontal"
-                        VerticalAlignment="Center">
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
                         <Button
                             Margin="0,0,30,0"
                             Command="{Binding PreviousPageCommand}"

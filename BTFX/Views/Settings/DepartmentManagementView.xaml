@@ -157,53 +157,56 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+        <StackPanel
+            Grid.Row="0"
+            VerticalAlignment="Center"
+            Orientation="Horizontal">
             <Button
-                Command="{Binding AddDepartmentCommand}"
                 Background="#403B5B"
+                Command="{Binding AddDepartmentCommand}"
                 Foreground="White"
                 Style="{StaticResource ToolbarButtonTemplateStyle}">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                     <TextBlock
                         Margin="0,0,12,0"
+                        VerticalAlignment="Center"
                         FontFamily="Segoe UI Symbol"
                         FontSize="24"
                         Foreground="White"
-                        Text="+"
-                        VerticalAlignment="Center" />
+                        Text="+" />
                     <TextBlock
+                        VerticalAlignment="Center"
                         FontFamily="{StaticResource AppFont}"
                         FontSize="22"
                         FontWeight="Medium"
                         Foreground="White"
-                        Text="添加"
-                        VerticalAlignment="Center" />
+                        Text="添加" />
                 </StackPanel>
             </Button>
 
             <Button
                 Margin="32,0,0,0"
-                Command="{Binding LoadDepartmentsCommand}"
                 Background="#FFFFFF"
                 BorderBrush="#403B5B"
                 BorderThickness="1"
+                Command="{Binding LoadDepartmentsCommand}"
                 Foreground="#403B5B"
                 Style="{StaticResource ToolbarButtonTemplateStyle}">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                     <TextBlock
                         Margin="0,0,12,0"
+                        VerticalAlignment="Center"
                         FontFamily="Segoe MDL2 Assets"
                         FontSize="20"
                         Foreground="#403B5B"
-                        Text="&#xE72C;"
-                        VerticalAlignment="Center" />
+                        Text="&#xE72C;" />
                     <TextBlock
+                        VerticalAlignment="Center"
                         FontFamily="{StaticResource AppFont}"
                         FontSize="22"
                         FontWeight="Medium"
                         Foreground="#403B5B"
-                        Text="刷新"
-                        VerticalAlignment="Center" />
+                        Text="刷新" />
                 </StackPanel>
             </Button>
         </StackPanel>
@@ -216,7 +219,10 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <Border Grid.Row="0" Background="#FAFAFA" CornerRadius="8">
+            <Border
+                Grid.Row="0"
+                Background="#FAFAFA"
+                CornerRadius="8">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="0.9*" />
@@ -228,17 +234,41 @@
                         <ColumnDefinition Width="0.7*" />
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="0" Style="{StaticResource HeaderTextStyle}" Text="编号" />
-                    <TextBlock Grid.Column="1" Style="{StaticResource HeaderTextStyle}" Text="科室名称" />
-                    <TextBlock Grid.Column="2" Style="{StaticResource HeaderTextStyle}" Text="科室代码" />
-                    <TextBlock Grid.Column="3" Style="{StaticResource HeaderTextStyle}" Text="描述" />
-                    <TextBlock Grid.Column="4" Style="{StaticResource HeaderTextStyle}" Text="创建时间" />
-                    <TextBlock Grid.Column="5" Style="{StaticResource HeaderTextStyle}" Text="编辑" />
-                    <TextBlock Grid.Column="6" Style="{StaticResource HeaderTextStyle}" Text="删除" />
+                    <TextBlock
+                        Grid.Column="0"
+                        Style="{StaticResource HeaderTextStyle}"
+                        Text="编号" />
+                    <TextBlock
+                        Grid.Column="1"
+                        Style="{StaticResource HeaderTextStyle}"
+                        Text="科室名称" />
+                    <TextBlock
+                        Grid.Column="2"
+                        Style="{StaticResource HeaderTextStyle}"
+                        Text="科室代码" />
+                    <TextBlock
+                        Grid.Column="3"
+                        Style="{StaticResource HeaderTextStyle}"
+                        Text="描述" />
+                    <TextBlock
+                        Grid.Column="4"
+                        Style="{StaticResource HeaderTextStyle}"
+                        Text="创建时间" />
+                    <TextBlock
+                        Grid.Column="5"
+                        Style="{StaticResource HeaderTextStyle}"
+                        Text="编辑" />
+                    <TextBlock
+                        Grid.Column="6"
+                        Style="{StaticResource HeaderTextStyle}"
+                        Text="删除" />
                 </Grid>
             </Border>
 
-            <Grid x:Name="DepartmentListViewport" Grid.Row="1" VerticalAlignment="Stretch">
+            <Grid
+                x:Name="DepartmentListViewport"
+                Grid.Row="1"
+                VerticalAlignment="Stretch">
                 <ItemsControl VerticalAlignment="Top" ItemsSource="{Binding Departments}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -266,11 +296,26 @@
                                         <ColumnDefinition Width="0.7*" />
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBlock Grid.Column="0" Style="{StaticResource RowTextStyle}" Text="{Binding RowNumber}" />
-                                    <TextBlock Grid.Column="1" Style="{StaticResource RowTextStyle}" Text="{Binding Name}" />
-                                    <TextBlock Grid.Column="2" Style="{StaticResource RowTextStyle}" Text="{Binding Code}" />
-                                    <TextBlock Grid.Column="3" Style="{StaticResource RowTextStyle}" Text="{Binding Description}" />
-                                    <TextBlock Grid.Column="4" Style="{StaticResource RowTextStyle}" Text="{Binding CreatedAtDisplay}" />
+                                    <TextBlock
+                                        Grid.Column="0"
+                                        Style="{StaticResource RowTextStyle}"
+                                        Text="{Binding RowNumber}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Style="{StaticResource RowTextStyle}"
+                                        Text="{Binding Name}" />
+                                    <TextBlock
+                                        Grid.Column="2"
+                                        Style="{StaticResource RowTextStyle}"
+                                        Text="{Binding Code}" />
+                                    <TextBlock
+                                        Grid.Column="3"
+                                        Style="{StaticResource RowTextStyle}"
+                                        Text="{Binding Description}" />
+                                    <TextBlock
+                                        Grid.Column="4"
+                                        Style="{StaticResource RowTextStyle}"
+                                        Text="{Binding CreatedAtDisplay}" />
 
                                     <Button
                                         Grid.Column="5"
@@ -314,8 +359,8 @@
             <StackPanel
                 Grid.Row="3"
                 HorizontalAlignment="Center"
-                Orientation="Horizontal"
-                VerticalAlignment="Center">
+                VerticalAlignment="Center"
+                Orientation="Horizontal">
                 <Button
                     Margin="0,0,30,0"
                     Command="{Binding PreviousPageCommand}"

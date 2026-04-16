@@ -216,7 +216,7 @@
             Padding="0"
             VerticalAlignment="Stretch"
             Background="#FFFFFF"
-            CornerRadius="12">
+            CornerRadius="8">
             <Border.Effect>
                 <DropShadowEffect
                     BlurRadius="16"

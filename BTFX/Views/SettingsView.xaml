@@ -95,104 +95,118 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabControl">
-                        <Grid Background="White" KeyboardNavigation.TabNavigation="Local">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
+                        <Border
+                            Background="White"
+                            CornerRadius="8"
+                            SnapsToDevicePixels="True">
+                            <Border.Effect>
+                                <DropShadowEffect
+                                    BlurRadius="16"
+                                    Opacity="0.06"
+                                    ShadowDepth="2"
+                                    Color="#000000" />
+                            </Border.Effect>
 
-                            <Grid Grid.Row="0" Margin="18,0,18,0">
-                                <Grid MaxWidth="1640" HorizontalAlignment="Stretch">
-                                    <Border
-                                        Height="2"
-                                        Margin="0,0,0,0"
-                                        VerticalAlignment="Bottom"
-                                        Background="#DEE3E5" />
+                            <Grid Background="Transparent" KeyboardNavigation.TabNavigation="Local">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
 
-                                    <ScrollViewer
-                                        HorizontalScrollBarVisibility="Auto"
-                                        VerticalScrollBarVisibility="Disabled"
-                                        CanContentScroll="False"
-                                        Focusable="False"
-                                        Panel.ZIndex="1">
-                                        <TabPanel
-                                            x:Name="HeaderPanel"
-                                            HorizontalAlignment="Left"
-                                            IsItemsHost="True"
-                                            KeyboardNavigation.TabIndex="1"
-                                            Panel.ZIndex="1" />
-                                    </ScrollViewer>
+                                <Grid Grid.Row="0" Margin="18,0,18,0">
+                                    <Grid MaxWidth="1640" HorizontalAlignment="Stretch">
+                                        <Border
+                                            Height="2"
+                                            Margin="0,0,0,0"
+                                            VerticalAlignment="Bottom"
+                                            Background="#DEE3E5" />
+
+                                        <ScrollViewer
+                                            Panel.ZIndex="1"
+                                            CanContentScroll="False"
+                                            Focusable="False"
+                                            HorizontalScrollBarVisibility="Auto"
+                                            VerticalScrollBarVisibility="Disabled">
+                                            <TabPanel
+                                                x:Name="HeaderPanel"
+                                                HorizontalAlignment="Left"
+                                                Panel.ZIndex="1"
+                                                IsItemsHost="True"
+                                                KeyboardNavigation.TabIndex="1" />
+                                        </ScrollViewer>
+                                    </Grid>
                                 </Grid>
-                            </Grid>
 
-                            <Border
-                                Grid.Row="1"
-                                Background="White"
-                                BorderThickness="0"
-                                KeyboardNavigation.TabIndex="2">
-                                <ContentPresenter
-                                    x:Name="PART_SelectedContentHost"
-                                    Margin="0"
-                                    ContentSource="SelectedContent"
-                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                            </Border>
-                        </Grid>
+                                <Border
+                                    Grid.Row="1"
+                                    Background="White"
+                                    CornerRadius="0,0,8,8"
+                                    BorderThickness="0"
+                                    KeyboardNavigation.TabIndex="2">
+                                    <ContentPresenter
+                                        x:Name="PART_SelectedContentHost"
+                                        Margin="0"
+                                        ContentSource="SelectedContent"
+                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                </Border>
+                            </Grid>
+                        </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="0" Background="Transparent">
+    <Grid Margin="0"  Background="Transparent">
         <TabControl SelectedIndex="{Binding SelectedTabIndex}" Style="{StaticResource SettingsTopTabControlStyle}">
-                <TabItem>
-                    <TabItem.Header>
-                        <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource GeneralSettingsTab}" />
-                    </TabItem.Header>
-                    <settings:GeneralSettingsView DataContext="{Binding GeneralSettingsViewModel}" />
-                </TabItem>
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource GeneralSettingsTab}" />
+                </TabItem.Header>
+                <settings:GeneralSettingsView DataContext="{Binding GeneralSettingsViewModel}" />
+            </TabItem>
 
-                <TabItem Visibility="{Binding ShowDeviceConfigTab, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <TabItem.Header>
-                        <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource DeviceConfigTab}" />
-                    </TabItem.Header>
-                    <settings:DeviceConfigView DataContext="{Binding}" />
-                </TabItem>
+            <TabItem Visibility="{Binding ShowDeviceConfigTab, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TabItem.Header>
+                    <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource DeviceConfigTab}" />
+                </TabItem.Header>
+                <settings:DeviceConfigView DataContext="{Binding}" />
+            </TabItem>
 
-                <TabItem Visibility="{Binding ShowUserManagementTab, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <TabItem.Header>
-                        <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource UserManagement}" />
-                    </TabItem.Header>
-                    <settings:UserManagementView DataContext="{Binding UserManagementViewModel}" />
-                </TabItem>
+            <TabItem Visibility="{Binding ShowUserManagementTab, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TabItem.Header>
+                    <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource UserManagement}" />
+                </TabItem.Header>
+                <settings:UserManagementView DataContext="{Binding UserManagementViewModel}" />
+            </TabItem>
 
-                <TabItem Visibility="{Binding ShowDepartmentTab, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <TabItem.Header>
-                        <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource DepartmentManagement}" />
-                    </TabItem.Header>
-                    <settings:DepartmentManagementView DataContext="{Binding DepartmentManagementViewModel}" />
-                </TabItem>
+            <TabItem Visibility="{Binding ShowDepartmentTab, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TabItem.Header>
+                    <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource DepartmentManagement}" />
+                </TabItem.Header>
+                <settings:DepartmentManagementView DataContext="{Binding DepartmentManagementViewModel}" />
+            </TabItem>
 
-                <TabItem Visibility="{Binding ShowUnitSettingsTab, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <TabItem.Header>
-                        <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource UnitSettings}" />
-                    </TabItem.Header>
-                    <settings:UnitSettingsView DataContext="{Binding UnitSettingsViewModel}" />
-                </TabItem>
+            <TabItem Visibility="{Binding ShowUnitSettingsTab, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TabItem.Header>
+                    <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource UnitSettings}" />
+                </TabItem.Header>
+                <settings:UnitSettingsView DataContext="{Binding UnitSettingsViewModel}" />
+            </TabItem>
 
-                <TabItem Visibility="{Binding ShowDataManagementTab, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <TabItem.Header>
-                        <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource DataManagementTab}" />
-                    </TabItem.Header>
-                    <settings:DataManagementSettingsView DataContext="{Binding DataManagementSettingsViewModel}" />
-                </TabItem>
+            <TabItem Visibility="{Binding ShowDataManagementTab, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TabItem.Header>
+                    <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource DataManagementTab}" />
+                </TabItem.Header>
+                <settings:DataManagementSettingsView DataContext="{Binding DataManagementSettingsViewModel}" />
+            </TabItem>
 
-                <TabItem>
-                    <TabItem.Header>
-                        <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource SystemInfoTab}" />
-                    </TabItem.Header>
-                    <settings:SystemInfoView DataContext="{Binding SystemInfoViewModel}" />
-                </TabItem>
-            </TabControl>
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource SystemInfoTab}" />
+                </TabItem.Header>
+                <settings:SystemInfoView DataContext="{Binding SystemInfoViewModel}" />
+            </TabItem>
+        </TabControl>
     </Grid>
 </UserControl>
