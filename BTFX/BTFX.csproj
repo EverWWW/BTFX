@@ -44,7 +44,7 @@
     <!-- Material Design UI -->
     <PackageReference Include="MaterialDesignThemes" Version="5.1.0" />
     <PackageReference Include="MaterialDesignColors" Version="3.1.0" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.142" />
 
     <!-- 图表库 -->
     <PackageReference Include="OxyPlot.Wpf" Version="2.2.0" />

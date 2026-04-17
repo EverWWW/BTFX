@@ -11,6 +11,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
 
+    <!-- 显式引用以修复漏洞 CVE-2024-49044 和 CVE-2025-24054 -->
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.6" />
+
     <!-- YAML 支持 -->
     <PackageReference Include="YamlDotNet" Version="16.2.0" />
 
