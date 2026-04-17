@@ -58,6 +58,20 @@
     <Resource Include="Resources\Images\*.*" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="Extensions\**" />
+    <Compile Remove="Resources\Themes\**" />
+    <Compile Remove="Validators\**" />
+    <EmbeddedResource Remove="Extensions\**" />
+    <EmbeddedResource Remove="Resources\Themes\**" />
+    <EmbeddedResource Remove="Validators\**" />
+    <None Remove="Extensions\**" />
+    <None Remove="Resources\Themes\**" />
+    <None Remove="Validators\**" />
+    <Page Remove="Extensions\**" />
+    <Page Remove="Resources\Themes\**" />
+    <Page Remove="Validators\**" />
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="Resources\Images\Device\deviceImage.jpeg" />
     <None Remove="Resources\Images\NavigationItem\baogao1.png" />
     <None Remove="Resources\Images\NavigationItem\baogao2.png" />
@@ -107,9 +121,6 @@
     <None Remove="Resources\Images\Settings\yijinyong.png" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Resources\Themes\" />
-    <Folder Include="Validators\" />
-    <Folder Include="Extensions\" />
     <Folder Include="Data\Database\" />
     <Folder Include="Data\Backups\" />
     <Folder Include="Data\Logs\" />

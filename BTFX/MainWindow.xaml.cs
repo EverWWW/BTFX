@@ -95,6 +95,7 @@ public partial class MainWindow : Window
         // 订阅状态变化
         StateChanged += MainWindow_StateChanged;
         SourceInitialized += MainWindow_SourceInitialized;
+        Closed += MainWindow_Closed;
     }
 
     /// <summary>
@@ -135,6 +136,22 @@ public partial class MainWindow : Window
     private void MainWindow_StateChanged(object? sender, EventArgs e)
     {
         // 标题栏已移至 TitleBarControl，默认处理逻辑在此可扩展
+    }
+
+    /// <summary>
+    /// 主窗口关闭后确保应用退出，覆盖 Alt+F4、系统关闭等非显式 Shutdown 路径。
+    /// </summary>
+    private void MainWindow_Closed(object? sender, EventArgs e)
+    {
+        if (Application.Current.ShutdownMode != ShutdownMode.OnExplicitShutdown)
+        {
+            return;
+        }
+
+        if (!App.IsShuttingDown)
+        {
+            Application.Current.Shutdown();
+        }
     }
 
     /// <summary>

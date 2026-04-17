@@ -349,13 +349,13 @@
 
     <!--  System Info  -->
     <system:String x:Key="AppInfo">应用信息</system:String>
-    <system:String x:Key="AppNameLabel">应用名称：</system:String>
-    <system:String x:Key="VersionLabel">版本号：</system:String>
-    <system:String x:Key="CurrentUserLabel">当前用户：</system:String>
-    <system:String x:Key="UserRoleLabel">用户角色：</system:String>
+    <system:String x:Key="AppNameLabel">应用名称</system:String>
+    <system:String x:Key="VersionLabel">版本号</system:String>
+    <system:String x:Key="CurrentUserLabel">当前用户</system:String>
+    <system:String x:Key="UserRoleLabel">用户角色</system:String>
     <system:String x:Key="DataInfo">数据信息</system:String>
-    <system:String x:Key="DatabaseSizeLabel">数据库大小：</system:String>
-    <system:String x:Key="LogDirectoryLabel">日志目录：</system:String>
+    <system:String x:Key="DatabaseSizeLabel">数据库大小</system:String>
+    <system:String x:Key="LogDirectoryLabel">日志目录</system:String>
     <system:String x:Key="Open">打开</system:String>
     <system:String x:Key="LogManagement">日志管理</system:String>
     <system:String x:Key="LogStatistics">日志统计</system:String>

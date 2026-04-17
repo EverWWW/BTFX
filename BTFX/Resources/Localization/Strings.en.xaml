@@ -347,13 +347,13 @@
 
     <!--  System Info  -->
     <system:String x:Key="AppInfo">Application Info</system:String>
-    <system:String x:Key="AppNameLabel">App Name:</system:String>
-    <system:String x:Key="VersionLabel">Version:</system:String>
-    <system:String x:Key="CurrentUserLabel">Current User:</system:String>
-    <system:String x:Key="UserRoleLabel">User Role:</system:String>
+    <system:String x:Key="AppNameLabel">App Name</system:String>
+    <system:String x:Key="VersionLabel">Version</system:String>
+    <system:String x:Key="CurrentUserLabel">Current User</system:String>
+    <system:String x:Key="UserRoleLabel">User Role</system:String>
     <system:String x:Key="DataInfo">Data Info</system:String>
-    <system:String x:Key="DatabaseSizeLabel">Database Size:</system:String>
-    <system:String x:Key="LogDirectoryLabel">Log Directory:</system:String>
+    <system:String x:Key="DatabaseSizeLabel">Database Size</system:String>
+    <system:String x:Key="LogDirectoryLabel">Log Directory</system:String>
     <system:String x:Key="Open">Open</system:String>
     <system:String x:Key="LogManagement">Log Management</system:String>
     <system:String x:Key="LogStatistics">Log Statistics</system:String>
