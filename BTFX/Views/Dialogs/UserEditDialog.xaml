@@ -19,15 +19,23 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </UserControl.Resources>
 
-    <Grid Margin="8">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <Border
+        MinWidth="420"
+        Margin="16"
+        Padding="24"
+        Style="{StaticResource DialogSurfaceBorderStyle}">
+        <Border.Resources>
+            <Style BasedOn="{StaticResource DialogLightScrollBarStyle}" TargetType="ScrollBar" />
+        </Border.Resources>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-        <!--  表单  -->
-        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
-            <StackPanel>
+            <!--  表单  -->
+            <ScrollViewer Grid.Row="0" Style="{StaticResource DialogLightweightScrollViewerStyle}">
+                <StackPanel>
                 <!--  账号  -->
                 <TextBox
                     Margin="0,0,0,16"
@@ -147,30 +155,31 @@
                     </StackPanel>
 
                 <!--  验证提示  -->
-                <TextBlock
-                    Margin="0,16,0,0"
-                    Foreground="{DynamicResource MaterialDesign.Brush.ValidationError}"
-                    Text="{Binding ValidationError}"
-                    TextWrapping="Wrap"
-                    Visibility="{Binding HasValidationError, Converter={StaticResource BooleanToVisibilityConverter}}" />
-            </StackPanel>
-        </ScrollViewer>
+                    <TextBlock
+                        Margin="0,16,0,0"
+                        Foreground="{DynamicResource MaterialDesign.Brush.ValidationError}"
+                        Text="{Binding ValidationError}"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding HasValidationError, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                </StackPanel>
+            </ScrollViewer>
 
-        <!--  按钮  -->
-        <StackPanel
-            Grid.Row="1"
-            Margin="0,16,0,0"
-            HorizontalAlignment="Right"
-            Orientation="Horizontal">
-            <Button
-                Margin="0,0,8,0"
-                Command="{Binding CancelCommand}"
-                Content="{DynamicResource Cancel}"
-                Style="{StaticResource MaterialDesignOutlinedButton}" />
-            <Button
-                Command="{Binding SaveCommand}"
-                Content="{DynamicResource Save}"
-                Style="{StaticResource MaterialDesignRaisedButton}" />
-        </StackPanel>
-    </Grid>
+            <!--  按钮  -->
+            <StackPanel
+                Grid.Row="1"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <Button
+                    Margin="0,0,8,0"
+                    Command="{Binding CancelCommand}"
+                    Content="{DynamicResource Cancel}"
+                    Style="{StaticResource MaterialDesignOutlinedButton}" />
+                <Button
+                    Command="{Binding SaveCommand}"
+                    Content="{DynamicResource Save}"
+                    Style="{StaticResource MaterialDesignRaisedButton}" />
+            </StackPanel>
+        </Grid>
+    </Border>
 </UserControl>

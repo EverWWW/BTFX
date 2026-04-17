@@ -278,8 +278,7 @@
         </Style>
     </UserControl.Resources>
 
-    <materialDesign:DialogHost CloseOnClickAway="False" Identifier="RootDialog">
-        <Grid Background="#F4F4F4">
+    <Grid Background="#F4F4F4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="160" />
                 <ColumnDefinition Width="24" />
@@ -499,5 +498,4 @@
                 </Border>
             </Grid>
         </Grid>
-    </materialDesign:DialogHost>
 </UserControl>

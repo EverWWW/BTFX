@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using MaterialDesignThemes.Wpf;
 using BTFX.ViewModels;
 
 namespace BTFX.Views.Dialogs;
@@ -6,7 +7,7 @@ namespace BTFX.Views.Dialogs;
 /// <summary>
 /// MeasurementDetailDialog.xaml 的交互逻辑
 /// </summary>
-public partial class MeasurementDetailDialog : Window
+public partial class MeasurementDetailDialog
 {
     public MeasurementDetailDialog()
     {
@@ -29,7 +30,6 @@ public partial class MeasurementDetailDialog : Window
 
     private void OnCloseRequested()
     {
-        DialogResult = true;
-        Close();
+        DialogHost.Close("RootDialog");
     }
 }

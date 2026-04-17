@@ -198,13 +198,11 @@ public partial class UserManagementViewModel : ObservableObject
             return;
         }
 
-        var result = System.Windows.MessageBox.Show(
-            _localizationService.GetString("ConfirmResetPassword"),
+        var result = await ShowConfirmDialogAsync(
             _localizationService.GetString("Confirm"),
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Question);
+            _localizationService.GetString("ConfirmResetPassword"));
 
-        if (result != System.Windows.MessageBoxResult.Yes)
+        if (!result)
         {
             return;
         }
@@ -215,28 +213,22 @@ public partial class UserManagementViewModel : ObservableObject
             if (success)
             {
                 await LoadUsersAsync();
-                System.Windows.MessageBox.Show(
+                await ShowNoticeDialogAsync(
                     $"密码已重置为默认密码：{BtfxConstants.DEFAULT_PASSWORD}",
-                    _localizationService.GetString("Information"),
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Information);
+                    _localizationService.GetString("Information"));
                 _logHelper?.Information($"重置用户密码: {item.User.Username}");
                 return;
             }
 
-            System.Windows.MessageBox.Show(
+            await ShowNoticeDialogAsync(
                 _localizationService.GetString("OperationFailed"),
-                _localizationService.GetString("Error"),
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Error);
+                _localizationService.GetString("Error"));
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show(
+            await ShowNoticeDialogAsync(
                 $"{_localizationService.GetString("OperationFailed")}: {ex.Message}",
-                _localizationService.GetString("Error"),
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Error);
+                _localizationService.GetString("Error"));
         }
     }
 
@@ -252,13 +244,11 @@ public partial class UserManagementViewModel : ObservableObject
             ? _localizationService.GetString("DisableUser")
             : _localizationService.GetString("EnableUser");
 
-        var result = System.Windows.MessageBox.Show(
-            _localizationService.GetString("ConfirmToggleUserStatus", action, item.User.Username),
+        var result = await ShowConfirmDialogAsync(
             _localizationService.GetString("Confirm"),
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Question);
+            _localizationService.GetString("ConfirmToggleUserStatus", action, item.User.Username));
 
-        if (result != System.Windows.MessageBoxResult.Yes)
+        if (!result)
         {
             return;
         }
@@ -275,20 +265,16 @@ public partial class UserManagementViewModel : ObservableObject
             }
 
             item.User.IsEnabled = !item.User.IsEnabled;
-            System.Windows.MessageBox.Show(
+            await ShowNoticeDialogAsync(
                 _localizationService.GetString("OperationFailed"),
-                _localizationService.GetString("Error"),
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Error);
+                _localizationService.GetString("Error"));
         }
         catch (Exception ex)
         {
             item.User.IsEnabled = !item.User.IsEnabled;
-            System.Windows.MessageBox.Show(
+            await ShowNoticeDialogAsync(
                 $"{_localizationService.GetString("OperationFailed")}: {ex.Message}",
-                _localizationService.GetString("Error"),
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Error);
+                _localizationService.GetString("Error"));
         }
     }
 
@@ -302,21 +288,17 @@ public partial class UserManagementViewModel : ObservableObject
 
         if (item.IsBuiltIn)
         {
-            System.Windows.MessageBox.Show(
+            await ShowNoticeDialogAsync(
                 _localizationService.GetString("BuiltInUserDeleteNotAllowed"),
-                _localizationService.GetString("Warning"),
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Warning);
+                _localizationService.GetString("Warning"));
             return;
         }
 
-        var result = System.Windows.MessageBox.Show(
-            _localizationService.GetString("ConfirmDeleteUserMessage", item.User.Username),
+        var result = await ShowConfirmDialogAsync(
             _localizationService.GetString("DeleteUser"),
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Warning);
+            _localizationService.GetString("ConfirmDeleteUserMessage", item.User.Username));
 
-        if (result != System.Windows.MessageBoxResult.Yes)
+        if (!result)
         {
             return;
         }
@@ -327,30 +309,65 @@ public partial class UserManagementViewModel : ObservableObject
             if (success)
             {
                 await LoadUsersAsync();
-                System.Windows.MessageBox.Show(
+                await ShowNoticeDialogAsync(
                     _localizationService.GetString("DeleteSuccess"),
-                    _localizationService.GetString("Information"),
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Information);
+                    _localizationService.GetString("Information"));
                 _logHelper?.Information($"删除用户成功: {item.User.Username}");
                 return;
             }
 
-            System.Windows.MessageBox.Show(
+            await ShowNoticeDialogAsync(
                 _localizationService.GetString("DeleteFailed"),
-                _localizationService.GetString("Error"),
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Error);
+                _localizationService.GetString("Error"));
         }
         catch (Exception ex)
         {
             _logHelper?.Error($"删除用户失败: {item.User.Username}", ex);
-            System.Windows.MessageBox.Show(
+            await ShowNoticeDialogAsync(
                 $"{_localizationService.GetString("DeleteFailed")}: {ex.Message}",
-                _localizationService.GetString("Error"),
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Error);
+                _localizationService.GetString("Error"));
         }
+    }
+
+    /// <summary>
+    /// 显示确认对话框。
+    /// </summary>
+    private static async Task<bool> ShowConfirmDialogAsync(string title, string message)
+    {
+        var result = await DialogHost.Show(
+            new ConfirmDialog
+            {
+                DataContext = new ConfirmDialogViewModel
+                {
+                    Title = title,
+                    Message = message,
+                    ConfirmText = "确定",
+                    CancelText = "取消",
+                    IsCancelVisible = true
+                }
+            },
+            "RootDialog").ConfigureAwait(true);
+
+        return result is true;
+    }
+
+    /// <summary>
+    /// 显示提示对话框。
+    /// </summary>
+    private static Task ShowNoticeDialogAsync(string message, string title)
+    {
+        return DialogHost.Show(
+            new ConfirmDialog
+            {
+                DataContext = new ConfirmDialogViewModel
+                {
+                    Title = title,
+                    Message = message,
+                    ConfirmText = "确定",
+                    IsCancelVisible = false
+                }
+            },
+            "RootDialog");
     }
 
     [RelayCommand]

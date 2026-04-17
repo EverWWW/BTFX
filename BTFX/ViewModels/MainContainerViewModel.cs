@@ -624,4 +624,22 @@ public partial class ConfirmDialogViewModel : ObservableObject
     /// </summary>
     [ObservableProperty]
     private string _message = string.Empty;
+
+    /// <summary>
+    /// 确认按钮文本
+    /// </summary>
+    [ObservableProperty]
+    private string _confirmText = "确定";
+
+    /// <summary>
+    /// 取消按钮文本
+    /// </summary>
+    [ObservableProperty]
+    private string _cancelText = "取消";
+
+    /// <summary>
+    /// 是否显示取消按钮
+    /// </summary>
+    [ObservableProperty]
+    private bool _isCancelVisible = true;
 }

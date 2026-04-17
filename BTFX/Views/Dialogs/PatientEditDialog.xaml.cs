@@ -1,40 +1,74 @@
-﻿using System.Globalization;
-using System.Runtime.InteropServices;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Interop;
 using System.Windows.Markup;
 using BTFX.Services.Interfaces;
 using BTFX.ViewModels;
+using MaterialDesignThemes.Wpf;
 
 namespace BTFX.Views.Dialogs;
 
 /// <summary>
 /// PatientEditDialog.xaml Interaction Logic
 /// </summary>
-public partial class PatientEditDialog : Window
+public partial class PatientEditDialog : UserControl
 {
+    private PatientEditViewModel? _currentViewModel;
+    private ILocalizationService? _localizationService;
+
     public PatientEditDialog()
     {
         InitializeComponent();
+        Loaded += PatientEditDialog_Loaded;
+        Unloaded += PatientEditDialog_Unloaded;
+        DataContextChanged += PatientEditDialog_DataContextChanged;
     }
 
-    private void Window_Loaded(object sender, RoutedEventArgs e)
+    private void PatientEditDialog_Loaded(object sender, RoutedEventArgs e)
     {
-        FitToOwnerScreen();
-
-        if (DataContext is PatientEditViewModel viewModel)
-        {
-            viewModel.PropertyChanged += ViewModel_PropertyChanged;
-        }
-
-        // Set DatePicker language based on current culture
+        AttachViewModel(DataContext as PatientEditViewModel);
         SetDatePickerLanguage();
 
-        // Subscribe to language changes if localization service is available
-        if (App.Services?.GetService(typeof(ILocalizationService)) is ILocalizationService localizationService)
+        if (_localizationService == null
+            && App.Services?.GetService(typeof(ILocalizationService)) is ILocalizationService localizationService)
         {
-            localizationService.LanguageChanged += OnLanguageChanged;
+            _localizationService = localizationService;
+            _localizationService.LanguageChanged += OnLanguageChanged;
+        }
+    }
+
+    private void PatientEditDialog_Unloaded(object sender, RoutedEventArgs e)
+    {
+        AttachViewModel(null);
+
+        if (_localizationService != null)
+        {
+            _localizationService.LanguageChanged -= OnLanguageChanged;
+            _localizationService = null;
+        }
+    }
+
+    private void PatientEditDialog_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        AttachViewModel(e.NewValue as PatientEditViewModel);
+    }
+
+    private void AttachViewModel(PatientEditViewModel? viewModel)
+    {
+        if (ReferenceEquals(_currentViewModel, viewModel))
+        {
+            return;
+        }
+
+        if (_currentViewModel != null)
+        {
+            _currentViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+        }
+
+        _currentViewModel = viewModel;
+
+        if (_currentViewModel != null)
+        {
+            _currentViewModel.PropertyChanged += ViewModel_PropertyChanged;
         }
     }
 
@@ -44,8 +78,7 @@ public partial class PatientEditDialog : Window
         {
             if (DataContext is PatientEditViewModel viewModel && viewModel.ShouldClose)
             {
-                DialogResult = viewModel.DialogResult;
-                Close();
+                DialogHost.Close("RootDialog", viewModel.DialogResult);
             }
         }
     }
@@ -88,83 +121,5 @@ public partial class PatientEditDialog : Window
                 yield return childOfChild;
             }
         }
-    }
-
-    // P/Invoke: 获取窗口所在显示器信息
-    private const int MONITOR_DEFAULTTONEAREST = 2;
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr MonitorFromWindow(IntPtr hwnd, int dwFlags);
-
-    [DllImport("user32.dll", CharSet = CharSet.Auto)]
-    private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-    private struct MONITORINFO
-    {
-        public int cbSize;
-        public RECT rcMonitor;
-        public RECT rcWork;
-        public int dwFlags;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct RECT
-    {
-        public int Left;
-        public int Top;
-        public int Right;
-        public int Bottom;
-    }
-
-    /// <summary>
-    /// 根据 Owner 窗口所在的显示器，设置当前窗口的位置和大小
-    /// </summary>
-    private void FitToOwnerScreen()
-    {
-        var target = Owner ?? Application.Current.MainWindow;
-        if (target == null) return;
-
-        var helper = new WindowInteropHelper(target);
-        var hMonitor = MonitorFromWindow(helper.Handle, MONITOR_DEFAULTTONEAREST);
-
-        var mi = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
-        if (!GetMonitorInfo(hMonitor, ref mi)) return;
-
-        // 获取 DPI 缩放因子
-        var dpiScale = 1.0;
-        var source = PresentationSource.FromVisual(target);
-        if (source?.CompositionTarget != null)
-        {
-            dpiScale = source.CompositionTarget.TransformToDevice.M11;
-        }
-
-        // 用 DIP 单位计算显示器工作区
-        var workLeft = mi.rcWork.Left / dpiScale;
-        var workTop = mi.rcWork.Top / dpiScale;
-        var workWidth = (mi.rcWork.Right - mi.rcWork.Left) / dpiScale;
-        var workHeight = (mi.rcWork.Bottom - mi.rcWork.Top) / dpiScale;
-
-        // 对话框固定 660x820，不超出工作区
-        Width = Math.Min(660, workWidth);
-        Height = Math.Min(820, workHeight);
-        Left = workLeft + (workWidth - Width) / 2;
-        Top = workTop + (workHeight - Height) / 2;
-    }
-
-    protected override void OnClosed(EventArgs e)
-    {
-        if (DataContext is PatientEditViewModel viewModel)
-        {
-            viewModel.PropertyChanged -= ViewModel_PropertyChanged;
-        }
-
-        // Unsubscribe from language changes
-        if (App.Services?.GetService(typeof(ILocalizationService)) is ILocalizationService localizationService)
-        {
-            localizationService.LanguageChanged -= OnLanguageChanged;
-        }
-
-        base.OnClosed(e);
     }
 }

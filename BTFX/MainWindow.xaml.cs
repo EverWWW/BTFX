@@ -4,6 +4,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Shell;
 using BTFX.ViewModels;
+using MaterialDesignThemes.Wpf;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BTFX;
@@ -141,6 +142,11 @@ public partial class MainWindow : Window
     /// </summary>
     private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
+        if (!AppTitleBar.IsHitTestVisible)
+        {
+            return;
+        }
+
         if (e.ClickCount == 2)
         {
             // 双击切换最大化/还原
@@ -151,6 +157,24 @@ public partial class MainWindow : Window
             // 仅在普通窗口状态下允许拖动；最大化时单击不做任何操作
             DragMove();
         }
+    }
+
+    /// <summary>
+    /// 设置顶部标题栏交互状态。
+    /// </summary>
+    public void SetTitleBarInteractionEnabled(bool isEnabled)
+    {
+        AppTitleBar.IsHitTestVisible = isEnabled;
+    }
+
+    private void RootDialog_OnDialogOpened(object sender, DialogOpenedEventArgs e)
+    {
+        SetTitleBarInteractionEnabled(false);
+    }
+
+    private void RootDialog_OnDialogClosing(object sender, DialogClosingEventArgs e)
+    {
+        SetTitleBarInteractionEnabled(true);
     }
 
     /// <summary>
@@ -180,15 +204,23 @@ public partial class MainWindow : Window
     /// <summary>
     /// 标题栏组件关闭路由事件处理，包含确认对话框逻辑
     /// </summary>
-    private void TitleBar_CloseClicked(object sender, RoutedEventArgs e)
+    private async void TitleBar_CloseClicked(object sender, RoutedEventArgs e)
     {
-        var result = MessageBox.Show(
-            FindResource("ExitConfirmMessage")?.ToString() ?? "确认退出系统？",
-            FindResource("ConfirmExit")?.ToString() ?? "确认退出",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
+        var result = await DialogHost.Show(
+            new Views.Dialogs.ConfirmDialog
+            {
+                DataContext = new ConfirmDialogViewModel
+                {
+                    Title = FindResource("ConfirmExit")?.ToString() ?? "确认退出",
+                    Message = FindResource("ExitConfirmMessage")?.ToString() ?? "确认退出系统？",
+                    ConfirmText = "确定",
+                    CancelText = "取消",
+                    IsCancelVisible = true
+                }
+            },
+            "RootDialog");
 
-        if (result == MessageBoxResult.Yes)
+        if (result is true)
         {
             Application.Current.Shutdown();
         }

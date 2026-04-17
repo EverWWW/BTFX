@@ -17,83 +17,92 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </UserControl.Resources>
 
-    <Grid MinWidth="350" Margin="8">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <Border
+        MinWidth="420"
+        Margin="16"
+        Padding="24"
+        Style="{StaticResource DialogSurfaceBorderStyle}">
+        <Border.Resources>
+            <Style BasedOn="{StaticResource DialogLightScrollBarStyle}" TargetType="ScrollBar" />
+        </Border.Resources>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-        <!--  标题  -->
-        <TextBlock
-            Grid.Row="0"
-            Margin="0,0,0,16"
-            FontSize="18"
-            FontWeight="Medium"
-            Text="{Binding Title}" />
+            <!--  标题  -->
+            <TextBlock
+                Grid.Row="0"
+                Margin="0,0,0,16"
+                FontSize="18"
+                FontWeight="Medium"
+                Text="{Binding Title}" />
 
-        <!--  表单  -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-                <!--  科室名称  -->
-                <TextBox
-                    Margin="0,0,0,16"
-                    md:HintAssist.Hint="科室名称 *"
-                    md:HintAssist.IsFloating="True"
-                    MaxLength="{x:Static common:Constants.DEPARTMENT_NAME_MAX_LENGTH}"
-                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                    Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+            <!--  表单  -->
+            <ScrollViewer Grid.Row="1" Style="{StaticResource DialogLightweightScrollViewerStyle}">
+                <StackPanel>
+                    <!--  科室名称  -->
+                    <TextBox
+                        Margin="0,0,0,16"
+                        md:HintAssist.Hint="科室名称 *"
+                        md:HintAssist.IsFloating="True"
+                        MaxLength="{x:Static common:Constants.DEPARTMENT_NAME_MAX_LENGTH}"
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                        Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
 
-                <!--  科室代码  -->
-                <TextBox
-                    Margin="0,0,0,16"
-                    md:HintAssist.Hint="科室代码"
-                    md:HintAssist.IsFloating="True"
-                    MaxLength="20"
-                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                    Text="{Binding Code, UpdateSourceTrigger=PropertyChanged}" />
+                    <!--  科室代码  -->
+                    <TextBox
+                        Margin="0,0,0,16"
+                        md:HintAssist.Hint="科室代码"
+                        md:HintAssist.IsFloating="True"
+                        MaxLength="20"
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                        Text="{Binding Code, UpdateSourceTrigger=PropertyChanged}" />
 
-                <!--  科室描述  -->
-                <TextBox
-                    Height="80"
-                    Margin="0,0,0,16"
-                    VerticalContentAlignment="Top"
-                    md:HintAssist.Hint="描述"
-                    md:HintAssist.IsFloating="True"
-                    AcceptsReturn="True"
-                    MaxLength="200"
-                    Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                    Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
-                    TextWrapping="Wrap"
-                    VerticalScrollBarVisibility="Auto" />
+                    <!--  科室描述  -->
+                    <TextBox
+                        Height="80"
+                        Margin="0,0,0,16"
+                        VerticalContentAlignment="Top"
+                        md:HintAssist.Hint="描述"
+                        md:HintAssist.IsFloating="True"
+                        AcceptsReturn="True"
+                        MaxLength="200"
+                        Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                        Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
+                        TextWrapping="Wrap"
+                        VerticalScrollBarVisibility="Auto" />
 
-                <!--  验证错误提示  -->
-                <TextBlock
-                    Margin="0,0,0,8"
-                    Foreground="{DynamicResource MaterialDesign.Brush.ValidationError}"
-                    Text="{Binding ValidationError}"
-                    TextWrapping="Wrap"
-                    Visibility="{Binding HasValidationError, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    <!--  验证错误提示  -->
+                    <TextBlock
+                        Margin="0,0,0,8"
+                        Foreground="{DynamicResource MaterialDesign.Brush.ValidationError}"
+                        Text="{Binding ValidationError}"
+                        TextWrapping="Wrap"
+                        Visibility="{Binding HasValidationError, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                </StackPanel>
+            </ScrollViewer>
+
+            <!--  按钮区域  -->
+            <StackPanel
+                Grid.Row="2"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <Button
+                    Margin="0,0,8,0"
+                    Command="{Binding CancelCommand}"
+                    Content="取消"
+                    IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
+                    Style="{StaticResource MaterialDesignOutlinedButton}" />
+                <Button
+                    Command="{Binding SaveCommand}"
+                    Content="保存"
+                    IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
+                    Style="{StaticResource MaterialDesignRaisedButton}" />
             </StackPanel>
-        </ScrollViewer>
-
-        <!--  按钮区域  -->
-        <StackPanel
-            Grid.Row="2"
-            Margin="0,16,0,0"
-            HorizontalAlignment="Right"
-            Orientation="Horizontal">
-            <Button
-                Margin="0,0,8,0"
-                Command="{Binding CancelCommand}"
-                Content="取消"
-                IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
-                Style="{StaticResource MaterialDesignOutlinedButton}" />
-            <Button
-                Command="{Binding SaveCommand}"
-                Content="保存"
-                IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
-                Style="{StaticResource MaterialDesignRaisedButton}" />
-        </StackPanel>
-    </Grid>
+        </Grid>
+    </Border>
 </UserControl>

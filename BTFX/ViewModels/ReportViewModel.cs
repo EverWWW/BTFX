@@ -5,7 +5,9 @@ using BTFX.Models;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MaterialDesignThemes.Wpf;
 using ToolHelper.LoggingDiagnostics.Abstractions;
+using Constants = BTFX.Common.Constants;
 
 namespace BTFX.ViewModels;
 
@@ -600,13 +602,9 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         // 检查是否已有报告
         if (HasExistingReport)
         {
-            var result = System.Windows.MessageBox.Show(
-                "该测量数据已有报告，是否覆盖？",
-                "确认覆盖",
-                System.Windows.MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Question);
+            var result = await ShowConfirmDialogAsync("确认覆盖", "该测量数据已有报告，是否覆盖？");
 
-            if (result != System.Windows.MessageBoxResult.Yes) return;
+            if (!result) return;
         }
 
         if (_disposed || App.IsShuttingDown) return;
@@ -627,14 +625,13 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                 {
                     if (_disposed || App.IsShuttingDown) return;
 
-                    System.Windows.MessageBox.Show("报告生成成功！", "提示",
-                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-
                     _logHelper?.Information($"生成报告成功：ID={report.Id}");
 
                     // 切换到报告列表
                     CurrentModeIndex = 0;
                 });
+
+                await ShowNoticeDialogAsync("提示", "报告生成成功！");
 
                 // 刷新报告列表
                 await LoadReportsAsync();
@@ -655,14 +652,54 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             if (!_disposed && !App.IsShuttingDown)
             {
                 _logHelper?.Error("生成报告失败", ex);
-                System.Windows.MessageBox.Show($"生成报告失败：{ex.Message}", "错误",
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                await ShowNoticeDialogAsync("错误", $"生成报告失败：{ex.Message}");
             }
         }
         finally
         {
             TryInvokeOnUI(() => IsGenerating = false);
         }
+    }
+
+    /// <summary>
+    /// 显示确认对话框。
+    /// </summary>
+    private static async Task<bool> ShowConfirmDialogAsync(string title, string message)
+    {
+        var result = await DialogHost.Show(
+            new Views.Dialogs.ConfirmDialog
+            {
+                DataContext = new ConfirmDialogViewModel
+                {
+                    Title = title,
+                    Message = message,
+                    ConfirmText = "确定",
+                    CancelText = "取消",
+                    IsCancelVisible = true
+                }
+            },
+            "RootDialog").ConfigureAwait(true);
+
+        return result is true;
+    }
+
+    /// <summary>
+    /// 显示提示对话框。
+    /// </summary>
+    private static Task ShowNoticeDialogAsync(string title, string message)
+    {
+        return DialogHost.Show(
+            new Views.Dialogs.ConfirmDialog
+            {
+                DataContext = new ConfirmDialogViewModel
+                {
+                    Title = title,
+                    Message = message,
+                    ConfirmText = "确定",
+                    IsCancelVisible = false
+                }
+            },
+            "RootDialog");
     }
 
     /// <summary>

@@ -164,13 +164,11 @@ public partial class DepartmentManagementViewModel : ObservableObject
     {
         if (item == null) return;
 
-        var result = System.Windows.MessageBox.Show(
-            $"确定要删除科室 {item.Department.Name} 吗？此操作不可恢复！",
+        var result = await ShowConfirmDialogAsync(
             "确认删除",
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Warning);
+            $"确定要删除科室 {item.Department.Name} 吗？此操作不可恢复！");
 
-        if (result != System.Windows.MessageBoxResult.Yes) return;
+        if (!result) return;
 
         try
         {
@@ -182,16 +180,55 @@ public partial class DepartmentManagementViewModel : ObservableObject
             }
             else
             {
-                System.Windows.MessageBox.Show("该科室正在被使用，无法删除", "警告",
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                await ShowNoticeDialogAsync("警告", "该科室正在被使用，无法删除");
             }
         }
         catch (Exception ex)
         {
             _logHelper?.Error($"删除科室失败: {item.Department.Name}", ex);
-            System.Windows.MessageBox.Show($"删除失败：{ex.Message}", "错误",
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            await ShowNoticeDialogAsync("错误", $"删除失败：{ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// 显示确认对话框。
+    /// </summary>
+    private static async Task<bool> ShowConfirmDialogAsync(string title, string message)
+    {
+        var result = await DialogHost.Show(
+            new ConfirmDialog
+            {
+                DataContext = new ConfirmDialogViewModel
+                {
+                    Title = title,
+                    Message = message,
+                    ConfirmText = "确定",
+                    CancelText = "取消",
+                    IsCancelVisible = true
+                }
+            },
+            "RootDialog").ConfigureAwait(true);
+
+        return result is true;
+    }
+
+    /// <summary>
+    /// 显示提示对话框。
+    /// </summary>
+    private static Task ShowNoticeDialogAsync(string title, string message)
+    {
+        return DialogHost.Show(
+            new ConfirmDialog
+            {
+                DataContext = new ConfirmDialogViewModel
+                {
+                    Title = title,
+                    Message = message,
+                    ConfirmText = "确定",
+                    IsCancelVisible = false
+                }
+            },
+            "RootDialog");
     }
 
     [RelayCommand]

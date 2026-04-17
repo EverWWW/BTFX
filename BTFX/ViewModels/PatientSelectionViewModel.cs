@@ -4,7 +4,9 @@ using BTFX.Models;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MaterialDesignThemes.Wpf;
 using ToolHelper.LoggingDiagnostics.Abstractions;
+using Constants = BTFX.Common.Constants;
 
 namespace BTFX.ViewModels;
 
@@ -300,10 +302,9 @@ public partial class PatientSelectionViewModel : ObservableObject
             {
                 viewModel.InitializeForAdd();
                 dialog.DataContext = viewModel;
-                dialog.Owner = System.Windows.Application.Current.MainWindow;
 
-                var result = dialog.ShowDialog();
-                if (result == true)
+                var result = await DialogHost.Show(dialog, "RootDialog");
+                if (result is true)
                 {
                     await LoadPatientsAsync();
                     _logHelper?.Information("Patient added successfully");
@@ -333,10 +334,9 @@ public partial class PatientSelectionViewModel : ObservableObject
             {
                 viewModel.InitializeForEdit(patient);
                 dialog.DataContext = viewModel;
-                dialog.Owner = System.Windows.Application.Current.MainWindow;
 
-                var result = dialog.ShowDialog();
-                if (result == true)
+                var result = await DialogHost.Show(dialog, "RootDialog");
+                if (result is true)
                 {
                     await LoadPatientsAsync();
                     _logHelper?.Information($"Patient edited successfully: {patient.Name}");
@@ -357,14 +357,11 @@ public partial class PatientSelectionViewModel : ObservableObject
     {
         if (patient == null) return;
 
-        // Show confirmation dialog
-        var result = System.Windows.MessageBox.Show(
-            _localizationService.GetString("ConfirmDeletePatient"),
+        var result = await ShowConfirmDialogAsync(
             _localizationService.GetString("ConfirmDelete"),
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Warning);
+            _localizationService.GetString("ConfirmDeletePatient"));
 
-        if (result != System.Windows.MessageBoxResult.Yes)
+        if (!result)
             return;
 
         try
@@ -387,12 +384,51 @@ public partial class PatientSelectionViewModel : ObservableObject
         catch (Exception ex)
         {
             _logHelper?.Error($"Failed to delete patient: {patient.Name}", ex);
-            System.Windows.MessageBox.Show(
+            await ShowNoticeDialogAsync(
                 _localizationService.GetString("DeleteFailedError"),
-                _localizationService.GetString("Error"),
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Error);
+                _localizationService.GetString("Error"));
         }
+    }
+
+    /// <summary>
+    /// 显示确认对话框。
+    /// </summary>
+    private static async Task<bool> ShowConfirmDialogAsync(string title, string message)
+    {
+        var result = await DialogHost.Show(
+            new Views.Dialogs.ConfirmDialog
+            {
+                DataContext = new ConfirmDialogViewModel
+                {
+                    Title = title,
+                    Message = message,
+                    ConfirmText = "确定",
+                    CancelText = "取消",
+                    IsCancelVisible = true
+                }
+            },
+            "RootDialog").ConfigureAwait(true);
+
+        return result is true;
+    }
+
+    /// <summary>
+    /// 显示提示对话框。
+    /// </summary>
+    private static Task ShowNoticeDialogAsync(string message, string title)
+    {
+        return DialogHost.Show(
+            new Views.Dialogs.ConfirmDialog
+            {
+                DataContext = new ConfirmDialogViewModel
+                {
+                    Title = title,
+                    Message = message,
+                    ConfirmText = "确定",
+                    IsCancelVisible = false
+                }
+            },
+            "RootDialog");
     }
 
     /// <summary>

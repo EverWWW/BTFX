@@ -205,6 +205,7 @@ public partial class PatientEditViewModel : ObservableObject
     public void InitializeForAdd()
     {
         _isEditMode = false;
+        DialogResult = null;
         DialogTitle = _localizationService.GetString("AddPatient");
         PatientId = 0;
         ClearForm();
@@ -216,6 +217,7 @@ public partial class PatientEditViewModel : ObservableObject
     public void InitializeForEdit(Patient patient)
     {
         _isEditMode = true;
+        DialogResult = null;
         DialogTitle = _localizationService.GetString("EditPatient");
         PatientId = patient.Id;
         Name = patient.Name;
@@ -251,6 +253,7 @@ public partial class PatientEditViewModel : ObservableObject
         MedicalHistory = string.Empty;
         Remark = string.Empty;
         ErrorMessage = string.Empty;
+        DialogResult = null;
     }
 
     /// <summary>

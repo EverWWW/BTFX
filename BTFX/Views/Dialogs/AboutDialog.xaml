@@ -12,10 +12,9 @@
     d:DesignWidth="400"
     mc:Ignorable="d">
 
-    <materialDesign:Card
+    <Border
         Padding="32"
-        materialDesign:ElevationAssist.Elevation="Dp8"
-        UniformCornerRadius="8">
+        Style="{StaticResource DialogSurfaceBorderStyle}">
         <Grid>
             <Grid.RowDefinitions>
                 <!--  Logo  -->
@@ -119,5 +118,5 @@
                 Content="{DynamicResource Close}"
                 Style="{StaticResource MaterialDesignRaisedButton}" />
         </Grid>
-    </materialDesign:Card>
+    </Border>
 </UserControl>

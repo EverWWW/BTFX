@@ -24,128 +24,135 @@
         <KeyBinding Key="Escape" Command="{Binding ExitFullscreenCommand}" />
     </Window.InputBindings>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <!--  标题栏：登录页时折叠为 0，其他页面显示  -->
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <materialDesign:DialogHost
+        x:Name="RootDialog"
+        CloseOnClickAway="False"
+        DialogClosing="RootDialog_OnDialogClosing"
+        DialogOpened="RootDialog_OnDialogOpened"
+        Identifier="RootDialog">
+        <Grid>
+            <Grid.RowDefinitions>
+                <!--  标题栏：登录页时折叠为 0，其他页面显示  -->
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-        <!--  顶部标题栏：登录页时折叠隐藏，其他页面共用  -->
-        <controls:TitleBarControl
-            x:Name="AppTitleBar"
-            Grid.Row="0"
-            controls:TitleBarControl.CloseClicked="TitleBar_CloseClicked"
-            MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"
-            UserDisplayName="{Binding UserDisplayName, FallbackValue=游客}"
-            Visibility="{Binding IsLoginView, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
+            <!--  顶部标题栏：登录页时折叠隐藏，其他页面共用  -->
+            <controls:TitleBarControl
+                x:Name="AppTitleBar"
+                Grid.Row="0"
+                controls:TitleBarControl.CloseClicked="TitleBar_CloseClicked"
+                MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"
+                UserDisplayName="{Binding UserDisplayName, FallbackValue=游客}"
+                Visibility="{Binding IsLoginView, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
 
-        <Grid Grid.Row="1">
-            <ContentControl Content="{Binding CurrentView}">
-                <ContentControl.ContentTemplate>
-                    <DataTemplate>
-                        <ContentPresenter Content="{Binding}" />
-                    </DataTemplate>
-                </ContentControl.ContentTemplate>
-            </ContentControl>
+            <Grid Grid.Row="1">
+                <ContentControl Content="{Binding CurrentView}">
+                    <ContentControl.ContentTemplate>
+                        <DataTemplate>
+                            <ContentPresenter Content="{Binding}" />
+                        </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                </ContentControl>
 
-            <StackPanel
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Visibility="{Binding CurrentView, Converter={StaticResource NullableToVisibilityConverter}, ConverterParameter=Inverse, FallbackValue=Visible}">
-                <materialDesign:PackIcon
-                    Width="100"
-                    Height="100"
+                <StackPanel
                     HorizontalAlignment="Center"
-                    Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
-                    Kind="Walk" />
-                <TextBlock
-                    Margin="0,24,0,0"
-                    HorizontalAlignment="Center"
-                    FontSize="32"
-                    FontWeight="Light"
-                    Text="{DynamicResource AppName}" />
-                <TextBlock
-                    Margin="0,8,0,0"
-                    HorizontalAlignment="Center"
-                    FontSize="16"
-                    Opacity="0.6"
-                    Text="Gait Analysis System Framework Ready" />
-                <TextBlock
-                    Margin="0,16,0,0"
-                    HorizontalAlignment="Center"
-                    FontSize="14"
-                    Opacity="0.4"
-                    Text="{Binding Version, StringFormat=Version: {0}}" />
-            </StackPanel>
+                    VerticalAlignment="Center"
+                    Visibility="{Binding CurrentView, Converter={StaticResource NullableToVisibilityConverter}, ConverterParameter=Inverse, FallbackValue=Visible}">
+                    <materialDesign:PackIcon
+                        Width="100"
+                        Height="100"
+                        HorizontalAlignment="Center"
+                        Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
+                        Kind="Walk" />
+                    <TextBlock
+                        Margin="0,24,0,0"
+                        HorizontalAlignment="Center"
+                        FontSize="32"
+                        FontWeight="Light"
+                        Text="{DynamicResource AppName}" />
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        HorizontalAlignment="Center"
+                        FontSize="16"
+                        Opacity="0.6"
+                        Text="Gait Analysis System Framework Ready" />
+                    <TextBlock
+                        Margin="0,16,0,0"
+                        HorizontalAlignment="Center"
+                        FontSize="14"
+                        Opacity="0.4"
+                        Text="{Binding Version, StringFormat=Version: {0}}" />
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Row="0" Grid.RowSpan="2">
+                <Rectangle
+                    x:Name="ResizeLeft"
+                    Width="4"
+                    HorizontalAlignment="Left"
+                    Cursor="SizeWE"
+                    Fill="Transparent"
+                    MouseLeftButtonDown="Resize_MouseLeftButtonDown" />
+                <Rectangle
+                    x:Name="ResizeRight"
+                    Width="4"
+                    HorizontalAlignment="Right"
+                    Cursor="SizeWE"
+                    Fill="Transparent"
+                    MouseLeftButtonDown="Resize_MouseLeftButtonDown" />
+                <Rectangle
+                    x:Name="ResizeTop"
+                    Height="4"
+                    VerticalAlignment="Top"
+                    Cursor="SizeNS"
+                    Fill="Transparent"
+                    MouseLeftButtonDown="Resize_MouseLeftButtonDown" />
+                <Rectangle
+                    x:Name="ResizeBottom"
+                    Height="4"
+                    VerticalAlignment="Bottom"
+                    Cursor="SizeNS"
+                    Fill="Transparent"
+                    MouseLeftButtonDown="Resize_MouseLeftButtonDown" />
+                <Rectangle
+                    x:Name="ResizeTopLeft"
+                    Width="8"
+                    Height="8"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Cursor="SizeNWSE"
+                    Fill="Transparent"
+                    MouseLeftButtonDown="Resize_MouseLeftButtonDown" />
+                <Rectangle
+                    x:Name="ResizeTopRight"
+                    Width="8"
+                    Height="8"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Cursor="SizeNESW"
+                    Fill="Transparent"
+                    MouseLeftButtonDown="Resize_MouseLeftButtonDown" />
+                <Rectangle
+                    x:Name="ResizeBottomLeft"
+                    Width="8"
+                    Height="8"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Cursor="SizeNESW"
+                    Fill="Transparent"
+                    MouseLeftButtonDown="Resize_MouseLeftButtonDown" />
+                <Rectangle
+                    x:Name="ResizeBottomRight"
+                    Width="8"
+                    Height="8"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Cursor="SizeNWSE"
+                    Fill="Transparent"
+                    MouseLeftButtonDown="Resize_MouseLeftButtonDown" />
+            </Grid>
         </Grid>
-
-        <Grid Grid.Row="0" Grid.RowSpan="2">
-            <Rectangle
-                x:Name="ResizeLeft"
-                Width="4"
-                HorizontalAlignment="Left"
-                Cursor="SizeWE"
-                Fill="Transparent"
-                MouseLeftButtonDown="Resize_MouseLeftButtonDown" />
-            <Rectangle
-                x:Name="ResizeRight"
-                Width="4"
-                HorizontalAlignment="Right"
-                Cursor="SizeWE"
-                Fill="Transparent"
-                MouseLeftButtonDown="Resize_MouseLeftButtonDown" />
-            <Rectangle
-                x:Name="ResizeTop"
-                Height="4"
-                VerticalAlignment="Top"
-                Cursor="SizeNS"
-                Fill="Transparent"
-                MouseLeftButtonDown="Resize_MouseLeftButtonDown" />
-            <Rectangle
-                x:Name="ResizeBottom"
-                Height="4"
-                VerticalAlignment="Bottom"
-                Cursor="SizeNS"
-                Fill="Transparent"
-                MouseLeftButtonDown="Resize_MouseLeftButtonDown" />
-            <Rectangle
-                x:Name="ResizeTopLeft"
-                Width="8"
-                Height="8"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Cursor="SizeNWSE"
-                Fill="Transparent"
-                MouseLeftButtonDown="Resize_MouseLeftButtonDown" />
-            <Rectangle
-                x:Name="ResizeTopRight"
-                Width="8"
-                Height="8"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Cursor="SizeNESW"
-                Fill="Transparent"
-                MouseLeftButtonDown="Resize_MouseLeftButtonDown" />
-            <Rectangle
-                x:Name="ResizeBottomLeft"
-                Width="8"
-                Height="8"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Bottom"
-                Cursor="SizeNESW"
-                Fill="Transparent"
-                MouseLeftButtonDown="Resize_MouseLeftButtonDown" />
-            <Rectangle
-                x:Name="ResizeBottomRight"
-                Width="8"
-                Height="8"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Bottom"
-                Cursor="SizeNWSE"
-                Fill="Transparent"
-                MouseLeftButtonDown="Resize_MouseLeftButtonDown" />
-        </Grid>
-    </Grid>
+    </materialDesign:DialogHost>
 
 </Window>

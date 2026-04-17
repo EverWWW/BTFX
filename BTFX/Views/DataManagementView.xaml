@@ -695,7 +695,7 @@
                         <TextBlock
                             Grid.Column="8"
                             Style="{StaticResource HeaderTextStyle}"
-                            Text="操作" />
+                            Text="导出" />
                         <TextBlock
                             Grid.Column="9"
                             Style="{StaticResource HeaderTextStyle}"

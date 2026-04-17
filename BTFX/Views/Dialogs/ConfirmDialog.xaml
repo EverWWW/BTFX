@@ -11,10 +11,9 @@
     d:DesignWidth="400"
     mc:Ignorable="d">
 
-    <materialDesign:Card
+    <Border
         Padding="24"
-        materialDesign:ElevationAssist.Elevation="Dp8"
-        UniformCornerRadius="8">
+        Style="{StaticResource DialogSurfaceBorderStyle}">
         <Grid>
             <Grid.RowDefinitions>
                 <!--  标题  -->
@@ -53,17 +52,18 @@
                     Margin="0,0,8,0"
                     Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
                     CommandParameter="{x:Static local:ConfirmDialog.FalseValue}"
-                    Content="{DynamicResource No}"
-                    Style="{StaticResource MaterialDesignFlatButton}" />
+                    Content="{Binding CancelText}"
+                    Style="{StaticResource MaterialDesignFlatButton}"
+                    Visibility="{Binding IsCancelVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
                 <!--  确认按钮  -->
                 <Button
                     MinWidth="80"
                     Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
                     CommandParameter="{x:Static local:ConfirmDialog.TrueValue}"
-                    Content="{DynamicResource Yes}"
+                    Content="{Binding ConfirmText}"
                     Style="{StaticResource MaterialDesignRaisedButton}" />
             </StackPanel>
         </Grid>
-    </materialDesign:Card>
+    </Border>
 </UserControl>

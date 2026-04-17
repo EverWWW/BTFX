@@ -538,14 +538,14 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
 
         try
         {
-            var dialog = App.Services?.GetService(typeof(Views.Dialogs.MeasurementDetailDialog)) as Views.Dialogs.MeasurementDetailDialog;
             var viewModel = App.Services?.GetService(typeof(MeasurementDetailViewModel)) as MeasurementDetailViewModel;
 
-            if (dialog != null && viewModel != null)
+            if (viewModel != null)
             {
                 viewModel.Initialize(item.Record);
+                var dialog = new Views.Dialogs.MeasurementDetailDialog();
                 dialog.DataContext = viewModel;
-                dialog.ShowDialog();
+                await MaterialDesignThemes.Wpf.DialogHost.Show(dialog, "RootDialog");
             }
 
             _logHelper?.Information($"查看测量详情：ID={item.Record.Id}");
@@ -553,6 +553,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             catch (Exception ex)
             {
                 _logHelper?.Error($"打开详情对话框失败：ID={item.Record.Id}", ex);
+                MessageBox.Show($"打开详情弹窗失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
