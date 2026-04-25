@@ -79,7 +79,7 @@
                             Style="{StaticResource MaterialDesignOutlinedButton}"
                             Margin="0,0,8,0"
                             Visibility="{Binding AnalysisState, Converter={StaticResource AnalysisStateToVisibilityConverter}, ConverterParameter=Running}" />
-                    <!-- Previewing: 重新分析 / 参数概览|视频预览 / 查看报告 -->
+                    <!-- Previewing: 重新分析 / 参数概览|视频预览 / 查看分析详情 -->
                     <StackPanel Orientation="Horizontal"
                                 Visibility="{Binding AnalysisState, Converter={StaticResource AnalysisStateToVisibilityConverter}, ConverterParameter=Previewing}">
                         <Button Content="{DynamicResource MA.Step4.Btn.RetryAnalyze}"
@@ -176,7 +176,7 @@
                 <StackPanel MaxWidth="520" HorizontalAlignment="Center" Margin="0,48,0,24">
 
                     <!-- 进度条 -->
-                    <ProgressBar Value="{Binding Progress}" Height="10" Margin="0,0,0,12" />
+                    <ProgressBar Value="{Binding Progress, Mode=OneWay}" Height="10" Margin="0,0,0,12" />
                     <TextBlock HorizontalAlignment="Right" Foreground="Gray" Margin="0,0,0,24">
                         <Run Text="{Binding Progress, Mode=OneWay, StringFormat={}{0}%}" />
                     </TextBlock>

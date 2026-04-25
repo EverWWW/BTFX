@@ -162,6 +162,16 @@
     <system:String x:Key="ReportTime">Report Time</system:String>
     <system:String x:Key="ReportStatus">Report Status</system:String>
     <system:String x:Key="ConfirmOverwriteReport">A report already exists for this measurement. Do you want to overwrite it?</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig">Report Configuration</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.RefreshDraft">Refresh Draft</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.ReportNumber">Report Number</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.AnalysisSource">Analysis Source</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.Operator">Configured By</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.LastUpdated">Last Updated</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.BasicInfo">Basic Information</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.ReportTitle">Report Title</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.IncludeSections">Included Sections</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.IncludeSummary">Configuration Summary</system:String>
 
     <!--  Report View  -->
     <system:String x:Key="EnterName">Enter name</system:String>
@@ -489,7 +499,7 @@
     <system:String x:Key="MA.Step4.Btn.StartAnalyze">Start Analysis</system:String>
     <system:String x:Key="MA.Step4.Btn.CancelAnalyze">Cancel Analysis</system:String>
     <system:String x:Key="MA.Step4.Btn.RetryAnalyze">Retry Analysis</system:String>
-    <system:String x:Key="MA.Step4.Btn.ViewReport">View Report</system:String>
+    <system:String x:Key="MA.Step4.Btn.ViewReport">View Analysis Details</system:String>
     <system:String x:Key="MA.Step4.Btn.ParamsOverview">Parameters Overview</system:String>
     <system:String x:Key="MA.Step4.Btn.VideoPreview">Video Preview</system:String>
     <system:String x:Key="MA.Step4.Btn.ViewLog">View Log</system:String>
@@ -598,5 +608,33 @@
     <system:String x:Key="MA.Status.Running">Running</system:String>
     <system:String x:Key="MA.Status.Completed">Completed</system:String>
     <system:String x:Key="MA.Status.Failed">Failed</system:String>
+
+    <!--  Analysis Detail Report Preview  -->
+    <system:String x:Key="AnalysisDetail.ReportConfig.PreviewEntry">Report Preview Entry</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.PreviewButton">View Report Preview</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.PreviewPreparing">Report preview preparation status: {0}</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Title">Report Preview</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Subtitle">Preview generated from the current analysis draft for content review only.</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Summary">Preview Summary</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.ReportTitle">Report Title</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.ReportNumber">Report Number</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Source">Analysis Source</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Sections">Included Sections</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Status">Preview Status</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.UpdatedAt">Last updated: {0}</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.BackToConfig">Back to Configuration</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Close">Close Preview</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.EmptyValue">--</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.SourceValue">AnalysisResult #{0}</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Status.NotLoaded">Report preview has not been loaded yet.</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Status.Ready">The preview for the current draft is ready. You can go back to configuration and continue adjusting it.</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Sections.EmptySummary">No configuration summary available</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Sections.NoneSelected">No sections selected</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Sections.ParseFailed">Failed to parse configuration summary</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Sections.Spatiotemporal">Spatiotemporal Parameters</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Sections.KinematicSummary">Kinematic Summary</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Sections.QualityControl">Quality Control</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Sections.ResultFiles">Result File Summary</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Sections.Separator">, </system:String>
 
 </ResourceDictionary>

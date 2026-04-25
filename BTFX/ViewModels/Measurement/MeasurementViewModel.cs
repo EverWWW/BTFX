@@ -1,10 +1,12 @@
 ﻿using System.Collections.ObjectModel;
+using System.Windows;
 using BTFX.Common;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
+using Microsoft.Extensions.DependencyInjection;
 using ToolHelper.LoggingDiagnostics.Abstractions;
 
 namespace BTFX.ViewModels.Measurement;
@@ -249,12 +251,36 @@ public partial class MeasurementViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 查看报告事件处理（由 Step4AnalyzeViewModel 触发）
+    /// 查看分析详情事件处理（由 Step4AnalyzeViewModel 触发）。
     /// </summary>
-    private void OnViewReportRequested()
+    private async void OnViewReportRequested()
     {
-        // TODO: Phase 5 实现跳转到报告模块
-        _logHelper?.Information("请求查看报告");
+        if (CurrentMeasurement is null)
+        {
+            _logHelper?.Warning("打开分析详情失败：当前测量记录为空");
+            return;
+        }
+
+        try
+        {
+            CurrentMeasurement.Patient ??= CurrentPatient;
+
+            var viewModel = App.Services.GetRequiredService<GaitAnalysisDetailViewModel>();
+            await viewModel.InitializeAsync(CurrentMeasurement);
+
+            var dialog = new Views.Dialogs.MeasurementDetailDialog
+            {
+                DataContext = viewModel
+            };
+
+            await DialogHost.Show(dialog, "RootDialog");
+            _logHelper?.Information($"从测量分析步骤打开分析详情：MeasurementId={CurrentMeasurement.Id}");
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"从测量分析步骤打开分析详情失败：MeasurementId={CurrentMeasurement.Id}", ex);
+            MessageBox.Show($"打开分析详情失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     /// <summary>

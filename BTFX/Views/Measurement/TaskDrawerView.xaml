@@ -41,7 +41,7 @@
                     </Grid.ColumnDefinitions>
 
                     <ProgressBar Grid.Column="0" 
-                                 Value="{Binding AnalysisProgress}"
+                                 Value="{Binding AnalysisProgress, Mode=OneWay}"
                                  Height="8"
                                  VerticalAlignment="Center" />
 

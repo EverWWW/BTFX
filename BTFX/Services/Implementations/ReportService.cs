@@ -1,6 +1,7 @@
 ﻿using BTFX.Common;
 using BTFX.Data;
 using BTFX.Models;
+using BTFX.Models.Analysis;
 using BTFX.Services.Interfaces;
 using ToolHelper.LoggingDiagnostics.Abstractions;
 
@@ -45,8 +46,8 @@ public class ReportService : IReportService
             // 加载关联数据
             foreach (var report in reports)
             {
-                report.MeasurementRecord = await _measurementService.GetMeasurementByIdAsync(report.MeasurementId);
-                report.Patient = report.MeasurementRecord?.Patient;
+                await LoadReportRelatedDataAsync(report);
+                await LoadAnalysisDataForReportAsync(report);
             }
 
             return reports;
@@ -69,8 +70,8 @@ public class ReportService : IReportService
 
             if (report != null)
             {
-                report.MeasurementRecord = await _measurementService.GetMeasurementByIdAsync(report.MeasurementId);
-                report.Patient = report.MeasurementRecord?.Patient;
+                await LoadReportRelatedDataAsync(report);
+                await LoadAnalysisDataForReportAsync(report);
             }
 
             return report;
@@ -78,6 +79,59 @@ public class ReportService : IReportService
         catch (Exception ex)
         {
             _logHelper?.Error($"获取测量报告失败: MeasurementId={measurementRecordId}", ex);
+            return null;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<Report?> GetOrCreateDraftReportAsync(int measurementRecordId, int operatorId)
+    {
+        try
+        {
+            var existingReport = await GetReportByMeasurementIdAsync(measurementRecordId);
+            if (existingReport != null)
+            {
+                return existingReport;
+            }
+
+            var measurement = await _measurementService.GetMeasurementByIdAsync(measurementRecordId);
+            if (measurement == null)
+            {
+                _logHelper?.Error($"获取或创建报告草稿失败，找不到测量记录: MeasurementId={measurementRecordId}");
+                return null;
+            }
+
+            var report = new Report
+            {
+                ReportNumber = GenerateReportNumber(),
+                MeasurementId = measurementRecordId,
+                MeasurementRecord = measurement,
+                PatientId = measurement.PatientId,
+                Patient = measurement.Patient,
+                CreatedBy = operatorId,
+                Status = ReportStatus.Draft,
+                Title = string.IsNullOrWhiteSpace(measurement.Patient?.Name)
+                    ? "步态分析报告"
+                    : $"步态分析报告 - {measurement.Patient.Name}",
+                DoctorOpinion = string.Empty,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            };
+
+            var id = await CreateReportAsync(report);
+            if (id <= 0)
+            {
+                return null;
+            }
+
+            report.Id = id;
+            await LoadAnalysisDataForReportAsync(report);
+            _logHelper?.Information($"已创建报告草稿: Id={report.Id}, MeasurementId={measurementRecordId}");
+            return report;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"获取或创建报告草稿失败: MeasurementId={measurementRecordId}", ex);
             return null;
         }
     }
@@ -93,8 +147,8 @@ public class ReportService : IReportService
 
             if (report != null)
             {
-                report.MeasurementRecord = await _measurementService.GetMeasurementByIdAsync(report.MeasurementId);
-                report.Patient = report.MeasurementRecord?.Patient;
+                await LoadReportRelatedDataAsync(report);
+                await LoadAnalysisDataForReportAsync(report);
             }
 
             return report;
@@ -142,9 +196,13 @@ public class ReportService : IReportService
             var count = await db.UpdateAsync<Report>(
                 r => new Report
                 {
+                    Title = report.Title,
                     DoctorOpinion = report.DoctorOpinion,
                     Status = report.Status,
                     PdfFilePath = report.PdfFilePath,
+                    AnalysisResultId = report.AnalysisResultId,
+                    ReportOptionsJson = report.ReportOptionsJson,
+                    WordFilePath = report.WordFilePath,
                     UpdatedAt = report.UpdatedAt
                 },
                 r => r.Id == report.Id);
@@ -154,6 +212,36 @@ public class ReportService : IReportService
         catch (Exception ex)
         {
             _logHelper?.Error($"更新报告失败: Id={report.Id}", ex);
+            return false;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> SaveDraftSnapshotAsync(Report report)
+    {
+        try
+        {
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
+
+            report.UpdatedAt = DateTime.Now;
+
+            var count = await db.UpdateAsync<Report>(
+                r => new Report
+                {
+                    Title = report.Title,
+                    DoctorOpinion = report.DoctorOpinion,
+                    AnalysisResultId = report.AnalysisResultId,
+                    ReportOptionsJson = report.ReportOptionsJson,
+                    WordFilePath = report.WordFilePath,
+                    UpdatedAt = report.UpdatedAt
+                },
+                r => r.Id == report.Id);
+
+            return count > 0;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"保存报告草稿快照失败: Id={report.Id}", ex);
             return false;
         }
     }
@@ -349,8 +437,8 @@ public class ReportService : IReportService
             // 加载关联数据
             foreach (var report in reports)
             {
-                report.MeasurementRecord = await _measurementService.GetMeasurementByIdAsync(report.MeasurementId);
-                report.Patient = report.MeasurementRecord?.Patient;
+                await LoadReportRelatedDataAsync(report);
+                await LoadAnalysisDataForReportAsync(report);
             }
 
             return reports;
@@ -382,7 +470,6 @@ public class ReportService : IReportService
         {
             // 更新现有报告
             existing.Status = ReportStatus.Draft;
-            existing.DoctorOpinion = string.Empty;
             await UpdateReportAsync(existing);
             
             // 加载分析数据
@@ -403,6 +490,9 @@ public class ReportService : IReportService
                 Patient = measurement.Patient,
                 CreatedBy = operatorId,
                 Status = ReportStatus.Draft,
+                Title = string.IsNullOrWhiteSpace(measurement.Patient?.Name)
+                    ? "步态分析报告"
+                    : $"步态分析报告 - {measurement.Patient.Name}",
                 DoctorOpinion = string.Empty,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
@@ -442,12 +532,23 @@ public class ReportService : IReportService
             var gaitAnalysisService = App.Services?.GetService(typeof(IGaitAnalysisService)) as IGaitAnalysisService;
             if (gaitAnalysisService == null) return;
 
-            // 获取最新分析结果
-            var analysisResult = await gaitAnalysisService.GetLatestAnalysisResultAsync(report.MeasurementId);
+            AnalysisResult? analysisResult = null;
+
+            if (report.AnalysisResultId.HasValue)
+            {
+                var snapshotResult = await gaitAnalysisService.GetAnalysisResultByIdAsync(report.AnalysisResultId.Value);
+                if (snapshotResult?.Success == true && snapshotResult.MeasurementId == report.MeasurementId)
+                {
+                    analysisResult = snapshotResult;
+                }
+            }
+
+            analysisResult ??= await gaitAnalysisService.GetLatestAnalysisResultAsync(report.MeasurementId);
             if (analysisResult == null || !analysisResult.Success) return;
 
             // 填充导航属性
             report.AnalysisResult = analysisResult;
+            report.AnalysisResultId = analysisResult.Id;
             report.KinematicSummary = analysisResult.KinematicSummary;
             report.QualityControl = analysisResult.QualityControl;
 
@@ -456,6 +557,22 @@ public class ReportService : IReportService
         catch (Exception ex)
         {
             _logHelper?.Error($"报告加载分析数据失败：ReportId={report.Id}", ex);
+        }
+    }
+
+    /// <summary>
+    /// 加载报告关联的测量与患者数据。
+    /// </summary>
+    private async Task LoadReportRelatedDataAsync(Report report)
+    {
+        report.MeasurementRecord = await _measurementService.GetMeasurementByIdAsync(report.MeasurementId);
+        report.Patient = report.MeasurementRecord?.Patient;
+
+        if (string.IsNullOrWhiteSpace(report.Title))
+        {
+            report.Title = string.IsNullOrWhiteSpace(report.Patient?.Name)
+                ? "步态分析报告"
+                : $"步态分析报告 - {report.Patient.Name}";
         }
     }
 }

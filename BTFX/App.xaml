@@ -90,38 +90,41 @@
                         <BeginStoryboard>
                             <Storyboard FillBehavior="HoldEnd">
                                 <DoubleAnimation
+                                    EasingFunction="{StaticResource DialogAnimationEase}"
                                     Storyboard.TargetProperty="Opacity"
                                     To="1"
-                                    Duration="0:0:0.2"
-                                    EasingFunction="{StaticResource DialogAnimationEase}" />
+                                    Duration="0:0:0.2" />
                                 <DoubleAnimation
+                                    EasingFunction="{StaticResource DialogAnimationEase}"
                                     Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
                                     To="1"
-                                    Duration="0:0:0.22"
-                                    EasingFunction="{StaticResource DialogAnimationEase}" />
+                                    Duration="0:0:0.22" />
                                 <DoubleAnimation
+                                    EasingFunction="{StaticResource DialogAnimationEase}"
                                     Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
                                     To="1"
-                                    Duration="0:0:0.22"
-                                    EasingFunction="{StaticResource DialogAnimationEase}" />
+                                    Duration="0:0:0.22" />
                             </Storyboard>
                         </BeginStoryboard>
                     </EventTrigger>
                 </Style.Triggers>
             </Style>
 
-            <Style x:Key="DialogSurfaceBorderStyle" BasedOn="{StaticResource DialogAnimatedSurfaceStyle}" TargetType="Border">
+            <Style
+                x:Key="DialogSurfaceBorderStyle"
+                BasedOn="{StaticResource DialogAnimatedSurfaceStyle}"
+                TargetType="Border">
                 <Setter Property="Background" Value="#FFFFFF" />
-                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="CornerRadius" Value="2" />
                 <Setter Property="SnapsToDevicePixels" Value="True" />
                 <Setter Property="Effect">
                     <Setter.Value>
                         <DropShadowEffect
                             BlurRadius="24"
-                            Color="#1F2A37"
                             Direction="270"
                             Opacity="0.16"
-                            ShadowDepth="8" />
+                            ShadowDepth="8"
+                            Color="#1F2A37" />
                     </Setter.Value>
                 </Setter>
             </Style>

@@ -1,4 +1,8 @@
+﻿using System.IO;
+using System.Text.Json;
+using System.Windows.Documents;
 using BTFX.Common;
+using BTFX.Helpers;
 using BTFX.Models;
 using BTFX.Models.Analysis;
 using BTFX.ViewModels;
@@ -282,5 +286,146 @@ internal static class MockDataGenerator
         }
 
         return items;
+    }
+
+    /// <summary>
+    /// 创建用于分析详情页预览的模拟测量与分析结果。
+    /// </summary>
+    internal static (MeasurementRecord record, AnalysisResult result) CreateAnalysisDetailPreviewData()
+    {
+        var patient = CreateMockPatient();
+        patient.Id = 1001;
+        patient.Name = "李晓晨（分析详情预览）";
+        patient.Height = 168;
+        patient.Weight = 58;
+        patient.Remark = "近期术后步态恢复随访，重点观察右侧摆动期控制。";
+
+        var record = CreateMockMeasurement(patient);
+        record.Id = 2001;
+        record.PatientId = patient.Id;
+        record.MeasurementName = "术后第 6 周步态复查";
+        record.MeasurementDate = DateTime.Now.AddHours(-3);
+        record.MeasurementFolderPath = @"D:\DevPreview\Measurements\2026-04-10-2001";
+        record.CurrentAnalysisStage = AnalysisStage.Kinematics;
+        record.KeypointsCompleted = true;
+        record.EventsCompleted = true;
+        record.KinematicsCompleted = true;
+        record.GaitParameters = new GaitParameters
+        {
+            Id = 3001,
+            MeasurementRecordId = record.Id,
+            AnalysisResultId = 4001,
+            Cadence = 107.2,
+            Velocity = 1.12,
+            GaitCycleDurationS = 1.11,
+            StepLengthM = 0.63,
+            StrideLengthM = 1.25,
+            GaitSpeedMPerS = 1.12,
+            StanceTimeS = 0.68,
+            SwingTimeS = 0.43,
+            DoubleSupportTimeS = 0.21,
+            SingleSupportTimeS = 0.47,
+            StrideLengthLeft = 126.4,
+            StrideLengthRight = 124.8,
+            StepLengthLeft = 63.1,
+            StepLengthRight = 62.4,
+            StancePhaseLeft = 61.2,
+            StancePhaseRight = 60.7,
+            SwingPhaseLeft = 38.8,
+            SwingPhaseRight = 39.3,
+            DoubleSupport = 20.8,
+            SingleSupport = 39.6,
+            SymmetryIndex = 0.94,
+            StepWidth = 10.6,
+            VariabilityCoefficient = 4.1
+        };
+
+        var result = CreateGradeBResult();
+        result.Id = 4001;
+        result.MeasurementId = record.Id;
+        result.RequestId = "GAIT_PREVIEW_20260410_001";
+        result.OutputDirectory = @"D:\DevPreview\Measurements\2026-04-10-2001\analysis-result-4001";
+        result.SummaryFilePath = Path.Combine(result.OutputDirectory, "summary.json");
+        result.AnnotatedVideoPath = Path.Combine(result.OutputDirectory, "annotated_side.mp4");
+        result.CreatedAt = DateTime.Now.AddHours(-2);
+        result.AnalysisDurationSeconds = 52.7;
+        result.GaitCycleDurationS = 1.11;
+        result.StanceTimeS = 0.68;
+        result.SwingTimeS = 0.43;
+        result.DoubleSupportTimeS = 0.21;
+        result.SingleSupportTimeS = 0.47;
+        result.StepLengthM = 0.63;
+        result.StrideLengthM = 1.25;
+        result.GaitSpeedMPerS = 1.12;
+        result.CsvFiles =
+        [
+            new AnalysisCsvFile
+            {
+                Id = 1,
+                AnalysisResultId = result.Id,
+                FileType = CsvFileType.KeypointTrajectory,
+                FilePath = Path.Combine(result.OutputDirectory, "gait_parameters.csv"),
+                FileExists = true
+            },
+            new AnalysisCsvFile
+            {
+                Id = 2,
+                AnalysisResultId = result.Id,
+                FileType = CsvFileType.JointAngle,
+                FilePath = Path.Combine(result.OutputDirectory, "joint_angles.csv"),
+                FileExists = false
+            },
+            new AnalysisCsvFile
+            {
+                Id = 3,
+                AnalysisResultId = result.Id,
+                FileType = CsvFileType.JointAngularVelocity,
+                FilePath = Path.Combine(result.OutputDirectory, "quality_control.csv"),
+                FileExists = true
+            }
+        ];
+
+        record.LatestAnalysisResult = result;
+        record.AnalysisResults = [result];
+
+        return (record, result);
+    }
+
+    /// <summary>
+    /// 创建用于报告预览页的模拟报告数据。
+    /// </summary>
+    internal static (Report report, FlowDocument document) CreateReportPreviewData()
+    {
+        var (record, result) = CreateAnalysisDetailPreviewData();
+        var report = new Report
+        {
+            Id = 5001,
+            MeasurementId = record.Id,
+            MeasurementRecord = record,
+            PatientId = record.PatientId,
+            Patient = record.Patient,
+            CreatedBy = 1,
+            ReportNumber = $"RPT-{DateTime.Now:yyyyMMdd}-501",
+            Title = "步态分析报告（预览稿）",
+            ReportDate = DateTime.Now,
+            DoctorOpinion = "整体步态节律基本恢复，右侧摆动期仍存在轻度保护性代偿，建议继续进行髋膝踝联合稳定训练。",
+            Status = ReportStatus.Draft,
+            AnalysisResultId = result.Id,
+            AnalysisResult = result,
+            KinematicSummary = result.KinematicSummary,
+            QualityControl = result.QualityControl,
+            PdfFilePath = Path.Combine(result.OutputDirectory, "步态分析报告（预览稿）.pdf"),
+            WordFilePath = Path.Combine(result.OutputDirectory, "步态分析报告（预览稿）.docx"),
+            CreatedAt = DateTime.Now.AddMinutes(-20),
+            UpdatedAt = DateTime.Now.AddMinutes(-5),
+            ReportOptionsJson = JsonSerializer.Serialize(new ReportDraftOptions(
+                IncludeSpatiotemporalParameters: true,
+                IncludeKinematicSummary: true,
+                IncludeQualityControl: true,
+                IncludeResultFiles: false))
+        };
+
+        var document = ReportPreviewHelper.GenerateReportDocument(report, "步态智能分析系统 · DevTest 预览");
+        return (report, document);
     }
 }

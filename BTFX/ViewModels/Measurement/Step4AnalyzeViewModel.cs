@@ -37,7 +37,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     public event Action<int>? NavigateToStepRequested;
 
     /// <summary>
-    /// 请求查看报告的事件（由 MeasurementViewModel 订阅）
+    /// 请求查看分析详情的事件（由 MeasurementViewModel 订阅）。
     /// </summary>
     public event Action? ViewReportRequested;
 
@@ -630,7 +630,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     private bool CanRetryAnalyze() => IsPreviewing || IsFailed;
 
     /// <summary>
-    /// 查看报告
+    /// 查看分析详情。
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanViewReport))]
     private void ViewReport()

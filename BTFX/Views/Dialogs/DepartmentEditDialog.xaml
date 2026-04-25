@@ -19,7 +19,7 @@
 
     <Border
         MinWidth="420"
-        Margin="16"
+        Margin="1"
         Padding="24"
         Style="{StaticResource DialogSurfaceBorderStyle}">
         <Border.Resources>

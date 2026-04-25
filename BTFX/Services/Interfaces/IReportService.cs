@@ -23,6 +23,14 @@ public interface IReportService
     Task<Report?> GetReportByMeasurementIdAsync(int measurementRecordId);
 
     /// <summary>
+    /// 获取或创建报告草稿（含分析数据）。
+    /// </summary>
+    /// <param name="measurementRecordId">测量记录ID</param>
+    /// <param name="operatorId">操作员ID</param>
+    /// <returns>报告草稿</returns>
+    Task<Report?> GetOrCreateDraftReportAsync(int measurementRecordId, int operatorId);
+
+    /// <summary>
     /// 根据ID获取报告
     /// </summary>
     /// <param name="id">报告ID</param>
@@ -42,6 +50,13 @@ public interface IReportService
     /// <param name="report">报告信息</param>
     /// <returns>是否成功</returns>
     Task<bool> UpdateReportAsync(Report report);
+
+    /// <summary>
+    /// 保存报告草稿快照配置。
+    /// </summary>
+    /// <param name="report">报告草稿</param>
+    /// <returns>是否成功</returns>
+    Task<bool> SaveDraftSnapshotAsync(Report report);
 
     /// <summary>
     /// 删除报告

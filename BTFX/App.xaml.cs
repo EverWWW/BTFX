@@ -500,6 +500,8 @@ public partial class App : Application
         services.AddTransient<MainContainerViewModel>();
         services.AddTransient<DataManagementViewModel>();
         services.AddTransient<MeasurementDetailViewModel>();
+        services.AddTransient<GaitAnalysisDetailViewModel>();
+        services.AddTransient<ReportPreviewDialogViewModel>();
         services.AddTransient<ReportViewModel>();
         services.AddTransient<SettingsViewModel>();
 
@@ -528,6 +530,7 @@ public partial class App : Application
         services.AddTransient<Views.ReportView>();
         services.AddTransient<Views.SettingsView>();
         services.AddTransient<Views.Dialogs.MeasurementDetailDialog>();
+        services.AddTransient<Views.Dialogs.ReportPreviewDialog>();
         services.AddTransient<Views.Dialogs.ConfirmDialog>();
         services.AddTransient<Views.Dialogs.AboutDialog>();
 

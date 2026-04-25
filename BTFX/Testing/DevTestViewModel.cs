@@ -1,4 +1,5 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using System.Reflection;
 using System.Windows;
 using BTFX.Common;
 using BTFX.Models;
@@ -21,7 +22,7 @@ public partial class DevTestViewModel : ObservableObject
     private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
-    /// 当前嵌入的内容视图（MeasurementView 或 ReportView）
+    /// 当前嵌入的内容视图（MeasurementView、ReportView 或对话框预览视图）
     /// </summary>
     [ObservableProperty]
     private object? _previewContent;
@@ -477,6 +478,45 @@ public partial class DevTestViewModel : ObservableObject
     // ========== 报告模块场景 ==========
 
     /// <summary>
+    /// 新分析详情页预览。
+    /// </summary>
+    [RelayCommand]
+    private void ShowAnalysisDetailPreview()
+    {
+        var detailView = CreateAnalysisDetailView();
+        var detailVm = detailView.DataContext as GaitAnalysisDetailViewModel
+            ?? _serviceProvider.GetService(typeof(GaitAnalysisDetailViewModel)) as GaitAnalysisDetailViewModel
+            ?? throw new InvalidOperationException("无法创建 GaitAnalysisDetailViewModel");
+
+        PopulateAnalysisDetailPreview(detailVm);
+        detailView.DataContext = detailVm;
+
+        CurrentScenario = "分析详情 - 新详情页预览";
+        StatusText = "展示：统一分析详情宿主 + 左侧导航 + 概览/参数/质量/文件/报告配置分区，可直接在预览中切换模块";
+        PreviewContent = detailView;
+    }
+
+    /// <summary>
+    /// 新报告预览页预览。
+    /// </summary>
+    [RelayCommand]
+    private async Task ShowReportPreviewPageAsync()
+    {
+        var previewView = CreateReportPreviewView();
+        var previewVm = previewView.DataContext as ReportPreviewDialogViewModel
+            ?? _serviceProvider.GetService(typeof(ReportPreviewDialogViewModel)) as ReportPreviewDialogViewModel
+            ?? new ReportPreviewDialogViewModel();
+
+        var (report, document) = MockDataGenerator.CreateReportPreviewData();
+        await previewVm.InitializeAsync(report, document);
+        previewView.DataContext = previewVm;
+
+        CurrentScenario = "报告 - 新报告预览页预览";
+        StatusText = "展示：报告摘要卡片 + FlowDocument 预览区域 + 返回配置/关闭按钮布局";
+        PreviewContent = previewView;
+    }
+
+    /// <summary>
     /// 报告列表模式
     /// </summary>
     [RelayCommand]
@@ -766,5 +806,91 @@ public partial class DevTestViewModel : ObservableObject
     private FrameworkElement? CreateReportView()
     {
         return _serviceProvider.GetService(typeof(Views.ReportView)) as FrameworkElement;
+    }
+
+    /// <summary>
+    /// 创建分析详情预览视图。
+    /// </summary>
+    private FrameworkElement CreateAnalysisDetailView()
+    {
+        return _serviceProvider.GetService(typeof(Views.Dialogs.MeasurementDetailDialog)) as FrameworkElement
+            ?? new Views.Dialogs.MeasurementDetailDialog();
+    }
+
+    /// <summary>
+    /// 创建报告预览视图。
+    /// </summary>
+    private FrameworkElement CreateReportPreviewView()
+    {
+        return _serviceProvider.GetService(typeof(Views.Dialogs.ReportPreviewDialog)) as FrameworkElement
+            ?? new Views.Dialogs.ReportPreviewDialog();
+    }
+
+    /// <summary>
+    /// 填充分析详情预览数据。
+    /// </summary>
+    private static void PopulateAnalysisDetailPreview(GaitAnalysisDetailViewModel vm)
+    {
+        var (record, result) = MockDataGenerator.CreateAnalysisDetailPreviewData();
+        var (report, _) = MockDataGenerator.CreateReportPreviewData();
+
+        vm.Record = record;
+        vm.AnalysisResult = result;
+        vm.DetailState = AnalysisDetailState.Success;
+        vm.IsLoading = false;
+        vm.StateTitle = "分析结果详情";
+        vm.StateMessage = "已为 DevTest 场景装配模拟分析结果，可直接检查统一详情宿主的布局与各分区展示。";
+
+        SetNonPublicProperty(vm, nameof(GaitAnalysisDetailViewModel.CurrentReportDraft), report);
+        SetNonPublicProperty(vm, nameof(GaitAnalysisDetailViewModel.ReportConfigTitle), "报告配置");
+        SetNonPublicProperty(vm, nameof(GaitAnalysisDetailViewModel.ReportConfigMessage), "已注入 DevTest 报告草稿，可直接预览分析详情页中的配置区、摘要卡片与预览入口布局。当前场景不会写入数据库。");
+        SetNonPublicProperty(vm, nameof(GaitAnalysisDetailViewModel.ReportPreviewMessage), "当前草稿已准备完成，可继续检查预览入口与配置摘要展示效果。");
+        SetNonPublicProperty(vm, nameof(GaitAnalysisDetailViewModel.IsReportConfigLoading), false);
+        SetNonPublicProperty(vm, nameof(GaitAnalysisDetailViewModel.IsPreparingReportPreview), false);
+
+        vm.ReportTitle = report.Title;
+        vm.ReportDoctorOpinion = report.DoctorOpinion ?? string.Empty;
+        vm.IncludeSpatiotemporalParameters = true;
+        vm.IncludeKinematicSummary = true;
+        vm.IncludeQualityControl = true;
+        vm.IncludeResultFiles = false;
+        vm.SelectedNavigationItem = vm.NavigationItems.FirstOrDefault(item => item.Key == "overview")
+            ?? vm.NavigationItems.FirstOrDefault();
+
+        SetNonPublicField(vm, "_hasPendingDraftSnapshotChanges", false);
+        InvokeNonPublicMethod(vm, "NotifyComputedPropertiesChanged");
+    }
+
+    /// <summary>
+    /// 设置非公开属性。
+    /// </summary>
+    private static void SetNonPublicProperty(object target, string propertyName, object? value)
+    {
+        var property = target.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException($"未找到属性：{propertyName}");
+
+        property.SetValue(target, value);
+    }
+
+    /// <summary>
+    /// 设置非公开字段。
+    /// </summary>
+    private static void SetNonPublicField(object target, string fieldName, object? value)
+    {
+        var field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException($"未找到字段：{fieldName}");
+
+        field.SetValue(target, value);
+    }
+
+    /// <summary>
+    /// 调用非公开方法。
+    /// </summary>
+    private static void InvokeNonPublicMethod(object target, string methodName)
+    {
+        var method = target.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException($"未找到方法：{methodName}");
+
+        method.Invoke(target, null);
     }
 }

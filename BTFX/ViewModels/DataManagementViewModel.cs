@@ -538,17 +538,17 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
 
         try
         {
-            var viewModel = App.Services?.GetService(typeof(MeasurementDetailViewModel)) as MeasurementDetailViewModel;
+            var viewModel = App.Services?.GetService(typeof(GaitAnalysisDetailViewModel)) as GaitAnalysisDetailViewModel;
 
             if (viewModel != null)
             {
-                viewModel.Initialize(item.Record);
+                await viewModel.InitializeAsync(item.Record);
                 var dialog = new Views.Dialogs.MeasurementDetailDialog();
                 dialog.DataContext = viewModel;
                 await MaterialDesignThemes.Wpf.DialogHost.Show(dialog, "RootDialog");
             }
 
-            _logHelper?.Information($"查看测量详情：ID={item.Record.Id}");
+            _logHelper?.Information($"查看分析详情：ID={item.Record.Id}");
         }
             catch (Exception ex)
             {

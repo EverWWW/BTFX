@@ -163,6 +163,16 @@
     <system:String x:Key="ReportTime">报告时间</system:String>
     <system:String x:Key="ReportStatus">报告状态</system:String>
     <system:String x:Key="ConfirmOverwriteReport">此测量已有报告，是否覆盖？</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig">报告配置</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.RefreshDraft">刷新草稿</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.ReportNumber">报告编号</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.AnalysisSource">分析来源</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.Operator">配置人</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.LastUpdated">最近更新时间</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.BasicInfo">基础信息</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.ReportTitle">报告标题</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.IncludeSections">内容包含项</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.IncludeSummary">当前配置摘要</system:String>
 
     <!--  Report View  -->
     <system:String x:Key="EnterName">输入姓名</system:String>
@@ -491,7 +501,7 @@
     <system:String x:Key="MA.Step4.Btn.StartAnalyze">开始分析</system:String>
     <system:String x:Key="MA.Step4.Btn.CancelAnalyze">取消分析</system:String>
     <system:String x:Key="MA.Step4.Btn.RetryAnalyze">重新分析</system:String>
-    <system:String x:Key="MA.Step4.Btn.ViewReport">查看报告</system:String>
+    <system:String x:Key="MA.Step4.Btn.ViewReport">查看分析详情</system:String>
     <system:String x:Key="MA.Step4.Btn.ParamsOverview">参数概览</system:String>
     <system:String x:Key="MA.Step4.Btn.VideoPreview">视频预览</system:String>
     <system:String x:Key="MA.Step4.Btn.ViewLog">查看日志</system:String>
@@ -600,5 +610,33 @@
     <system:String x:Key="MA.Status.Running">运行中</system:String>
     <system:String x:Key="MA.Status.Completed">已完成</system:String>
     <system:String x:Key="MA.Status.Failed">失败</system:String>
+
+    <!--  Analysis Detail Report Preview  -->
+    <system:String x:Key="AnalysisDetail.ReportConfig.PreviewEntry">报告预览入口</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.PreviewButton">查看报告预览</system:String>
+    <system:String x:Key="AnalysisDetail.ReportConfig.PreviewPreparing">报告预览准备状态：{0}</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Title">报告预览</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Subtitle">基于当前分析结果草稿生成的预览，仅用于内容复核。</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Summary">预览摘要</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.ReportTitle">报告标题</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.ReportNumber">报告编号</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Source">分析来源</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Sections">当前包含项</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Status">预览状态</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.UpdatedAt">最近更新时间：{0}</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.BackToConfig">返回配置</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Close">关闭预览</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.EmptyValue">--</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.SourceValue">AnalysisResult #{0}</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Status.NotLoaded">尚未加载报告预览。</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Status.Ready">已生成当前草稿的报告预览，可在返回配置后继续调整。</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Sections.EmptySummary">未提供配置摘要</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Sections.NoneSelected">未选择包含项</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Sections.ParseFailed">配置摘要解析失败</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Sections.Spatiotemporal">时空参数</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Sections.KinematicSummary">运动学摘要</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Sections.QualityControl">质量控制</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Sections.ResultFiles">结果文件摘要</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.Sections.Separator">、</system:String>
 
 </ResourceDictionary>

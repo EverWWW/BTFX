@@ -522,6 +522,19 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
+    /// 进入 DevTest。
+    /// </summary>
+    [RelayCommand]
+    private void OpenDevTest()
+    {
+        var devTestItem = NavigationItems.FirstOrDefault(item => item.Key == "DevTest");
+        if (devTestItem?.IsEnabled == true)
+        {
+            SelectedNavigationItem = devTestItem;
+        }
+    }
+
+    /// <summary>
     /// 切换患者
     /// </summary>
     [RelayCommand]

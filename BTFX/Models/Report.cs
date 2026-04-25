@@ -59,6 +59,12 @@ public class Report
     public string ReportNumber { get; set; } = string.Empty;
 
     /// <summary>
+    /// 报告标题
+    /// </summary>
+    [SugarColumn(Length = 200, IsNullable = true)]
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>
     /// 报告日期
     /// </summary>
     [SugarColumn(IsNullable = false)]
@@ -83,6 +89,24 @@ public class Report
     public string? PdfFilePath { get; set; }
 
     /// <summary>
+    /// 分析结果ID
+    /// </summary>
+    [SugarColumn(IsNullable = true)]
+    public int? AnalysisResultId { get; set; }
+
+    /// <summary>
+    /// 报告配置快照
+    /// </summary>
+    [SugarColumn(ColumnDataType = "text", IsNullable = true)]
+    public string? ReportOptionsJson { get; set; }
+
+    /// <summary>
+    /// Word文件路径
+    /// </summary>
+    [SugarColumn(Length = 500, IsNullable = true)]
+    public string? WordFilePath { get; set; }
+
+    /// <summary>
     /// 创建时间
     /// </summary>
     [SugarColumn(IsNullable = false)]
@@ -105,12 +129,6 @@ public class Report
         get => MeasurementId;
         set => MeasurementId = value;
     }
-
-    /// <summary>
-    /// 报告标题（忽略）
-    /// </summary>
-    [SugarColumn(IsIgnore = true)]
-    public string Title { get; set; } = string.Empty;
 
     /// <summary>
     /// 主诉（忽略）
@@ -189,4 +207,5 @@ public class Report
     /// </summary>
     [SugarColumn(IsIgnore = true)]
     public AnalysisResult? AnalysisResult { get; set; }
+
 }
