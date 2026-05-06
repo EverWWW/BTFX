@@ -491,6 +491,7 @@ public partial class App : Application
         services.AddTransient<IDepartmentService, DepartmentService>();
         services.AddTransient<IGaitAnalysisService, GaitAnalysisService>();
         services.AddTransient<IChartService, ChartService>();
+        services.AddTransient<ICameraRecordingService, FfmpegCameraRecordingService>();
 
         // ========== ViewModel 注册 ==========
         services.AddTransient<MainWindowViewModel>();
@@ -504,6 +505,7 @@ public partial class App : Application
         services.AddTransient<ReportPreviewDialogViewModel>();
         services.AddTransient<ReportViewModel>();
         services.AddTransient<SettingsViewModel>();
+        services.AddTransient<Testing.CameraRecordingTestViewModel>();
 
         // Settings 子 ViewModel
         services.AddTransient<ViewModels.Settings.GeneralSettingsViewModel>();
@@ -533,6 +535,7 @@ public partial class App : Application
         services.AddTransient<Views.Dialogs.ReportPreviewDialog>();
         services.AddTransient<Views.Dialogs.ConfirmDialog>();
         services.AddTransient<Views.Dialogs.AboutDialog>();
+        services.AddTransient<Testing.CameraRecordingTestDialog>();
 
         // Measurement 模块 View
         services.AddTransient<Views.Measurement.MeasurementView>();
