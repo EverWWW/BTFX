@@ -492,6 +492,7 @@ public partial class App : Application
         services.AddTransient<IGaitAnalysisService, GaitAnalysisService>();
         services.AddTransient<IChartService, ChartService>();
         services.AddTransient<ICameraRecordingService, FfmpegCameraRecordingService>();
+        services.AddSingleton<ICameraCaptureSettingsService, CameraCaptureSettingsService>();
 
         // ========== ViewModel 注册 ==========
         services.AddTransient<MainWindowViewModel>();

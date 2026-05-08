@@ -41,6 +41,11 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     /// </summary>
     public event Action? ViewReportRequested;
 
+    /// <summary>
+    /// 请求生成报告。
+    /// </summary>
+    public event Action? GenerateReportRequested;
+
     #region 状态管理
 
     /// <summary>
@@ -59,6 +64,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(StepForwardCommand))]
     [NotifyCanExecuteChangedFor(nameof(ToggleParamsViewCommand))]
     [NotifyCanExecuteChangedFor(nameof(ViewReportCommand))]
+    [NotifyCanExecuteChangedFor(nameof(GenerateReportCommand))]
     [NotifyCanExecuteChangedFor(nameof(ViewLogCommand))]
     [NotifyCanExecuteChangedFor(nameof(GoToStep2Command))]
     private AnalysisState _analysisState = AnalysisState.Ready;
@@ -641,6 +647,15 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     private bool CanViewReport() => IsPreviewing;
 
     /// <summary>
+    /// 生成报告。
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanViewReport))]
+    private void GenerateReport()
+    {
+        GenerateReportRequested?.Invoke();
+    }
+
+    /// <summary>
     /// 播放/暂停
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanPlayPause))]
@@ -718,7 +733,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     private void GoToStep2()
     {
         ResetToReady();
-        NavigateToStepRequested?.Invoke(2);
+        NavigateToStepRequested?.Invoke(1);
     }
 
     private bool CanGoToStep2() => IsFailed;

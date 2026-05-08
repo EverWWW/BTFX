@@ -45,10 +45,12 @@ public sealed class FfmpegCameraRecordingService : ICameraRecordingService
             .ToArray();
 
         await Task.WhenAll(recordTasks);
+        Report(logProgress, "STAGE:RECORD_DONE");
         Report(logProgress, "录制阶段完成");
 
         if (options.TranscodeToMp4)
         {
+            Report(logProgress, "STAGE:TRANSCODE_START");
             foreach (var task in tasks)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -63,6 +65,7 @@ public sealed class FfmpegCameraRecordingService : ICameraRecordingService
         }
 
         Report(logProgress, "全部任务完成");
+        Report(logProgress, "STAGE:DONE");
         return tasks
             .Select(task => new CameraRecordingResult(
                 task.CameraName,
@@ -106,7 +109,8 @@ public sealed class FfmpegCameraRecordingService : ICameraRecordingService
         IProgress<string>? logProgress,
         CancellationToken cancellationToken)
     {
-        var arguments = BuildTranscodeArguments(task.AviFile, task.Mp4File);
+        options.TransformOptionsByCameraName.TryGetValue(task.CameraName, out var transformOptions);
+        var arguments = BuildTranscodeArguments(task.AviFile, task.Mp4File, transformOptions);
         Report(logProgress, $"开始转码: {task.CameraName}");
         Report(logProgress, $"{options.FfmpegPath} {arguments}");
 
@@ -228,18 +232,40 @@ public sealed class FfmpegCameraRecordingService : ICameraRecordingService
             Quote(aviFile));
     }
 
-    private static string BuildTranscodeArguments(string aviFile, string mp4File)
+    private static string BuildTranscodeArguments(string aviFile, string mp4File, CameraTransformOptions? transformOptions)
     {
+        var videoFilter = BuildVideoFilter(transformOptions);
         return string.Join(
             " ",
             "-y",
             $"-i {Quote(aviFile)}",
-            "-vf \"scale=in_range=pc:out_range=tv,format=yuv420p\"",
+            $"-vf {Quote(videoFilter)}",
             "-c:v libx264",
             "-preset veryfast",
             "-crf 18",
             "-movflags +faststart",
             Quote(mp4File));
+    }
+
+    private static string BuildVideoFilter(CameraTransformOptions? transformOptions)
+    {
+        var filters = new List<string>
+        {
+            "scale=in_range=pc:out_range=tv"
+        };
+
+        if (transformOptions?.Orientation == CameraOrientation.PortraitClockwise)
+        {
+            filters.Add("transpose=1");
+        }
+
+        if (transformOptions?.FlipHorizontal == true)
+        {
+            filters.Add("vflip");
+        }
+
+        filters.Add("format=yuv420p");
+        return string.Join(",", filters);
     }
 
     private static string Quote(string value)

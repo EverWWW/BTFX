@@ -17,4 +17,7 @@ public sealed class CameraRecordingOptions
     public bool TranscodeToMp4 { get; set; } = true;
 
     public bool DeleteAviAfterMp4 { get; set; } = true;
+
+    public IReadOnlyDictionary<string, CameraTransformOptions> TransformOptionsByCameraName { get; set; } =
+        new Dictionary<string, CameraTransformOptions>(StringComparer.OrdinalIgnoreCase);
 }

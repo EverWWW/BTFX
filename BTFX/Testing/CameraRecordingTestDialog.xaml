@@ -5,27 +5,23 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Width="980"
-    MaxWidth="1100"
-    MaxHeight="760"
-    d:DesignHeight="720"
-    d:DesignWidth="980"
-    mc:Ignorable="d">
+    Width="1400"
+    Height="940"
+    d:DesignHeight="940"
+    d:DesignWidth="1400"
+    mc:Ignorable="d"
+    Unloaded="CameraRecordingTestDialog_OnUnloaded">
 
-    <Border Padding="28" Style="{StaticResource DialogSurfaceBorderStyle}">
+    <Border Padding="20" Style="{StaticResource DialogSurfaceBorderStyle}">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="52" />
+                <RowDefinition Height="92" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="70" />
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0" Margin="0,0,0,20">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
+            <Grid Grid.Row="0">
                 <StackPanel Orientation="Horizontal">
                     <materialDesign:PackIcon
                         Width="30"
@@ -34,249 +30,495 @@
                         VerticalAlignment="Center"
                         Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
                         Kind="Video4KBox" />
-                    <StackPanel>
+                    <StackPanel VerticalAlignment="Center">
                         <TextBlock
                             FontSize="22"
                             FontWeight="SemiBold"
-                            Text="临时相机录制测试" />
+                            Text="相机视频采集" />
                         <TextBlock
-                            Margin="0,4,0,0"
+                            Margin="0,3,0,0"
                             FontSize="13"
                             Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
-                            Text="复现 Python 脚本的 DirectShow 录制、AVI 保存和 MP4 转码流程" />
+                            Text="实时预览、录制、转码和本地回放检查" />
                     </StackPanel>
-                </StackPanel>
-
-                <Border
-                    Grid.Column="1"
-                    Padding="12,5"
-                    VerticalAlignment="Top"
-                    Background="#FFF4F0"
-                    CornerRadius="4">
-                    <TextBlock
-                        FontSize="12"
-                        Foreground="#A84300"
-                        Text="{Binding StatusText}" />
-                </Border>
-            </Grid>
-
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="360" />
-                    <ColumnDefinition Width="20" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
-                    <StackPanel IsEnabled="{Binding IsRecording, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                        <TextBlock
-                            Margin="0,0,0,6"
-                            FontWeight="SemiBold"
-                            Text="FFmpeg 路径" />
-                        <TextBox
-                            Margin="0,0,0,14"
-                            materialDesign:HintAssist.Hint="C:\ffmpeg\bin\ffmpeg.exe"
-                            Text="{Binding FfmpegPath, UpdateSourceTrigger=PropertyChanged}" />
-
-                        <TextBlock
-                            Margin="0,0,0,6"
-                            FontWeight="SemiBold"
-                            Text="保存目录" />
-                        <TextBox
-                            Margin="0,0,0,14"
-                            materialDesign:HintAssist.Hint="D:\ZUT_test\video"
-                            Text="{Binding SaveDirectory, UpdateSourceTrigger=PropertyChanged}" />
-
-                        <TextBlock
-                            Margin="0,0,0,6"
-                            FontWeight="SemiBold"
-                            Text="相机名称 / 编号" />
-                        <TextBox
-                            Height="88"
-                            Margin="0,0,0,14"
-                            AcceptsReturn="True"
-                            Text="{Binding CameraNamesText, UpdateSourceTrigger=PropertyChanged}"
-                            TextWrapping="Wrap"
-                            VerticalScrollBarVisibility="Auto" />
-
-                        <Grid Margin="0,0,0,14">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="12" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0">
-                                <TextBlock
-                                    Margin="0,0,0,6"
-                                    FontWeight="SemiBold"
-                                    Text="分辨率" />
-                                <ComboBox
-                                    ItemsSource="{Binding Resolutions}"
-                                    SelectedItem="{Binding SelectedResolution}" />
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="2">
-                                <TextBlock
-                                    Margin="0,0,0,6"
-                                    FontWeight="SemiBold"
-                                    Text="帧率" />
-                                <TextBox Text="{Binding FrameRate, UpdateSourceTrigger=PropertyChanged}" />
-                            </StackPanel>
-                        </Grid>
-
-                        <TextBlock
-                            Margin="0,0,0,6"
-                            FontWeight="SemiBold"
-                            Text="录制时长（秒）" />
-                        <TextBox
-                            Margin="0,0,0,14"
-                            Text="{Binding DurationSeconds, UpdateSourceTrigger=PropertyChanged}" />
-
-                        <CheckBox
-                            Margin="0,0,0,8"
-                            Content="录制完成后转码为 MP4"
-                            IsChecked="{Binding TranscodeToMp4}" />
-                        <CheckBox
-                            Margin="0,0,0,20"
-                            Content="MP4 转码成功后删除临时 AVI"
-                            IsChecked="{Binding DeleteAviAfterMp4}" />
-                    </StackPanel>
-                </ScrollViewer>
-
-                <Grid Grid.Column="2">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="12" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-
-                    <Border
-                        Grid.Row="0"
-                        Padding="12"
-                        Background="#101418"
-                        CornerRadius="6">
-                        <DockPanel>
-                            <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
-                                <TextBlock
-                                    VerticalAlignment="Center"
-                                    FontWeight="SemiBold"
-                                    Foreground="#DCE3EA"
-                                    Text="运行日志" />
-                                <Button
-                                    HorizontalAlignment="Right"
-                                    Command="{Binding ClearLogCommand}"
-                                    Foreground="#DCE3EA"
-                                    Style="{StaticResource MaterialDesignFlatButton}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon
-                                            Width="16"
-                                            Height="16"
-                                            Margin="0,0,4,0"
-                                            Kind="Broom" />
-                                        <TextBlock Text="清空" />
-                                    </StackPanel>
-                                </Button>
-                            </Grid>
-
-                            <ListBox
-                                Background="Transparent"
-                                BorderThickness="0"
-                                FontFamily="Consolas"
-                                FontSize="12"
-                                Foreground="#DCE3EA"
-                                ItemsSource="{Binding LogLines}"
-                                ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                                ScrollViewer.VerticalScrollBarVisibility="Auto" />
-                        </DockPanel>
-                    </Border>
-
-                    <Border
-                        Grid.Row="2"
-                        Padding="12"
-                        Background="#F7F9FB"
-                        BorderBrush="#E1E6EC"
-                        BorderThickness="1"
-                        CornerRadius="6">
-                        <StackPanel>
-                            <TextBlock
-                                Margin="0,0,0,8"
-                                FontWeight="SemiBold"
-                                Text="输出文件" />
-                            <ItemsControl ItemsSource="{Binding OutputFiles}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock
-                                            Margin="0,0,0,4"
-                                            FontFamily="Consolas"
-                                            FontSize="12"
-                                            Text="{Binding}"
-                                            TextWrapping="Wrap" />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </Border>
-                </Grid>
-            </Grid>
-
-            <Grid Grid.Row="2" Margin="0,20,0,0">
-                <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
-                    <Button
-                        Command="{Binding StartRecordingCommand}"
-                        Style="{StaticResource MaterialDesignRaisedButton}">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon
-                                Width="18"
-                                Height="18"
-                                Margin="0,0,6,0"
-                                Kind="RecordRec" />
-                            <TextBlock Text="开始录制" />
-                        </StackPanel>
-                    </Button>
-                    <Button
-                        Margin="10,0,0,0"
-                        Command="{Binding CancelRecordingCommand}"
-                        Style="{StaticResource MaterialDesignOutlinedButton}">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon
-                                Width="18"
-                                Height="18"
-                                Margin="0,0,6,0"
-                                Kind="StopCircleOutline" />
-                            <TextBlock Text="取消" />
-                        </StackPanel>
-                    </Button>
-                    <Button
-                        Margin="10,0,0,0"
-                        Command="{Binding OpenSaveDirectoryCommand}"
-                        Style="{StaticResource MaterialDesignOutlinedButton}">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon
-                                Width="18"
-                                Height="18"
-                                Margin="0,0,6,0"
-                                Kind="FolderOpenOutline" />
-                            <TextBlock Text="打开目录" />
-                        </StackPanel>
-                    </Button>
                 </StackPanel>
 
                 <Button
+                    Width="34"
+                    Height="34"
                     HorizontalAlignment="Right"
-                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
-                    IsEnabled="{Binding IsRecording, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                    Style="{StaticResource MaterialDesignFlatButton}">
-                    <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon
-                            Width="18"
-                            Height="18"
-                            Margin="0,0,6,0"
-                            Kind="Close" />
-                        <TextBlock Text="关闭" />
-                    </StackPanel>
+                    VerticalAlignment="Center"
+                    Click="CloseButton_OnClick"
+                    Style="{StaticResource MaterialDesignIconButton}"
+                    ToolTip="关闭">
+                    <materialDesign:PackIcon Kind="Close" />
                 </Button>
             </Grid>
+
+            <materialDesign:Card Grid.Row="1" Padding="16" UniformCornerRadius="6">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.35*" />
+                        <ColumnDefinition Width="1.15*" />
+                        <ColumnDefinition Width="1.05*" />
+                        <ColumnDefinition Width="1.05*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="当前模式" />
+                        <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
+                            <Button
+                                Command="{Binding SetSingleModeCommand}"
+                                Content="单视角"
+                                Style="{StaticResource MaterialDesignOutlinedButton}" />
+                            <Button
+                                Margin="8,0,0,0"
+                                Command="{Binding SetDualModeCommand}"
+                                Content="双视角"
+                                Style="{StaticResource MaterialDesignRaisedButton}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="录制分辨率" />
+                        <ComboBox
+                            Width="150"
+                            Margin="10,0,0,0"
+                            ItemsSource="{Binding Resolutions}"
+                            SelectedItem="{Binding SelectedResolution}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="录制帧率" />
+                        <ComboBox
+                            Width="130"
+                            Margin="10,0,0,0"
+                            ItemsSource="{Binding FrameRateOptions}"
+                            SelectedItem="{Binding SelectedFrameRate}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="3" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="录制时长" />
+                        <ComboBox
+                            Width="110"
+                            Margin="10,0,0,0"
+                            ItemsSource="{Binding DurationOptions}"
+                            SelectedItem="{Binding SelectedDuration}" />
+                    </StackPanel>
+                </Grid>
+            </materialDesign:Card>
+
+            <Grid Grid.Row="2" Margin="0,14,0,14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <materialDesign:Card Grid.Column="0" Padding="12" UniformCornerRadius="6">
+                    <materialDesign:Card.Style>
+                        <Style TargetType="materialDesign:Card">
+                            <Setter Property="Grid.ColumnSpan" Value="1" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsDualMode}" Value="False">
+                                    <Setter Property="Grid.ColumnSpan" Value="3" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </materialDesign:Card.Style>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontWeight="SemiBold"
+                                Text="侧面相机" />
+                            <Border
+                                Grid.Column="1"
+                                Margin="10,0,0,0"
+                                Padding="8,3"
+                                VerticalAlignment="Center"
+                                Background="#F4F7F5"
+                                CornerRadius="4">
+                                <TextBlock
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Foreground="{Binding SideCameraStatusBrush}"
+                                    Text="{Binding SideCameraStatus}" />
+                            </Border>
+                            <Button
+                                Grid.Column="2"
+                                Width="32"
+                                Height="32"
+                                Margin="4,0,0,0"
+                                Command="{Binding RefreshCameraStatusCommand}"
+                                Style="{StaticResource MaterialDesignIconButton}"
+                                ToolTip="刷新相机状态">
+                                <materialDesign:PackIcon Kind="Refresh" />
+                            </Button>
+                            <StackPanel
+                                Grid.Column="4"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal">
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
+                                    Text="相机ID：" />
+                                <TextBlock
+                                    Width="170"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
+                                    Text="{Binding SideCameraName}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <Button
+                                    Margin="4,0,0,0"
+                                    Command="{Binding EditSideCameraCommand}"
+                                    Content="修改"
+                                    Style="{StaticResource MaterialDesignFlatButton}" />
+                            </StackPanel>
+                        </Grid>
+                        <Border
+                            Grid.Row="1"
+                            Width="500"
+                            Height="500"
+                            Margin="0,10,0,10"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Background="#111827"
+                            CornerRadius="4">
+                            <Grid>
+                                <Image
+                                    Source="{Binding SidePreviewImage}"
+                                    Stretch="Uniform"
+                                    Visibility="{Binding IsPreviewState, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                <StackPanel
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Visibility="{Binding IsRecordingState, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                        <Ellipse
+                                            Width="10"
+                                            Height="10"
+                                            Margin="0,0,8,0"
+                                            VerticalAlignment="Center"
+                                            Fill="#EF4444" />
+                                        <TextBlock
+                                            FontSize="20"
+                                            FontWeight="SemiBold"
+                                            Foreground="#F87171"
+                                            Text="{Binding RecordingStageText}" />
+                                    </StackPanel>
+                                    <TextBlock
+                                        Margin="0,12,0,0"
+                                        HorizontalAlignment="Center"
+                                        FontSize="18"
+                                        Foreground="White"
+                                        Text="{Binding RecordingElapsedDisplayText}"
+                                        Visibility="{Binding IsRecordingCountdownVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    <TextBlock
+                                        Width="420"
+                                        Margin="0,12,0,0"
+                                        HorizontalAlignment="Center"
+                                        FontSize="12"
+                                        Foreground="#D1D5DB"
+                                        Text="{Binding TranscodeLogText}"
+                                        TextAlignment="Center"
+                                        TextTrimming="CharacterEllipsis"
+                                        Visibility="{Binding IsTranscodingVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                </StackPanel>
+                                <MediaElement
+                                    x:Name="SidePlaybackMediaElement"
+                                    LoadedBehavior="Manual"
+                                    Stretch="Uniform"
+                                    UnloadedBehavior="Stop"
+                                    Visibility="{Binding IsCompletedState, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                            </Grid>
+                        </Border>
+                        <Grid Grid.Row="2">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton
+                                    Content="横向"
+                                    GroupName="SideOrientation"
+                                    IsEnabled="{Binding IsPreviewState}"
+                                    IsChecked="{Binding SideOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Landscape}" />
+                                <RadioButton
+                                    Margin="12,0,0,0"
+                                    Content="纵向"
+                                    GroupName="SideOrientation"
+                                    IsEnabled="{Binding IsPreviewState}"
+                                    IsChecked="{Binding SideOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=PortraitClockwise}" />
+                                <CheckBox
+                                    Margin="14,0,0,0"
+                                    Content="上下翻转"
+                                    IsEnabled="{Binding IsPreviewState}"
+                                    IsChecked="{Binding SideFlipHorizontal}" />
+                            </StackPanel>
+                            <StackPanel
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Visibility="{Binding IsCompletedState, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Button
+                                    Width="34"
+                                    Height="34"
+                                    Click="SidePlaybackButton_OnClick"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource MaterialDesignIconButton}">
+                                    <materialDesign:PackIcon x:Name="SidePlaybackIcon" Kind="Play" />
+                                </Button>
+                                <Slider
+                                    x:Name="SidePlaybackSlider"
+                                    Width="180"
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Focusable="False"
+                                    IsHitTestVisible="False" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </materialDesign:Card>
+
+                <materialDesign:Card
+                    Grid.Column="2"
+                    Padding="12"
+                    UniformCornerRadius="6"
+                    Visibility="{Binding IsDualMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontWeight="SemiBold"
+                                Text="正面相机" />
+                            <Border
+                                Grid.Column="1"
+                                Margin="10,0,0,0"
+                                Padding="8,3"
+                                VerticalAlignment="Center"
+                                Background="#F4F7F5"
+                                CornerRadius="4">
+                                <TextBlock
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Foreground="{Binding FrontCameraStatusBrush}"
+                                    Text="{Binding FrontCameraStatus}" />
+                            </Border>
+                            <Button
+                                Grid.Column="2"
+                                Width="32"
+                                Height="32"
+                                Margin="4,0,0,0"
+                                Command="{Binding RefreshCameraStatusCommand}"
+                                Style="{StaticResource MaterialDesignIconButton}"
+                                ToolTip="刷新相机状态">
+                                <materialDesign:PackIcon Kind="Refresh" />
+                            </Button>
+                            <StackPanel
+                                Grid.Column="4"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal">
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
+                                    Text="相机ID：" />
+                                <TextBlock
+                                    Width="170"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
+                                    Text="{Binding FrontCameraName}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <Button
+                                    Margin="4,0,0,0"
+                                    Command="{Binding EditFrontCameraCommand}"
+                                    Content="修改"
+                                    Style="{StaticResource MaterialDesignFlatButton}" />
+                            </StackPanel>
+                        </Grid>
+                        <Border
+                            Grid.Row="1"
+                            Width="500"
+                            Height="500"
+                            Margin="0,10,0,10"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Background="#111827"
+                            CornerRadius="4">
+                            <Grid>
+                                <Image
+                                    Source="{Binding FrontPreviewImage}"
+                                    Stretch="Uniform"
+                                    Visibility="{Binding IsPreviewState, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                <StackPanel
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Visibility="{Binding IsRecordingState, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                        <Ellipse
+                                            Width="10"
+                                            Height="10"
+                                            Margin="0,0,8,0"
+                                            VerticalAlignment="Center"
+                                            Fill="#EF4444" />
+                                        <TextBlock
+                                            FontSize="20"
+                                            FontWeight="SemiBold"
+                                            Foreground="#F87171"
+                                            Text="{Binding RecordingStageText}" />
+                                    </StackPanel>
+                                    <TextBlock
+                                        Margin="0,12,0,0"
+                                        HorizontalAlignment="Center"
+                                        FontSize="18"
+                                        Foreground="White"
+                                        Text="{Binding RecordingElapsedDisplayText}"
+                                        Visibility="{Binding IsRecordingCountdownVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    <TextBlock
+                                        Width="420"
+                                        Margin="0,12,0,0"
+                                        HorizontalAlignment="Center"
+                                        FontSize="12"
+                                        Foreground="#D1D5DB"
+                                        Text="{Binding TranscodeLogText}"
+                                        TextAlignment="Center"
+                                        TextTrimming="CharacterEllipsis"
+                                        Visibility="{Binding IsTranscodingVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                </StackPanel>
+                                <MediaElement
+                                    x:Name="FrontPlaybackMediaElement"
+                                    LoadedBehavior="Manual"
+                                    Stretch="Uniform"
+                                    UnloadedBehavior="Stop"
+                                    Visibility="{Binding IsCompletedState, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                            </Grid>
+                        </Border>
+                        <Grid Grid.Row="2">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton
+                                    Content="横向"
+                                    GroupName="FrontOrientation"
+                                    IsEnabled="{Binding IsPreviewState}"
+                                    IsChecked="{Binding FrontOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Landscape}" />
+                                <RadioButton
+                                    Margin="12,0,0,0"
+                                    Content="纵向"
+                                    GroupName="FrontOrientation"
+                                    IsEnabled="{Binding IsPreviewState}"
+                                    IsChecked="{Binding FrontOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=PortraitClockwise}" />
+                                <CheckBox
+                                    Margin="14,0,0,0"
+                                    Content="上下翻转"
+                                    IsEnabled="{Binding IsPreviewState}"
+                                    IsChecked="{Binding FrontFlipHorizontal}" />
+                            </StackPanel>
+                            <StackPanel
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Visibility="{Binding IsCompletedState, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Button
+                                    Width="34"
+                                    Height="34"
+                                    Click="FrontPlaybackButton_OnClick"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource MaterialDesignIconButton}">
+                                    <materialDesign:PackIcon x:Name="FrontPlaybackIcon" Kind="Play" />
+                                </Button>
+                                <Slider
+                                    x:Name="FrontPlaybackSlider"
+                                    Width="180"
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Focusable="False"
+                                    IsHitTestVisible="False" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </materialDesign:Card>
+            </Grid>
+
+            <materialDesign:Card Grid.Row="3" Padding="16" UniformCornerRadius="6">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+                    <Button
+                        Command="{Binding StartOrResetRecordingCommand}"
+                        IsEnabled="{Binding IsRecordingState, Converter={StaticResource InverseBooleanConverter}}"
+                        Style="{StaticResource MaterialDesignRaisedButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Margin="0,0,6,0" Kind="RecordRec" />
+                            <TextBlock Text="{Binding PrimaryActionText}" />
+                        </StackPanel>
+                    </Button>
+                    <Button
+                        Margin="12,0,0,0"
+                        Command="{Binding OpenSaveDirectoryCommand}"
+                        Content="预览本地文件"
+                        Style="{StaticResource MaterialDesignOutlinedButton}" />
+                    <Button
+                        Margin="12,0,0,0"
+                        Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                        CommandParameter="{Binding CaptureResult}"
+                        Content="确定"
+                        IsEnabled="{Binding CanConfirm}"
+                        Style="{StaticResource MaterialDesignRaisedButton}" />
+                </StackPanel>
+            </materialDesign:Card>
+
+            <Border
+                Grid.RowSpan="4"
+                Background="#66000000"
+                Visibility="{Binding IsCameraNameEditorOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <materialDesign:Card
+                    Width="360"
+                    Padding="20"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    UniformCornerRadius="6">
+                    <StackPanel>
+                        <TextBlock
+                            FontSize="18"
+                            FontWeight="SemiBold"
+                            Text="修改相机编号" />
+                        <TextBox
+                            Margin="0,18,0,18"
+                            materialDesign:HintAssist.Hint="DirectShow 相机设备名"
+                            Text="{Binding EditingCameraName, UpdateSourceTrigger=PropertyChanged}" />
+                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                            <Button
+                                Command="{Binding CancelEditCameraNameCommand}"
+                                Content="取消"
+                                Style="{StaticResource MaterialDesignFlatButton}" />
+                            <Button
+                                Margin="8,0,0,0"
+                                Command="{Binding ConfirmEditCameraNameCommand}"
+                                Content="确认"
+                                Style="{StaticResource MaterialDesignRaisedButton}" />
+                        </StackPanel>
+                    </StackPanel>
+                </materialDesign:Card>
+            </Border>
         </Grid>
     </Border>
 </UserControl>

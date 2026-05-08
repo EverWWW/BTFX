@@ -33,78 +33,31 @@
             <!-- 视频区：单/双视频自适应布局 -->
             <Grid Grid.Row="0">
 
-                <!-- 双视频模式：并排两个播放卡片 -->
+                <!-- 双视频模式：播放已合成的并排预览视频 -->
                 <Grid Visibility="{Binding HasDualVideo, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="16" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <!-- 正面视频播放区域 -->
-                    <materialDesign:Card Grid.Column="0">
+                    <materialDesign:Card>
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0"
-                                       Text="{DynamicResource MA.Step3.FrontView}"
+                                       Text="正面 / 侧面视频合成预览"
                                        Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
                                        Margin="12,8" />
-                            <Border Grid.Row="1" Background="Black" MinHeight="200">
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <materialDesign:PackIcon Kind="PlayCircleOutline"
-                                                             Width="64" Height="64"
-                                                             Foreground="White"
-                                                             HorizontalAlignment="Center" />
-                                    <TextBlock Foreground="White" HorizontalAlignment="Center" Margin="0,8,0,0">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Text" Value="{DynamicResource MA.Step3.Player.NotLoaded}" />
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding HasFrontVideo}" Value="True">
-                                                        <Setter Property="Text" Value="{DynamicResource MA.Step3.Player.Loaded}" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                </StackPanel>
-                            </Border>
-                        </Grid>
-                    </materialDesign:Card>
-
-                    <!-- 侧面视频播放区域 -->
-                    <materialDesign:Card Grid.Column="2">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0"
-                                       Text="{DynamicResource MA.Step3.SideView}"
-                                       Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
-                                       Margin="12,8" />
-                            <Border Grid.Row="1" Background="Black" MinHeight="200">
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <materialDesign:PackIcon Kind="PlayCircleOutline"
-                                                             Width="64" Height="64"
-                                                             Foreground="White"
-                                                             HorizontalAlignment="Center" />
-                                    <TextBlock Foreground="White" HorizontalAlignment="Center" Margin="0,8,0,0">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Text" Value="{DynamicResource MA.Step3.Player.NotLoaded}" />
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding HasSideVideo}" Value="True">
-                                                        <Setter Property="Text" Value="{DynamicResource MA.Step3.Player.Loaded}" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                </StackPanel>
+                            <Border Grid.Row="1" Background="Black" MinHeight="320">
+                                <Grid>
+                                    <MediaElement x:Name="DualPreviewMediaElement"
+                                                  LoadedBehavior="Manual"
+                                                  UnloadedBehavior="Manual"
+                                                  Stretch="Uniform"
+                                                  ScrubbingEnabled="True"
+                                                  MediaOpened="PreviewMediaElement_OnMediaOpened"
+                                                  MediaEnded="PreviewMediaElement_OnMediaEnded"
+                                                  MediaFailed="PreviewMediaElement_OnMediaFailed" />
+                                    <Image x:Name="FrontDualImage" Visibility="Collapsed" />
+                                    <Image x:Name="SideDualImage" Visibility="Collapsed" />
+                                </Grid>
                             </Border>
                         </Grid>
                     </materialDesign:Card>
@@ -139,17 +92,23 @@
                                 </TextBlock.Style>
                             </TextBlock>
 
-                            <Border Grid.Row="1" Background="Black" MinHeight="200">
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <materialDesign:PackIcon Kind="PlayCircleOutline"
-                                                             Width="64" Height="64"
-                                                             Foreground="White"
-                                                             HorizontalAlignment="Center" />
-                                    <TextBlock Text="{DynamicResource MA.Step3.Player.Loaded}"
-                                               Foreground="White"
-                                               HorizontalAlignment="Center"
-                                               Margin="0,8,0,0" />
-                                </StackPanel>
+                            <Border Grid.Row="1" Background="Black" MinHeight="280">
+                                <Grid>
+                                    <MediaElement x:Name="SinglePreviewMediaElement"
+                                                  LoadedBehavior="Manual"
+                                                  UnloadedBehavior="Manual"
+                                                  Stretch="Uniform"
+                                                  ScrubbingEnabled="True"
+                                                  MediaOpened="PreviewMediaElement_OnMediaOpened"
+                                                  MediaEnded="PreviewMediaElement_OnMediaEnded"
+                                                  MediaFailed="PreviewMediaElement_OnMediaFailed" />
+                                    <Image x:Name="FrontSingleImage"
+                                           Stretch="Uniform"
+                                           Visibility="Collapsed" />
+                                    <Image x:Name="SideSingleImage"
+                                           Stretch="Uniform"
+                                           Visibility="Collapsed" />
+                                </Grid>
                             </Border>
                         </Grid>
                     </materialDesign:Card>
@@ -167,19 +126,22 @@
 
                     <!-- 左侧：播放控制按钮 -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal">
-                        <Button Style="{StaticResource MaterialDesignIconButton}"
+                        <Button x:Name="PrevFrameButton"
+                                Style="{StaticResource MaterialDesignIconButton}"
                                 ToolTip="{DynamicResource MA.Step3.Controls.PrevFrame}"
-                                IsEnabled="False">
+                                Click="PrevFrameButton_OnClick">
                             <materialDesign:PackIcon Kind="SkipPrevious" />
                         </Button>
-                        <Button Style="{StaticResource MaterialDesignIconButton}"
+                        <Button x:Name="PlayPauseButton"
+                                Style="{StaticResource MaterialDesignIconButton}"
                                 ToolTip="{DynamicResource MA.Step3.Controls.Play}"
-                                IsEnabled="False">
-                            <materialDesign:PackIcon Kind="Play" />
+                                Click="PlayPauseButton_OnClick">
+                            <materialDesign:PackIcon x:Name="PlayPauseIcon" Kind="Play" />
                         </Button>
-                        <Button Style="{StaticResource MaterialDesignIconButton}"
+                        <Button x:Name="NextFrameButton"
+                                Style="{StaticResource MaterialDesignIconButton}"
                                 ToolTip="{DynamicResource MA.Step3.Controls.NextFrame}"
-                                IsEnabled="False">
+                                Click="NextFrameButton_OnClick">
                             <materialDesign:PackIcon Kind="SkipNext" />
                         </Button>
                     </StackPanel>
@@ -187,15 +149,28 @@
                     <!-- 中间：进度条 -->
                     <Grid Grid.Column="1" Margin="16,0">
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <Slider Grid.Column="0"
-                                Minimum="0" Maximum="100" Value="0"
-                                IsEnabled="False"
-                                VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1"
-                                   Text="00:00 / 00:00"
+                        <TextBlock x:Name="PlaybackStatusTextBlock"
+                                   Grid.Column="0"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0"
+                                   Foreground="Gray" />
+                        <Slider x:Name="ProgressSlider"
+                                Grid.Column="1"
+                                Minimum="0"
+                                Maximum="0"
+                                Value="0"
+                                VerticalAlignment="Center"
+                                PreviewMouseDown="ProgressSlider_OnPreviewMouseDown"
+                                PreviewMouseMove="ProgressSlider_OnPreviewMouseMove"
+                                PreviewMouseUp="ProgressSlider_OnPreviewMouseUp"
+                                ValueChanged="ProgressSlider_OnValueChanged" />
+                        <TextBlock x:Name="TimeTextBlock"
+                                   Grid.Column="2"
+                                   Text="00:00.0 / 00:00.0"
                                    VerticalAlignment="Center"
                                    Margin="12,0,0,0"
                                    Foreground="Gray" />
@@ -206,10 +181,13 @@
                         <TextBlock Text="{DynamicResource MA.Step3.Controls.Speed}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,8,0" />
-                        <ComboBox Width="80" SelectedIndex="1" IsEnabled="False">
-                            <ComboBoxItem Content="0.5x" />
-                            <ComboBoxItem Content="1x" />
-                            <ComboBoxItem Content="2x" />
+                        <ComboBox x:Name="SpeedComboBox"
+                                  Width="80"
+                                  SelectedIndex="1"
+                                  SelectionChanged="SpeedComboBox_OnSelectionChanged">
+                            <ComboBoxItem Content="0.5x" Tag="0.5" />
+                            <ComboBoxItem Content="1x" Tag="1" />
+                            <ComboBoxItem Content="2x" Tag="2" />
                         </ComboBox>
                     </StackPanel>
                 </Grid>
@@ -228,7 +206,7 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Content="{DynamicResource MA.Step3.GoAnalyze}"
                             Command="{Binding GoToStepCommand}"
-                            CommandParameter="4"
+                            CommandParameter="3"
                             IsEnabled="{Binding HasAnyVideo}"
                             Style="{StaticResource MaterialDesignRaisedButton}" />
                 </StackPanel>

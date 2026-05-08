@@ -106,6 +106,10 @@
                         </Button>
                         <Button Content="{DynamicResource MA.Step4.Btn.ViewReport}"
                                 Command="{Binding ViewReportCommand}"
+                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                Margin="0,0,8,0" />
+                        <Button Content="生成报告"
+                                Command="{Binding GenerateReportCommand}"
                                 Style="{StaticResource MaterialDesignRaisedButton}" />
                     </StackPanel>
                     <!-- Failed: 重试 / 返回步骤2 / 查看日志 -->
@@ -115,7 +119,7 @@
                                 Command="{Binding RetryAnalyzeCommand}"
                                 Style="{StaticResource MaterialDesignRaisedButton}"
                                 Margin="0,0,8,0" />
-                        <Button Content="{DynamicResource MA.Step4.Btn.GoToStep2}"
+                        <Button Content="修改配置"
                                 Command="{Binding GoToStep2Command}"
                                 Style="{StaticResource MaterialDesignOutlinedButton}"
                                 Margin="0,0,8,0" />

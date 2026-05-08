@@ -374,6 +374,11 @@ public class EnumToBooleanConverter : IValueConverter
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value == null || parameter == null) return false;
+        if (value.GetType().IsEnum && parameter is string parameterText)
+        {
+            return string.Equals(value.ToString(), parameterText, StringComparison.OrdinalIgnoreCase);
+        }
+
         return value.Equals(parameter);
     }
 
@@ -384,6 +389,11 @@ public class EnumToBooleanConverter : IValueConverter
     {
         if (value is true && parameter != null)
         {
+            if (targetType.IsEnum && parameter is string parameterText)
+            {
+                return Enum.Parse(targetType, parameterText);
+            }
+
             return parameter;
         }
         return Binding.DoNothing;

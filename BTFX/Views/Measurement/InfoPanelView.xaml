@@ -252,10 +252,10 @@
 
                     <Button Content="{DynamicResource MA.Info.GoToAnalyze}"
                             Command="{Binding GoToStepCommand}"
-                            CommandParameter="4"
+                            CommandParameter="3"
                             Style="{StaticResource MaterialDesignFlatButton}"
                             HorizontalAlignment="Left"
-                            IsEnabled="{Binding HasDualVideo}"
+                            IsEnabled="{Binding HasAnyVideo}"
                             Padding="0" />
                 </StackPanel>
             </materialDesign:Card>
