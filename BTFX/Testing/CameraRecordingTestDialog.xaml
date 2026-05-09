@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
     x:Class="BTFX.Testing.CameraRecordingTestDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -9,8 +9,8 @@
     Height="940"
     d:DesignHeight="940"
     d:DesignWidth="1400"
-    mc:Ignorable="d"
-    Unloaded="CameraRecordingTestDialog_OnUnloaded">
+    Unloaded="CameraRecordingTestDialog_OnUnloaded"
+    mc:Ignorable="d">
 
     <UserControl.Resources>
         <Style x:Key="CameraSectionBorderStyle" TargetType="Border">
@@ -282,8 +282,14 @@
                         <ColumnDefinition Width="1.05*" />
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="当前模式" />
+                    <StackPanel
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="当前模式" />
                         <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                             <Button
                                 Command="{Binding SetSingleModeCommand}"
@@ -297,8 +303,14 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="录制分辨率" />
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="录制分辨率" />
                         <ComboBox
                             Width="150"
                             Margin="10,0,0,0"
@@ -307,8 +319,14 @@
                             Style="{StaticResource CameraComboBoxStyle}" />
                     </StackPanel>
 
-                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="录制帧率" />
+                    <StackPanel
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="录制帧率" />
                         <ComboBox
                             Width="130"
                             Margin="10,0,0,0"
@@ -317,8 +335,14 @@
                             Style="{StaticResource CameraComboBoxStyle}" />
                     </StackPanel>
 
-                    <StackPanel Grid.Column="3" VerticalAlignment="Center" Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="录制时长" />
+                    <StackPanel
+                        Grid.Column="3"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="录制时长" />
                         <ComboBox
                             Width="110"
                             Margin="10,0,0,0"
@@ -518,19 +542,19 @@
                                 <RadioButton
                                     Content="横向"
                                     GroupName="SideOrientation"
-                                    IsEnabled="{Binding IsPreviewState}"
-                                    IsChecked="{Binding SideOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Landscape}" />
+                                    IsChecked="{Binding SideOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Landscape}"
+                                    IsEnabled="{Binding IsPreviewState}" />
                                 <RadioButton
                                     Margin="12,0,0,0"
                                     Content="纵向"
                                     GroupName="SideOrientation"
-                                    IsEnabled="{Binding IsPreviewState}"
-                                    IsChecked="{Binding SideOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=PortraitClockwise}" />
+                                    IsChecked="{Binding SideOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=PortraitClockwise}"
+                                    IsEnabled="{Binding IsPreviewState}" />
                                 <CheckBox
                                     Margin="14,0,0,0"
                                     Content="上下翻转"
-                                    IsEnabled="{Binding IsPreviewState}"
-                                    IsChecked="{Binding SideFlipHorizontal}" />
+                                    IsChecked="{Binding SideFlipHorizontal}"
+                                    IsEnabled="{Binding IsPreviewState}" />
                             </StackPanel>
                         </Grid>
                     </Grid>
@@ -711,19 +735,19 @@
                                 <RadioButton
                                     Content="横向"
                                     GroupName="FrontOrientation"
-                                    IsEnabled="{Binding IsPreviewState}"
-                                    IsChecked="{Binding FrontOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Landscape}" />
+                                    IsChecked="{Binding FrontOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Landscape}"
+                                    IsEnabled="{Binding IsPreviewState}" />
                                 <RadioButton
                                     Margin="12,0,0,0"
                                     Content="纵向"
                                     GroupName="FrontOrientation"
-                                    IsEnabled="{Binding IsPreviewState}"
-                                    IsChecked="{Binding FrontOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=PortraitClockwise}" />
+                                    IsChecked="{Binding FrontOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=PortraitClockwise}"
+                                    IsEnabled="{Binding IsPreviewState}" />
                                 <CheckBox
                                     Margin="14,0,0,0"
                                     Content="上下翻转"
-                                    IsEnabled="{Binding IsPreviewState}"
-                                    IsChecked="{Binding FrontFlipHorizontal}" />
+                                    IsChecked="{Binding FrontFlipHorizontal}"
+                                    IsEnabled="{Binding IsPreviewState}" />
                             </StackPanel>
                         </Grid>
                     </Grid>
@@ -735,27 +759,27 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Orientation="Horizontal">
-                    <Button
-                        Command="{Binding StartOrResetRecordingCommand}"
-                        IsEnabled="{Binding IsRecordingState, Converter={StaticResource InverseBooleanConverter}}"
-                        Style="{StaticResource CameraPrimaryButtonStyle}">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Margin="0,0,6,0" Kind="RecordRec" />
-                            <TextBlock Text="{Binding PrimaryActionText}" />
-                        </StackPanel>
-                    </Button>
-                    <Button
-                        Margin="12,0,0,0"
-                        Command="{Binding OpenSaveDirectoryCommand}"
-                        Content="预览本地文件"
-                        Style="{StaticResource CameraSecondaryButtonStyle}" />
-                    <Button
-                        Margin="12,0,0,0"
-                        Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
-                        CommandParameter="{Binding CaptureResult}"
-                        Content="确定"
-                        IsEnabled="{Binding CanConfirm}"
-                        Style="{StaticResource CameraPrimaryButtonStyle}" />
+                <Button
+                    Command="{Binding StartOrResetRecordingCommand}"
+                    IsEnabled="{Binding IsRecordingState, Converter={StaticResource InverseBooleanConverter}}"
+                    Style="{StaticResource CameraPrimaryButtonStyle}">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Margin="0,0,6,0" Kind="RecordRec" />
+                        <TextBlock Text="{Binding PrimaryActionText}" />
+                    </StackPanel>
+                </Button>
+                <Button
+                    Margin="12,0,0,0"
+                    Command="{Binding OpenSaveDirectoryCommand}"
+                    Content="预览本地文件"
+                    Style="{StaticResource CameraSecondaryButtonStyle}" />
+                <Button
+                    Margin="12,0,0,0"
+                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                    CommandParameter="{Binding CaptureResult}"
+                    Content="确定"
+                    IsEnabled="{Binding CanConfirm}"
+                    Style="{StaticResource CameraPrimaryButtonStyle}" />
             </StackPanel>
 
             <Border

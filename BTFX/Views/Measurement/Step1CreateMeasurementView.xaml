@@ -406,9 +406,9 @@
                     </StackPanel>
 
                     <Button
+                        Width="200"
                         HorizontalAlignment="Right"
                         Command="{Binding OpenCameraRecordingDialogCommand}"
-                        Width="200"
                         Style="{StaticResource PrimaryActionButtonStyle}">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon
@@ -448,8 +448,8 @@
                                 Width="300"
                                 Height="300"
                                 Background="#111111"
-                                CornerRadius="8"
-                                ClipToBounds="True">
+                                ClipToBounds="True"
+                                CornerRadius="8">
                                 <Grid>
                                     <Image
                                         Width="300"
@@ -469,8 +469,8 @@
                                         Visibility="{Binding SideVideoInfo.HasFile, Converter={StaticResource InverseBoolToVisConverter}}" />
                                     <Button
                                         Width="56"
-                                        MinWidth="56"
                                         Height="56"
+                                        MinWidth="56"
                                         Padding="0"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
@@ -527,10 +527,22 @@
                                 </Grid>
 
                                 <StackPanel Grid.Row="2">
-                                    <TextBlock Margin="0,0,0,12" Style="{StaticResource VideoInfoTextStyle}" Text="{Binding SideVideoInfo.Resolution, StringFormat=分辨率：{0}}" />
-                                    <TextBlock Margin="0,0,0,12" Style="{StaticResource VideoInfoTextStyle}" Text="{Binding SideVideoInfo.FrameRateDisplay, StringFormat=帧率：{0}}" />
-                                    <TextBlock Margin="0,0,0,12" Style="{StaticResource VideoInfoTextStyle}" Text="{Binding SideVideoInfo.DurationDisplay, StringFormat=时长：{0}}" />
-                                    <TextBlock Margin="0,0,0,26" Style="{StaticResource VideoInfoTextStyle}" Text="{Binding SideVideoInfo.FileSizeDisplay, StringFormat=大小：{0}}" />
+                                    <TextBlock
+                                        Margin="0,0,0,12"
+                                        Style="{StaticResource VideoInfoTextStyle}"
+                                        Text="{Binding SideVideoInfo.Resolution, StringFormat=分辨率：{0}}" />
+                                    <TextBlock
+                                        Margin="0,0,0,12"
+                                        Style="{StaticResource VideoInfoTextStyle}"
+                                        Text="{Binding SideVideoInfo.FrameRateDisplay, StringFormat=帧率：{0}}" />
+                                    <TextBlock
+                                        Margin="0,0,0,12"
+                                        Style="{StaticResource VideoInfoTextStyle}"
+                                        Text="{Binding SideVideoInfo.DurationDisplay, StringFormat=时长：{0}}" />
+                                    <TextBlock
+                                        Margin="0,0,0,26"
+                                        Style="{StaticResource VideoInfoTextStyle}"
+                                        Text="{Binding SideVideoInfo.FileSizeDisplay, StringFormat=大小：{0}}" />
                                     <Button
                                         HorizontalAlignment="Left"
                                         Command="{Binding SelectSideVideoCommand}"
@@ -579,8 +591,8 @@
                                 Width="300"
                                 Height="300"
                                 Background="#111111"
-                                CornerRadius="8"
-                                ClipToBounds="True">
+                                ClipToBounds="True"
+                                CornerRadius="8">
                                 <Grid>
                                     <Image
                                         Width="300"
@@ -600,8 +612,8 @@
                                         Visibility="{Binding FrontVideoInfo.HasFile, Converter={StaticResource InverseBoolToVisConverter}}" />
                                     <Button
                                         Width="56"
-                                        MinWidth="56"
                                         Height="56"
+                                        MinWidth="56"
                                         Padding="0"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
@@ -658,10 +670,22 @@
                                 </Grid>
 
                                 <StackPanel Grid.Row="2">
-                                    <TextBlock Margin="0,0,0,12" Style="{StaticResource VideoInfoTextStyle}" Text="{Binding FrontVideoInfo.Resolution, StringFormat=分辨率：{0}}" />
-                                    <TextBlock Margin="0,0,0,12" Style="{StaticResource VideoInfoTextStyle}" Text="{Binding FrontVideoInfo.FrameRateDisplay, StringFormat=帧率：{0}}" />
-                                    <TextBlock Margin="0,0,0,12" Style="{StaticResource VideoInfoTextStyle}" Text="{Binding FrontVideoInfo.DurationDisplay, StringFormat=时长：{0}}" />
-                                    <TextBlock Margin="0,0,0,26" Style="{StaticResource VideoInfoTextStyle}" Text="{Binding FrontVideoInfo.FileSizeDisplay, StringFormat=大小：{0}}" />
+                                    <TextBlock
+                                        Margin="0,0,0,12"
+                                        Style="{StaticResource VideoInfoTextStyle}"
+                                        Text="{Binding FrontVideoInfo.Resolution, StringFormat=分辨率：{0}}" />
+                                    <TextBlock
+                                        Margin="0,0,0,12"
+                                        Style="{StaticResource VideoInfoTextStyle}"
+                                        Text="{Binding FrontVideoInfo.FrameRateDisplay, StringFormat=帧率：{0}}" />
+                                    <TextBlock
+                                        Margin="0,0,0,12"
+                                        Style="{StaticResource VideoInfoTextStyle}"
+                                        Text="{Binding FrontVideoInfo.DurationDisplay, StringFormat=时长：{0}}" />
+                                    <TextBlock
+                                        Margin="0,0,0,26"
+                                        Style="{StaticResource VideoInfoTextStyle}"
+                                        Text="{Binding FrontVideoInfo.FileSizeDisplay, StringFormat=大小：{0}}" />
                                     <Button
                                         HorizontalAlignment="Left"
                                         Command="{Binding SelectFrontVideoCommand}"
@@ -713,9 +737,9 @@
                     <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="重置" />
                 </Button>
                 <Button
+                    Width="180"
                     Command="{Binding ConfirmImportCommand}"
                     IsEnabled="{Binding CanEnterReview}"
-                    Width="180"
                     Style="{StaticResource PrimaryActionButtonStyle}">
                     <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="进入回放检查" />
                 </Button>
