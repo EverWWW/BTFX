@@ -14,6 +14,7 @@ namespace BTFX.Testing;
 
 public partial class CameraRecordingTestViewModel : ObservableObject
 {
+    private const int PreviewDisplayFrameRate = 8;
     private readonly ICameraRecordingService _cameraRecordingService;
     private readonly ICameraCaptureSettingsService _settingsService;
     private readonly List<PreviewProcess> _previewProcesses = new();
@@ -94,6 +95,12 @@ public partial class CameraRecordingTestViewModel : ObservableObject
 
     [ObservableProperty]
     private ImageSource? _frontPreviewImage;
+
+    [ObservableProperty]
+    private ImageSource? _sidePlaybackPosterImage;
+
+    [ObservableProperty]
+    private ImageSource? _frontPlaybackPosterImage;
 
     [ObservableProperty]
     private CameraOrientation _sideOrientation = CameraOrientation.Landscape;
@@ -216,6 +223,13 @@ public partial class CameraRecordingTestViewModel : ObservableObject
         _frontPreviewRestartDebounceCancellation = null;
         StopPreview();
         _recordingCancellation?.Cancel();
+        _recordingCancellation?.Dispose();
+        _recordingCancellation = null;
+        LogLines.Clear();
+        TranscodeLogText = string.Empty;
+        CaptureResult = null;
+        SidePlaybackPosterImage = null;
+        FrontPlaybackPosterImage = null;
     }
 
     partial void OnCurrentModeChanged(CameraCaptureMode value)
@@ -443,6 +457,8 @@ public partial class CameraRecordingTestViewModel : ObservableObject
         CaptureResult = null;
         SideOutputPath = null;
         FrontOutputPath = null;
+        SidePlaybackPosterImage = null;
+        FrontPlaybackPosterImage = null;
         RecordingProgress = 0;
         RecordingRemainingSeconds = SelectedDuration.Value;
         IsTranscoding = false;
@@ -502,6 +518,7 @@ public partial class CameraRecordingTestViewModel : ObservableObject
 
             SideOutputPath = sideResult?.Mp4File ?? sideResult?.AviFile;
             FrontOutputPath = IsDualMode ? frontResult?.Mp4File ?? frontResult?.AviFile : null;
+            await LoadPlaybackPosterImagesAsync(_recordingCancellation.Token);
             CaptureResult = new CameraCaptureDialogResult
             {
                 Mode = CurrentMode,
@@ -632,6 +649,9 @@ public partial class CameraRecordingTestViewModel : ObservableObject
         SideOutputPath = null;
         FrontOutputPath = null;
         CaptureResult = null;
+        SidePlaybackPosterImage = null;
+        FrontPlaybackPosterImage = null;
+        LogLines.Clear();
     }
 
     private async Task<string> ProbeCameraAsync(string cameraName, CancellationToken cancellationToken)
@@ -722,6 +742,15 @@ public partial class CameraRecordingTestViewModel : ObservableObject
                 }
                 catch (OperationCanceledException)
                 {
+                }
+                finally
+                {
+                    if (ReferenceEquals(GetPreviewRestartDebounceCancellation(role), debounceCancellation))
+                    {
+                        SetPreviewRestartDebounceCancellation(role, null);
+                    }
+
+                    debounceCancellation.Dispose();
                 }
             }, token);
         }
@@ -833,6 +862,8 @@ public partial class CameraRecordingTestViewModel : ObservableObject
             var buffer = new byte[8192];
             var bytes = new List<byte>(256 * 1024);
             var stream = process.StandardOutput.BaseStream;
+            var lastFrameAt = DateTimeOffset.MinValue;
+            var minimumFrameInterval = TimeSpan.FromSeconds(1.0 / PreviewDisplayFrameRate);
 
             while (!cancellationToken.IsCancellationRequested && !process.HasExited)
             {
@@ -849,6 +880,13 @@ public partial class CameraRecordingTestViewModel : ObservableObject
 
                 while (TryExtractJpeg(bytes, out var jpeg))
                 {
+                    var now = DateTimeOffset.UtcNow;
+                    if (now - lastFrameAt < minimumFrameInterval)
+                    {
+                        continue;
+                    }
+
+                    lastFrameAt = now;
                     var image = CreateBitmap(jpeg);
                     await Application.Current.Dispatcher.InvokeAsync(() =>
                     {
@@ -884,24 +922,14 @@ public partial class CameraRecordingTestViewModel : ObservableObject
 
         foreach (var previewProcess in _previewProcesses.ToList())
         {
-            try
-            {
-                var process = previewProcess.Process;
-                if (!process.HasExited)
-                {
-                    process.Kill(entireProcessTree: true);
-                }
-
-                process.Dispose();
-            }
-            catch
-            {
-            }
+            TerminatePreviewProcess(previewProcess.Process);
         }
 
         _previewProcesses.Clear();
-        SidePreviewImage = null;
-        FrontPreviewImage = null;
+            SidePreviewImage = null;
+            FrontPreviewImage = null;
+            SidePlaybackPosterImage = null;
+            FrontPlaybackPosterImage = null;
     }
 
     private void StopPreview(CameraViewRole role)
@@ -917,21 +945,43 @@ public partial class CameraRecordingTestViewModel : ObservableObject
 
         foreach (var previewProcess in _previewProcesses.Where(item => item.Role == role).ToList())
         {
+            TerminatePreviewProcess(previewProcess.Process);
+
+            _previewProcesses.Remove(previewProcess);
+        }
+
+        if (role == CameraViewRole.Side)
+        {
+            SidePreviewImage = null;
+        }
+        else
+        {
+            FrontPreviewImage = null;
+        }
+    }
+
+    private static void TerminatePreviewProcess(Process process)
+    {
+        try
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+                process.WaitForExit(800);
+            }
+        }
+        catch
+        {
+        }
+        finally
+        {
             try
             {
-                var process = previewProcess.Process;
-                if (!process.HasExited)
-                {
-                    process.Kill(entireProcessTree: true);
-                }
-
                 process.Dispose();
             }
             catch
             {
             }
-
-            _previewProcesses.Remove(previewProcess);
         }
     }
 
@@ -1002,9 +1052,79 @@ public partial class CameraRecordingTestViewModel : ObservableObject
         }
     }
 
+    private async Task LoadPlaybackPosterImagesAsync(CancellationToken cancellationToken)
+    {
+        SidePlaybackPosterImage = await ExtractFirstFrameAsync(SideOutputPath, cancellationToken);
+        FrontPlaybackPosterImage = IsDualMode
+            ? await ExtractFirstFrameAsync(FrontOutputPath, cancellationToken)
+            : null;
+    }
+
+    private async Task<ImageSource?> ExtractFirstFrameAsync(string? path, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path) || !File.Exists(FfmpegPath))
+        {
+            return null;
+        }
+
+        using var process = new Process();
+        process.StartInfo = new ProcessStartInfo
+        {
+            FileName = FfmpegPath,
+            Arguments = string.Join(
+                " ",
+                "-hide_banner",
+                "-loglevel error",
+                "-ss 0",
+                $"-i {Quote(path)}",
+                "-frames:v 1",
+                "-vf scale=640:-2",
+                "-f image2pipe",
+                "-vcodec png",
+                "-"),
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+
+        try
+        {
+            process.Start();
+            await using var frameStream = new MemoryStream();
+            var outputTask = process.StandardOutput.BaseStream.CopyToAsync(frameStream, cancellationToken);
+            var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+            await process.WaitForExitAsync(cancellationToken);
+            await outputTask;
+            var error = await errorTask;
+
+            if (process.ExitCode != 0 || frameStream.Length == 0)
+            {
+                if (!string.IsNullOrWhiteSpace(error))
+                {
+                    AppendLog($"首帧加载失败: {error.Trim()}");
+                }
+
+                return null;
+            }
+
+            return CreateBitmap(frameStream.ToArray());
+        }
+        catch (OperationCanceledException)
+        {
+            TerminatePreviewProcess(process);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            AppendLog($"首帧加载失败: {ex.Message}");
+            return null;
+        }
+    }
+
     private static string BuildPreviewFilter(CameraOrientation orientation, bool flipHorizontal)
     {
-        var filters = new List<string> { "fps=10", "scale=640:-2" };
+        var filters = new List<string> { $"fps={PreviewDisplayFrameRate}", "scale=540:-2" };
         if (orientation == CameraOrientation.PortraitClockwise)
         {
             filters.Add("transpose=1");

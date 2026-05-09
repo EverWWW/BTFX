@@ -517,8 +517,8 @@ public partial class App : Application
         services.AddTransient<ViewModels.Settings.SystemInfoViewModel>();
 
         // Measurement 模块 ViewModel
-        services.AddTransient<ViewModels.Measurement.Step4AnalyzeViewModel>();
-        services.AddTransient<ViewModels.Measurement.MeasurementViewModel>();
+        services.AddSingleton<ViewModels.Measurement.Step4AnalyzeViewModel>();
+        services.AddSingleton<ViewModels.Measurement.MeasurementViewModel>();
 
         // 开发测试 ViewModel
         services.AddTransient<Testing.DevTestViewModel>();

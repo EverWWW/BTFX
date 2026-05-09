@@ -12,6 +12,236 @@
     mc:Ignorable="d"
     Unloaded="CameraRecordingTestDialog_OnUnloaded">
 
+    <UserControl.Resources>
+        <Style x:Key="CameraSectionBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="#FAFAFA" />
+            <Setter Property="BorderBrush" Value="#FFF1ECEF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="20,18" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+        </Style>
+
+        <Style x:Key="CameraComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Foreground" Value="#555555" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#D1D1D1" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Height" Value="48" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+            <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ComboBoxItem">
+                        <Setter Property="SnapsToDevicePixels" Value="True" />
+                        <Setter Property="OverridesDefaultStyle" Value="True" />
+                        <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+                        <Setter Property="FontSize" Value="18" />
+                        <Setter Property="Foreground" Value="#555555" />
+                        <Setter Property="HorizontalContentAlignment" Value="Left" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ComboBoxItem">
+                                    <Border
+                                        x:Name="ItemBorder"
+                                        Padding="18,12"
+                                        Background="Transparent"
+                                        CornerRadius="10">
+                                        <ContentPresenter VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsHighlighted" Value="True">
+                                            <Setter TargetName="ItemBorder" Property="Background" Value="#F0F4F9" />
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="ItemBorder" Property="Background" Value="#EEF2F7" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid
+                            Width="{TemplateBinding Width}"
+                            Height="{TemplateBinding Height}"
+                            SnapsToDevicePixels="True">
+                            <ToggleButton
+                                Width="{TemplateBinding Width}"
+                                Height="{TemplateBinding Height}"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Stretch"
+                                ClickMode="Press"
+                                Cursor="Hand"
+                                Focusable="False"
+                                IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                OverridesDefaultStyle="True">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border
+                                            x:Name="OuterBorder"
+                                            Background="{Binding Background, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                            BorderBrush="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                            BorderThickness="{Binding BorderThickness, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                            CornerRadius="16"
+                                            SnapsToDevicePixels="True">
+                                            <Path
+                                                Width="12"
+                                                Height="7"
+                                                Margin="0,0,18,0"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                Data="M0,0 L6,6 L12,0"
+                                                Fill="Transparent"
+                                                Stroke="#999999"
+                                                StrokeThickness="1.5" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="OuterBorder" Property="BorderBrush" Value="#B0B0B0" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <ContentPresenter
+                                Margin="18,0,40,0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding SelectionBoxItem}"
+                                ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                IsHitTestVisible="False" />
+                            <Popup
+                                AllowsTransparency="True"
+                                Focusable="False"
+                                IsOpen="{TemplateBinding IsDropDownOpen}"
+                                Placement="Bottom"
+                                PopupAnimation="Fade">
+                                <Border
+                                    Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                    Margin="0,6,0,0"
+                                    Padding="8"
+                                    Background="White"
+                                    BorderBrush="#E2E2E2"
+                                    BorderThickness="1"
+                                    CornerRadius="16">
+                                    <ScrollViewer MaxHeight="260" CanContentScroll="True">
+                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CameraPrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="48" />
+            <Setter Property="MinWidth" Value="132" />
+            <Setter Property="Padding" Value="22,0" />
+            <Setter Property="Background" Value="#403B5B" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ButtonBorder"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="16">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.92" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.82" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CameraSecondaryButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="48" />
+            <Setter Property="MinWidth" Value="112" />
+            <Setter Property="Padding" Value="20,0" />
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="Foreground" Value="#403B5B" />
+            <Setter Property="BorderBrush" Value="#403B5B" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ButtonBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="16">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#F7F6FB" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.82" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style
+            x:Key="CameraCompactSecondaryButtonStyle"
+            BasedOn="{StaticResource CameraSecondaryButtonStyle}"
+            TargetType="Button">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="MinWidth" Value="58" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+    </UserControl.Resources>
+
     <Border Padding="20" Style="{StaticResource DialogSurfaceBorderStyle}">
         <Grid>
             <Grid.RowDefinitions>
@@ -22,26 +252,14 @@
             </Grid.RowDefinitions>
 
             <Grid Grid.Row="0">
-                <StackPanel Orientation="Horizontal">
-                    <materialDesign:PackIcon
-                        Width="30"
-                        Height="30"
-                        Margin="0,0,10,0"
-                        VerticalAlignment="Center"
-                        Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
-                        Kind="Video4KBox" />
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock
-                            FontSize="22"
-                            FontWeight="SemiBold"
-                            Text="相机视频采集" />
-                        <TextBlock
-                            Margin="0,3,0,0"
-                            FontSize="13"
-                            Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
-                            Text="实时预览、录制、转码和本地回放检查" />
-                    </StackPanel>
-                </StackPanel>
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontFamily="{StaticResource AppFont}"
+                    FontSize="24"
+                    FontWeight="Medium"
+                    Foreground="#403B5B"
+                    Text="相机视频采集" />
 
                 <Button
                     Width="34"
@@ -55,7 +273,7 @@
                 </Button>
             </Grid>
 
-            <materialDesign:Card Grid.Row="1" Padding="16" UniformCornerRadius="6">
+            <Border Grid.Row="1" Style="{StaticResource CameraSectionBorderStyle}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1.35*" />
@@ -70,12 +288,12 @@
                             <Button
                                 Command="{Binding SetSingleModeCommand}"
                                 Content="单视角"
-                                Style="{StaticResource MaterialDesignOutlinedButton}" />
+                                Style="{StaticResource CameraSecondaryButtonStyle}" />
                             <Button
                                 Margin="8,0,0,0"
                                 Command="{Binding SetDualModeCommand}"
                                 Content="双视角"
-                                Style="{StaticResource MaterialDesignRaisedButton}" />
+                                Style="{StaticResource CameraPrimaryButtonStyle}" />
                         </StackPanel>
                     </StackPanel>
 
@@ -85,7 +303,8 @@
                             Width="150"
                             Margin="10,0,0,0"
                             ItemsSource="{Binding Resolutions}"
-                            SelectedItem="{Binding SelectedResolution}" />
+                            SelectedItem="{Binding SelectedResolution}"
+                            Style="{StaticResource CameraComboBoxStyle}" />
                     </StackPanel>
 
                     <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal">
@@ -94,7 +313,8 @@
                             Width="130"
                             Margin="10,0,0,0"
                             ItemsSource="{Binding FrameRateOptions}"
-                            SelectedItem="{Binding SelectedFrameRate}" />
+                            SelectedItem="{Binding SelectedFrameRate}"
+                            Style="{StaticResource CameraComboBoxStyle}" />
                     </StackPanel>
 
                     <StackPanel Grid.Column="3" VerticalAlignment="Center" Orientation="Horizontal">
@@ -103,10 +323,11 @@
                             Width="110"
                             Margin="10,0,0,0"
                             ItemsSource="{Binding DurationOptions}"
-                            SelectedItem="{Binding SelectedDuration}" />
+                            SelectedItem="{Binding SelectedDuration}"
+                            Style="{StaticResource CameraComboBoxStyle}" />
                     </StackPanel>
                 </Grid>
-            </materialDesign:Card>
+            </Border>
 
             <Grid Grid.Row="2" Margin="0,14,0,14">
                 <Grid.ColumnDefinitions>
@@ -115,9 +336,9 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <materialDesign:Card Grid.Column="0" Padding="12" UniformCornerRadius="6">
-                    <materialDesign:Card.Style>
-                        <Style TargetType="materialDesign:Card">
+                <Border Grid.Column="0">
+                    <Border.Style>
+                        <Style BasedOn="{StaticResource CameraSectionBorderStyle}" TargetType="Border">
                             <Setter Property="Grid.ColumnSpan" Value="1" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsDualMode}" Value="False">
@@ -125,11 +346,12 @@
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </materialDesign:Card.Style>
+                    </Border.Style>
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Grid>
@@ -187,7 +409,7 @@
                                     Margin="4,0,0,0"
                                     Command="{Binding EditSideCameraCommand}"
                                     Content="修改"
-                                    Style="{StaticResource MaterialDesignFlatButton}" />
+                                    Style="{StaticResource CameraCompactSecondaryButtonStyle}" />
                             </StackPanel>
                         </Grid>
                         <Border
@@ -204,6 +426,11 @@
                                     Source="{Binding SidePreviewImage}"
                                     Stretch="Uniform"
                                     Visibility="{Binding IsPreviewState, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                <Image
+                                    x:Name="SidePlaybackPosterImage"
+                                    Source="{Binding SidePlaybackPosterImage}"
+                                    Stretch="Uniform"
+                                    Visibility="{Binding IsCompletedState, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 <StackPanel
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
@@ -244,11 +471,50 @@
                                     LoadedBehavior="Manual"
                                     Stretch="Uniform"
                                     UnloadedBehavior="Stop"
-                                    Visibility="{Binding IsCompletedState, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    Visibility="Hidden" />
                             </Grid>
                         </Border>
-                        <Grid Grid.Row="2">
-                            <StackPanel Orientation="Horizontal">
+                        <Grid
+                            Grid.Row="2"
+                            Margin="0,0,0,10"
+                            Visibility="{Binding IsCompletedState, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                <Button
+                                    Width="34"
+                                    Height="34"
+                                    VerticalAlignment="Center"
+                                    Click="SidePlaybackButton_OnClick"
+                                    Style="{StaticResource MaterialDesignIconButton}">
+                                    <materialDesign:PackIcon x:Name="SidePlaybackIcon" Kind="Play" />
+                                </Button>
+                                <TextBlock
+                                    x:Name="SidePlaybackElapsedText"
+                                    Width="52"
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="13"
+                                    Foreground="#666666"
+                                    Text="00:00" />
+                                <Slider
+                                    x:Name="SidePlaybackSlider"
+                                    Width="260"
+                                    Margin="8,0,8,0"
+                                    VerticalAlignment="Center"
+                                    Focusable="False"
+                                    IsHitTestVisible="False" />
+                                <TextBlock
+                                    x:Name="SidePlaybackDurationText"
+                                    Width="52"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="13"
+                                    Foreground="#666666"
+                                    Text="00:00" />
+                            </StackPanel>
+                        </Grid>
+                        <Grid Grid.Row="3">
+                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                                 <RadioButton
                                     Content="横向"
                                     GroupName="SideOrientation"
@@ -266,39 +532,19 @@
                                     IsEnabled="{Binding IsPreviewState}"
                                     IsChecked="{Binding SideFlipHorizontal}" />
                             </StackPanel>
-                            <StackPanel
-                                HorizontalAlignment="Right"
-                                Orientation="Horizontal"
-                                Visibility="{Binding IsCompletedState, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <Button
-                                    Width="34"
-                                    Height="34"
-                                    Click="SidePlaybackButton_OnClick"
-                                    VerticalAlignment="Center"
-                                    Style="{StaticResource MaterialDesignIconButton}">
-                                    <materialDesign:PackIcon x:Name="SidePlaybackIcon" Kind="Play" />
-                                </Button>
-                                <Slider
-                                    x:Name="SidePlaybackSlider"
-                                    Width="180"
-                                    Margin="8,0,0,0"
-                                    VerticalAlignment="Center"
-                                    Focusable="False"
-                                    IsHitTestVisible="False" />
-                            </StackPanel>
                         </Grid>
                     </Grid>
-                </materialDesign:Card>
+                </Border>
 
-                <materialDesign:Card
+                <Border
                     Grid.Column="2"
-                    Padding="12"
-                    UniformCornerRadius="6"
+                    Style="{StaticResource CameraSectionBorderStyle}"
                     Visibility="{Binding IsDualMode, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Grid>
@@ -356,7 +602,7 @@
                                     Margin="4,0,0,0"
                                     Command="{Binding EditFrontCameraCommand}"
                                     Content="修改"
-                                    Style="{StaticResource MaterialDesignFlatButton}" />
+                                    Style="{StaticResource CameraCompactSecondaryButtonStyle}" />
                             </StackPanel>
                         </Grid>
                         <Border
@@ -373,6 +619,11 @@
                                     Source="{Binding FrontPreviewImage}"
                                     Stretch="Uniform"
                                     Visibility="{Binding IsPreviewState, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                <Image
+                                    x:Name="FrontPlaybackPosterImage"
+                                    Source="{Binding FrontPlaybackPosterImage}"
+                                    Stretch="Uniform"
+                                    Visibility="{Binding IsCompletedState, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 <StackPanel
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
@@ -413,11 +664,50 @@
                                     LoadedBehavior="Manual"
                                     Stretch="Uniform"
                                     UnloadedBehavior="Stop"
-                                    Visibility="{Binding IsCompletedState, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    Visibility="Hidden" />
                             </Grid>
                         </Border>
-                        <Grid Grid.Row="2">
-                            <StackPanel Orientation="Horizontal">
+                        <Grid
+                            Grid.Row="2"
+                            Margin="0,0,0,10"
+                            Visibility="{Binding IsCompletedState, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                <Button
+                                    Width="34"
+                                    Height="34"
+                                    VerticalAlignment="Center"
+                                    Click="FrontPlaybackButton_OnClick"
+                                    Style="{StaticResource MaterialDesignIconButton}">
+                                    <materialDesign:PackIcon x:Name="FrontPlaybackIcon" Kind="Play" />
+                                </Button>
+                                <TextBlock
+                                    x:Name="FrontPlaybackElapsedText"
+                                    Width="52"
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="13"
+                                    Foreground="#666666"
+                                    Text="00:00" />
+                                <Slider
+                                    x:Name="FrontPlaybackSlider"
+                                    Width="260"
+                                    Margin="8,0,8,0"
+                                    VerticalAlignment="Center"
+                                    Focusable="False"
+                                    IsHitTestVisible="False" />
+                                <TextBlock
+                                    x:Name="FrontPlaybackDurationText"
+                                    Width="52"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="13"
+                                    Foreground="#666666"
+                                    Text="00:00" />
+                            </StackPanel>
+                        </Grid>
+                        <Grid Grid.Row="3">
+                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                                 <RadioButton
                                     Content="横向"
                                     GroupName="FrontOrientation"
@@ -435,37 +725,20 @@
                                     IsEnabled="{Binding IsPreviewState}"
                                     IsChecked="{Binding FrontFlipHorizontal}" />
                             </StackPanel>
-                            <StackPanel
-                                HorizontalAlignment="Right"
-                                Orientation="Horizontal"
-                                Visibility="{Binding IsCompletedState, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <Button
-                                    Width="34"
-                                    Height="34"
-                                    Click="FrontPlaybackButton_OnClick"
-                                    VerticalAlignment="Center"
-                                    Style="{StaticResource MaterialDesignIconButton}">
-                                    <materialDesign:PackIcon x:Name="FrontPlaybackIcon" Kind="Play" />
-                                </Button>
-                                <Slider
-                                    x:Name="FrontPlaybackSlider"
-                                    Width="180"
-                                    Margin="8,0,0,0"
-                                    VerticalAlignment="Center"
-                                    Focusable="False"
-                                    IsHitTestVisible="False" />
-                            </StackPanel>
                         </Grid>
                     </Grid>
-                </materialDesign:Card>
+                </Border>
             </Grid>
 
-            <materialDesign:Card Grid.Row="3" Padding="16" UniformCornerRadius="6">
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+            <StackPanel
+                Grid.Row="3"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Orientation="Horizontal">
                     <Button
                         Command="{Binding StartOrResetRecordingCommand}"
                         IsEnabled="{Binding IsRecordingState, Converter={StaticResource InverseBooleanConverter}}"
-                        Style="{StaticResource MaterialDesignRaisedButton}">
+                        Style="{StaticResource CameraPrimaryButtonStyle}">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Margin="0,0,6,0" Kind="RecordRec" />
                             <TextBlock Text="{Binding PrimaryActionText}" />
@@ -475,16 +748,15 @@
                         Margin="12,0,0,0"
                         Command="{Binding OpenSaveDirectoryCommand}"
                         Content="预览本地文件"
-                        Style="{StaticResource MaterialDesignOutlinedButton}" />
+                        Style="{StaticResource CameraSecondaryButtonStyle}" />
                     <Button
                         Margin="12,0,0,0"
                         Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
                         CommandParameter="{Binding CaptureResult}"
                         Content="确定"
                         IsEnabled="{Binding CanConfirm}"
-                        Style="{StaticResource MaterialDesignRaisedButton}" />
-                </StackPanel>
-            </materialDesign:Card>
+                        Style="{StaticResource CameraPrimaryButtonStyle}" />
+            </StackPanel>
 
             <Border
                 Grid.RowSpan="4"
@@ -509,12 +781,12 @@
                             <Button
                                 Command="{Binding CancelEditCameraNameCommand}"
                                 Content="取消"
-                                Style="{StaticResource MaterialDesignFlatButton}" />
+                                Style="{StaticResource CameraSecondaryButtonStyle}" />
                             <Button
                                 Margin="8,0,0,0"
                                 Command="{Binding ConfirmEditCameraNameCommand}"
                                 Content="确认"
-                                Style="{StaticResource MaterialDesignRaisedButton}" />
+                                Style="{StaticResource CameraPrimaryButtonStyle}" />
                         </StackPanel>
                     </StackPanel>
                 </materialDesign:Card>

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Media;
 using BTFX.Common;
 using BTFX.Models;
 using BTFX.Models.Camera;
@@ -12,6 +13,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
 using Microsoft.Extensions.DependencyInjection;
+using OpenCvSharp;
+using OpenCvSharp.WpfExtensions;
 using ToolHelper.LoggingDiagnostics.Abstractions;
 
 namespace BTFX.ViewModels.Measurement;
@@ -952,6 +955,7 @@ public partial class MeasurementViewModel : ObservableObject
         {
             var info = await ReadVideoMetadataAsync(path);
             target.ApplyMetadata(info);
+            await LoadVideoPreviewAsync(target, path);
         }
         catch (Exception ex)
         {
@@ -959,6 +963,43 @@ public partial class MeasurementViewModel : ObservableObject
         }
 
         RefreshVideoValidationState();
+    }
+
+    private static async Task LoadVideoPreviewAsync(VideoFileInfoViewModel target, string path)
+    {
+        try
+        {
+            var preview = await Task.Run(() => CreateVideoPreviewImage(path));
+            Application.Current.Dispatcher.Invoke(() => target.PreviewImage = preview);
+        }
+        catch
+        {
+            Application.Current.Dispatcher.Invoke(() => target.PreviewImage = null);
+        }
+    }
+
+    private static ImageSource? CreateVideoPreviewImage(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+        {
+            return null;
+        }
+
+        using var capture = new VideoCapture(path);
+        if (!capture.IsOpened())
+        {
+            return null;
+        }
+
+        using var frame = new Mat();
+        if (!capture.Read(frame) || frame.Empty())
+        {
+            return null;
+        }
+
+        var bitmap = frame.ToBitmapSource();
+        bitmap.Freeze();
+        return bitmap;
     }
 
     private void RefreshVideoValidationState()
@@ -1536,6 +1577,9 @@ public sealed partial class VideoFileInfoViewModel : ObservableObject
     [ObservableProperty]
     private string _validationMessage = "未选择视频";
 
+    [ObservableProperty]
+    private ImageSource? _previewImage;
+
     public bool HasFile => !string.IsNullOrWhiteSpace(FilePath);
 
     public bool HasMetadata => Status is VideoValidationStatus.Passed or VideoValidationStatus.Warning;
@@ -1577,6 +1621,7 @@ public sealed partial class VideoFileInfoViewModel : ObservableObject
         FileSizeBytes = File.Exists(path) ? new FileInfo(path).Length : 0;
         Status = VideoValidationStatus.Checking;
         ValidationMessage = "正在校验视频...";
+        PreviewImage = null;
         NotifyComputedProperties();
     }
 
@@ -1608,6 +1653,7 @@ public sealed partial class VideoFileInfoViewModel : ObservableObject
         FileSizeBytes = 0;
         Status = VideoValidationStatus.Empty;
         ValidationMessage = "未选择视频";
+        PreviewImage = null;
         NotifyComputedProperties();
     }
 
