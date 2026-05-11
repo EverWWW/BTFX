@@ -6,9 +6,11 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
 using BTFX.Common;
+using BTFX.Helpers;
 using BTFX.Models;
 using BTFX.Models.Camera;
 using BTFX.Services.Interfaces;
+using BTFX.ViewModels;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
@@ -413,11 +415,67 @@ public partial class MeasurementViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 生成报告入口。当前复用分析详情弹窗中的报告配置与预览能力。
+    /// 生成报告入口。直接生成当前分析结果的报告预览草稿。
     /// </summary>
-    private void OnGenerateReportRequested()
+    private async void OnGenerateReportRequested()
     {
-        OnViewReportRequested();
+        if (CurrentMeasurement is null)
+        {
+            _logHelper?.Warning("打开报告预览失败：当前测量记录为空");
+            return;
+        }
+
+        try
+        {
+            CurrentMeasurement.Patient ??= CurrentPatient;
+
+            var analysisResult = AnalyzeViewModel.AnalysisResult;
+            var operatorId = _sessionService.CurrentUser?.Id ?? CurrentMeasurement.OperatorId;
+            var reportService = App.Services.GetRequiredService<IReportService>();
+            var report = await reportService.GetOrCreateDraftReportAsync(CurrentMeasurement.Id, operatorId);
+
+            if (report is null)
+            {
+                MessageBox.Show("报告草稿创建失败，请稍后重试。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            report.Title = string.IsNullOrWhiteSpace(report.Title)
+                ? $"{CurrentMeasurement.MeasurementName ?? MeasurementName}分析报告"
+                : report.Title;
+            report.DoctorOpinion ??= string.Empty;
+            report.AnalysisResultId = analysisResult?.Id;
+            report.AnalysisResult = analysisResult;
+            report.KinematicSummary = analysisResult?.KinematicSummary;
+            report.QualityControl = analysisResult?.QualityControl;
+            report.MeasurementRecord = CurrentMeasurement;
+            report.Patient = CurrentMeasurement.Patient ?? CurrentPatient;
+            report.ReportOptionsJson = JsonSerializer.Serialize(new ReportDraftOptions(
+                IncludeSpatiotemporalParameters: true,
+                IncludeKinematicSummary: true,
+                IncludeQualityControl: true,
+                IncludeResultFiles: false));
+            report.UpdatedAt = DateTime.Now;
+
+            await reportService.SaveDraftSnapshotAsync(report);
+
+            var previewViewModel = App.Services.GetRequiredService<ReportPreviewDialogViewModel>();
+            var previewDocument = ReportPreviewHelper.GenerateReportDocument(report, "步态智能分析系统");
+            await previewViewModel.InitializeAsync(report, previewDocument);
+
+            var dialog = new Views.Dialogs.ReportPreviewDialog
+            {
+                DataContext = previewViewModel
+            };
+
+            await DialogHost.Show(dialog, "RootDialog");
+            _logHelper?.Information($"从测量分析步骤打开报告预览：MeasurementId={CurrentMeasurement.Id}, AnalysisResultId={analysisResult?.Id}");
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"从测量分析步骤打开报告预览失败：MeasurementId={CurrentMeasurement.Id}", ex);
+            MessageBox.Show($"打开报告预览失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     /// <summary>
@@ -541,6 +599,22 @@ public partial class MeasurementViewModel : ObservableObject
         }
 
         _logHelper?.Information($"切换到步骤 {stepIndex}");
+    }
+
+    /// <summary>
+    /// 从回放检查进入临时分析流程。
+    /// </summary>
+    [RelayCommand]
+    private async Task BeginAnalyzeAsync()
+    {
+        if (!CanGoToStep3)
+        {
+            _logHelper?.Warning("无法启动分析：未完成测量创建或未准备视频");
+            return;
+        }
+
+        GoToStep(3);
+        await AnalyzeViewModel.RunTemporaryAnalysisAsync();
     }
 
     /// <summary>

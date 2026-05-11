@@ -428,8 +428,8 @@ public partial class Step3ReviewView : UserControl
             };
 
             const string filter =
-                "[0:v]scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=24,setpts=PTS-STARTPTS[left];" +
-                "[1:v]scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=24,setpts=PTS-STARTPTS[right];" +
+                "[0:v]scale=620:340:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2:black,fps=24,setpts=PTS-STARTPTS[left];" +
+                "[1:v]scale=620:340:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2:black,fps=24,setpts=PTS-STARTPTS[right];" +
                 "[left][right]hstack=inputs=2[v]";
 
             process.StartInfo.ArgumentList.Add("-y");
@@ -529,7 +529,7 @@ public partial class Step3ReviewView : UserControl
     {
         var front = new FileInfo(frontPath);
         var side = new FileInfo(sidePath);
-        const string previewCacheVersion = "combined-preview-v1-1280x360-24fps";
+        const string previewCacheVersion = "combined-preview-v2-bordered-1280x360-24fps";
         var key = string.Join(
             "|",
             previewCacheVersion,
@@ -1100,14 +1100,13 @@ public partial class Step3ReviewView : UserControl
 
     private void UpdateTimeText(double positionSeconds)
     {
-        TimeTextBlock.Text = $"{FormatTime(positionSeconds)} / {FormatTime(_durationSeconds)}";
+        CurrentTimeTextBlock.Text = FormatTime(positionSeconds);
+        DurationTimeTextBlock.Text = FormatTime(_durationSeconds);
     }
 
     private void SetPlaybackControlsEnabled(bool isEnabled)
     {
-        PrevFrameButton.IsEnabled = isEnabled;
         PlayPauseButton.IsEnabled = isEnabled;
-        NextFrameButton.IsEnabled = isEnabled;
         ProgressSlider.IsEnabled = isEnabled;
         SpeedComboBox.IsEnabled = isEnabled;
     }
@@ -1129,8 +1128,8 @@ public partial class Step3ReviewView : UserControl
     {
         var time = TimeSpan.FromSeconds(Math.Max(0, seconds));
         return time.TotalHours >= 1
-            ? time.ToString(@"h\:mm\:ss\.f")
-            : time.ToString(@"mm\:ss\.f");
+            ? time.ToString(@"h\:mm\:ss")
+            : time.ToString(@"m\:ss");
     }
 
     private static string CreateLogFilePath()

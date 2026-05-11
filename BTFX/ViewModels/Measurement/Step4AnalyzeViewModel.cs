@@ -56,6 +56,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsRunning))]
     [NotifyPropertyChangedFor(nameof(IsPreviewing))]
     [NotifyPropertyChangedFor(nameof(IsFailed))]
+    [NotifyPropertyChangedFor(nameof(ResultStatusDisplay))]
     [NotifyCanExecuteChangedFor(nameof(StartAnalyzeCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelAnalyzeCommand))]
     [NotifyCanExecuteChangedFor(nameof(RetryAnalyzeCommand))]
@@ -65,6 +66,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(ToggleParamsViewCommand))]
     [NotifyCanExecuteChangedFor(nameof(ViewReportCommand))]
     [NotifyCanExecuteChangedFor(nameof(GenerateReportCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RerunTemporaryAnalysisCommand))]
     [NotifyCanExecuteChangedFor(nameof(ViewLogCommand))]
     [NotifyCanExecuteChangedFor(nameof(GoToStep2Command))]
     private AnalysisState _analysisState = AnalysisState.Ready;
@@ -182,6 +184,10 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     /// 分析结果
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ResultTaskIdDisplay))]
+    [NotifyPropertyChangedFor(nameof(ResultAnalysisDurationDisplay))]
+    [NotifyPropertyChangedFor(nameof(ResultCadenceDisplay))]
+    [NotifyPropertyChangedFor(nameof(ResultStatusDisplay))]
     private AnalysisResult? _analysisResult;
 
     /// <summary>
@@ -207,6 +213,77 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     /// </summary>
     [ObservableProperty]
     private string _analysisDurationDisplay = string.Empty;
+
+    public string ResultTaskIdDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.RequestId)
+        ? "--"
+        : AnalysisResult.RequestId;
+
+    public string ResultStatusDisplay
+    {
+        get
+        {
+            if (IsRunning)
+            {
+                return "分析中";
+            }
+
+            if (IsFailed)
+            {
+                return "分析失败";
+            }
+
+            if (IsPreviewing)
+            {
+                return AnalysisResult?.Success == true ? "分析成功" : "分析完成";
+            }
+
+            return "等待分析";
+        }
+    }
+
+    public string ResultAnalysisDurationDisplay
+    {
+        get
+        {
+            if (AnalysisResult?.AnalysisDurationSeconds is double seconds)
+            {
+                return $"{seconds:F1} s";
+            }
+
+            return string.IsNullOrWhiteSpace(AnalysisDurationDisplay) ? "--" : AnalysisDurationDisplay;
+        }
+    }
+
+    public string ResultCadenceDisplay
+    {
+        get
+        {
+            if (AnalysisResult?.GaitCycleDurationS is double cycleDuration && cycleDuration > 0)
+            {
+                return $"{120.0 / cycleDuration:F1} 步/min";
+            }
+
+            return "--";
+        }
+    }
+
+    public string PatientHeightDisplay
+    {
+        get
+        {
+            if (CurrentPatient?.Height is not > 0)
+            {
+                return "--";
+            }
+
+            var height = CurrentPatient.Height.Value;
+            return height > 3 ? $"{height:F0} cm" : $"{height:F2} m";
+        }
+    }
+
+    public string PatientWeightDisplay => CurrentPatient?.Weight is > 0
+        ? $"{CurrentPatient.Weight.Value:F1} kg"
+        : "--";
 
     #endregion
 
@@ -520,6 +597,8 @@ public partial class Step4AnalyzeViewModel : ObservableObject
 
         PrerequisiteItems = items;
         AllPrerequisitesMet = items.Where(i => i.IsRequired).All(i => i.IsMet);
+        OnPropertyChanged(nameof(PatientHeightDisplay));
+        OnPropertyChanged(nameof(PatientWeightDisplay));
     }
 
     #region 命令
@@ -611,6 +690,90 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     private bool CanStartAnalyze() => IsReady && AllPrerequisitesMet;
 
     /// <summary>
+    /// 临时测试用分析流程：固定 5 秒后生成成功结果。
+    /// </summary>
+    public async Task RunTemporaryAnalysisAsync()
+    {
+        if (CurrentMeasurement == null || CurrentPatient == null)
+        {
+            _logHelper?.Warning("临时分析失败：缺少测量记录或患者信息");
+            return;
+        }
+
+        if (IsRunning)
+        {
+            return;
+        }
+
+        _analysisCts?.Cancel();
+        _analysisCts?.Dispose();
+        _analysisCts = new CancellationTokenSource();
+        var token = _analysisCts.Token;
+
+        try
+        {
+            AnalysisState = AnalysisState.Running;
+            Progress = 0;
+            CurrentStage = "准备中...";
+            StatusMessage = "正在准备临时测试分析...";
+            TaskLogs.Clear();
+            IsLogExpanded = true;
+            AnalysisResult = null;
+            GaitEventResult = null;
+            KinematicResult = null;
+            QualityResult = null;
+            HasChartData = false;
+            HasVideoError = false;
+            VideoErrorMessage = null;
+            AddLog("启动临时测试分析流程");
+
+            _analysisStartTime = DateTime.Now;
+            StartElapsedTimer();
+
+            var stages = new[]
+            {
+                (Progress: 10, Stage: "初始化", Message: "正在读取测量配置..."),
+                (Progress: 30, Stage: "检测关键点", Message: "正在模拟关键点检测..."),
+                (Progress: 55, Stage: "检测步态事件", Message: "正在模拟步态事件识别..."),
+                (Progress: 80, Stage: "计算步态参数", Message: "正在模拟参数计算..."),
+                (Progress: 100, Stage: "输出结果", Message: "正在生成临时分析结果...")
+            };
+
+            foreach (var stage in stages)
+            {
+                token.ThrowIfCancellationRequested();
+                Progress = stage.Progress;
+                CurrentStage = stage.Stage;
+                StatusMessage = stage.Message;
+                AddLog(stage.Message);
+                await Task.Delay(TimeSpan.FromSeconds(1), token);
+            }
+
+            StopElapsedTimer();
+            ElapsedTime = TimeSpan.FromSeconds(5);
+            var result = BuildTemporaryAnalysisResult();
+            await OnAnalysisCompletedAsync(result);
+        }
+        catch (OperationCanceledException)
+        {
+            StopElapsedTimer();
+            AnalysisState = AnalysisState.Ready;
+            AddLog("临时分析已取消");
+        }
+        catch (Exception ex)
+        {
+            StopElapsedTimer();
+            OnAnalysisFailed(null, ex.Message);
+            _logHelper?.Error("临时分析过程异常", ex);
+        }
+        finally
+        {
+            _analysisCts?.Dispose();
+            _analysisCts = null;
+        }
+    }
+
+    /// <summary>
     /// 取消分析
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanCancelAnalyze))]
@@ -634,6 +797,16 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     }
 
     private bool CanRetryAnalyze() => IsPreviewing || IsFailed;
+
+    [RelayCommand(CanExecute = nameof(CanRerunTemporaryAnalysis))]
+    private async Task RerunTemporaryAnalysisAsync()
+    {
+        ResetToReady();
+        RefreshPrerequisites();
+        await RunTemporaryAnalysisAsync();
+    }
+
+    private bool CanRerunTemporaryAnalysis() => !IsRunning;
 
     /// <summary>
     /// 查看分析详情。
@@ -885,6 +1058,69 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         ErrorSuggestion = GetErrorSuggestion(errorCode);
         AnalysisState = AnalysisState.Failed;
         AddLog($"分析失败: [{errorCode}] {errorMessage}");
+    }
+
+    private AnalysisResult BuildTemporaryAnalysisResult()
+    {
+        var outputDir = Path.Combine(
+            CurrentMeasurement?.MeasurementFolderPath ?? Path.GetTempPath(),
+            "analysis_output");
+        Directory.CreateDirectory(outputDir);
+
+        var previewVideoPath = GetTemporaryPreviewVideoPath();
+
+        return new AnalysisResult
+        {
+            MeasurementId = CurrentMeasurement?.Id ?? 0,
+            RequestId = $"TEMP_{DateTime.Now:yyyyMMdd_HHmmss}",
+            ProtocolVersion = "temp",
+            AlgorithmVersion = "temp-5s",
+            ModelVersion = "temp",
+            TaskStatus = "completed",
+            Success = true,
+            OutputDirectory = outputDir,
+            AnnotatedVideoPath = previewVideoPath,
+            AnnotatedVideoDurationS = null,
+            AnalysisDurationSeconds = 5,
+            CreatedAt = DateTime.Now,
+            GaitCycleDurationS = 1.12,
+            StanceTimeS = 0.68,
+            SwingTimeS = 0.44,
+            DoubleSupportTimeS = 0.18,
+            SingleSupportTimeS = 0.50,
+            StepLengthM = 0.62,
+            StrideLengthM = 1.24,
+            GaitSpeedMPerS = 1.10,
+            KinematicSummary = new KinematicSummary
+            {
+                HipRomDeg = 38.5,
+                KneeRomDeg = 56.2,
+                AnkleRomDeg = 24.8,
+                PelvisCoronalRomDeg = 7.4
+            },
+            QualityControl = new QualityControlInfo
+            {
+                MeanKeypointConfidence = 0.91,
+                ValidFrameRatio = 0.96,
+                OcclusionWarning = false,
+                MissingPointWarning = false
+            },
+            CsvFiles = []
+        };
+    }
+
+    private string? GetTemporaryPreviewVideoPath()
+    {
+        var side = CurrentMeasurement?.SideVideoPath;
+        if (!string.IsNullOrWhiteSpace(side) && File.Exists(side))
+        {
+            return side;
+        }
+
+        var front = CurrentMeasurement?.FrontVideoPath;
+        return !string.IsNullOrWhiteSpace(front) && File.Exists(front)
+            ? front
+            : null;
     }
 
     /// <summary>
