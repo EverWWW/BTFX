@@ -6,165 +6,202 @@
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:BTFX.ViewModels"
-    Background="Transparent"
     d:DataContext="{d:DesignInstance Type=vm:GaitAnalysisDetailViewModel}"
+    Background="Transparent"
     mc:Ignorable="d">
 
     <UserControl.Resources>
         <SolidColorBrush x:Key="OverlayMaskBrush" Color="#8C0D1B2A" />
-        <SolidColorBrush x:Key="OverlayPanelBrush" Color="#FFFFFF" />
-        <SolidColorBrush x:Key="OverlayHeaderBrush" Color="#F8FAFD" />
-        <SolidColorBrush x:Key="OverlayBorderBrush" Color="#D9E3EE" />
-        <SolidColorBrush x:Key="OverlayCardBorderBrush" Color="#E5EBF3" />
-        <SolidColorBrush x:Key="OverlayCardBackgroundBrush" Color="#FFFFFF" />
-        <SolidColorBrush x:Key="OverlayMutedBrush" Color="#7B8794" />
-        <SolidColorBrush x:Key="OverlayTextBrush" Color="#223045" />
-        <SolidColorBrush x:Key="OverlayAccentBrush" Color="#403B5B" />
-        <SolidColorBrush x:Key="OverlayAssistBrush" Color="#E9EEF5" />
-        <SolidColorBrush x:Key="OverlayHighlightBrush" Color="#EEF3F9" />
-        <SolidColorBrush x:Key="OverlayPreviewBrush" Color="#EAF0F8" />
-        <SolidColorBrush x:Key="OverlayPrimaryButtonBrush" Color="#403B5B" />
-        <SolidColorBrush x:Key="OverlaySecondaryButtonBorderBrush" Color="#B8C4D3" />
+        <SolidColorBrush x:Key="DialogBgBrush" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="CardBgBrush" Color="#FAFAFA" />
+        <SolidColorBrush x:Key="CardBorderBrush" Color="#EEF1F5" />
+        <SolidColorBrush x:Key="PrimaryTextBrush" Color="#222222" />
+        <SolidColorBrush x:Key="SecondaryTextBrush" Color="#666666" />
+        <SolidColorBrush x:Key="WeakTextBrush" Color="#999999" />
+        <SolidColorBrush x:Key="PrimaryPurpleBrush" Color="#40385F" />
+        <SolidColorBrush x:Key="AccentOrangeBrush" Color="#FF8A00" />
+        <SolidColorBrush x:Key="ExportBlueBrush" Color="#409EFF" />
         <Style BasedOn="{StaticResource DialogLightScrollBarStyle}" TargetType="ScrollBar" />
 
-        <Style x:Key="OverlayTitleTextStyle" TargetType="TextBlock">
+        <Style x:Key="TitleTextStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="30" />
+            <Setter Property="FontSize" Value="20" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource OverlayTextBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
-        <Style x:Key="OverlaySubtitleTextStyle" TargetType="TextBlock">
+        <Style x:Key="SectionHeaderTextStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="Foreground" Value="{StaticResource OverlayMutedBrush}" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
         <Style x:Key="InfoLabelTextStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="15" />
-            <Setter Property="Foreground" Value="{StaticResource OverlayMutedBrush}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
+            <Setter Property="VerticalAlignment" Value="Top" />
         </Style>
 
         <Style x:Key="InfoValueTextStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="18" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource OverlayTextBrush}" />
-        </Style>
-
-        <Style x:Key="SectionTitleTextStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="22" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource OverlayTextBrush}" />
-        </Style>
-
-        <Style x:Key="SectionHintTextStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
             <Setter Property="FontSize" Value="14" />
-            <Setter Property="Foreground" Value="{StaticResource OverlayMutedBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
             <Setter Property="TextWrapping" Value="Wrap" />
-        </Style>
-
-        <Style x:Key="CardBorderStyle" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource OverlayCardBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource OverlayCardBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="18" />
-            <Setter Property="Padding" Value="20" />
-        </Style>
-
-        <Style x:Key="CompactInfoCardStyle" TargetType="Border">
-            <Setter Property="Background" Value="#FFF8FAFD" />
-            <Setter Property="BorderBrush" Value="{StaticResource OverlayCardBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="14" />
-            <Setter Property="Padding" Value="12,10" />
-        </Style>
-
-        <Style x:Key="CompactInfoLabelTextStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="Foreground" Value="{StaticResource OverlayMutedBrush}" />
-        </Style>
-
-        <Style x:Key="CompactInfoValueTextStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="16" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource OverlayTextBrush}" />
-            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
-        </Style>
-
-        <Style x:Key="MetricCardBorderStyle" BasedOn="{StaticResource CardBorderStyle}" TargetType="Border">
-            <Setter Property="MinHeight" Value="116" />
         </Style>
 
         <Style x:Key="MetricLabelTextStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="Foreground" Value="{StaticResource OverlayMutedBrush}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
         </Style>
 
         <Style x:Key="MetricValueTextStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="28" />
+            <Setter Property="FontSize" Value="24" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource OverlayTextBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+            <Setter Property="Margin" Value="0,12,0,0" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
         </Style>
 
-        <Style x:Key="AnalysisTabHeaderTextStyle" TargetType="TextBlock">
-            <Setter Property="Width" Value="172" />
+        <Style x:Key="SectionCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource CardBgBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="18" />
+        </Style>
+
+        <Style
+            x:Key="MetricCardStyle"
+            BasedOn="{StaticResource SectionCardStyle}"
+            TargetType="Border">
+            <Setter Property="MinHeight" Value="90" />
+            <Setter Property="Padding" Value="16,14" />
+            <Setter Property="Margin" Value="0,0,16,0" />
+        </Style>
+
+        <Style x:Key="TopTextButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.45" />
+                    <Setter Property="Cursor" Value="Arrow" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="FooterSecondaryActionStyle" TargetType="Button">
+            <Setter Property="Width" Value="128" />
+            <Setter Property="Height" Value="42" />
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#D9DEE8" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryPurpleBrush}" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="15" />
             <Setter Property="FontWeight" Value="Medium" />
-            <Setter Property="Foreground" Value="{StaticResource OverlayTextBrush}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style
+            x:Key="FooterPrimaryActionStyle"
+            BasedOn="{StaticResource FooterSecondaryActionStyle}"
+            TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource PrimaryPurpleBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryPurpleBrush}" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+        </Style>
+
+        <Style x:Key="TabHeaderTextStyle" TargetType="TextBlock">
+            <Setter Property="Width" Value="196" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="Medium" />
             <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="LineHeight" Value="40" />
+            <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
         </Style>
 
         <Style x:Key="AnalysisTabItemStyle" TargetType="TabItem">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Padding" Value="0" />
-            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabItem">
-                        <Border Background="Transparent">
-                            <Grid Width="172" SnapsToDevicePixels="True">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="44" />
-                                    <RowDefinition Height="4" />
-                                </Grid.RowDefinitions>
-                                <Border
-                                    x:Name="HeaderBackground"
-                                    Grid.Row="0"
-                                    Margin="0,0,0,8"
-                                    Background="Transparent"
-                                    CornerRadius="12">
-                                    <ContentPresenter
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        ContentSource="Header" />
-                                </Border>
-                                <Border
-                                    x:Name="HeaderUnderline"
-                                    Grid.Row="1"
-                                    Height="4"
-                                    Background="#E4004A"
-                                    CornerRadius="2"
-                                    Opacity="0" />
-                            </Grid>
+                        <Border
+                            x:Name="TabPill"
+                            Width="196"
+                            Height="40"
+                            Background="Transparent"
+                            CornerRadius="22">
+                            <Label
+                                Width="196"
+                                Height="40"
+                                Padding="0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                Content="{TemplateBinding Header}"
+                                FontFamily="{StaticResource AppFont}"
+                                FontSize="15"
+                                FontWeight="Medium"
+                                Foreground="{TemplateBinding Foreground}"
+                                TextOptions.TextFormattingMode="Display" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="HeaderBackground" Property="Background" Value="#FFF3F5F8" />
-                                <Setter TargetName="HeaderUnderline" Property="Opacity" Value="1" />
+                                <Setter TargetName="TabPill" Property="Background" Value="{StaticResource PrimaryPurpleBrush}" />
+                                <Setter Property="Foreground" Value="#FFFFFF" />
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="HeaderBackground" Property="Background" Value="#FFF7F9FC" />
+                                <Setter TargetName="TabPill" Property="Background" Value="#E2E7F0" />
                             </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsMouseOver" Value="True" />
+                                    <Condition Property="IsSelected" Value="True" />
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="TabPill" Property="Background" Value="{StaticResource PrimaryPurpleBrush}" />
+                            </MultiTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -175,6 +212,8 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="ItemContainerStyle" Value="{StaticResource AnalysisTabItemStyle}" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TabControl">
@@ -183,128 +222,42 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <Grid Grid.Row="0">
-                                <Border
-                                    Height="1"
-                                    Margin="0,0,0,0"
-                                    VerticalAlignment="Bottom"
-                                    Background="#DCE4EE" />
+                            <Border
+                                Width="600"
+                                Height="48"
+                                Padding="4"
+                                HorizontalAlignment="Center"
+                                Background="#EEF2F7"
+                                CornerRadius="24">
                                 <TabPanel
                                     x:Name="HeaderPanel"
-                                    Margin="0,0,0,0"
+                                    HorizontalAlignment="Center"
                                     IsItemsHost="True"
                                     KeyboardNavigation.TabIndex="1" />
-                            </Grid>
-                            <Border
-                                Grid.Row="1"
-                                Margin="0,20,0,0"
-                                Background="Transparent"
-                                KeyboardNavigation.TabIndex="2">
-                                <ContentPresenter
-                                    x:Name="PART_SelectedContentHost"
-                                    ContentSource="SelectedContent"
-                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                             </Border>
+                            <ContentPresenter
+                                x:Name="PART_SelectedContentHost"
+                                Grid.Row="1"
+                                Margin="0,28,0,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                ContentSource="SelectedContent"
+                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
                         </Grid>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <Style x:Key="OverlayCloseButtonStyle" TargetType="Button">
-            <Setter Property="Width" Value="44" />
-            <Setter Property="Height" Value="44" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border
-                            x:Name="ButtonBorder"
-                            Background="{TemplateBinding Background}"
-                            CornerRadius="14">
-                            <ContentPresenter
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#FFEFF3F8" />
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#FFDDE5EF" />
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.4" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="FooterSecondaryActionStyle" BasedOn="{StaticResource SecondaryButton}" TargetType="Button">
-            <Setter Property="Width" Value="144" />
-            <Setter Property="Height" Value="46" />
-            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="18" />
-            <Setter Property="FontWeight" Value="Medium" />
-            <Setter Property="BorderBrush" Value="{StaticResource OverlaySecondaryButtonBorderBrush}" />
-            <Setter Property="Foreground" Value="{StaticResource OverlayAccentBrush}" />
-            <Setter Property="Background" Value="#FFFFFF" />
-            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="12" />
-        </Style>
-
-        <Style x:Key="FooterPrimaryActionStyle" BasedOn="{StaticResource PrimaryButton}" TargetType="Button">
-            <Setter Property="Width" Value="144" />
-            <Setter Property="Height" Value="46" />
-            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="18" />
-            <Setter Property="FontWeight" Value="Medium" />
-            <Setter Property="Foreground" Value="#FFFFFF" />
-            <Setter Property="Background" Value="{StaticResource OverlayPrimaryButtonBrush}" />
-            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="12" />
-        </Style>
-
-        <Style x:Key="OverlaySurfaceBorderStyle" BasedOn="{StaticResource DialogSurfaceBorderStyle}" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource OverlayPanelBrush}" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect
-                        BlurRadius="42"
-                        Direction="270"
-                        Opacity="0.07"
-                        ShadowDepth="0"
-                        Color="#1F2A37" />
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="HeaderMetaTextStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="Foreground" Value="{StaticResource OverlayMutedBrush}" />
-            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
-        </Style>
-
-        <Style x:Key="HeaderChipBorderStyle" TargetType="Border">
-            <Setter Property="Padding" Value="12,6" />
-            <Setter Property="Margin" Value="0,0,10,0" />
-            <Setter Property="CornerRadius" Value="999" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Background" Value="#FFF7FAFD" />
-            <Setter Property="BorderBrush" Value="{StaticResource OverlayCardBorderBrush}" />
-        </Style>
-
-        <Style x:Key="HeaderChipTextStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource OverlayAccentBrush}" />
+        <Style
+            x:Key="DetailContentScrollViewerStyle"
+            BasedOn="{StaticResource DialogLightweightScrollViewerStyle}"
+            TargetType="ScrollViewer">
+            <Setter Property="CanContentScroll" Value="False" />
+            <Setter Property="PanningMode" Value="VerticalOnly" />
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+            <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="Focusable" Value="False" />
         </Style>
     </UserControl.Resources>
 
@@ -312,742 +265,792 @@
         <Border Background="{StaticResource OverlayMaskBrush}" />
 
         <Border
-            Width="1440"
-            MaxWidth="1520"
-            MaxHeight="960"
-            Margin="2"
+            Width="1380"
+            Height="900"
+            MaxWidth="1480"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Background="{StaticResource OverlayPanelBrush}"
-            CornerRadius="2"
-            Style="{StaticResource OverlaySurfaceBorderStyle}">
+            Background="{StaticResource DialogBgBrush}"
+            BorderBrush="#E8EDF3"
+            BorderThickness="1"
+            CornerRadius="8">
+            <Border.Effect>
+                <DropShadowEffect
+                    BlurRadius="28"
+                    Direction="270"
+                    Opacity="0.10"
+                    ShadowDepth="0"
+                    Color="#1F2A37" />
+            </Border.Effect>
+
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <Border
-                    Grid.Row="0"
-                    Padding="28,16,28,16"
-                    Background="{StaticResource OverlayHeaderBrush}"
-                    BorderBrush="{StaticResource OverlayBorderBrush}"
-                    BorderThickness="0,0,0,1"
-                    CornerRadius="24,24,0,0">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
+                <Grid Grid.Row="0" Margin="34,24,34,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
 
-                        <StackPanel>
-                            <TextBlock Style="{StaticResource OverlayTitleTextStyle}" Text="分析结果详情" />
-                            <WrapPanel Margin="0,8,0,0">
-                                <TextBlock Style="{StaticResource HeaderMetaTextStyle}">
-                                    <Run Text="患者 " />
-                                    <Run Text="{Binding PatientName, Mode=OneWay, TargetNullValue=张三}" />
-                                </TextBlock>
-                                <TextBlock Margin="16,0,0,0" Style="{StaticResource HeaderMetaTextStyle}">
-                                    <Run Text="编号 " />
-                                    <Run Text="{Binding PatientCode, Mode=OneWay, TargetNullValue=P-2025-0018}" />
-                                </TextBlock>
-                                <TextBlock Margin="16,0,0,0" Style="{StaticResource HeaderMetaTextStyle}">
-                                    <Run Text="测量类型 " />
-                                    <Run Text="{Binding MeasurementTypeDisplay, Mode=OneWay, TargetNullValue=步态评估}" />
-                                </TextBlock>
-                                <TextBlock Margin="16,0,0,0" Style="{StaticResource HeaderMetaTextStyle}">
-                                    <Run Text="测量时间 " />
-                                    <Run Text="{Binding MeasurementDate, Mode=OneWay, TargetNullValue=2025-02-18 14:26}" />
-                                </TextBlock>
-                            </WrapPanel>
-                        </StackPanel>
-
-                        <WrapPanel
-                            Grid.Column="1"
-                            Margin="24,0,16,0"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center">
-                            <Border
-                                Padding="12,6"
-                                Margin="0,0,10,0"
-                                Background="{Binding AnalysisStatusColor, TargetNullValue=#4CAF50}"
-                                CornerRadius="999">
-                                <TextBlock
-                                    Style="{StaticResource HeaderChipTextStyle}"
-                                    Foreground="White"
-                                    Text="{Binding AnalysisStatusText, TargetNullValue=分析成功}" />
-                            </Border>
-                            <Border Style="{StaticResource HeaderChipBorderStyle}">
-                                <TextBlock
-                                    Style="{StaticResource HeaderChipTextStyle}"
-                                    Text="{Binding TaskStatusDisplay, TargetNullValue=已完成}" />
-                            </Border>
-                            <Border Style="{StaticResource HeaderChipBorderStyle}">
-                                <TextBlock
-                                    Style="{StaticResource HeaderChipTextStyle}"
-                                    Text="{Binding QualityGradeDisplay, TargetNullValue=A级}" />
-                            </Border>
-                        </WrapPanel>
-
-                        <Button
-                            Grid.Column="2"
-                            Command="{Binding CloseCommand}"
-                            Style="{StaticResource OverlayCloseButtonStyle}">
+                    <Button
+                        HorizontalAlignment="Left"
+                        Command="{Binding ExportCommand}"
+                        IsEnabled="{Binding CanExport}"
+                        Style="{StaticResource TopTextButtonStyle}">
+                        <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon
-                                Width="22"
-                                Height="22"
-                                Foreground="{StaticResource OverlayTextBrush}"
+                                Width="18"
+                                Height="18"
+                                VerticalAlignment="Center"
+                                Foreground="{StaticResource ExportBlueBrush}"
+                                Kind="Export" />
+                            <TextBlock
+                                Margin="6,0,0,0"
+                                VerticalAlignment="Center"
+                                FontFamily="{StaticResource AppFont}"
+                                FontSize="14"
+                                Foreground="{StaticResource ExportBlueBrush}"
+                                Text="导出" />
+                        </StackPanel>
+                    </Button>
+
+                    <TextBlock
+                        Grid.Column="1"
+                        Style="{StaticResource TitleTextStyle}"
+                        Text="分析结果详情" />
+
+                    <Button
+                        Grid.Column="2"
+                        HorizontalAlignment="Right"
+                        Command="{Binding CloseCommand}"
+                        Style="{StaticResource TopTextButtonStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontFamily="{StaticResource AppFont}"
+                                FontSize="14"
+                                Foreground="{StaticResource WeakTextBrush}"
+                                Text="关闭" />
+                            <materialDesign:PackIcon
+                                Width="18"
+                                Height="18"
+                                Margin="6,0,0,0"
+                                VerticalAlignment="Center"
+                                Foreground="{StaticResource WeakTextBrush}"
                                 Kind="Close" />
-                        </Button>
-                    </Grid>
-                </Border>
-
-                <Grid Grid.Row="1" Margin="28,20,28,0">
-                    <Border Style="{StaticResource CardBorderStyle}">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="2" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-
-                                
-                            </Grid>
-
-                            <TabControl Grid.Row="2" Style="{StaticResource AnalysisTabControlStyle}">
-                                <TabItem>
-                                    <TabItem.Header>
-                                        <TextBlock Style="{StaticResource AnalysisTabHeaderTextStyle}" Text="总体情况页" />
-                                    </TabItem.Header>
-
-                                    <ScrollViewer Style="{StaticResource DialogLightweightScrollViewerStyle}">
-                                        <StackPanel>
-                                            <UniformGrid Columns="6" Margin="0,0,0,20">
-                                                <Border Margin="0,0,14,0" Style="{StaticResource MetricCardBorderStyle}">
-                                                    <StackPanel>
-                                                        <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="平均步速" />
-                                                        <TextBlock
-                                                            Margin="0,10,0,0"
-                                                            Style="{StaticResource MetricValueTextStyle}"
-                                                            Text="{Binding GaitSpeedDisplay, TargetNullValue=0.96 m/s}" />
-                                                    </StackPanel>
-                                                </Border>
-                                                <Border Margin="0,0,14,0" Style="{StaticResource MetricCardBorderStyle}">
-                                                    <StackPanel>
-                                                        <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="平均步频" />
-                                                        <TextBlock
-                                                            Margin="0,10,0,0"
-                                                            Style="{StaticResource MetricValueTextStyle}"
-                                                            Text="{Binding CadenceDisplay, TargetNullValue=104 步/分}" />
-                                                    </StackPanel>
-                                                </Border>
-                                                <Border Margin="0,0,14,0" Style="{StaticResource MetricCardBorderStyle}">
-                                                    <StackPanel>
-                                                        <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="平均步长" />
-                                                        <TextBlock
-                                                            Margin="0,10,0,0"
-                                                            Style="{StaticResource MetricValueTextStyle}"
-                                                            Text="{Binding StepLengthDisplay, TargetNullValue=0.58 m}" />
-                                                    </StackPanel>
-                                                </Border>
-                                                <Border Margin="0,0,14,0" Style="{StaticResource MetricCardBorderStyle}">
-                                                    <StackPanel>
-                                                        <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="步态周期" />
-                                                        <TextBlock
-                                                            Margin="0,10,0,0"
-                                                            Style="{StaticResource MetricValueTextStyle}"
-                                                            Text="{Binding GaitCycleDisplay, TargetNullValue=1.13 s}" />
-                                                    </StackPanel>
-                                                </Border>
-                                                <Border Margin="0,0,14,0" Style="{StaticResource MetricCardBorderStyle}">
-                                                    <StackPanel>
-                                                        <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="有效周期数" />
-                                                        <TextBlock
-                                                            Margin="0,10,0,0"
-                                                            Style="{StaticResource MetricValueTextStyle}"
-                                                            Text="18" />
-                                                    </StackPanel>
-                                                </Border>
-                                                <Border Style="{StaticResource MetricCardBorderStyle}">
-                                                    <StackPanel>
-                                                        <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="质量提示" />
-                                                        <TextBlock
-                                                            Margin="0,10,0,0"
-                                                            Style="{StaticResource MetricValueTextStyle}"
-                                                            FontSize="22"
-                                                            Text="{Binding QualityGradeDisplay, TargetNullValue=A级}" />
-                                                    </StackPanel>
-                                                </Border>
-                                            </UniformGrid>
-
-                                            <Grid Margin="0,0,0,20">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="1.2*" />
-                                                    <ColumnDefinition Width="20" />
-                                                    <ColumnDefinition Width="0.8*" />
-                                                </Grid.ColumnDefinitions>
-
-                                                <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
-                                                    <StackPanel>
-                                                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="结果摘要" />
-                                                        <TextBlock
-                                                            Margin="0,14,0,0"
-                                                            Style="{StaticResource SectionHintTextStyle}"
-                                                            Text="{Binding QualitySummary, TargetNullValue=当前步态节律稳定，左右差异控制在可接受范围内，建议结合临床主诉进一步观察站立相承重表现。}" />
-
-                                                        <Grid Margin="0,18,0,0">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="128" />
-                                                                <ColumnDefinition Width="*" />
-                                                            </Grid.ColumnDefinitions>
-                                                            <Grid.RowDefinitions>
-                                                                <RowDefinition Height="Auto" />
-                                                                <RowDefinition Height="Auto" />
-                                                                <RowDefinition Height="Auto" />
-                                                                <RowDefinition Height="Auto" />
-                                                            </Grid.RowDefinitions>
-
-                                                            <TextBlock Grid.Row="0" Style="{StaticResource InfoLabelTextStyle}" Text="质量提示" />
-                                                            <TextBlock
-                                                                Grid.Row="0"
-                                                                Grid.Column="1"
-                                                                Style="{StaticResource SectionHintTextStyle}"
-                                                                Foreground="{StaticResource OverlayTextBrush}"
-                                                                Text="{Binding QualitySummary, TargetNullValue=有效帧比例良好，可用于后续报告与趋势比对。}" />
-
-                                                            <TextBlock Grid.Row="1" Margin="0,12,0,0" Style="{StaticResource InfoLabelTextStyle}" Text="结果来源" />
-                                                            <TextBlock
-                                                                Grid.Row="1"
-                                                                Grid.Column="1"
-                                                                Margin="0,12,0,0"
-                                                                Style="{StaticResource SectionHintTextStyle}"
-                                                                Foreground="{StaticResource OverlayTextBrush}"
-                                                                Text="步态分析引擎 / 本地分析服务" />
-
-                                                            <TextBlock Grid.Row="2" Margin="0,12,0,0" Style="{StaticResource InfoLabelTextStyle}" Text="文件摘要" />
-                                                            <TextBlock
-                                                                Grid.Row="2"
-                                                                Grid.Column="1"
-                                                                Margin="0,12,0,0"
-                                                                Style="{StaticResource SectionHintTextStyle}"
-                                                                Foreground="{StaticResource OverlayTextBrush}"
-                                                                Text="{Binding FileCountDisplay, TargetNullValue=包含 1 个汇总文件、1 个标注视频、1 个曲线快照包。}" />
-
-                                                            <TextBlock Grid.Row="3" Margin="0,12,0,0" Style="{StaticResource InfoLabelTextStyle}" Text="结果概览说明" />
-                                                            <TextBlock
-                                                                Grid.Row="3"
-                                                                Grid.Column="1"
-                                                                Margin="0,12,0,0"
-                                                                Style="{StaticResource SectionHintTextStyle}"
-                                                                Foreground="{StaticResource OverlayTextBrush}"
-                                                                Text="覆盖式详情页适合作为统一结果浏览入口，后续报告预览可直接在同层承载容器中切换显示。" />
-                                                        </Grid>
-                                                    </StackPanel>
-                                                </Border>
-
-                                                <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}">
-                                                    <StackPanel>
-                                                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="分析基础信息" />
-                                                        <StackPanel Margin="0,18,0,0">
-                                                            <DockPanel Margin="0,0,0,12">
-                                                                <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="分析时间" />
-                                                                <TextBlock
-                                                                    DockPanel.Dock="Right"
-                                                                    Style="{StaticResource SectionHintTextStyle}"
-                                                                    Foreground="{StaticResource OverlayTextBrush}"
-                                                                    Text="{Binding AnalysisCreatedAtDisplay, TargetNullValue=2025-02-18 14:29}" />
-                                                            </DockPanel>
-                                                            <DockPanel Margin="0,0,0,12">
-                                                                <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="分析状态" />
-                                                                <TextBlock
-                                                                    DockPanel.Dock="Right"
-                                                                    Style="{StaticResource SectionHintTextStyle}"
-                                                                    Foreground="{StaticResource OverlayTextBrush}"
-                                                                    Text="{Binding TaskStatusDisplay, TargetNullValue=已完成}" />
-                                                            </DockPanel>
-                                                            <DockPanel Margin="0,0,0,12">
-                                                                <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="质量等级" />
-                                                                <TextBlock
-                                                                    DockPanel.Dock="Right"
-                                                                    Style="{StaticResource SectionHintTextStyle}"
-                                                                    Foreground="{StaticResource OverlayTextBrush}"
-                                                                    Text="{Binding QualityGradeDisplay, TargetNullValue=A级}" />
-                                                            </DockPanel>
-                                                            <DockPanel Margin="0,0,0,12">
-                                                                <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="测量名称" />
-                                                                <TextBlock
-                                                                    DockPanel.Dock="Right"
-                                                                    Style="{StaticResource SectionHintTextStyle}"
-                                                                    Foreground="{StaticResource OverlayTextBrush}"
-                                                                    Text="{Binding MeasurementName, TargetNullValue=术后步态评估-左侧}" />
-                                                            </DockPanel>
-                                                            <DockPanel Margin="0,0,0,12">
-                                                                <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="任务编号" />
-                                                                <TextBlock
-                                                                    DockPanel.Dock="Right"
-                                                                    Style="{StaticResource SectionHintTextStyle}"
-                                                                    Foreground="{StaticResource OverlayTextBrush}"
-                                                                    Text="{Binding RequestIdDisplay, TargetNullValue=REQ-20250218-001}" />
-                                                            </DockPanel>
-                                                            <DockPanel>
-                                                                <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="分析耗时" />
-                                                                <TextBlock
-                                                                    DockPanel.Dock="Right"
-                                                                    Style="{StaticResource SectionHintTextStyle}"
-                                                                    Foreground="{StaticResource OverlayTextBrush}"
-                                                                    Text="{Binding AnalysisDurationDisplay, TargetNullValue=102.0 s}" />
-                                                            </DockPanel>
-                                                        </StackPanel>
-                                                    </StackPanel>
-                                                </Border>
-                                            </Grid>
-
-                                            <Border Style="{StaticResource CardBorderStyle}">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="1.4*" />
-                                                        <ColumnDefinition Width="20" />
-                                                        <ColumnDefinition Width="0.6*" />
-                                                    </Grid.ColumnDefinitions>
-
-                                                    <StackPanel Grid.Column="0">
-                                                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="文件与输出摘要" />
-                                                        <TextBlock
-                                                            Margin="0,16,0,0"
-                                                            Style="{StaticResource SectionHintTextStyle}"
-                                                            Text="此区域用于承载本次分析的结果文件、标注视频与输出目录摘要。现阶段先完成覆盖式详情页的信息架构，后续逐步接入真实临床结论和更多结果说明。" />
-                                                    </StackPanel>
-
-                                                    <StackPanel Grid.Column="2">
-                                                        <DockPanel Margin="0,0,0,12">
-                                                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="结果文件数" />
-                                                            <TextBlock
-                                                                DockPanel.Dock="Right"
-                                                                Style="{StaticResource SectionHintTextStyle}"
-                                                                Foreground="{StaticResource OverlayTextBrush}"
-                                                                Text="{Binding FileCountDisplay, TargetNullValue=3 个结果文件}" />
-                                                        </DockPanel>
-                                                        <DockPanel Margin="0,0,0,12">
-                                                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="标注视频" />
-                                                            <TextBlock
-                                                                DockPanel.Dock="Right"
-                                                                Width="220"
-                                                                Style="{StaticResource SectionHintTextStyle}"
-                                                                Foreground="{StaticResource OverlayTextBrush}"
-                                                                Text="{Binding AnnotatedVideoDisplay, TargetNullValue=walk_annotated.mp4}"
-                                                                TextAlignment="Right" />
-                                                        </DockPanel>
-                                                        <DockPanel Margin="0,0,0,12">
-                                                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="摘要文件" />
-                                                            <TextBlock
-                                                                DockPanel.Dock="Right"
-                                                                Width="220"
-                                                                Style="{StaticResource SectionHintTextStyle}"
-                                                                Foreground="{StaticResource OverlayTextBrush}"
-                                                                Text="{Binding SummaryFileDisplay, TargetNullValue=summary.json}"
-                                                                TextAlignment="Right" />
-                                                        </DockPanel>
-                                                        <DockPanel>
-                                                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="输出目录" />
-                                                            <TextBlock
-                                                                DockPanel.Dock="Right"
-                                                                Width="220"
-                                                                Style="{StaticResource SectionHintTextStyle}"
-                                                                Foreground="{StaticResource OverlayTextBrush}"
-                                                                Text="{Binding OutputDirectory, TargetNullValue=D:\\Analysis\\2025\\P0018}"
-                                                                TextAlignment="Right" />
-                                                        </DockPanel>
-                                                    </StackPanel>
-                                                </Grid>
-                                            </Border>
-                                        </StackPanel>
-                                    </ScrollViewer>
-                                </TabItem>
-
-                                <TabItem>
-                                    <TabItem.Header>
-                                        <TextBlock Style="{StaticResource AnalysisTabHeaderTextStyle}" Text="参数显示页" />
-                                    </TabItem.Header>
-
-                                    <ScrollViewer Style="{StaticResource DialogLightweightScrollViewerStyle}">
-                                        <StackPanel>
-                                            <Grid Margin="0,0,0,20">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="20" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-
-                                                <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
-                                                    <StackPanel>
-                                                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="时空参数" />
-                                                        <Grid Margin="0,18,0,0">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="120" />
-                                                                <ColumnDefinition Width="*" />
-                                                            </Grid.ColumnDefinitions>
-                                                            <Grid.RowDefinitions>
-                                                                <RowDefinition Height="Auto" />
-                                                                <RowDefinition Height="Auto" />
-                                                                <RowDefinition Height="Auto" />
-                                                                <RowDefinition Height="Auto" />
-                                                            </Grid.RowDefinitions>
-
-                                                            <TextBlock Grid.Row="0" Style="{StaticResource InfoLabelTextStyle}" Text="平均步速" />
-                                                            <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource SectionHintTextStyle}" Foreground="{StaticResource OverlayTextBrush}" Text="{Binding GaitSpeedDisplay, TargetNullValue=0.96 m/s}" />
-                                                            <TextBlock Grid.Row="1" Margin="0,12,0,0" Style="{StaticResource InfoLabelTextStyle}" Text="平均步频" />
-                                                            <TextBlock Grid.Row="1" Grid.Column="1" Margin="0,12,0,0" Style="{StaticResource SectionHintTextStyle}" Foreground="{StaticResource OverlayTextBrush}" Text="{Binding CadenceDisplay, TargetNullValue=104 步/分}" />
-                                                            <TextBlock Grid.Row="2" Margin="0,12,0,0" Style="{StaticResource InfoLabelTextStyle}" Text="平均步长" />
-                                                            <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,12,0,0" Style="{StaticResource SectionHintTextStyle}" Foreground="{StaticResource OverlayTextBrush}" Text="{Binding StepLengthDisplay, TargetNullValue=0.58 m}" />
-                                                            <TextBlock Grid.Row="3" Margin="0,12,0,0" Style="{StaticResource InfoLabelTextStyle}" Text="步态周期" />
-                                                            <TextBlock Grid.Row="3" Grid.Column="1" Margin="0,12,0,0" Style="{StaticResource SectionHintTextStyle}" Foreground="{StaticResource OverlayTextBrush}" Text="{Binding GaitCycleDisplay, TargetNullValue=1.13 s}" />
-                                                        </Grid>
-                                                    </StackPanel>
-                                                </Border>
-
-                                                <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}">
-                                                    <StackPanel>
-                                                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="核心事件参数" />
-                                                        <Grid Margin="0,18,0,0">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="140" />
-                                                                <ColumnDefinition Width="*" />
-                                                            </Grid.ColumnDefinitions>
-                                                            <Grid.RowDefinitions>
-                                                                <RowDefinition Height="Auto" />
-                                                                <RowDefinition Height="Auto" />
-                                                                <RowDefinition Height="Auto" />
-                                                                <RowDefinition Height="Auto" />
-                                                            </Grid.RowDefinitions>
-
-                                                            <TextBlock Grid.Row="0" Style="{StaticResource InfoLabelTextStyle}" Text="站立相" />
-                                                            <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource SectionHintTextStyle}" Foreground="{StaticResource OverlayTextBrush}" Text="{Binding StanceTimeDisplay, TargetNullValue=62.4%}" />
-                                                            <TextBlock Grid.Row="1" Margin="0,12,0,0" Style="{StaticResource InfoLabelTextStyle}" Text="摆动相" />
-                                                            <TextBlock Grid.Row="1" Grid.Column="1" Margin="0,12,0,0" Style="{StaticResource SectionHintTextStyle}" Foreground="{StaticResource OverlayTextBrush}" Text="{Binding SwingTimeDisplay, TargetNullValue=37.6%}" />
-                                                            <TextBlock Grid.Row="2" Margin="0,12,0,0" Style="{StaticResource InfoLabelTextStyle}" Text="有效帧比例" />
-                                                            <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,12,0,0" Style="{StaticResource SectionHintTextStyle}" Foreground="{StaticResource OverlayTextBrush}" Text="{Binding ValidFrameRatioDisplay, TargetNullValue=96.8%}" />
-                                                            <TextBlock Grid.Row="3" Margin="0,12,0,0" Style="{StaticResource InfoLabelTextStyle}" Text="关键点置信度" />
-                                                            <TextBlock Grid.Row="3" Grid.Column="1" Margin="0,12,0,0" Style="{StaticResource SectionHintTextStyle}" Foreground="{StaticResource OverlayTextBrush}" Text="{Binding ConfidenceDisplay, TargetNullValue=0.93}" />
-                                                        </Grid>
-                                                    </StackPanel>
-                                                </Border>
-                                            </Grid>
-
-                                            <Grid Margin="0,0,0,20">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="0.95*" />
-                                                    <ColumnDefinition Width="20" />
-                                                    <ColumnDefinition Width="1.05*" />
-                                                </Grid.ColumnDefinitions>
-
-                                                <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
-                                                    <StackPanel>
-                                                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="运动学参数" />
-                                                        <TextBlock
-                                                            Margin="0,16,0,0"
-                                                            Style="{StaticResource SectionHintTextStyle}"
-                                                            Text="{Binding KinematicSummaryDisplay, TargetNullValue=髋、膝、踝关节曲线整体连续，建议在正式数据接入后增加左右侧峰值对比与关键相位标记。}" />
-                                                    </StackPanel>
-                                                </Border>
-
-                                                <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}">
-                                                    <StackPanel>
-                                                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="左右侧参数对比" />
-                                                        <Grid Margin="0,18,0,0">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="*" />
-                                                            </Grid.ColumnDefinitions>
-                                                            <Grid.RowDefinitions>
-                                                                <RowDefinition Height="Auto" />
-                                                                <RowDefinition Height="Auto" />
-                                                                <RowDefinition Height="Auto" />
-                                                            </Grid.RowDefinitions>
-
-                                                            <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource InfoLabelTextStyle}" Text="指标" />
-                                                            <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource InfoLabelTextStyle}" Text="左侧" />
-                                                            <TextBlock Grid.Row="0" Grid.Column="2" Style="{StaticResource InfoLabelTextStyle}" Text="右侧" />
-
-                                                            <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,14,0,0" Style="{StaticResource SectionHintTextStyle}" Foreground="{StaticResource OverlayTextBrush}" Text="支撑时间" />
-                                                            <TextBlock Grid.Row="1" Grid.Column="1" Margin="0,14,0,0" Style="{StaticResource SectionHintTextStyle}" Foreground="{StaticResource OverlayTextBrush}" Text="61.8%" />
-                                                            <TextBlock Grid.Row="1" Grid.Column="2" Margin="0,14,0,0" Style="{StaticResource SectionHintTextStyle}" Foreground="{StaticResource OverlayTextBrush}" Text="63.1%" />
-
-                                                            <TextBlock Grid.Row="2" Grid.Column="0" Margin="0,10,0,0" Style="{StaticResource SectionHintTextStyle}" Foreground="{StaticResource OverlayTextBrush}" Text="摆动时间" />
-                                                            <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,10,0,0" Style="{StaticResource SectionHintTextStyle}" Foreground="{StaticResource OverlayTextBrush}" Text="38.2%" />
-                                                            <TextBlock Grid.Row="2" Grid.Column="2" Margin="0,10,0,0" Style="{StaticResource SectionHintTextStyle}" Foreground="{StaticResource OverlayTextBrush}" Text="36.9%" />
-                                                        </Grid>
-                                                    </StackPanel>
-                                                </Border>
-                                            </Grid>
-
-                                            <Border Style="{StaticResource CardBorderStyle}">
-                                                <Grid>
-                                                    <Grid.RowDefinitions>
-                                                        <RowDefinition Height="Auto" />
-                                                        <RowDefinition Height="18" />
-                                                        <RowDefinition Height="220" />
-                                                    </Grid.RowDefinitions>
-
-                                                    <StackPanel>
-                                                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="曲线图卡片区" />
-                                                        <TextBlock
-                                                            Margin="0,8,0,0"
-                                                            Style="{StaticResource SectionHintTextStyle}"
-                                                            Text="当前阶段先提供统一图表占位结构，后续可接入真实时序曲线、相位着色、截图导出与光标联动。" />
-                                                    </StackPanel>
-
-                                                    <Border
-                                                        Grid.Row="2"
-                                                        Background="{StaticResource OverlayPreviewBrush}"
-                                                        BorderBrush="#FFD8E2EE"
-                                                        BorderThickness="1"
-                                                        CornerRadius="18">
-                                                        <Grid>
-                                                            <Grid.RowDefinitions>
-                                                                <RowDefinition Height="*" />
-                                                                <RowDefinition Height="Auto" />
-                                                            </Grid.RowDefinitions>
-                                                            <StackPanel VerticalAlignment="Center">
-                                                                <materialDesign:PackIcon
-                                                                    Width="48"
-                                                                    Height="48"
-                                                                    HorizontalAlignment="Center"
-                                                                    Foreground="#8EA2B8"
-                                                                    Kind="ChartLineVariant" />
-                                                                <TextBlock
-                                                                    Margin="0,14,0,0"
-                                                                    HorizontalAlignment="Center"
-                                                                    FontFamily="{StaticResource AppFont}"
-                                                                    FontSize="18"
-                                                                    FontWeight="Medium"
-                                                                    Foreground="{StaticResource OverlayTextBrush}"
-                                                                    Text="曲线图与参数卡片占位" />
-                                                                <TextBlock
-                                                                    Margin="0,8,0,0"
-                                                                    HorizontalAlignment="Center"
-                                                                    FontFamily="{StaticResource AppFont}"
-                                                                    FontSize="14"
-                                                                    Foreground="{StaticResource OverlayMutedBrush}"
-                                                                    Text="后续用于承载时空参数曲线、关键事件线与导出截图区域" />
-                                                            </StackPanel>
-                                                            <TextBlock
-                                                                Grid.Row="1"
-                                                                Margin="20,0,20,18"
-                                                                HorizontalAlignment="Center"
-                                                                FontFamily="{StaticResource AppFont}"
-                                                                FontSize="12"
-                                                                Foreground="{StaticResource OverlayMutedBrush}"
-                                                                Text="0%              20%              40%              60%              80%              100%" />
-                                                        </Grid>
-                                                    </Border>
-                                                </Grid>
-                                            </Border>
-                                        </StackPanel>
-                                    </ScrollViewer>
-                                </TabItem>
-
-                                <TabItem>
-                                    <TabItem.Header>
-                                        <TextBlock Style="{StaticResource AnalysisTabHeaderTextStyle}" Text="视频预览页" />
-                                    </TabItem.Header>
-
-                                    <ScrollViewer Style="{StaticResource DialogLightweightScrollViewerStyle}">
-                                        <StackPanel>
-                                            <Grid Margin="0,0,0,20">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="1.25*" />
-                                                    <ColumnDefinition Width="20" />
-                                                    <ColumnDefinition Width="0.75*" />
-                                                </Grid.ColumnDefinitions>
-
-                                                <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
-                                                    <Grid>
-                                                        <Grid.RowDefinitions>
-                                                            <RowDefinition Height="Auto" />
-                                                            <RowDefinition Height="18" />
-                                                            <RowDefinition Height="360" />
-                                                        </Grid.RowDefinitions>
-
-                                                        <StackPanel>
-                                                            <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="视频预览区域" />
-                                                            <TextBlock
-                                                                Margin="0,8,0,0"
-                                                                Style="{StaticResource SectionHintTextStyle}"
-                                                                Text="当前以静态占位呈现视频承载方式，后续可接入真实视频播放器、帧同步与关键事件跳转。" />
-                                                        </StackPanel>
-
-                                                        <Border
-                                                            Grid.Row="2"
-                                                            Background="#FF172230"
-                                                            CornerRadius="18">
-                                                            <Grid>
-                                                                <StackPanel VerticalAlignment="Center">
-                                                                    <materialDesign:PackIcon
-                                                                        Width="64"
-                                                                        Height="64"
-                                                                        HorizontalAlignment="Center"
-                                                                        Foreground="#9AB0C7"
-                                                                        Kind="PlayCircleOutline" />
-                                                                    <TextBlock
-                                                                        Margin="0,16,0,0"
-                                                                        HorizontalAlignment="Center"
-                                                                        FontFamily="{StaticResource AppFont}"
-                                                                        FontSize="22"
-                                                                        FontWeight="SemiBold"
-                                                                        Foreground="White"
-                                                                        Text="视频预览占位区" />
-                                                                    <TextBlock
-                                                                        Margin="0,10,0,0"
-                                                                        HorizontalAlignment="Center"
-                                                                        FontFamily="{StaticResource AppFont}"
-                                                                        FontSize="14"
-                                                                        Foreground="#D2DDE8"
-                                                                        Text="后续用于接入标注视频、当前帧信息和关键时刻截图" />
-                                                                </StackPanel>
-                                                            </Grid>
-                                                        </Border>
-                                                    </Grid>
-                                                </Border>
-
-                                                <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}">
-                                                    <StackPanel>
-                                                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="联动信息说明" />
-                                                        <TextBlock
-                                                            Margin="0,16,0,0"
-                                                            Style="{StaticResource SectionHintTextStyle}"
-                                                            Text="此侧栏用于承载视频与曲线图联动提示、当前时间点摘要、关键事件索引以及后续报告截图采样控制。" />
-
-                                                        <Border
-                                                            Margin="0,18,0,0"
-                                                            Padding="16"
-                                                            Background="#FFF7FAFD"
-                                                            BorderBrush="#FFDDE7F0"
-                                                            BorderThickness="1"
-                                                            CornerRadius="14">
-                                                            <StackPanel>
-                                                                <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="当前时间点" />
-                                                                <TextBlock
-                                                                    Margin="0,8,0,0"
-                                                                    Style="{StaticResource InfoValueTextStyle}"
-                                                                    Text="00:12.36" />
-                                                            </StackPanel>
-                                                        </Border>
-
-                                                        <Border
-                                                            Margin="0,14,0,0"
-                                                            Padding="16"
-                                                            Background="#FFF7FAFD"
-                                                            BorderBrush="#FFDDE7F0"
-                                                            BorderThickness="1"
-                                                            CornerRadius="14">
-                                                            <StackPanel>
-                                                                <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="关键事件" />
-                                                                <TextBlock
-                                                                    Margin="0,8,0,0"
-                                                                    Style="{StaticResource SectionHintTextStyle}"
-                                                                    Foreground="{StaticResource OverlayTextBrush}"
-                                                                    Text="足跟着地、足底平放、足跟离地、足尖离地等关键节点将与时间轴联动显示。" />
-                                                            </StackPanel>
-                                                        </Border>
-                                                    </StackPanel>
-                                                </Border>
-                                            </Grid>
-
-                                            <Border Margin="0,0,0,20" Style="{StaticResource CardBorderStyle}">
-                                                <Grid>
-                                                    <Grid.RowDefinitions>
-                                                        <RowDefinition Height="Auto" />
-                                                        <RowDefinition Height="18" />
-                                                        <RowDefinition Height="120" />
-                                                    </Grid.RowDefinitions>
-
-                                                    <StackPanel>
-                                                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="时间轴与横坐标对齐区域" />
-                                                        <TextBlock
-                                                            Margin="0,8,0,0"
-                                                            Style="{StaticResource SectionHintTextStyle}"
-                                                            Text="曲线图与视频预览将以统一时间轴对齐，当前先保留结构占位，确保后续联动功能可直接落位。" />
-                                                    </StackPanel>
-
-                                                    <Border
-                                                        Grid.Row="2"
-                                                        Background="{StaticResource OverlayHighlightBrush}"
-                                                        BorderBrush="#FFD8E2EE"
-                                                        BorderThickness="1"
-                                                        CornerRadius="18">
-                                                        <Grid Margin="24,0">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="*" />
-                                                            </Grid.ColumnDefinitions>
-                                                            <Grid.RowDefinitions>
-                                                                <RowDefinition Height="*" />
-                                                                <RowDefinition Height="Auto" />
-                                                            </Grid.RowDefinitions>
-
-                                                            <Rectangle Grid.Row="0" Grid.Column="0" Margin="8,26,8,26" RadiusX="4" RadiusY="4" Fill="#BBD2E6" />
-                                                            <Rectangle Grid.Row="0" Grid.Column="1" Margin="8,18,8,18" RadiusX="4" RadiusY="4" Fill="#A7C3DD" />
-                                                            <Rectangle Grid.Row="0" Grid.Column="2" Margin="8,32,8,32" RadiusX="4" RadiusY="4" Fill="#8FAFCE" />
-                                                            <Rectangle Grid.Row="0" Grid.Column="3" Margin="8,14,8,14" RadiusX="4" RadiusY="4" Fill="#7D9FC4" />
-                                                            <Rectangle Grid.Row="0" Grid.Column="4" Margin="8,24,8,24" RadiusX="4" RadiusY="4" Fill="#A7C3DD" />
-                                                            <Rectangle Grid.Row="0" Grid.Column="5" Margin="8,34,8,34" RadiusX="4" RadiusY="4" Fill="#BBD2E6" />
-
-                                                            <TextBlock Grid.Row="1" Grid.ColumnSpan="6" Margin="0,0,0,16" HorizontalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="12" Foreground="{StaticResource OverlayMutedBrush}" Text="0%              20%              40%              60%              80%              100%" />
-                                                        </Grid>
-                                                    </Border>
-                                                </Grid>
-                                            </Border>
-
-                                            <Border Style="{StaticResource CardBorderStyle}">
-                                                <StackPanel>
-                                                    <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="视频与曲线联动布局预留" />
-                                                    <TextBlock
-                                                        Margin="0,14,0,0"
-                                                        Style="{StaticResource SectionHintTextStyle}"
-                                                        Text="本版重点是搭建覆盖式详情承载结构、时间轴区域和视频/曲线双栏布局。后续只需在同一壳体内替换占位控件，即可接入真实播放器、波形图和报告截图流。" />
-                                                </StackPanel>
-                                            </Border>
-                                        </StackPanel>
-                                    </ScrollViewer>
-                                </TabItem>
-                            </TabControl>
-                        </Grid>
-                    </Border>
+                        </StackPanel>
+                    </Button>
                 </Grid>
 
-                <Border
-                    Grid.Row="2"
-                    Padding="0,10,0,10"
-                    Background="#F8FAFD"
-                    BorderBrush="{StaticResource OverlayBorderBrush}"
-                    BorderThickness="0,1,0,0"
-                    CornerRadius="0,0,24,24">
-                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                        <Button
-                            Margin="0,0,16,0"
-                            Command="{Binding CloseCommand}"
-                            Content="关闭"
-                            Style="{StaticResource FooterSecondaryActionStyle}" />
-                        <Button
-                            Command="{Binding ExportCommand}"
-                            Content="导出"
-                            IsEnabled="{Binding CanExport}"
-                            Style="{StaticResource FooterPrimaryActionStyle}" />
+                <Grid Grid.Row="1" Margin="34,28,34,28">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="32" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Border
+                                Width="4"
+                                Height="18"
+                                Margin="0,0,10,0"
+                                VerticalAlignment="Center"
+                                Background="{StaticResource AccentOrangeBrush}"
+                                CornerRadius="2" />
+                            <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="基本信息" />
+                        </StackPanel>
+                        <WrapPanel Margin="0,18,0,0">
+                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="患者" />
+                            <TextBlock
+                                Margin="8,0,52,0"
+                                Style="{StaticResource InfoValueTextStyle}"
+                                Text="{Binding PatientName, Mode=OneWay, TargetNullValue=--}" />
+                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="编号" />
+                            <TextBlock
+                                Margin="8,0,52,0"
+                                Style="{StaticResource InfoValueTextStyle}"
+                                Text="{Binding PatientCode, Mode=OneWay, TargetNullValue=--}" />
+                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="测量类型" />
+                            <TextBlock
+                                Margin="8,0,52,0"
+                                Style="{StaticResource InfoValueTextStyle}"
+                                Text="{Binding MeasurementTypeDisplay, Mode=OneWay, TargetNullValue=--}" />
+                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="测量时间" />
+                            <TextBlock
+                                Margin="8,0,0,0"
+                                Style="{StaticResource InfoValueTextStyle}"
+                                Text="{Binding MeasurementDate, Mode=OneWay, TargetNullValue=--}" />
+                        </WrapPanel>
                     </StackPanel>
-                </Border>
+
+                    <TabControl Grid.Row="2" Style="{StaticResource AnalysisTabControlStyle}">
+                        <TabItem Header="总体情况页">
+
+                            <ScrollViewer Style="{StaticResource DetailContentScrollViewerStyle}">
+                                <DockPanel Width="1312" LastChildFill="False">
+                                    <UniformGrid
+                                        Margin="0,0,0,24"
+                                        Columns="6"
+                                        DockPanel.Dock="Top">
+                                        <Border Style="{StaticResource MetricCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="平均步速" />
+                                                <TextBlock Style="{StaticResource MetricValueTextStyle}" Text="{Binding GaitSpeedDisplay, TargetNullValue=--}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource MetricCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="平均步频" />
+                                                <TextBlock Style="{StaticResource MetricValueTextStyle}" Text="{Binding CadenceDisplay, TargetNullValue=--}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource MetricCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="平均步长" />
+                                                <TextBlock Style="{StaticResource MetricValueTextStyle}" Text="{Binding StepLengthDisplay, TargetNullValue=--}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource MetricCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="步态周期" />
+                                                <TextBlock Style="{StaticResource MetricValueTextStyle}" Text="{Binding GaitCycleDisplay, TargetNullValue=--}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource MetricCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="有效周期数" />
+                                                <TextBlock Style="{StaticResource MetricValueTextStyle}" Text="--" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Margin="0" Style="{StaticResource MetricCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="质量提示" />
+                                                <TextBlock
+                                                    FontSize="22"
+                                                    Style="{StaticResource MetricValueTextStyle}"
+                                                    Text="{Binding QualityGradeDisplay, TargetNullValue=--}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
+
+                                    <Grid Margin="0,0,0,24" DockPanel.Dock="Top">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="54*" />
+                                            <ColumnDefinition Width="36" />
+                                            <ColumnDefinition Width="46*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0">
+                                            <StackPanel Margin="0,0,0,14" Orientation="Horizontal">
+                                                <Border
+                                                    Width="4"
+                                                    Height="18"
+                                                    Margin="0,0,10,0"
+                                                    Background="{StaticResource AccentOrangeBrush}"
+                                                    CornerRadius="2" />
+                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="结果摘要" />
+                                            </StackPanel>
+                                            <Border MinHeight="220" Style="{StaticResource SectionCardStyle}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="124" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <TextBlock
+                                                        Grid.Row="0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="质量提示" />
+                                                    <TextBlock
+                                                        Grid.Row="0"
+                                                        Grid.Column="1"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="{Binding QualitySummary, TargetNullValue=--}" />
+                                                    <TextBlock
+                                                        Grid.Row="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="有效帧比例" />
+                                                    <TextBlock
+                                                        Grid.Row="1"
+                                                        Grid.Column="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="{Binding ValidFrameRatioDisplay, TargetNullValue=--}" />
+                                                    <TextBlock
+                                                        Grid.Row="2"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="结果来源" />
+                                                    <TextBlock
+                                                        Grid.Row="2"
+                                                        Grid.Column="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="步态分析引擎 / 本地分析服务" />
+                                                    <TextBlock
+                                                        Grid.Row="3"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="文件摘要" />
+                                                    <TextBlock
+                                                        Grid.Row="3"
+                                                        Grid.Column="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="{Binding FileCountDisplay, TargetNullValue=--}" />
+                                                    <TextBlock
+                                                        Grid.Row="4"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="结果预览说明" />
+                                                    <TextBlock
+                                                        Grid.Row="4"
+                                                        Grid.Column="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="当前展示本次步态分析的概要数据，详细曲线与视频内容可通过页签切换查看。" />
+                                                </Grid>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="2">
+                                            <StackPanel Margin="0,0,0,14" Orientation="Horizontal">
+                                                <Border
+                                                    Width="4"
+                                                    Height="18"
+                                                    Margin="0,0,10,0"
+                                                    Background="{StaticResource AccentOrangeBrush}"
+                                                    CornerRadius="2" />
+                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="分析基础信息" />
+                                            </StackPanel>
+                                            <Border MinHeight="220" Style="{StaticResource SectionCardStyle}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="124" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <TextBlock
+                                                        Grid.Row="0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="分析时间" />
+                                                    <TextBlock
+                                                        Grid.Row="0"
+                                                        Grid.Column="1"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="{Binding AnalysisCreatedAtDisplay, TargetNullValue=--}" />
+                                                    <TextBlock
+                                                        Grid.Row="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="分析状态" />
+                                                    <TextBlock
+                                                        Grid.Row="1"
+                                                        Grid.Column="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="{Binding TaskStatusDisplay, TargetNullValue=--}" />
+                                                    <TextBlock
+                                                        Grid.Row="2"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="质量等级" />
+                                                    <TextBlock
+                                                        Grid.Row="2"
+                                                        Grid.Column="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="{Binding QualityGradeDisplay, TargetNullValue=--}" />
+                                                    <TextBlock
+                                                        Grid.Row="3"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="测量名称" />
+                                                    <TextBlock
+                                                        Grid.Row="3"
+                                                        Grid.Column="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="{Binding MeasurementName, TargetNullValue=--}" />
+                                                    <TextBlock
+                                                        Grid.Row="4"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="任务编号" />
+                                                    <TextBlock
+                                                        Grid.Row="4"
+                                                        Grid.Column="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="{Binding RequestIdDisplay, TargetNullValue=--}" />
+                                                    <TextBlock
+                                                        Grid.Row="5"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="分析耗时" />
+                                                    <TextBlock
+                                                        Grid.Row="5"
+                                                        Grid.Column="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="{Binding AnalysisDurationDisplay, TargetNullValue=--}" />
+                                                </Grid>
+                                            </Border>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <StackPanel DockPanel.Dock="Top">
+                                        <StackPanel Margin="0,0,0,14" Orientation="Horizontal">
+                                            <Border
+                                                Width="4"
+                                                Height="18"
+                                                Margin="0,0,10,0"
+                                                Background="{StaticResource AccentOrangeBrush}"
+                                                CornerRadius="2" />
+                                            <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="文件与输出摘要" />
+                                        </StackPanel>
+                                        <Border MinHeight="130" Style="{StaticResource SectionCardStyle}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="124" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="124" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+
+                                                <TextBlock
+                                                    Grid.Row="0"
+                                                    Style="{StaticResource InfoLabelTextStyle}"
+                                                    Text="结果文件数量" />
+                                                <TextBlock
+                                                    Grid.Row="0"
+                                                    Grid.Column="1"
+                                                    Style="{StaticResource InfoValueTextStyle}"
+                                                    Text="{Binding FileCountDisplay, TargetNullValue=暂无结果文件}" />
+                                                <TextBlock
+                                                    Grid.Row="0"
+                                                    Grid.Column="2"
+                                                    Style="{StaticResource InfoLabelTextStyle}"
+                                                    Text="标注视频" />
+                                                <TextBlock
+                                                    Grid.Row="0"
+                                                    Grid.Column="3"
+                                                    Style="{StaticResource InfoValueTextStyle}"
+                                                    Text="{Binding AnnotatedVideoDisplay, TargetNullValue=未生成标注视频}" />
+                                                <TextBlock
+                                                    Grid.Row="1"
+                                                    Margin="0,14,0,0"
+                                                    Style="{StaticResource InfoLabelTextStyle}"
+                                                    Text="摘要文件" />
+                                                <TextBlock
+                                                    Grid.Row="1"
+                                                    Grid.Column="1"
+                                                    Margin="0,14,0,0"
+                                                    Style="{StaticResource InfoValueTextStyle}"
+                                                    Text="{Binding SummaryFileDisplay, TargetNullValue=未生成 summary.json}" />
+                                                <TextBlock
+                                                    Grid.Row="1"
+                                                    Grid.Column="2"
+                                                    Margin="0,14,0,0"
+                                                    Style="{StaticResource InfoLabelTextStyle}"
+                                                    Text="质量等级" />
+                                                <TextBlock
+                                                    Grid.Row="1"
+                                                    Grid.Column="3"
+                                                    Margin="0,14,0,0"
+                                                    Style="{StaticResource InfoValueTextStyle}"
+                                                    Text="{Binding QualityGradeDisplay, TargetNullValue=--}" />
+                                                <TextBlock
+                                                    Grid.Row="2"
+                                                    Margin="0,14,0,0"
+                                                    Style="{StaticResource InfoLabelTextStyle}"
+                                                    Text="输出目录" />
+                                                <TextBlock
+                                                    Grid.Row="2"
+                                                    Grid.Column="1"
+                                                    Grid.ColumnSpan="3"
+                                                    Margin="0,14,0,0"
+                                                    Style="{StaticResource InfoValueTextStyle}"
+                                                    Text="{Binding OutputDirectory, TargetNullValue=--}" />
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
+                                </DockPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <TabItem Header="参数显示页">
+
+                            <ScrollViewer Style="{StaticResource DetailContentScrollViewerStyle}">
+                                <DockPanel Width="1312" LastChildFill="False">
+                                    <Grid Margin="0,0,0,24" DockPanel.Dock="Top">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="0.95*" />
+                                            <ColumnDefinition Width="24" />
+                                            <ColumnDefinition Width="1.05*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0" Style="{StaticResource SectionCardStyle}">
+                                            <StackPanel>
+                                                <StackPanel Margin="0,0,0,18" Orientation="Horizontal">
+                                                    <Border
+                                                        Width="4"
+                                                        Height="18"
+                                                        Margin="0,0,10,0"
+                                                        Background="{StaticResource AccentOrangeBrush}"
+                                                        CornerRadius="2" />
+                                                    <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="时空参数" />
+                                                </StackPanel>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="130" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+                                                    <TextBlock
+                                                        Grid.Row="0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="平均步速" />
+                                                    <TextBlock
+                                                        Grid.Row="0"
+                                                        Grid.Column="1"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="{Binding GaitSpeedDisplay, TargetNullValue=--}" />
+                                                    <TextBlock
+                                                        Grid.Row="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="平均步频" />
+                                                    <TextBlock
+                                                        Grid.Row="1"
+                                                        Grid.Column="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="{Binding CadenceDisplay, TargetNullValue=--}" />
+                                                    <TextBlock
+                                                        Grid.Row="2"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="平均步长" />
+                                                    <TextBlock
+                                                        Grid.Row="2"
+                                                        Grid.Column="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="{Binding StepLengthDisplay, TargetNullValue=--}" />
+                                                    <TextBlock
+                                                        Grid.Row="3"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="步态周期" />
+                                                    <TextBlock
+                                                        Grid.Row="3"
+                                                        Grid.Column="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="{Binding GaitCycleDisplay, TargetNullValue=--}" />
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Grid.Column="2" Style="{StaticResource SectionCardStyle}">
+                                            <StackPanel>
+                                                <StackPanel Margin="0,0,0,18" Orientation="Horizontal">
+                                                    <Border
+                                                        Width="4"
+                                                        Height="18"
+                                                        Margin="0,0,10,0"
+                                                        Background="{StaticResource AccentOrangeBrush}"
+                                                        CornerRadius="2" />
+                                                    <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="核心事件参数" />
+                                                </StackPanel>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="130" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+                                                    <TextBlock
+                                                        Grid.Row="0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="站立相" />
+                                                    <TextBlock
+                                                        Grid.Row="0"
+                                                        Grid.Column="1"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="{Binding StanceTimeDisplay, TargetNullValue=--}" />
+                                                    <TextBlock
+                                                        Grid.Row="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="摆动相" />
+                                                    <TextBlock
+                                                        Grid.Row="1"
+                                                        Grid.Column="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="{Binding SwingTimeDisplay, TargetNullValue=--}" />
+                                                    <TextBlock
+                                                        Grid.Row="2"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="有效帧比例" />
+                                                    <TextBlock
+                                                        Grid.Row="2"
+                                                        Grid.Column="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="{Binding ValidFrameRatioDisplay, TargetNullValue=--}" />
+                                                    <TextBlock
+                                                        Grid.Row="3"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoLabelTextStyle}"
+                                                        Text="关键点置信度" />
+                                                    <TextBlock
+                                                        Grid.Row="3"
+                                                        Grid.Column="1"
+                                                        Margin="0,14,0,0"
+                                                        Style="{StaticResource InfoValueTextStyle}"
+                                                        Text="{Binding ConfidenceDisplay, TargetNullValue=--}" />
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <Grid DockPanel.Dock="Top">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="0.95*" />
+                                            <ColumnDefinition Width="24" />
+                                            <ColumnDefinition Width="1.05*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0" Style="{StaticResource SectionCardStyle}">
+                                            <StackPanel>
+                                                <StackPanel Margin="0,0,0,18" Orientation="Horizontal">
+                                                    <Border
+                                                        Width="4"
+                                                        Height="18"
+                                                        Margin="0,0,10,0"
+                                                        Background="{StaticResource AccentOrangeBrush}"
+                                                        CornerRadius="2" />
+                                                    <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="运动学参数" />
+                                                </StackPanel>
+                                                <TextBlock Style="{StaticResource InfoValueTextStyle}" Text="{Binding KinematicSummaryDisplay, TargetNullValue=暂无运动学摘要}" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Grid.Column="2" Style="{StaticResource SectionCardStyle}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="18" />
+                                                    <RowDefinition Height="300" />
+                                                </Grid.RowDefinitions>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Border
+                                                        Width="4"
+                                                        Height="18"
+                                                        Margin="0,0,10,0"
+                                                        Background="{StaticResource AccentOrangeBrush}"
+                                                        CornerRadius="2" />
+                                                    <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="曲线图预留区域" />
+                                                </StackPanel>
+                                                <Border
+                                                    Grid.Row="2"
+                                                    Background="#EEF2F7"
+                                                    BorderBrush="{StaticResource CardBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8">
+                                                    <StackPanel VerticalAlignment="Center">
+                                                        <materialDesign:PackIcon
+                                                            Width="48"
+                                                            Height="48"
+                                                            HorizontalAlignment="Center"
+                                                            Foreground="#8EA2B8"
+                                                            Kind="ChartLineVariant" />
+                                                        <TextBlock
+                                                            Margin="0,12,0,0"
+                                                            HorizontalAlignment="Center"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="曲线图与参数卡片占位" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+                                </DockPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <TabItem Header="视频预览页">
+
+                            <ScrollViewer Style="{StaticResource DetailContentScrollViewerStyle}">
+                                <DockPanel Width="1312" LastChildFill="False">
+                                    <Grid Margin="0,0,0,24" DockPanel.Dock="Top">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1.25*" />
+                                            <ColumnDefinition Width="24" />
+                                            <ColumnDefinition Width="0.75*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0" Style="{StaticResource SectionCardStyle}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="18" />
+                                                    <RowDefinition Height="360" />
+                                                </Grid.RowDefinitions>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Border
+                                                        Width="4"
+                                                        Height="18"
+                                                        Margin="0,0,10,0"
+                                                        Background="{StaticResource AccentOrangeBrush}"
+                                                        CornerRadius="2" />
+                                                    <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="视频预览区域" />
+                                                </StackPanel>
+                                                <Border
+                                                    Grid.Row="2"
+                                                    Background="#172230"
+                                                    CornerRadius="8">
+                                                    <StackPanel VerticalAlignment="Center">
+                                                        <materialDesign:PackIcon
+                                                            Width="64"
+                                                            Height="64"
+                                                            HorizontalAlignment="Center"
+                                                            Foreground="#9AB0C7"
+                                                            Kind="PlayCircleOutline" />
+                                                        <TextBlock
+                                                            Margin="0,16,0,0"
+                                                            HorizontalAlignment="Center"
+                                                            FontFamily="{StaticResource AppFont}"
+                                                            FontSize="20"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="White"
+                                                            Text="视频预览占位区" />
+                                                        <TextBlock
+                                                            Margin="0,10,0,0"
+                                                            HorizontalAlignment="Center"
+                                                            FontFamily="{StaticResource AppFont}"
+                                                            FontSize="14"
+                                                            Foreground="#D2DDE8"
+                                                            Text="{Binding AnnotatedVideoDisplay, TargetNullValue=未生成标注视频}" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+
+                                        <Border Grid.Column="2" Style="{StaticResource SectionCardStyle}">
+                                            <StackPanel>
+                                                <StackPanel Margin="0,0,0,18" Orientation="Horizontal">
+                                                    <Border
+                                                        Width="4"
+                                                        Height="18"
+                                                        Margin="0,0,10,0"
+                                                        Background="{StaticResource AccentOrangeBrush}"
+                                                        CornerRadius="2" />
+                                                    <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="联动信息说明" />
+                                                </StackPanel>
+                                                <TextBlock Style="{StaticResource InfoValueTextStyle}" Text="此侧栏用于承载视频与曲线图联动提示、当前时间点摘要、关键事件索引以及后续报告截图采样控制。" />
+                                                <Border
+                                                    Margin="0,18,0,0"
+                                                    Background="#FFFFFF"
+                                                    Style="{StaticResource SectionCardStyle}">
+                                                    <StackPanel>
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="结果文件数量" />
+                                                        <TextBlock
+                                                            Margin="0,8,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding FileCountDisplay, TargetNullValue=暂无结果文件}" />
+                                                    </StackPanel>
+                                                </Border>
+                                                <Border
+                                                    Margin="0,14,0,0"
+                                                    Background="#FFFFFF"
+                                                    Style="{StaticResource SectionCardStyle}">
+                                                    <StackPanel>
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="输出目录" />
+                                                        <TextBlock
+                                                            Margin="0,8,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding OutputDirectory, TargetNullValue=--}" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <Border DockPanel.Dock="Top" Style="{StaticResource SectionCardStyle}">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="18" />
+                                                <RowDefinition Height="120" />
+                                            </Grid.RowDefinitions>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border
+                                                    Width="4"
+                                                    Height="18"
+                                                    Margin="0,0,10,0"
+                                                    Background="{StaticResource AccentOrangeBrush}"
+                                                    CornerRadius="2" />
+                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="时间轴与横坐标对齐区域" />
+                                            </StackPanel>
+                                            <Border
+                                                Grid.Row="2"
+                                                Background="#EEF2F7"
+                                                BorderBrush="{StaticResource CardBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="8">
+                                                <TextBlock
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Style="{StaticResource InfoValueTextStyle}"
+                                                    Text="0%              20%              40%              60%              80%              100%" />
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DockPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
             </Grid>
         </Border>
     </Grid>
