@@ -69,6 +69,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(RerunTemporaryAnalysisCommand))]
     [NotifyCanExecuteChangedFor(nameof(ViewLogCommand))]
     [NotifyCanExecuteChangedFor(nameof(GoToStep2Command))]
+    [NotifyCanExecuteChangedFor(nameof(ReturnCoverCommand))]
     private AnalysisState _analysisState = AnalysisState.Ready;
 
     /// <summary>
@@ -129,7 +130,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     /// <summary>
     /// 已用时间格式化显示
     /// </summary>
-    public string ElapsedTimeDisplay => ElapsedTime.ToString(@"mm\:ss");
+    public string ElapsedTimeDisplay => ElapsedTime.ToString(@"mm\:ss\.f");
 
     #endregion
 
@@ -808,6 +809,15 @@ public partial class Step4AnalyzeViewModel : ObservableObject
 
     private bool CanRerunTemporaryAnalysis() => !IsRunning;
 
+    [RelayCommand(CanExecute = nameof(CanReturnCover))]
+    private void ReturnCover()
+    {
+        ResetToReady();
+        NavigateToStepRequested?.Invoke(0);
+    }
+
+    private bool CanReturnCover() => !IsRunning;
+
     /// <summary>
     /// 查看分析详情。
     /// </summary>
@@ -1430,28 +1440,47 @@ public partial class Step4AnalyzeViewModel : ObservableObject
 
     private void StartElapsedTimer()
     {
-        _elapsedTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-        _elapsedTimer.Tick += (_, _) =>
-        {
-            ElapsedTime = DateTime.Now - _analysisStartTime;
-        };
+        StopElapsedTimer(updateElapsedTime: false);
+        ElapsedTime = TimeSpan.Zero;
+        _elapsedTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+        _elapsedTimer.Tick += ElapsedTimer_Tick;
         _elapsedTimer.Start();
     }
 
-    private void StopElapsedTimer()
+    private void ElapsedTimer_Tick(object? sender, EventArgs e)
     {
-        _elapsedTimer?.Stop();
-        _elapsedTimer = null;
         ElapsedTime = DateTime.Now - _analysisStartTime;
+    }
+
+    private void StopElapsedTimer(bool updateElapsedTime = true)
+    {
+        if (_elapsedTimer is not null)
+        {
+            _elapsedTimer.Stop();
+            _elapsedTimer.Tick -= ElapsedTimer_Tick;
+        }
+
+        _elapsedTimer = null;
+        if (updateElapsedTime)
+        {
+            ElapsedTime = DateTime.Now - _analysisStartTime;
+        }
     }
 
     private void ResetToReady()
     {
+        StopElapsedTimer(updateElapsedTime: false);
+        _analysisCts?.Cancel();
+        _analysisCts?.Dispose();
+        _analysisCts = null;
+        PlayStateChanged?.Invoke(this, false);
+
         AnalysisState = AnalysisState.Ready;
         Progress = 0;
         CurrentStage = string.Empty;
         StatusMessage = string.Empty;
         ElapsedTime = TimeSpan.Zero;
+        AnalysisDurationDisplay = string.Empty;
         ErrorCode = null;
         ErrorDescription = null;
         ErrorSuggestion = null;
@@ -1465,6 +1494,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         HasVideoError = false;
         VideoErrorMessage = null;
         HasChartData = false;
+        TaskLogs.Clear();
         HipAnglePlotModel = null;
         KneeAnglePlotModel = null;
         AnkleAnglePlotModel = null;

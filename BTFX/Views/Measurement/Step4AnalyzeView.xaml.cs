@@ -18,6 +18,7 @@ public partial class Step4AnalyzeView : UserControl
     private Step4AnalyzeViewModel? _viewModel;
     private DispatcherTimer? _positionTimer;
     private bool _isDraggingSlider;
+    private bool _isSubscribedToViewModel;
 
     /// <summary>
     /// 构造函数
@@ -26,6 +27,8 @@ public partial class Step4AnalyzeView : UserControl
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
     }
 
     /// <summary>
@@ -33,22 +36,59 @@ public partial class Step4AnalyzeView : UserControl
     /// </summary>
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
-        // 取消旧 VM 订阅
-        if (_viewModel is not null)
-        {
-            _viewModel.VideoPositionChanged -= OnVideoPositionChanged;
-            _viewModel.PlayStateChanged -= OnPlayStateChanged;
-            _viewModel.SpeedChanged -= OnSpeedChanged;
-        }
+        UnsubscribeFromViewModel();
 
         _viewModel = e.NewValue as Step4AnalyzeViewModel;
+        SubscribeToViewModel();
+    }
 
-        // 订阅新 VM 事件
-        if (_viewModel is not null)
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        _viewModel ??= DataContext as Step4AnalyzeViewModel;
+        SubscribeToViewModel();
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        StopAndReleaseMedia();
+        UnsubscribeFromViewModel();
+    }
+
+    private void SubscribeToViewModel()
+    {
+        if (_viewModel is null || _isSubscribedToViewModel)
+            return;
+
+        _viewModel.VideoPositionChanged += OnVideoPositionChanged;
+        _viewModel.PlayStateChanged += OnPlayStateChanged;
+        _viewModel.SpeedChanged += OnSpeedChanged;
+        _isSubscribedToViewModel = true;
+    }
+
+    private void UnsubscribeFromViewModel()
+    {
+        if (_viewModel is null || !_isSubscribedToViewModel)
+            return;
+
+        _viewModel.VideoPositionChanged -= OnVideoPositionChanged;
+        _viewModel.PlayStateChanged -= OnPlayStateChanged;
+        _viewModel.SpeedChanged -= OnSpeedChanged;
+        _isSubscribedToViewModel = false;
+    }
+
+    private void StopAndReleaseMedia()
+    {
+        StopPositionTimer();
+        _isDraggingSlider = false;
+
+        try
         {
-            _viewModel.VideoPositionChanged += OnVideoPositionChanged;
-            _viewModel.PlayStateChanged += OnPlayStateChanged;
-            _viewModel.SpeedChanged += OnSpeedChanged;
+            AnnotatedVideoPlayer.Stop();
+            AnnotatedVideoPlayer.Close();
+        }
+        catch
+        {
+            // MediaElement may already be released during view teardown.
         }
     }
 
