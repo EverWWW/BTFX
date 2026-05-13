@@ -11,163 +11,174 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
-        <SolidColorBrush x:Key="PreviewMaskBrush" Color="#8C0D1B2A" />
-        <SolidColorBrush x:Key="PreviewPanelBrush" Color="#FFFFFF" />
-        <SolidColorBrush x:Key="PreviewHeaderBrush" Color="#F8FAFD" />
-        <SolidColorBrush x:Key="PreviewBorderBrush" Color="#D9E3EE" />
-        <SolidColorBrush x:Key="PreviewCardBorderBrush" Color="#E5EBF3" />
-        <SolidColorBrush x:Key="PreviewCardBackgroundBrush" Color="#FFFFFF" />
-        <SolidColorBrush x:Key="PreviewMutedBrush" Color="#7B8794" />
-        <SolidColorBrush x:Key="PreviewTextBrush" Color="#223045" />
-        <SolidColorBrush x:Key="PreviewAccentBrush" Color="#403B5B" />
-        <SolidColorBrush x:Key="PreviewHighlightBrush" Color="#EEF3F9" />
-        <SolidColorBrush x:Key="PreviewSoftBrush" Color="#F8FAFD" />
-        <SolidColorBrush x:Key="PreviewPrimaryButtonBrush" Color="#403B5B" />
-        <SolidColorBrush x:Key="PreviewSecondaryButtonBorderBrush" Color="#B8C4D3" />
+        <SolidColorBrush x:Key="ReportOverlayMaskBrush" Color="#8C0D1B2A" />
+        <SolidColorBrush x:Key="ReportDialogBgBrush" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="ReportCardBgBrush" Color="#FAFAFA" />
+        <SolidColorBrush x:Key="ReportWeakBgBrush" Color="#F8FAFD" />
+        <SolidColorBrush x:Key="ReportBorderBrush" Color="#E5EAF0" />
+        <SolidColorBrush x:Key="ReportCardBorderBrush" Color="#EEF1F5" />
+        <SolidColorBrush x:Key="ReportPrimaryTextBrush" Color="#1F2D3D" />
+        <SolidColorBrush x:Key="ReportBodyTextBrush" Color="#333333" />
+        <SolidColorBrush x:Key="ReportSecondaryTextBrush" Color="#666666" />
+        <SolidColorBrush x:Key="ReportWeakTextBrush" Color="#999999" />
+        <SolidColorBrush x:Key="ReportPrimaryBrush" Color="#40385F" />
+        <SolidColorBrush x:Key="ReportAccentBrush" Color="#FF8A00" />
+        <Style BasedOn="{StaticResource DialogLightScrollBarStyle}" TargetType="ScrollBar" />
 
-        <Style x:Key="PreviewTitleTextStyle" TargetType="TextBlock">
+        <Style x:Key="ReportTitleTextStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="30" />
+            <Setter Property="FontSize" Value="26" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource PreviewTextBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource ReportPrimaryTextBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
-        <Style x:Key="PreviewSectionTitleTextStyle" TargetType="TextBlock">
+        <Style x:Key="ReportSectionTitleTextStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="22" />
+            <Setter Property="FontSize" Value="18" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource PreviewTextBrush}" />
+            <Setter Property="Foreground" Value="#222222" />
+            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
-        <Style x:Key="PreviewHintTextStyle" TargetType="TextBlock">
+        <Style x:Key="ReportLabelTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{StaticResource ReportSecondaryTextBrush}" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+        </Style>
+
+        <Style x:Key="ReportValueTextStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
             <Setter Property="FontSize" Value="14" />
-            <Setter Property="Foreground" Value="{StaticResource PreviewMutedBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource ReportPrimaryTextBrush}" />
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
 
-        <Style x:Key="PreviewCardBorderStyle" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource PreviewCardBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource PreviewCardBorderBrush}" />
+        <Style x:Key="ReportHintTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{StaticResource ReportSecondaryTextBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
+        <Style x:Key="ReportCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource ReportCardBgBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ReportCardBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="18" />
-            <Setter Property="Padding" Value="18,16" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="16" />
         </Style>
 
-        <Style x:Key="PreviewChipTextStyle" TargetType="TextBlock">
+        <Style x:Key="ReportSectionHeaderStyle" TargetType="StackPanel">
+            <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="Margin" Value="0,0,0,14" />
+        </Style>
+
+        <Style x:Key="ReportChipStyle" TargetType="Border">
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="Margin" Value="0,0,8,8" />
+            <Setter Property="Background" Value="#EEF2F7" />
+            <Setter Property="CornerRadius" Value="12" />
+        </Style>
+
+        <Style x:Key="ReportChipTextStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="Medium" />
-            <Setter Property="Foreground" Value="{StaticResource PreviewAccentBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource ReportPrimaryBrush}" />
         </Style>
 
-        <Style x:Key="PreviewMetricLabelStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="Foreground" Value="{StaticResource PreviewMutedBrush}" />
-        </Style>
-
-        <Style x:Key="PreviewMetricValueStyle" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="16" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource PreviewTextBrush}" />
-            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
-        </Style>
-
-        <Style x:Key="PreviewCloseButtonStyle" TargetType="Button">
-            <Setter Property="Width" Value="44" />
-            <Setter Property="Height" Value="44" />
+        <Style x:Key="ReportTextButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border
-                            x:Name="ButtonBorder"
-                            Background="{TemplateBinding Background}"
-                            CornerRadius="14">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#FFEFF3F8" />
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#FFDDE5EF" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
-        <Style
-            x:Key="PreviewSecondaryButtonStyle"
-            BasedOn="{StaticResource SecondaryButton}"
-            TargetType="Button">
-            <Setter Property="Width" Value="176" />
-            <Setter Property="Height" Value="46" />
-            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="18" />
-            <Setter Property="FontWeight" Value="Medium" />
-            <Setter Property="BorderBrush" Value="{StaticResource PreviewSecondaryButtonBorderBrush}" />
-            <Setter Property="Foreground" Value="{StaticResource PreviewAccentBrush}" />
+        <Style x:Key="ReportSecondaryButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="128" />
+            <Setter Property="Height" Value="42" />
             <Setter Property="Background" Value="#FFFFFF" />
-            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="12" />
-        </Style>
-
-        <Style
-            x:Key="PreviewPrimaryButtonStyle"
-            BasedOn="{StaticResource PrimaryButton}"
-            TargetType="Button">
-            <Setter Property="Width" Value="176" />
-            <Setter Property="Height" Value="46" />
+            <Setter Property="BorderBrush" Value="#D9DEE8" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource ReportPrimaryBrush}" />
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontSize" Value="15" />
             <Setter Property="FontWeight" Value="Medium" />
-            <Setter Property="Background" Value="{StaticResource PreviewPrimaryButtonBrush}" />
-            <Setter Property="Foreground" Value="#FFFFFF" />
-            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="12" />
-        </Style>
-
-        <Style
-            x:Key="PreviewSurfaceBorderStyle"
-            BasedOn="{StaticResource DialogSurfaceBorderStyle}"
-            TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource PreviewPanelBrush}" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Effect">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
                 <Setter.Value>
-                    <DropShadowEffect
-                        BlurRadius="30"
-                        Direction="270"
-                        Opacity="0.10"
-                        ShadowDepth="0"
-                        Color="#1F2A37" />
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.48" />
+                    <Setter Property="Cursor" Value="Arrow" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style
+            x:Key="ReportPrimaryButtonStyle"
+            BasedOn="{StaticResource ReportSecondaryButtonStyle}"
+            TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource ReportPrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource ReportPrimaryBrush}" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+        </Style>
+
+        <Style x:Key="ReportCheckBoxStyle" TargetType="CheckBox">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{StaticResource ReportBodyTextBrush}" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="Focusable" Value="False" />
         </Style>
     </UserControl.Resources>
 
     <Grid Background="Transparent">
-        <Border Background="{StaticResource PreviewMaskBrush}" />
+        <Border Background="{StaticResource ReportOverlayMaskBrush}" />
 
         <Border
             Width="1440"
-            MaxWidth="1520"
-            MaxHeight="960"
-            Margin="48"
+            Height="920"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Background="{StaticResource PreviewPanelBrush}"
-            CornerRadius="24"
-            Style="{StaticResource PreviewSurfaceBorderStyle}">
+            Background="{StaticResource ReportDialogBgBrush}"
+            BorderBrush="#E8EDF3"
+            BorderThickness="1"
+            CornerRadius="8">
+            <Border.Effect>
+                <DropShadowEffect
+                    BlurRadius="28"
+                    Direction="270"
+                    Opacity="0.10"
+                    ShadowDepth="0"
+                    Color="#1F2A37" />
+            </Border.Effect>
+
             <Grid>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
@@ -175,245 +186,396 @@
 
                 <Border
                     Grid.Row="0"
-                    Padding="28,10,28,10"
-                    Background="{StaticResource PreviewHeaderBrush}"
-                    BorderBrush="{StaticResource PreviewBorderBrush}"
-                    BorderThickness="0,0,0,1"
-                    CornerRadius="24,24,0,0">
+                    Padding="32,22,32,18"
+                    BorderBrush="{StaticResource ReportBorderBrush}"
+                    BorderThickness="0,0,0,1">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                            <TextBlock Style="{StaticResource PreviewTitleTextStyle}" Text="报告预览" />
-                            <TextBlock
-                                Margin="14,0,0,0"
-                                VerticalAlignment="Center"
-                                Foreground="{StaticResource PreviewTextBrush}"
-                                Style="{StaticResource PreviewHintTextStyle}">
-                                <Run Text="标题 " />
-                                <Run Text="{Binding ReportTitle, Mode=OneWay, TargetNullValue=步态分析报告}" />
-                                <Run Text="  ·  编号 " />
-                                <Run Text="{Binding ReportNumber, Mode=OneWay, TargetNullValue=RPT-20250218-001}" />
-                                <Run Text="  ·  " />
-                                <Run Text="{Binding PreviewSource, Mode=OneWay, TargetNullValue=AnalysisResult #1024}" />
-                            </TextBlock>
-                        </StackPanel>
+                        <TextBlock
+                            Grid.Column="1"
+                            HorizontalAlignment="Center"
+                            Style="{StaticResource ReportTitleTextStyle}"
+                            Text="报告预览" />
 
                         <Button
-                            Grid.Column="1"
+                            Grid.Column="2"
+                            HorizontalAlignment="Right"
                             Command="{Binding CloseCommand}"
-                            Style="{StaticResource PreviewCloseButtonStyle}">
-                            <materialDesign:PackIcon
-                                Width="22"
-                                Height="22"
-                                Foreground="{StaticResource PreviewTextBrush}"
-                                Kind="Close" />
+                            Style="{StaticResource ReportTextButtonStyle}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="14"
+                                    Foreground="{StaticResource ReportSecondaryTextBrush}"
+                                    Text="关闭" />
+                                <materialDesign:PackIcon
+                                    Width="18"
+                                    Height="18"
+                                    Margin="6,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Foreground="{StaticResource ReportSecondaryTextBrush}"
+                                    Kind="Close" />
+                            </StackPanel>
                         </Button>
                     </Grid>
                 </Border>
 
-                <Grid Grid.Row="1" Margin="28,24,28,0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="20" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
+                <Border
+                    Grid.Row="1"
+                    Margin="32,18,32,0"
+                    Padding="16,12"
+                    Background="{StaticResource ReportWeakBgBrush}"
+                    BorderBrush="{StaticResource ReportBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="72" />
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="72" />
+                            <ColumnDefinition Width="1.35*" />
+                            <ColumnDefinition Width="72" />
+                            <ColumnDefinition Width="1.8*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="12" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
 
-                    <Border Padding="16,12" Style="{StaticResource PreviewCardBorderStyle}">
+                        <TextBlock
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource ReportLabelTextStyle}"
+                            Text="报告标题" />
+                        <TextBlock
+                            Grid.Column="1"
+                            Margin="0,0,24,0"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource ReportValueTextStyle}"
+                            Text="{Binding ReportTitle, Mode=OneWay, TargetNullValue=步态分析报告}" />
+                        <TextBlock
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource ReportLabelTextStyle}"
+                            Text="编号" />
+                        <TextBlock
+                            Grid.Column="3"
+                            Margin="0,0,24,0"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource ReportValueTextStyle}"
+                            Text="{Binding ReportNumber, Mode=OneWay, TargetNullValue=--}" />
+                        <TextBlock
+                            Grid.Column="4"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource ReportLabelTextStyle}"
+                            Text="患者" />
+                        <TextBlock
+                            Grid.Column="5"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource ReportValueTextStyle}"
+                            Text="{Binding PatientNameDisplay, Mode=OneWay, TargetNullValue=--}" />
+
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource ReportLabelTextStyle}"
+                            Text="测量类型" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Margin="0,0,24,0"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource ReportValueTextStyle}"
+                            Text="{Binding MeasurementTypeDisplay, Mode=OneWay, TargetNullValue=--}" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource ReportLabelTextStyle}"
+                            Text="视频模式" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="3"
+                            Margin="0,0,24,0"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource ReportValueTextStyle}"
+                            Text="{Binding VideoModeDisplay, Mode=OneWay, TargetNullValue=--}" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="4"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource ReportLabelTextStyle}"
+                            Text="测量时间" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="5"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource ReportValueTextStyle}"
+                            Text="{Binding MeasurementDateDisplay, Mode=OneWay, TargetNullValue=--}" />
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="2" Margin="32,20,32,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="330" />
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource ReportCardStyle}">
                         <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
 
-                            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <StackPanel Style="{StaticResource ReportSectionHeaderStyle}">
                                 <Border
-                                    Padding="12,6"
-                                    Background="#FFF7FAFD"
-                                    BorderBrush="#FFDDE7F0"
-                                    BorderThickness="1"
-                                    CornerRadius="999">
-                                    <TextBlock Style="{StaticResource PreviewChipTextStyle}" Text="{Binding IncludedSectionsSummary, TargetNullValue=时空参数、运动学摘要、质量控制}" />
-                                </Border>
-                                <Border
-                                    Margin="10,0,0,0"
-                                    Padding="12,6"
-                                    Background="#FFF2F6FB"
-                                    BorderBrush="#FFD7E3F2"
-                                    BorderThickness="1"
-                                    CornerRadius="999">
-                                    <TextBlock Style="{StaticResource PreviewChipTextStyle}" Text="{Binding UpdatedAtDisplayWithLabel, TargetNullValue=最近更新时间：2025-02-18 14:35}" />
-                                </Border>
-                                <Border
-                                    Margin="10,0,0,0"
-                                    Padding="12,6"
-                                    Background="#FFF7FAFD"
-                                    BorderBrush="#FFDDE7F0"
-                                    BorderThickness="1"
-                                    CornerRadius="999">
-                                    <TextBlock Style="{StaticResource PreviewChipTextStyle}" Text="{Binding PreviewStatus, TargetNullValue=已生成当前草稿的报告预览，可在返回配置后继续调整。}" />
-                                </Border>
+                                    Width="4"
+                                    Height="18"
+                                    Margin="0,0,10,0"
+                                    VerticalAlignment="Center"
+                                    Background="{StaticResource ReportAccentBrush}"
+                                    CornerRadius="2" />
+                                <TextBlock Style="{StaticResource ReportSectionTitleTextStyle}" Text="报告配置" />
                             </StackPanel>
 
-                            <TextBlock
-                                Grid.Column="1"
-                                VerticalAlignment="Center"
-                                Style="{StaticResource PreviewHintTextStyle}"
-                                Text="覆盖式承载壳体，后续可与分析详情页在同一层级容器内平滑切换。" />
-                        </Grid>
-                    </Border>
-
-                    <Grid Grid.Row="2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="320" />
-                            <ColumnDefinition Width="20" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <Border Grid.Column="0" Style="{StaticResource PreviewCardBorderStyle}">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ScrollViewer
+                                Grid.Row="1"
+                                CanContentScroll="False"
+                                Style="{StaticResource DialogLightweightScrollViewerStyle}"
+                                VerticalScrollBarVisibility="Auto">
                                 <StackPanel>
-                                    <TextBlock Style="{StaticResource PreviewSectionTitleTextStyle}" Text="预览摘要" />
-                                    <TextBlock
-                                        Margin="0,8,0,0"
-                                        Style="{StaticResource PreviewHintTextStyle}"
-                                        Text="当前摘要区压缩为轻量侧栏，用于承载报告基础信息、包含项和状态，不再占用过大的横向空间。" />
-
-                                    <Border Margin="0,16,0,0" Style="{StaticResource PreviewCardBorderStyle}">
+                                    <Border Margin="0,0,0,14" Style="{StaticResource ReportCardStyle}">
                                         <StackPanel>
-                                            <TextBlock Style="{StaticResource PreviewMetricLabelStyle}" Text="报告标题" />
                                             <TextBlock
-                                                Margin="0,6,0,0"
-                                                Style="{StaticResource PreviewMetricValueStyle}"
-                                                Text="{Binding ReportTitle}" />
+                                                Margin="0,0,0,12"
+                                                FontWeight="SemiBold"
+                                                Style="{StaticResource ReportValueTextStyle}"
+                                                Text="报告内容选择" />
+                                            <CheckBox
+                                                Content="基本信息"
+                                                IsChecked="{Binding IncludeBasicInfo, Mode=OneWay}"
+                                                Style="{StaticResource ReportCheckBoxStyle}" />
+                                            <CheckBox
+                                                Content="时空参数"
+                                                IsChecked="{Binding IncludeSpatiotemporalParameters, Mode=OneWay}"
+                                                Style="{StaticResource ReportCheckBoxStyle}" />
+                                            <CheckBox
+                                                Content="步态周期摘要"
+                                                IsChecked="{Binding IncludeGaitCycleSummary, Mode=OneWay}"
+                                                Style="{StaticResource ReportCheckBoxStyle}" />
+                                            <CheckBox
+                                                Content="左右对称性指标 暂无数据"
+                                                IsChecked="{Binding IncludeSymmetryMetrics, Mode=OneWay}"
+                                                Opacity="0.55"
+                                                Style="{StaticResource ReportCheckBoxStyle}" />
+                                            <CheckBox
+                                                Content="运动学参数"
+                                                IsChecked="{Binding IncludeKinematicSummary, Mode=OneWay}"
+                                                Style="{StaticResource ReportCheckBoxStyle}" />
+                                            <CheckBox
+                                                Content="关节角度曲线 暂无数据"
+                                                IsChecked="{Binding IncludeJointAngleCurve, Mode=OneWay}"
+                                                Opacity="0.55"
+                                                Style="{StaticResource ReportCheckBoxStyle}" />
+                                            <CheckBox
+                                                Content="质量控制信息"
+                                                IsChecked="{Binding IncludeQualityControl, Mode=OneWay}"
+                                                Style="{StaticResource ReportCheckBoxStyle}" />
+                                            <CheckBox
+                                                Content="视频截图或关键帧 暂无数据"
+                                                IsChecked="{Binding IncludeVideoKeyFrames, Mode=OneWay}"
+                                                Opacity="0.55"
+                                                Style="{StaticResource ReportCheckBoxStyle}" />
+                                            <CheckBox
+                                                Content="分析结论"
+                                                IsChecked="{Binding IncludeAnalysisConclusion, Mode=OneWay}"
+                                                Style="{StaticResource ReportCheckBoxStyle}" />
+                                            <CheckBox
+                                                Content="备注说明"
+                                                IsChecked="{Binding IncludeRemarks, Mode=OneWay}"
+                                                Style="{StaticResource ReportCheckBoxStyle}" />
                                         </StackPanel>
                                     </Border>
 
-                                    <Border Margin="0,12,0,0" Style="{StaticResource PreviewCardBorderStyle}">
+                                    <Border Margin="0,0,0,14" Style="{StaticResource ReportCardStyle}">
                                         <StackPanel>
-                                            <TextBlock Style="{StaticResource PreviewMetricLabelStyle}" Text="报告编号" />
                                             <TextBlock
-                                                Margin="0,6,0,0"
-                                                Style="{StaticResource PreviewMetricValueStyle}"
-                                                Text="{Binding ReportNumber}" />
+                                                Margin="0,0,0,12"
+                                                FontWeight="SemiBold"
+                                                Style="{StaticResource ReportValueTextStyle}"
+                                                Text="导出格式" />
+                                            <Border
+                                                Padding="12,8"
+                                                Background="#FFFFFF"
+                                                BorderBrush="{StaticResource ReportBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="8">
+                                                <TextBlock Style="{StaticResource ReportValueTextStyle}" Text="{Binding ExportFormatDisplay}" />
+                                            </Border>
                                         </StackPanel>
                                     </Border>
 
-                                    <Border Margin="0,12,0,0" Style="{StaticResource PreviewCardBorderStyle}">
+                                    <Border Style="{StaticResource ReportCardStyle}">
                                         <StackPanel>
-                                            <TextBlock Style="{StaticResource PreviewMetricLabelStyle}" Text="预览来源" />
                                             <TextBlock
-                                                Margin="0,6,0,0"
-                                                Style="{StaticResource PreviewMetricValueStyle}"
-                                                Text="{Binding PreviewSource}"
-                                                TextWrapping="Wrap" />
-                                        </StackPanel>
-                                    </Border>
+                                                Margin="0,0,0,12"
+                                                FontWeight="SemiBold"
+                                                Style="{StaticResource ReportValueTextStyle}"
+                                                Text="打印操作" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button
+                                                    Margin="0,0,10,0"
+                                                  Width ="110"
+                                                    Content="打印预览"
+                                                    IsEnabled="False"
+                                                    Style="{StaticResource ReportSecondaryButtonStyle}" />
+                                                <Button
+                                                    Width ="110"
+                                                    Content="页面设置"
+                                                    IsEnabled="False"
+                                                    Style="{StaticResource ReportSecondaryButtonStyle}" />
+                                            </StackPanel>
 
-                                    <Border Margin="0,12,0,0" Style="{StaticResource PreviewCardBorderStyle}">
-                                        <StackPanel>
-                                            <TextBlock Style="{StaticResource PreviewMetricLabelStyle}" Text="包含项" />
-                                            <TextBlock
-                                                Margin="0,6,0,0"
-                                                FontSize="15"
-                                                Style="{StaticResource PreviewMetricValueStyle}"
-                                                Text="{Binding IncludedSectionsSummary}"
-                                                TextWrapping="Wrap" />
-                                        </StackPanel>
-                                    </Border>
-
-                                    <Border
-                                        Margin="0,12,0,0"
-                                        Padding="16,14"
-                                        Background="{StaticResource PreviewHighlightBrush}"
-                                        BorderBrush="#FFD8E2EE"
-                                        BorderThickness="1"
-                                        CornerRadius="16">
-                                        <StackPanel>
-                                            <TextBlock Style="{StaticResource PreviewMetricLabelStyle}" Text="状态说明" />
-                                            <TextBlock
-                                                Margin="0,8,0,0"
-                                                Foreground="{StaticResource PreviewTextBrush}"
-                                                Style="{StaticResource PreviewHintTextStyle}"
-                                                Text="{Binding PreviewStatus}"
-                                                TextWrapping="Wrap" />
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>
                             </ScrollViewer>
-                        </Border>
+                        </Grid>
+                    </Border>
 
-                        <Border Grid.Column="2" Style="{StaticResource PreviewCardBorderStyle}">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="16" />
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
+                    <Border Grid.Column="2" Style="{StaticResource ReportCardStyle}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="12" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="12" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
 
+                            <StackPanel Style="{StaticResource ReportSectionHeaderStyle}">
+                                <Border
+                                    Width="4"
+                                    Height="18"
+                                    Margin="0,0,10,0"
+                                    VerticalAlignment="Center"
+                                    Background="{StaticResource ReportAccentBrush}"
+                                    CornerRadius="2" />
+                                <TextBlock Style="{StaticResource ReportSectionTitleTextStyle}" Text="报告文档预览" />
+                            </StackPanel>
+
+                            <Border
+                                Grid.Row="2"
+                                Height="38"
+                                Padding="12,0"
+                                Background="{StaticResource ReportWeakBgBrush}"
+                                BorderBrush="{StaticResource ReportBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <StackPanel>
-                                        <TextBlock Style="{StaticResource PreviewSectionTitleTextStyle}" Text="文档预览" />
+                                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource ReportHintTextStyle}" Text="上一页" />
                                         <TextBlock
-                                            Margin="0,8,0,0"
-                                            Style="{StaticResource PreviewHintTextStyle}"
-                                            Text="保留正式文档预览区作为主内容焦点，后续可继续扩展打印、页码跳转与模板切换能力。" />
+                                            Margin="16,0,0,0"
+                                            Style="{StaticResource ReportHintTextStyle}"
+                                            Text="下一页" />
                                     </StackPanel>
-
-                                    <Border
+                                    <TextBlock
                                         Grid.Column="1"
-                                        Padding="12,8"
-                                        Background="{StaticResource PreviewSoftBrush}"
-                                        BorderBrush="#FFDDE7F0"
-                                        BorderThickness="1"
-                                        CornerRadius="12">
-                                        <TextBlock Style="{StaticResource PreviewChipTextStyle}" Text="FlowDocument 预览区域" />
-                                    </Border>
+                                        Margin="24,0,0,0"
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource ReportHintTextStyle}"
+                                        Text="1 / 1" />
+                                    <StackPanel
+                                        Grid.Column="3"
+                                        VerticalAlignment="Center"
+                                        Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource ReportHintTextStyle}" Text="缩小" />
+                                        <TextBlock
+                                            Margin="18,0,18,0"
+                                            Style="{StaticResource ReportHintTextStyle}"
+                                            Text="100%" />
+                                        <TextBlock Style="{StaticResource ReportHintTextStyle}" Text="放大" />
+                                        <TextBlock
+                                            Margin="18,0,0,0"
+                                            Style="{StaticResource ReportHintTextStyle}"
+                                            Text="适合宽度" />
+                                    </StackPanel>
                                 </Grid>
+                            </Border>
 
+                            <Border
+                                Grid.Row="4"
+                                Padding="16"
+                                Background="{StaticResource ReportCardBgBrush}"
+                                BorderBrush="#DDE5EF"
+                                BorderThickness="1"
+                                CornerRadius="8">
                                 <Border
-                                    Grid.Row="2"
                                     Background="#FFFFFF"
-                                    BorderBrush="#FFD8E2EE"
+                                    BorderBrush="{StaticResource ReportBorderBrush}"
                                     BorderThickness="1"
-                                    CornerRadius="18">
+                                    CornerRadius="4">
+                                    <Border.Effect>
+                                        <DropShadowEffect
+                                            BlurRadius="12"
+                                            Direction="270"
+                                            Opacity="0.10"
+                                            ShadowDepth="0"
+                                            Color="#1F2A37" />
+                                    </Border.Effect>
                                     <FlowDocumentScrollViewer
-                                        Margin="8"
+                                        Margin="12"
                                         Document="{Binding PreviewDocument}"
                                         IsToolBarVisible="True"
                                         VerticalScrollBarVisibility="Auto" />
                                 </Border>
-                            </Grid>
-                        </Border>
-                    </Grid>
+                            </Border>
+                        </Grid>
+                    </Border>
                 </Grid>
 
                 <Border
-                    Grid.Row="2"
-                    Padding="0,20,0,24"
-                    Background="#F8FAFD"
-                    BorderBrush="{StaticResource PreviewBorderBrush}"
-                    BorderThickness="0,1,0,0"
-                    CornerRadius="0,0,24,24">
-                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                    Grid.Row="3"
+                    Padding="32,18,32,24"
+                    Background="#FFFFFF">
+                    <Grid>
                         <Button
-                            Margin="0,0,16,0"
+                            HorizontalAlignment="Left"
                             Command="{Binding BackToConfigCommand}"
                             Content="{DynamicResource AnalysisDetail.ReportPreview.BackToConfig}"
-                            Style="{StaticResource PreviewSecondaryButtonStyle}" />
-                        <Button
-                            Command="{Binding CloseCommand}"
-                            Content="{DynamicResource AnalysisDetail.ReportPreview.Close}"
-                            Style="{StaticResource PreviewPrimaryButtonStyle}" />
-                    </StackPanel>
+                            Style="{StaticResource ReportSecondaryButtonStyle}" />
+
+                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                            <Button
+                                Margin="0,0,14,0"
+                                Command="{Binding CloseCommand}"
+                                Content="{DynamicResource AnalysisDetail.ReportPreview.Close}"
+                                Style="{StaticResource ReportSecondaryButtonStyle}" />
+                            <Button
+                                Content="导出报告"
+                                IsEnabled="False"
+                                Style="{StaticResource ReportPrimaryButtonStyle}"
+                                ToolTip="导出命令尚未接入当前预览弹窗" />
+                        </StackPanel>
+                    </Grid>
                 </Border>
             </Grid>
         </Border>

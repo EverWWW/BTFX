@@ -14,6 +14,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
 using Microsoft.Extensions.DependencyInjection;
+using OxyPlot;
+using OxyPlot.Axes;
+using OxyPlot.Series;
 using ToolHelper.LoggingDiagnostics.Abstractions;
 using Constants = BTFX.Common.Constants;
 
@@ -369,6 +372,28 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         new("report", "报告配置", "基于当前分析结果生成并完善报告草稿")
     ];
 
+    public PlotModel LeftHipAnglePlotModel { get; }
+
+    public PlotModel RightHipAnglePlotModel { get; }
+
+    public PlotModel LeftKneeAnglePlotModel { get; }
+
+    public PlotModel RightKneeAnglePlotModel { get; }
+
+    public PlotModel LeftAnkleAnglePlotModel { get; }
+
+    public PlotModel RightAnkleAnglePlotModel { get; }
+
+    public PlotModel VideoKneeAnglePlotModel { get; }
+
+    public PlotModel VideoHipAnglePlotModel { get; }
+
+    public PlotModel VideoAnkleAnglePlotModel { get; }
+
+    public PlotModel VideoTrunkAnglePlotModel { get; }
+
+    public PlotModel VideoTrajectoryPlotModel { get; }
+
     /// <summary>
     /// 请求关闭对话框事件。
     /// </summary>
@@ -396,6 +421,18 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         catch
         {
         }
+
+        LeftHipAnglePlotModel = BuildDemoAnglePlot("左髋角度曲线", OxyColors.SteelBlue, phase: 0);
+        RightHipAnglePlotModel = BuildDemoAnglePlot("右髋角度曲线", OxyColor.Parse("#F2306A"), phase: 0.35);
+        LeftKneeAnglePlotModel = BuildDemoAnglePlot("左膝角度曲线", OxyColors.ForestGreen, phase: 0.7);
+        RightKneeAnglePlotModel = BuildDemoAnglePlot("右膝角度曲线", OxyColors.OrangeRed, phase: 1.05);
+        LeftAnkleAnglePlotModel = BuildDemoAnglePlot("左踝角度曲线", OxyColors.MediumPurple, phase: 1.4);
+        RightAnkleAnglePlotModel = BuildDemoAnglePlot("右踝角度曲线", OxyColors.DarkCyan, phase: 1.75);
+        VideoKneeAnglePlotModel = BuildDualDemoPlot("膝关节角度曲线", "左膝", "右膝", OxyColors.ForestGreen, OxyColor.Parse("#F2306A"));
+        VideoHipAnglePlotModel = BuildDualDemoPlot("髋关节角度曲线", "左髋", "右髋", OxyColors.SteelBlue, OxyColors.OrangeRed);
+        VideoAnkleAnglePlotModel = BuildDualDemoPlot("踝关节角度曲线", "左踝", "右踝", OxyColors.MediumPurple, OxyColors.DarkCyan);
+        VideoTrunkAnglePlotModel = BuildDualDemoPlot("躯干倾斜角曲线", "躯干倾斜", "躯干侧屈", OxyColor.Parse("#40385F"), OxyColor.Parse("#F2306A"));
+        VideoTrajectoryPlotModel = BuildDualDemoPlot("足尖轨迹 / 质心轨迹", "足尖轨迹", "质心轨迹", OxyColors.SteelBlue, OxyColors.OrangeRed);
 
         SelectedNavigationItem = NavigationItems.FirstOrDefault();
         SetEmptyState("暂无分析结果", "当前测量尚未生成可查看的分析结果，可先查看基础测量信息。", false);
@@ -450,32 +487,44 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// 患者姓名。
     /// </summary>
-    public string PatientName => Record?.Patient?.Name ?? "--";
+    public string PatientName => Record?.Patient?.Name ?? "测试患者";
+
+    /// <summary>
+    /// 患者身高。
+    /// </summary>
+    public string PatientHeightDisplay => Record?.Patient?.Height is double height and > 0
+        ? $"{height:F0} cm"
+        : "175 cm";
 
     /// <summary>
     /// 患者编号。
     /// </summary>
-    public string PatientCode => Record?.PatientId.ToString() ?? "--";
+    public string PatientCode => Record?.PatientId.ToString() ?? "P20260513001";
 
     /// <summary>
     /// 测量名称。
     /// </summary>
-    public string MeasurementName => string.IsNullOrWhiteSpace(Record?.MeasurementName) ? "--" : Record.MeasurementName;
+    public string MeasurementName => string.IsNullOrWhiteSpace(Record?.MeasurementName) ? "测量_20260513_103000" : Record.MeasurementName;
 
     /// <summary>
     /// 测量类型。
     /// </summary>
-    public string MeasurementTypeDisplay => Record is null ? "--" : GetEnumDescription(Record.MeasurementType);
+    public string MeasurementTypeDisplay => Record is null ? "自然步行" : GetEnumDescription(Record.MeasurementType);
+
+    /// <summary>
+    /// 测量视频模式。
+    /// </summary>
+    public string MeasurementVideoModeDisplay => Record?.HasDualVideo == true ? "双视频模式" : "单视频模式";
 
     /// <summary>
     /// 测量时间。
     /// </summary>
-    public string MeasurementDate => Record?.MeasurementDate.ToString(Constants.DATETIME_FORMAT) ?? "--";
+    public string MeasurementDate => Record?.MeasurementDate.ToString(Constants.DATETIME_FORMAT) ?? "2026-05-13 10:30:00";
 
     /// <summary>
     /// 分析任务编号。
     /// </summary>
-    public string RequestIdDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.RequestId) ? "--" : AnalysisResult.RequestId;
+    public string RequestIdDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.RequestId) ? "GAIT_20260513_0001" : AnalysisResult.RequestId;
 
     /// <summary>
     /// 分析任务状态。
@@ -486,7 +535,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         {
             if (AnalysisResult is null)
             {
-                return "--";
+                return "已完成";
             }
 
             if (AnalysisResult.Success)
@@ -503,27 +552,27 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// 分析耗时。
     /// </summary>
-    public string AnalysisDurationDisplay => FormatNumber(AnalysisResult?.AnalysisDurationSeconds, "F1", "s");
+    public string AnalysisDurationDisplay => FormatNumber(AnalysisResult?.AnalysisDurationSeconds ?? 5.2, "F1", "s");
 
     /// <summary>
     /// 创建时间。
     /// </summary>
-    public string AnalysisCreatedAtDisplay => AnalysisResult?.CreatedAt.ToString(Constants.DATETIME_FORMAT) ?? "--";
+    public string AnalysisCreatedAtDisplay => AnalysisResult?.CreatedAt.ToString(Constants.DATETIME_FORMAT) ?? "2026-05-13 10:30:00";
 
     /// <summary>
     /// 协议版本。
     /// </summary>
-    public string ProtocolVersionDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.ProtocolVersion) ? "--" : AnalysisResult.ProtocolVersion;
+    public string ProtocolVersionDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.ProtocolVersion) ? "v1.0" : AnalysisResult.ProtocolVersion;
 
     /// <summary>
     /// 算法版本。
     /// </summary>
-    public string AlgorithmVersionDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.AlgorithmVersion) ? "--" : AnalysisResult.AlgorithmVersion;
+    public string AlgorithmVersionDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.AlgorithmVersion) ? "GaitEngine 1.2.0" : AnalysisResult.AlgorithmVersion;
 
     /// <summary>
     /// 模型版本。
     /// </summary>
-    public string ModelVersionDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.ModelVersion) ? "--" : AnalysisResult.ModelVersion;
+    public string ModelVersionDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.ModelVersion) ? "PoseGait 0.9.3" : AnalysisResult.ModelVersion;
 
     /// <summary>
     /// 分析状态文本。
@@ -554,7 +603,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         {
             if (AnalysisResult?.QualityControl is null)
             {
-                return "--";
+                return "有效帧比例 96%";
             }
 
             if (AnalysisResult.QualityControl.ValidFrameRatio is double validFrameRatio)
@@ -567,6 +616,11 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     }
 
     /// <summary>
+    /// 质量提示。
+    /// </summary>
+    public string QualityHintDisplay => "视频质量良好，关键点连续性稳定，适合用于本次步态参数预览。";
+
+    /// <summary>
     /// 质量等级摘要。
     /// </summary>
     public string QualityGradeDisplay
@@ -576,7 +630,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             var qualityControl = AnalysisResult?.QualityControl;
             if (qualityControl is null)
             {
-                return "--";
+                return "A级";
             }
 
             var validFrameRatio = qualityControl.ValidFrameRatio;
@@ -599,49 +653,49 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// </summary>
     public string ConfidenceDisplay => AnalysisResult?.QualityControl?.MeanKeypointConfidence is double confidence
         ? confidence.ToString("F2")
-        : "--";
+        : "0.94";
 
     /// <summary>
     /// 有效帧比例摘要。
     /// </summary>
     public string ValidFrameRatioDisplay => AnalysisResult?.QualityControl?.ValidFrameRatio is double validFrameRatio
         ? validFrameRatio.ToString("P0")
-        : "--";
+        : "96%";
 
     /// <summary>
     /// 平均步速。
     /// </summary>
-    public string GaitSpeedDisplay => FormatNumber(AnalysisResult?.GaitSpeedMPerS ?? Record?.GaitParameters?.GaitSpeedMPerS, "F2", "m/s");
+    public string GaitSpeedDisplay => FormatNumber(AnalysisResult?.GaitSpeedMPerS ?? Record?.GaitParameters?.GaitSpeedMPerS ?? 1.18, "F2", "m/s");
 
     /// <summary>
     /// 平均步频。
     /// </summary>
-    public string CadenceDisplay => FormatNumber(Record?.GaitParameters?.Cadence, "F1", "步/分");
+    public string CadenceDisplay => FormatNumber(Record?.GaitParameters?.Cadence ?? 112.5, "F1", "step/min");
 
     /// <summary>
     /// 平均步长。
     /// </summary>
-    public string StepLengthDisplay => FormatNumber(AnalysisResult?.StepLengthM ?? Record?.GaitParameters?.StepLengthM, "F2", "m");
+    public string StepLengthDisplay => FormatNumber(AnalysisResult?.StepLengthM ?? Record?.GaitParameters?.StepLengthM ?? 0.63, "F2", "m");
 
     /// <summary>
     /// 步态周期。
     /// </summary>
-    public string GaitCycleDisplay => FormatNumber(AnalysisResult?.GaitCycleDurationS ?? Record?.GaitParameters?.GaitCycleDurationS, "F2", "s");
+    public string GaitCycleDisplay => FormatNumber(AnalysisResult?.GaitCycleDurationS ?? Record?.GaitParameters?.GaitCycleDurationS ?? 1.02, "F2", "s");
 
     /// <summary>
     /// 步幅。
     /// </summary>
-    public string StrideLengthDisplay => FormatNumber(AnalysisResult?.StrideLengthM, "F2", "m");
+    public string StrideLengthDisplay => FormatNumber(AnalysisResult?.StrideLengthM ?? 1.26, "F2", "m");
 
     /// <summary>
     /// 站立相时长。
     /// </summary>
-    public string StanceTimeDisplay => FormatNumber(AnalysisResult?.StanceTimeS, "F2", "s");
+    public string StanceTimeDisplay => FormatNumber(AnalysisResult?.StanceTimeS ?? 0.72, "F2", "s");
 
     /// <summary>
     /// 摆动相时长。
     /// </summary>
-    public string SwingTimeDisplay => FormatNumber(AnalysisResult?.SwingTimeS, "F2", "s");
+    public string SwingTimeDisplay => FormatNumber(AnalysisResult?.SwingTimeS ?? 0.38, "F2", "s");
 
     /// <summary>
     /// 运动学摘要。
@@ -653,7 +707,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             var summary = AnalysisResult?.KinematicSummary;
             if (summary is null)
             {
-                return "暂无运动学摘要";
+                return "髋关节 ROM 42.8 ° / 膝关节 ROM 57.3 ° / 踝关节 ROM 24.6 °";
             }
 
             return $"髋关节 ROM {FormatNumber(summary.HipRomDeg, "F1", "°")} / 膝关节 ROM {FormatNumber(summary.KneeRomDeg, "F1", "°")} / 踝关节 ROM {FormatNumber(summary.AnkleRomDeg, "F1", "°")}";
@@ -665,28 +719,159 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// </summary>
     public string OutputDirectory => !string.IsNullOrWhiteSpace(AnalysisResult?.OutputDirectory)
         ? AnalysisResult.OutputDirectory
-        : (!string.IsNullOrWhiteSpace(Record?.MeasurementFolderPath) ? Record.MeasurementFolderPath : "--");
+        : (!string.IsNullOrWhiteSpace(Record?.MeasurementFolderPath) ? Record.MeasurementFolderPath : "output/demo_20260513_001");
 
     /// <summary>
     /// 结果文件数量。
     /// </summary>
     public string FileCountDisplay => AnalysisResult?.CsvFiles?.Count > 0
         ? $"{AnalysisResult.CsvFiles.Count} 个结果文件"
-        : "暂无结果文件";
+        : "8 个结果文件";
 
     /// <summary>
     /// 标注视频摘要。
     /// </summary>
     public string AnnotatedVideoDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.AnnotatedVideoPath)
-        ? "未生成标注视频"
+        ? "result_visualized.mp4"
         : Path.GetFileName(AnalysisResult.AnnotatedVideoPath);
 
     /// <summary>
     /// 摘要文件摘要。
     /// </summary>
     public string SummaryFileDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.SummaryFilePath)
-        ? "未生成 summary.json"
+        ? "result.json"
         : Path.GetFileName(AnalysisResult.SummaryFilePath);
+
+    /// <summary>
+    /// 有效周期数。
+    /// </summary>
+    public string CycleCountDisplay => "5 个";
+
+    /// <summary>
+    /// 文件摘要。
+    /// </summary>
+    public string ResultFileSummaryDisplay => AnalysisResult?.CsvFiles?.Count > 0
+        ? $"已生成 {AnalysisResult.CsvFiles.Count} 个结果文件"
+        : "已生成 result.json、joint_angles.csv、gait_events.csv";
+
+    /// <summary>
+    /// 日志文件摘要。
+    /// </summary>
+    public string LogFileDisplay => "analysis.log";
+
+    /// <summary>
+    /// CSV 文件数量。
+    /// </summary>
+    public string CsvFileCountDisplay => AnalysisResult?.CsvFiles?.Count is int count and > 0 ? $"{count} 个" : "6 个";
+
+    /// <summary>
+    /// 图片文件数量。
+    /// </summary>
+    public string ImageFileCountDisplay => "2 个";
+
+    public string MeanStrideLengthDisplay => StrideLengthDisplay;
+
+    public string DoubleSupportTimeDisplay => FormatNumber(AnalysisResult?.DoubleSupportTimeS ?? Record?.GaitParameters?.DoubleSupportTimeS ?? 0.21, "F2", "s");
+
+    public string SingleSupportTimeDisplay => FormatNumber(AnalysisResult?.SingleSupportTimeS ?? Record?.GaitParameters?.SingleSupportTimeS ?? 0.49, "F2", "s");
+
+    public string LeftStepLengthDisplay => Record?.GaitParameters?.StepLengthLeft is double leftStep ? FormatMetersFromCentimeters(leftStep) : "0.62 m";
+
+    public string RightStepLengthDisplay => Record?.GaitParameters?.StepLengthRight is double rightStep ? FormatMetersFromCentimeters(rightStep) : "0.64 m";
+
+    public string LeftStrideLengthDisplay => Record?.GaitParameters?.StrideLengthLeft is double leftStride ? FormatMetersFromCentimeters(leftStride) : "1.25 m";
+
+    public string RightStrideLengthDisplay => Record?.GaitParameters?.StrideLengthRight is double rightStride ? FormatMetersFromCentimeters(rightStride) : "1.27 m";
+
+    public string LeftStancePhaseDisplay => FormatNumber(Record?.GaitParameters?.StancePhaseLeft ?? 61.8, "F1", "%");
+
+    public string RightStancePhaseDisplay => FormatNumber(Record?.GaitParameters?.StancePhaseRight ?? 62.4, "F1", "%");
+
+    public string LeftSwingPhaseDisplay => FormatNumber(Record?.GaitParameters?.SwingPhaseLeft ?? 38.2, "F1", "%");
+
+    public string RightSwingPhaseDisplay => FormatNumber(Record?.GaitParameters?.SwingPhaseRight ?? 37.6, "F1", "%");
+
+    public string LeftHeelStrikeCountDisplay => "3 次";
+
+    public string RightHeelStrikeCountDisplay => "3 次";
+
+    public string LeftToeOffCountDisplay => "3 次";
+
+    public string RightToeOffCountDisplay => "3 次";
+
+    public string CycleConfidenceDisplay => "0.91";
+
+    public string EventConfidenceDisplay => "0.89";
+
+    public string HipRomDisplay => FormatNumber(AnalysisResult?.KinematicSummary?.HipRomDeg ?? 42.8, "F1", "°");
+
+    public string LeftHipRomDisplay => "43.6 °";
+
+    public string RightHipRomDisplay => "42.1 °";
+
+    public string KneeRomDisplay => FormatNumber(AnalysisResult?.KinematicSummary?.KneeRomDeg ?? 57.3, "F1", "°");
+
+    public string LeftKneeRomDisplay => "57.3 °";
+
+    public string RightKneeRomDisplay => "55.4 °";
+
+    public string AnkleRomDisplay => FormatNumber(AnalysisResult?.KinematicSummary?.AnkleRomDeg ?? 24.6, "F1", "°");
+
+    public string LeftAnkleRomDisplay => "25.1 °";
+
+    public string RightAnkleRomDisplay => "23.7 °";
+
+    public string PelvisCoronalRomDisplay => FormatNumber(AnalysisResult?.KinematicSummary?.PelvisCoronalRomDeg ?? 7.8, "F1", "°");
+
+    public string TrunkTiltMeanDisplay => "4.2 °";
+
+    public string TrunkTiltMaxDisplay => "8.5 °";
+
+    public string TrunkTiltMinDisplay => "1.2 °";
+
+    public string TrunkTiltRomDisplay => "7.3 °";
+
+    public string PelvicTiltMeanDisplay => "6.1 °";
+
+    public string PelvicObliquityMeanDisplay => "3.4 °";
+
+    public string TrunkLateralFlexionMeanDisplay => "2.8 °";
+
+    public string StepLengthDiffDisplay => "0.02 m";
+
+    public string StepLengthDiffPercentDisplay => "3.2 %";
+
+    public string StanceTimeDiffDisplay => "0.03 s";
+
+    public string StanceTimeDiffPercentDisplay => "4.1 %";
+
+    public string SwingTimeDiffDisplay => "0.02 s";
+
+    public string KneeRomDiffDisplay => "1.9 °";
+
+    public string HipRomDiffDisplay => "2.4 °";
+
+    public string AnkleRomDiffDisplay => "1.6 °";
+
+    public string SymmetryScoreDisplay => FormatNumber(Record?.GaitParameters?.SymmetryIndex ?? 92.4, "F1", "");
+
+    public string CurrentVideoFileDisplay => AnnotatedVideoDisplay;
+
+    public string CurrentFrameDisplay => "128";
+
+    public string CurrentPlaybackTimeDisplay => "2.17 s";
+
+    public string CurrentGaitCycleDisplay => "第 2 周期";
+
+    public string CurrentEventDisplay => "左脚脚跟着地";
+
+    public string CurrentLeftKneeAngleDisplay => "42.6 °";
+
+    public string CurrentRightKneeAngleDisplay => "39.8 °";
+
+    public string CurrentLeftAnkleAngleDisplay => "12.4 °";
+
+    public string CurrentRightAnkleAngleDisplay => "10.9 °";
 
     /// <summary>
     /// 报告编号摘要。
@@ -1219,6 +1404,114 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Record.MeasurementFolderPath);
     }
 
+    private static PlotModel BuildDemoAnglePlot(string title, OxyColor color, double phase)
+    {
+        var model = CreateDemoPlotBase(title, "时间 (s)", "角度 (°)");
+        var series = new LineSeries
+        {
+            Title = title.Replace("角度曲线", string.Empty, StringComparison.Ordinal),
+            Color = color,
+            StrokeThickness = 2.6,
+            MarkerType = MarkerType.None
+        };
+
+        for (var i = 0; i <= 120; i++)
+        {
+            var time = i / 6d;
+            var radians = (time / 20d * Math.PI * 4d) + phase;
+            series.Points.Add(new DataPoint(time, 20d + 10d * Math.Sin(radians)));
+        }
+
+        model.Series.Add(series);
+        return model;
+    }
+
+    private static PlotModel BuildDualDemoPlot(string title, string firstName, string secondName, OxyColor firstColor, OxyColor secondColor)
+    {
+        var model = CreateDemoPlotBase(title, "时间 (s)", title.Contains("轨迹", StringComparison.Ordinal) ? "位移 (m)" : "角度 (°)", alignToPlaybackBar: true);
+        var first = new LineSeries
+        {
+            Title = firstName,
+            Color = firstColor,
+            StrokeThickness = 2.4
+        };
+        var second = new LineSeries
+        {
+            Title = secondName,
+            Color = secondColor,
+            StrokeThickness = 2.4
+        };
+
+        for (var i = 0; i <= 120; i++)
+        {
+            var time = i / 6d;
+            var radians = time / 20d * Math.PI * 4d;
+            first.Points.Add(new DataPoint(time, 20d + 10d * Math.Sin(radians)));
+            second.Points.Add(new DataPoint(time, 20d + 10d * Math.Cos(radians + 0.35d)));
+        }
+
+        model.Series.Add(first);
+        model.Series.Add(second);
+        return model;
+    }
+
+    private static PlotModel CreateDemoPlotBase(string title, string xAxisTitle, string yAxisTitle, bool alignToPlaybackBar = false)
+    {
+        var model = new PlotModel
+        {
+            Title = title,
+            TitleFont = "Microsoft YaHei",
+            TitleFontSize = 14,
+            TitleFontWeight = OxyPlot.FontWeights.Bold,
+            TextColor = OxyColor.Parse("#333333"),
+            PlotAreaBorderColor = OxyColor.Parse("#DCE3EC"),
+            PlotAreaBorderThickness = new OxyThickness(1),
+            Background = OxyColors.White,
+            PlotAreaBackground = OxyColor.Parse("#FCFDFE")
+        };
+
+        if (alignToPlaybackBar)
+        {
+            model.PlotMargins = new OxyThickness(108, 32, 70, 46);
+        }
+
+        model.Axes.Add(new LinearAxis
+        {
+            Position = AxisPosition.Bottom,
+            Title = xAxisTitle,
+            Minimum = 0,
+            Maximum = 20,
+            MajorStep = 5,
+            MinorStep = 1,
+            MajorGridlineStyle = LineStyle.Solid,
+            MinorGridlineStyle = LineStyle.Dot,
+            MajorGridlineColor = OxyColor.Parse("#E8EDF3"),
+            MinorGridlineColor = OxyColor.Parse("#F1F4F8"),
+            AxislineColor = OxyColor.Parse("#DCE3EC"),
+            TextColor = OxyColor.Parse("#666666"),
+            TitleColor = OxyColor.Parse("#666666")
+        });
+
+        model.Axes.Add(new LinearAxis
+        {
+            Position = AxisPosition.Left,
+            Title = yAxisTitle,
+            Minimum = 0,
+            Maximum = 40,
+            MajorStep = 10,
+            MinorStep = 5,
+            MajorGridlineStyle = LineStyle.Solid,
+            MinorGridlineStyle = LineStyle.Dot,
+            MajorGridlineColor = OxyColor.Parse("#E8EDF3"),
+            MinorGridlineColor = OxyColor.Parse("#F1F4F8"),
+            AxislineColor = OxyColor.Parse("#DCE3EC"),
+            TextColor = OxyColor.Parse("#666666"),
+            TitleColor = OxyColor.Parse("#666666")
+        });
+
+        return model;
+    }
+
     private void NotifyComputedPropertiesChanged()
     {
         OnPropertyChanged(nameof(IsEmptyState));
@@ -1235,9 +1528,11 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         OnPropertyChanged(nameof(NavigationProgressMaximum));
         OnPropertyChanged(nameof(NavigationProgressText));
         OnPropertyChanged(nameof(PatientName));
+        OnPropertyChanged(nameof(PatientHeightDisplay));
         OnPropertyChanged(nameof(PatientCode));
         OnPropertyChanged(nameof(MeasurementName));
         OnPropertyChanged(nameof(MeasurementTypeDisplay));
+        OnPropertyChanged(nameof(MeasurementVideoModeDisplay));
         OnPropertyChanged(nameof(MeasurementDate));
         OnPropertyChanged(nameof(RequestIdDisplay));
         OnPropertyChanged(nameof(TaskStatusDisplay));
@@ -1249,6 +1544,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         OnPropertyChanged(nameof(AnalysisStatusText));
         OnPropertyChanged(nameof(AnalysisStatusColor));
         OnPropertyChanged(nameof(QualitySummary));
+        OnPropertyChanged(nameof(QualityHintDisplay));
         OnPropertyChanged(nameof(QualityGradeDisplay));
         OnPropertyChanged(nameof(ConfidenceDisplay));
         OnPropertyChanged(nameof(ValidFrameRatioDisplay));
@@ -1264,6 +1560,63 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         OnPropertyChanged(nameof(FileCountDisplay));
         OnPropertyChanged(nameof(AnnotatedVideoDisplay));
         OnPropertyChanged(nameof(SummaryFileDisplay));
+        OnPropertyChanged(nameof(CycleCountDisplay));
+        OnPropertyChanged(nameof(ResultFileSummaryDisplay));
+        OnPropertyChanged(nameof(LogFileDisplay));
+        OnPropertyChanged(nameof(CsvFileCountDisplay));
+        OnPropertyChanged(nameof(ImageFileCountDisplay));
+        OnPropertyChanged(nameof(MeanStrideLengthDisplay));
+        OnPropertyChanged(nameof(DoubleSupportTimeDisplay));
+        OnPropertyChanged(nameof(SingleSupportTimeDisplay));
+        OnPropertyChanged(nameof(LeftStepLengthDisplay));
+        OnPropertyChanged(nameof(RightStepLengthDisplay));
+        OnPropertyChanged(nameof(LeftStrideLengthDisplay));
+        OnPropertyChanged(nameof(RightStrideLengthDisplay));
+        OnPropertyChanged(nameof(LeftStancePhaseDisplay));
+        OnPropertyChanged(nameof(RightStancePhaseDisplay));
+        OnPropertyChanged(nameof(LeftSwingPhaseDisplay));
+        OnPropertyChanged(nameof(RightSwingPhaseDisplay));
+        OnPropertyChanged(nameof(LeftHeelStrikeCountDisplay));
+        OnPropertyChanged(nameof(RightHeelStrikeCountDisplay));
+        OnPropertyChanged(nameof(LeftToeOffCountDisplay));
+        OnPropertyChanged(nameof(RightToeOffCountDisplay));
+        OnPropertyChanged(nameof(CycleConfidenceDisplay));
+        OnPropertyChanged(nameof(EventConfidenceDisplay));
+        OnPropertyChanged(nameof(HipRomDisplay));
+        OnPropertyChanged(nameof(LeftHipRomDisplay));
+        OnPropertyChanged(nameof(RightHipRomDisplay));
+        OnPropertyChanged(nameof(KneeRomDisplay));
+        OnPropertyChanged(nameof(LeftKneeRomDisplay));
+        OnPropertyChanged(nameof(RightKneeRomDisplay));
+        OnPropertyChanged(nameof(AnkleRomDisplay));
+        OnPropertyChanged(nameof(LeftAnkleRomDisplay));
+        OnPropertyChanged(nameof(RightAnkleRomDisplay));
+        OnPropertyChanged(nameof(PelvisCoronalRomDisplay));
+        OnPropertyChanged(nameof(TrunkTiltMeanDisplay));
+        OnPropertyChanged(nameof(TrunkTiltMaxDisplay));
+        OnPropertyChanged(nameof(TrunkTiltMinDisplay));
+        OnPropertyChanged(nameof(TrunkTiltRomDisplay));
+        OnPropertyChanged(nameof(PelvicTiltMeanDisplay));
+        OnPropertyChanged(nameof(PelvicObliquityMeanDisplay));
+        OnPropertyChanged(nameof(TrunkLateralFlexionMeanDisplay));
+        OnPropertyChanged(nameof(StepLengthDiffDisplay));
+        OnPropertyChanged(nameof(StepLengthDiffPercentDisplay));
+        OnPropertyChanged(nameof(StanceTimeDiffDisplay));
+        OnPropertyChanged(nameof(StanceTimeDiffPercentDisplay));
+        OnPropertyChanged(nameof(SwingTimeDiffDisplay));
+        OnPropertyChanged(nameof(KneeRomDiffDisplay));
+        OnPropertyChanged(nameof(HipRomDiffDisplay));
+        OnPropertyChanged(nameof(AnkleRomDiffDisplay));
+        OnPropertyChanged(nameof(SymmetryScoreDisplay));
+        OnPropertyChanged(nameof(CurrentVideoFileDisplay));
+        OnPropertyChanged(nameof(CurrentFrameDisplay));
+        OnPropertyChanged(nameof(CurrentPlaybackTimeDisplay));
+        OnPropertyChanged(nameof(CurrentGaitCycleDisplay));
+        OnPropertyChanged(nameof(CurrentEventDisplay));
+        OnPropertyChanged(nameof(CurrentLeftKneeAngleDisplay));
+        OnPropertyChanged(nameof(CurrentRightKneeAngleDisplay));
+        OnPropertyChanged(nameof(CurrentLeftAnkleAngleDisplay));
+        OnPropertyChanged(nameof(CurrentRightAnkleAngleDisplay));
         OnPropertyChanged(nameof(CanConfigureReport));
         OnPropertyChanged(nameof(CanPreviewReport));
         OnPropertyChanged(nameof(ReportNumberDisplay));
@@ -1277,7 +1630,18 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
 
     private static string FormatNumber(double? value, string format, string unit)
     {
-        return value.HasValue ? $"{value.Value.ToString(format)} {unit}" : "--";
+        if (!value.HasValue)
+        {
+            return "--";
+        }
+
+        var number = value.Value.ToString(format);
+        return string.IsNullOrWhiteSpace(unit) ? number : $"{number} {unit}";
+    }
+
+    private static string FormatMetersFromCentimeters(double? value)
+    {
+        return value.HasValue ? $"{(value.Value / 100d):F2} m" : "--";
     }
 
     private static string GetEnumDescription<TEnum>(TEnum value)

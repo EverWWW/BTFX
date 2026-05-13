@@ -1,11 +1,13 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
 using BTFX.Common;
+using BTFX.Helpers;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
+using Microsoft.Extensions.DependencyInjection;
 using ToolHelper.LoggingDiagnostics.Abstractions;
 using Constants = BTFX.Common.Constants;
 
@@ -571,11 +573,37 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     /// 查看报告详情命令
     /// </summary>
     [RelayCommand]
-    private void ViewReport(ReportItem? item)
+    private async Task ViewReportAsync(ReportItem? item)
     {
         if (item == null) return;
         SelectedReport = item;
         _logHelper?.Information($"查看报告：ID={item.Report.Id}");
+
+        try
+        {
+            var fullReport = await _reportService.GetReportWithAnalysisDataAsync(item.Report.Id);
+            if (fullReport is null)
+            {
+                MessageBox.Show("未找到报告数据，无法打开预览。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var previewViewModel = App.Services.GetRequiredService<ReportPreviewDialogViewModel>();
+            var previewDocument = ReportPreviewHelper.GenerateReportDocument(fullReport, "步态智能分析系统");
+            await previewViewModel.InitializeAsync(fullReport, previewDocument);
+
+            await DialogHost.Show(
+                new Views.Dialogs.ReportPreviewDialog
+                {
+                    DataContext = previewViewModel
+                },
+                "RootDialog");
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"打开报告预览弹窗失败：ReportId={item.Report.Id}", ex);
+            MessageBox.Show($"打开报告预览失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     /// <summary>
