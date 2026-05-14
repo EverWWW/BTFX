@@ -4,9 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:BTFX.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewModels="clr-namespace:BTFX.ViewModels"
     d:DesignHeight="960"
     d:DesignWidth="1880"
     Background="#F4F4F4"
@@ -50,9 +48,6 @@
                 <DataTrigger Binding="{Binding IsEnabled}" Value="False">
                     <Setter Property="Opacity" Value="0.35" />
                     <Setter Property="IsEnabled" Value="False" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding Key}" Value="DevTest">
-                    <Setter Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -253,64 +248,6 @@
             </Setter>
         </Style>
 
-        <Style x:Key="DevTestEntryButtonStyle" TargetType="Button">
-            <Setter Property="Width" Value="40" />
-            <Setter Property="Height" Value="40" />
-            <Setter Property="Margin" Value="0,8,0,0" />
-            <Setter Property="Background" Value="#F4F0FF" />
-            <Setter Property="BorderBrush" Value="#DDD2FF" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
-            <Setter Property="VerticalAlignment" Value="Top" />
-            <Setter Property="ToolTip" Value="进入 DevTest" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border
-                            x:Name="DevTestButtonBorder"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="12">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="DevTestButtonBorder" Property="Background" Value="#E8DEFF" />
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="DevTestButtonBorder" Property="Opacity" Value="0.8" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="DeviceStatusImageStyle" TargetType="Image">
-            <Setter Property="Width" Value="28" />
-            <Setter Property="Height" Value="28" />
-            <Setter Property="Stretch" Value="Uniform" />
-            <Setter Property="Source" Value="/Resources/Images/NavigationItem/weilianjie.png" />
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding DeviceStatus}" Value="{x:Static viewModels:DeviceConnectionStatus.Connected}">
-                    <Setter Property="Source" Value="/Resources/Images/NavigationItem/lianjie.png" />
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style
-            x:Key="DeviceStatusTextStyle"
-            BasedOn="{StaticResource HeaderValueTextStyle}"
-            TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#666666" />
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding DeviceStatus}" Value="{x:Static viewModels:DeviceConnectionStatus.Connected}">
-                    <Setter Property="Foreground" Value="#24BC3E" />
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
     </UserControl.Resources>
 
     <Grid Background="#F4F4F4">
@@ -328,7 +265,6 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="32" />
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="24" />
                 </Grid.RowDefinitions>
@@ -361,17 +297,6 @@
 
                 <Button
                     Grid.Row="2"
-                    Command="{Binding OpenDevTestCommand}"
-                    Style="{StaticResource DevTestEntryButtonStyle}">
-                    <materialDesign:PackIcon
-                        Width="20"
-                        Height="20"
-                        Foreground="#6D4AFF"
-                        Kind="TestTube" />
-                </Button>
-
-                <Button
-                    Grid.Row="3"
                     Command="{Binding LogoutCommand}"
                     Style="{StaticResource LogoutButtonStyle}">
                     <StackPanel HorizontalAlignment="Center">
@@ -408,9 +333,6 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="32" />
-                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
                     <StackPanel
@@ -430,7 +352,8 @@
                     </StackPanel>
 
                     <StackPanel
-                        Grid.Column="2"
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Orientation="Horizontal">
                         <Button Command="{Binding SwitchPatientCommand}" Style="{StaticResource SwitchPatientButtonStyle}">
@@ -488,13 +411,6 @@
                         </Button>
                     </StackPanel>
 
-                    <StackPanel
-                        Grid.Column="4"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal">
-                        <Image Margin="0,0,8,0" Style="{StaticResource DeviceStatusImageStyle}" />
-                        <TextBlock Style="{StaticResource DeviceStatusTextStyle}" Text="{Binding DeviceStatusText}" />
-                    </StackPanel>
                 </Grid>
             </Border>
 

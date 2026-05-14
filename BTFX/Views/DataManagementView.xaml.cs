@@ -275,6 +275,39 @@ public partial class DataManagementView : UserControl
         }
     }
 
+    private void DataRowBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (_isUpdatingSelection || IsFromButton(e.OriginalSource as DependencyObject))
+        {
+            return;
+        }
+
+        if (sender is not FrameworkElement { DataContext: MeasurementRecordItem item }
+            || DataContext is not DataManagementViewModel viewModel)
+        {
+            return;
+        }
+
+        item.IsSelected = !item.IsSelected;
+        viewModel.OnItemSelectionChanged(item);
+        e.Handled = true;
+    }
+
+    private static bool IsFromButton(DependencyObject? source)
+    {
+        while (source is not null)
+        {
+            if (source is ButtonBase)
+            {
+                return true;
+            }
+
+            source = VisualTreeHelper.GetParent(source);
+        }
+
+        return false;
+    }
+
     private async void DataListViewport_SizeChanged(object sender, SizeChangedEventArgs e)
     {
         if (DataContext is DataManagementViewModel viewModel)

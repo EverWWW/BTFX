@@ -25,7 +25,7 @@
         <Style x:Key="CameraComboBoxStyle" TargetType="ComboBox">
             <Setter Property="Foreground" Value="#555555" />
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontSize" Value="15" />
             <Setter Property="Background" Value="#FFFFFF" />
             <Setter Property="BorderBrush" Value="#D1D1D1" />
             <Setter Property="BorderThickness" Value="1" />
@@ -328,7 +328,7 @@
                             FontWeight="SemiBold"
                             Text="录制帧率" />
                         <ComboBox
-                            Width="130"
+                            Width="170"
                             Margin="10,0,0,0"
                             ItemsSource="{Binding FrameRateOptions}"
                             SelectedItem="{Binding SelectedFrameRate}"
@@ -389,6 +389,7 @@
                             <TextBlock
                                 VerticalAlignment="Center"
                                 FontWeight="SemiBold"
+                              FontSize="20"
                                 Text="侧面相机" />
                             <Border
                                 Grid.Column="1"
@@ -417,7 +418,12 @@
                                 Grid.Column="4"
                                 HorizontalAlignment="Right"
                                 Orientation="Horizontal">
-                                <TextBlock
+                                <Button
+                                    Margin="0,0,10,0"
+                                    Command="{Binding EditSideCameraCommand}"
+                                    Content="修改"
+                                    Style="{StaticResource CameraCompactSecondaryButtonStyle}" />       
+                                  <TextBlock
                                     VerticalAlignment="Center"
                                     FontSize="12"
                                     Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
@@ -429,11 +435,7 @@
                                     Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
                                     Text="{Binding SideCameraName}"
                                     TextTrimming="CharacterEllipsis" />
-                                <Button
-                                    Margin="4,0,0,0"
-                                    Command="{Binding EditSideCameraCommand}"
-                                    Content="修改"
-                                    Style="{StaticResource CameraCompactSecondaryButtonStyle}" />
+                                
                             </StackPanel>
                         </Grid>
                         <Border
@@ -582,6 +584,7 @@
                             <TextBlock
                                 VerticalAlignment="Center"
                                 FontWeight="SemiBold"
+                                FontSize="20"
                                 Text="正面相机" />
                             <Border
                                 Grid.Column="1"
@@ -610,6 +613,11 @@
                                 Grid.Column="4"
                                 HorizontalAlignment="Right"
                                 Orientation="Horizontal">
+                            <Button
+                                  Margin="0,0,10,0"
+                                    Command="{Binding EditFrontCameraCommand}"
+                                    Content="修改"
+                                    Style="{StaticResource CameraCompactSecondaryButtonStyle}" />
                                 <TextBlock
                                     VerticalAlignment="Center"
                                     FontSize="12"
@@ -622,11 +630,7 @@
                                     Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
                                     Text="{Binding FrontCameraName}"
                                     TextTrimming="CharacterEllipsis" />
-                                <Button
-                                    Margin="4,0,0,0"
-                                    Command="{Binding EditFrontCameraCommand}"
-                                    Content="修改"
-                                    Style="{StaticResource CameraCompactSecondaryButtonStyle}" />
+                                
                             </StackPanel>
                         </Grid>
                         <Border

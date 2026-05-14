@@ -122,6 +122,11 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     /// </summary>
     public int SelectedReportCount => Reports.Count(r => r.IsSelected);
 
+    /// <summary>
+    /// 已选报告总数
+    /// </summary>
+    public int SelectedReportTotalCount => _selectedReportIds.Count;
+
     #endregion
 
     #region 报告分页
@@ -963,7 +968,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ExportSelectedReports()
     {
-        if (SelectedReportCount <= 0 || _disposed || App.IsShuttingDown)
+        if (SelectedReportTotalCount <= 0 || _disposed || App.IsShuttingDown)
         {
             return;
         }
@@ -1045,6 +1050,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             }
 
             OnPropertyChanged(nameof(SelectedReportCount));
+            OnPropertyChanged(nameof(SelectedReportTotalCount));
         }
         finally
         {
@@ -1087,6 +1093,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             HeaderSelectionState = isSelected;
 
             OnPropertyChanged(nameof(SelectedReportCount));
+            OnPropertyChanged(nameof(SelectedReportTotalCount));
             OnPropertyChanged(nameof(SelectAllState));
         }
         finally
@@ -1308,6 +1315,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             HeaderSelectionState = newHeaderSelectionState;
 
             OnPropertyChanged(nameof(SelectedReportCount));
+            OnPropertyChanged(nameof(SelectedReportTotalCount));
             OnPropertyChanged(nameof(SelectAllState));
         }
         finally
@@ -1347,6 +1355,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             HeaderSelectionState = newHeaderSelectionState;
 
             OnPropertyChanged(nameof(SelectedReportCount));
+            OnPropertyChanged(nameof(SelectedReportTotalCount));
             OnPropertyChanged(nameof(SelectAllState));
         }
         finally

@@ -134,7 +134,6 @@
     <system:String x:Key="NavDataManagement">Data Management</system:String>
     <system:String x:Key="NavReport">Reports</system:String>
     <system:String x:Key="NavSettings">Settings</system:String>
-    <system:String x:Key="NavDevTest">Dev Test</system:String>
 
     <!--  Device Status  -->
     <system:String x:Key="DeviceConnected">Connected</system:String>

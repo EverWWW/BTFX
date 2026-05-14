@@ -520,8 +520,6 @@ public partial class App : Application
         services.AddSingleton<ViewModels.Measurement.Step4AnalyzeViewModel>();
         services.AddSingleton<ViewModels.Measurement.MeasurementViewModel>();
 
-        // 开发测试 ViewModel
-        services.AddTransient<Testing.DevTestViewModel>();
 
         // ========== View 注册 ==========
         services.AddTransient<MainWindow>();
@@ -541,8 +539,6 @@ public partial class App : Application
         // Measurement 模块 View
         services.AddTransient<Views.Measurement.MeasurementView>();
 
-        // 开发测试 View
-        services.AddTransient<Testing.DevTestView>();
     }
 }
 

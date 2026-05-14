@@ -476,29 +476,6 @@
             </Grid>
         </Border>
 
-        <!-- 版本信息 -->
-        <Button
-            Margin="24"
-            Padding="10,4"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Bottom"
-            Background="Transparent"
-            BorderBrush="#C8C8C8"
-            BorderThickness="1"
-            Click="CameraRecordTestButton_Click"
-            Cursor="Hand"
-            Foreground="#777777"
-            ToolTip="临时相机录制测试">
-            <StackPanel Orientation="Horizontal">
-                <materialDesign:PackIcon
-                    Width="16"
-                    Height="16"
-                    Margin="0,0,5,0"
-                    Kind="Video" />
-                <TextBlock FontSize="12" Text="相机测试" />
-            </StackPanel>
-        </Button>
-
         <TextBlock
             Margin="24"
             HorizontalAlignment="Right"

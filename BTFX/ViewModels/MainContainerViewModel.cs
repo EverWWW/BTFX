@@ -11,32 +11,6 @@ using ToolHelper.LoggingDiagnostics.Abstractions;
 namespace BTFX.ViewModels;
 
 /// <summary>
-/// 设备连接状态
-/// </summary>
-public enum DeviceConnectionStatus
-{
-    /// <summary>
-    /// 未连接
-    /// </summary>
-    Disconnected,
-
-    /// <summary>
-    /// 连接中
-    /// </summary>
-    Connecting,
-
-    /// <summary>
-    /// 已连接
-    /// </summary>
-    Connected,
-
-    /// <summary>
-    /// 连接失败
-    /// </summary>
-    ConnectionFailed
-}
-
-/// <summary>
 /// 主界面容器ViewModel
 /// </summary>
 public partial class MainContainerViewModel : ObservableObject, IDisposable
@@ -116,56 +90,6 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     /// </summary>
     [ObservableProperty]
     private string _currentTime = string.Empty;
-
-    /// <summary>
-    /// 设备状态
-    /// </summary>
-    [ObservableProperty]
-    private DeviceConnectionStatus _deviceStatus = DeviceConnectionStatus.Disconnected;
-
-    /// <summary>
-    /// 设备状态颜色
-    /// </summary>
-    public string DeviceStatusColor => DeviceStatus switch
-    {
-        DeviceConnectionStatus.Connected => "#4CAF50",      // 绿色
-        DeviceConnectionStatus.Connecting => "#FF9800",     // 橙色
-        DeviceConnectionStatus.ConnectionFailed => "#F44336", // 红色
-        _ => "#9E9E9E"                                       // 灰色
-    };
-
-    /// <summary>
-    /// 设备状态文字
-    /// </summary>
-    public string DeviceStatusText
-    {
-        get
-        {
-            try
-            {
-                var resourceKey = DeviceStatus switch
-                {
-                    DeviceConnectionStatus.Connected => "DeviceConnected",
-                    DeviceConnectionStatus.Connecting => "DeviceConnecting",
-                    DeviceConnectionStatus.ConnectionFailed => "DeviceConnectionFailed",
-                    _ => "DeviceDisconnected"
-                };
-
-                var resource = System.Windows.Application.Current.FindResource(resourceKey);
-                return resource?.ToString() ?? "未知";
-            }
-            catch
-            {
-                return DeviceStatus switch
-                {
-                    DeviceConnectionStatus.Connected => "已连接",
-                    DeviceConnectionStatus.Connecting => "连接中...",
-                    DeviceConnectionStatus.ConnectionFailed => "连接失败",
-                    _ => "未连接"
-                };
-            }
-        }
-    }
 
     #endregion
 
@@ -272,14 +196,6 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
                 IconKind = "Cog",
                 IsEnabled = true,
                 ViewModelName = "SettingsViewModel"
-            },
-            new NavigationItem
-            {
-                Key = "DevTest",
-                ResourceKey = "NavDevTest",
-                IconKind = "TestTube",
-                IsEnabled = true,
-                ViewModelName = "DevTestViewModel"
             }
         };
 
@@ -315,8 +231,6 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
         // 更新导航菜单标题
         UpdateNavigationTitles();
 
-        // 更新设备状态文字
-        OnPropertyChanged(nameof(DeviceStatusText));
     }
 
     /// <summary>
@@ -470,7 +384,6 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
                 "DataManagementViewModel" => App.Services?.GetService(typeof(Views.DataManagementView)),
                 "ReportViewModel" => App.Services?.GetService(typeof(Views.ReportView)),
                 "SettingsViewModel" => App.Services?.GetService(typeof(Views.SettingsView)),
-                "DevTestViewModel" => App.Services?.GetService(typeof(Testing.DevTestView)),
                 _ => null
             };
 
@@ -487,15 +400,6 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
                 _logHelper?.Error($"加载子视图失败: {viewModelName}", ex);
             }
         }
-    }
-
-    /// <summary>
-    /// 设备状态变化时通知颜色和文字属性
-    /// </summary>
-    partial void OnDeviceStatusChanged(DeviceConnectionStatus value)
-    {
-        OnPropertyChanged(nameof(DeviceStatusColor));
-        OnPropertyChanged(nameof(DeviceStatusText));
     }
 
     #region 命令
@@ -518,19 +422,6 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
         if (item != null && item.IsEnabled)
         {
             SelectedNavigationItem = item;
-        }
-    }
-
-    /// <summary>
-    /// 进入 DevTest。
-    /// </summary>
-    [RelayCommand]
-    private void OpenDevTest()
-    {
-        var devTestItem = NavigationItems.FirstOrDefault(item => item.Key == "DevTest");
-        if (devTestItem?.IsEnabled == true)
-        {
-            SelectedNavigationItem = devTestItem;
         }
     }
 

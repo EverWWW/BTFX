@@ -1,7 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using BTFX.ViewModels;
-using MaterialDesignThemes.Wpf;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BTFX.Views;
@@ -89,15 +88,6 @@ public partial class LoginView : UserControl
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
         Application.Current.Shutdown();
-    }
-
-    /// <summary>
-    /// 打开临时相机录制测试界面。
-    /// </summary>
-    private async void CameraRecordTestButton_Click(object sender, RoutedEventArgs e)
-    {
-        var dialog = App.Services.GetRequiredService<BTFX.Testing.CameraRecordingTestDialog>();
-        await DialogHost.Show(dialog, "RootDialog");
     }
 
     /// <summary>

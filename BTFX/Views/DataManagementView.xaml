@@ -723,6 +723,8 @@
                                     Margin="0,8,0,0"
                                     Background="#FAFAFA"
                                     CornerRadius="8"
+                                    Cursor="Hand"
+                                    MouseLeftButtonDown="DataRowBorder_MouseLeftButtonDown"
                                     SnapsToDevicePixels="True">
                                     <Grid VerticalAlignment="Center">
                                         <Grid.ColumnDefinitions>

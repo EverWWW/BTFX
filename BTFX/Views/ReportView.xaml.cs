@@ -248,6 +248,39 @@ public partial class ReportView : UserControl
         }
     }
 
+    private void ReportRowBorder_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (_isUpdatingSelection || IsFromButton(e.OriginalSource as DependencyObject))
+        {
+            return;
+        }
+
+        if (sender is not FrameworkElement { DataContext: ReportItem item }
+            || DataContext is not ReportViewModel viewModel)
+        {
+            return;
+        }
+
+        item.IsSelected = !item.IsSelected;
+        viewModel.OnReportSelectionChanged(item);
+        e.Handled = true;
+    }
+
+    private static bool IsFromButton(DependencyObject? source)
+    {
+        while (source is not null)
+        {
+            if (source is ButtonBase)
+            {
+                return true;
+            }
+
+            source = VisualTreeHelper.GetParent(source);
+        }
+
+        return false;
+    }
+
     private void OnLanguageChanged(object? sender, Common.AppLanguage language)
     {
         if (App.IsShuttingDown)

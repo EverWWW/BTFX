@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:BTFX.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:BTFX.ViewModels"
     d:DataContext="{d:DesignInstance Type=vm:ReportViewModel}"
@@ -293,6 +294,7 @@
                                 FontFamily="{StaticResource AppFont}"
                                 FontSize="22"
                                 Foreground="#333333"
+                                materialDesign:TextFieldAssist.CharacterCounterVisibility="Collapsed"
                                 MaxLength="30"
                                 Text="{Binding ReportFilterPatientName, UpdateSourceTrigger=PropertyChanged}" />
 
@@ -672,6 +674,8 @@
                                                 Margin="0,0,0,8"
                                                 Background="#FAFAFA"
                                                 CornerRadius="8"
+                                                Cursor="Hand"
+                                                MouseLeftButtonDown="ReportRowBorder_MouseLeftButtonDown"
                                                 SnapsToDevicePixels="True">
                                                 <Grid VerticalAlignment="Center">
                                                     <Grid.ColumnDefinitions>
@@ -834,7 +838,7 @@
                                             <Style TargetType="Button">
                                                 <Setter Property="IsEnabled" Value="True" />
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding SelectedReportCount}" Value="0">
+                                                    <DataTrigger Binding="{Binding SelectedReportTotalCount}" Value="0">
                                                         <Setter Property="IsEnabled" Value="False" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
@@ -976,6 +980,15 @@
                                                 Source="/Resources/Images/PatientSelectionView/you.png" />
                                         </Button>
                                     </StackPanel>
+
+                                    <TextBlock
+                                        Grid.Column="2"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        FontFamily="{StaticResource AppFont}"
+                                        FontSize="16"
+                                        Foreground="#999999"
+                                        Text="{Binding SelectedReportTotalCount, StringFormat=已选 {0} 项}" />
                                 </Grid>
                             </StackPanel>
                         </Grid>
