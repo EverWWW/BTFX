@@ -1489,7 +1489,9 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             MinorGridlineColor = OxyColor.Parse("#F1F4F8"),
             AxislineColor = OxyColor.Parse("#DCE3EC"),
             TextColor = OxyColor.Parse("#666666"),
-            TitleColor = OxyColor.Parse("#666666")
+            TitleColor = OxyColor.Parse("#666666"),
+            IsPanEnabled = false,
+            IsZoomEnabled = false
         });
 
         model.Axes.Add(new LinearAxis
@@ -1506,7 +1508,9 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             MinorGridlineColor = OxyColor.Parse("#F1F4F8"),
             AxislineColor = OxyColor.Parse("#DCE3EC"),
             TextColor = OxyColor.Parse("#666666"),
-            TitleColor = OxyColor.Parse("#666666")
+            TitleColor = OxyColor.Parse("#666666"),
+            IsPanEnabled = false,
+            IsZoomEnabled = false
         });
 
         return model;

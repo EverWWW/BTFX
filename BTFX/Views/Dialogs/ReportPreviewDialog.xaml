@@ -434,13 +434,13 @@
                                                 Text="打印操作" />
                                             <StackPanel Orientation="Horizontal">
                                                 <Button
+                                                    Width="110"
                                                     Margin="0,0,10,0"
-                                                  Width ="110"
                                                     Content="打印预览"
                                                     IsEnabled="False"
                                                     Style="{StaticResource ReportSecondaryButtonStyle}" />
                                                 <Button
-                                                    Width ="110"
+                                                    Width="110"
                                                     Content="页面设置"
                                                     IsEnabled="False"
                                                     Style="{StaticResource ReportSecondaryButtonStyle}" />
@@ -523,7 +523,7 @@
 
                             <Border
                                 Grid.Row="4"
-                                Padding="16"
+                                Padding="0"
                                 Background="{StaticResource ReportCardBgBrush}"
                                 BorderBrush="#DDE5EF"
                                 BorderThickness="1"

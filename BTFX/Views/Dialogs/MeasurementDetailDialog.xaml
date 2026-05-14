@@ -416,7 +416,10 @@
                         </WrapPanel>
                     </StackPanel>
 
-                    <TabControl Grid.Row="2" Style="{StaticResource AnalysisTabControlStyle}">
+                    <TabControl
+                        Grid.Row="2"
+                        SelectionChanged="AnalysisTabControl_OnSelectionChanged"
+                        Style="{StaticResource AnalysisTabControlStyle}">
                         <TabItem Header="总体情况页">
 
                             <ScrollViewer Style="{StaticResource DetailContentScrollViewerStyle}" VerticalScrollBarVisibility="Disabled">
@@ -689,7 +692,11 @@
 
                         <TabItem Header="参数显示页">
 
-                            <ScrollViewer Style="{StaticResource DetailContentScrollViewerStyle}">
+                            <ScrollViewer
+                                x:Name="ParameterDetailScrollViewer"
+                                Loaded="ParameterDetailScrollViewer_OnLoaded"
+                                RequestBringIntoView="ParameterDetailScrollViewer_OnRequestBringIntoView"
+                                Style="{StaticResource DetailContentScrollViewerStyle}">
                                 <DockPanel Width="1290" LastChildFill="False">
                                     <Grid Margin="0,0,0,24" DockPanel.Dock="Top">
                                         <Grid.ColumnDefinitions>
@@ -700,39 +707,151 @@
 
                                         <StackPanel Grid.Column="0">
                                             <StackPanel Margin="0,0,0,14" Orientation="Horizontal">
-                                                <Border Width="4" Height="18" Margin="0,0,10,0" Background="{StaticResource AccentOrangeBrush}" CornerRadius="2" />
+                                                <Border
+                                                    Width="4"
+                                                    Height="18"
+                                                    Margin="0,0,10,0"
+                                                    Background="{StaticResource AccentOrangeBrush}"
+                                                    CornerRadius="2" />
                                                 <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="时空参数" />
                                             </StackPanel>
-                                            <Border Style="{StaticResource SectionCardStyle}">
+                                            <Border Height="300" Style="{StaticResource SectionCardStyle}">
                                                 <UniformGrid Columns="2">
-                                                    <StackPanel Margin="0,0,24,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="步态周期" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding GaitCycleDisplay, TargetNullValue=--}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,0,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="步长" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding StepLengthDisplay, TargetNullValue=--}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,24,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="步幅" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding StrideLengthDisplay, TargetNullValue=--}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,0,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="步频" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding CadenceDisplay, TargetNullValue=--}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,24,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="步速" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding GaitSpeedDisplay, TargetNullValue=--}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,0,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="站立相时间" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding StanceTimeDisplay, TargetNullValue=--}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,24,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="摆动相时间" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding SwingTimeDisplay, TargetNullValue=--}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,0,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="双支撑时间" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding DoubleSupportTimeDisplay, TargetNullValue=--}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,24,0"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="单支撑时间" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding SingleSupportTimeDisplay, TargetNullValue=--}" /></StackPanel>
+                                                    <StackPanel Margin="0,0,24,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="步态周期" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding GaitCycleDisplay, TargetNullValue=--}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,0,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="步长" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding StepLengthDisplay, TargetNullValue=--}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,24,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="步幅" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding StrideLengthDisplay, TargetNullValue=--}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,0,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="步频" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding CadenceDisplay, TargetNullValue=--}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,24,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="步速" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding GaitSpeedDisplay, TargetNullValue=--}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,0,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="站立相时间" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding StanceTimeDisplay, TargetNullValue=--}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,24,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="摆动相时间" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding SwingTimeDisplay, TargetNullValue=--}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,0,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="双支撑时间" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding DoubleSupportTimeDisplay, TargetNullValue=--}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,24,0">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="单支撑时间" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding SingleSupportTimeDisplay, TargetNullValue=--}" />
+                                                    </StackPanel>
                                                 </UniformGrid>
                                             </Border>
                                         </StackPanel>
 
                                         <StackPanel Grid.Column="2">
                                             <StackPanel Margin="0,0,0,14" Orientation="Horizontal">
-                                                <Border Width="4" Height="18" Margin="0,0,10,0" Background="{StaticResource AccentOrangeBrush}" CornerRadius="2" />
+                                                <Border
+                                                    Width="4"
+                                                    Height="18"
+                                                    Margin="0,0,10,0"
+                                                    Background="{StaticResource AccentOrangeBrush}"
+                                                    CornerRadius="2" />
                                                 <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="运动学参数" />
                                             </StackPanel>
-                                            <Border Style="{StaticResource SectionCardStyle}">
+                                            <Border Height="300" Style="{StaticResource SectionCardStyle}">
                                                 <UniformGrid Columns="2">
-                                                    <StackPanel Margin="0,0,24,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左髋 ROM" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding LeftHipRomDisplay}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,0,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="右髋 ROM" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding RightHipRomDisplay}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,24,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左膝 ROM" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding LeftKneeRomDisplay}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,0,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="右膝 ROM" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding RightKneeRomDisplay}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,24,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左踝 ROM" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding LeftAnkleRomDisplay}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,0,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="右踝 ROM" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding RightAnkleRomDisplay}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,24,0"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="骨盆冠状面角度" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding PelvisCoronalRomDisplay}" /></StackPanel>
-                                                    <StackPanel><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="运动学数据质量" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding ConfidenceDisplay}" /></StackPanel>
+                                                    <StackPanel Margin="0,0,24,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左髋 ROM" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding LeftHipRomDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,0,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="右髋 ROM" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding RightHipRomDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,24,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左膝 ROM" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding LeftKneeRomDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,0,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="右膝 ROM" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding RightKneeRomDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,24,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左踝 ROM" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding LeftAnkleRomDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,0,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="右踝 ROM" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding RightAnkleRomDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,24,0">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="骨盆冠状面角度" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding PelvisCoronalRomDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel>
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="运动学数据质量" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding ConfidenceDisplay}" />
+                                                    </StackPanel>
                                                 </UniformGrid>
                                             </Border>
                                         </StackPanel>
@@ -747,51 +866,145 @@
 
                                         <StackPanel Grid.Column="0">
                                             <StackPanel Margin="0,0,0,14" Orientation="Horizontal">
-                                                <Border Width="4" Height="18" Margin="0,0,10,0" Background="{StaticResource AccentOrangeBrush}" CornerRadius="2" />
-                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="躯干和骨盆参数" />
-                                            </StackPanel>
-                                            <Border Style="{StaticResource SectionCardStyle}">
-                                                <UniformGrid Columns="2">
-                                                    <StackPanel Margin="0,0,24,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="躯干倾斜平均角度" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding TrunkTiltMeanDisplay}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,0,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="躯干倾斜最大角度" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding TrunkTiltMaxDisplay}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,24,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="躯干倾斜最小角度" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding TrunkTiltMinDisplay}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,0,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="躯干倾斜活动范围" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding TrunkTiltRomDisplay}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,24,0"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="骨盆倾斜角" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding PelvicTiltMeanDisplay}" /></StackPanel>
-                                                    <StackPanel><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="躯干侧屈角" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding TrunkLateralFlexionMeanDisplay}" /></StackPanel>
-                                                </UniformGrid>
-                                            </Border>
-                                        </StackPanel>
-
-                                        <StackPanel Grid.Column="2">
-                                            <StackPanel Margin="0,0,0,14" Orientation="Horizontal">
-                                                <Border Width="4" Height="18" Margin="0,0,10,0" Background="{StaticResource AccentOrangeBrush}" CornerRadius="2" />
-                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="对称性分析" />
-                                            </StackPanel>
-                                            <Border Style="{StaticResource SectionCardStyle}">
-                                                <UniformGrid Columns="2">
-                                                    <StackPanel Margin="0,0,24,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左右步长差" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding StepLengthDiffDisplay}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,0,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左右步长差百分比" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding StepLengthDiffPercentDisplay}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,24,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="站立相差" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding StanceTimeDiffDisplay}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,0,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="摆动相差" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding SwingTimeDiffDisplay}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,24,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="膝关节 ROM 差" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding KneeRomDiffDisplay}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,0,14"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="髋关节 ROM 差" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding HipRomDiffDisplay}" /></StackPanel>
-                                                    <StackPanel Margin="0,0,24,0"><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="踝关节 ROM 差" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding AnkleRomDiffDisplay}" /></StackPanel>
-                                                    <StackPanel><TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="综合对称性评分" /><TextBlock Margin="0,6,0,0" Style="{StaticResource InfoValueTextStyle}" Text="{Binding SymmetryScoreDisplay}" /></StackPanel>
-                                                </UniformGrid>
-                                            </Border>
-                                        </StackPanel>
-                                    </Grid>
-
-                                    <StackPanel Margin="0,24,0,0" DockPanel.Dock="Top">
-                                            <StackPanel Margin="0,0,0,18" Orientation="Horizontal">
                                                 <Border
                                                     Width="4"
                                                     Height="18"
                                                     Margin="0,0,10,0"
                                                     Background="{StaticResource AccentOrangeBrush}"
                                                     CornerRadius="2" />
-                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="左右侧参数" />
+                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="躯干和骨盆参数" />
                                             </StackPanel>
+                                            <Border Height="250" Style="{StaticResource SectionCardStyle}">
+                                                <UniformGrid Columns="2">
+                                                    <StackPanel Margin="0,0,24,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="躯干倾斜平均角度" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding TrunkTiltMeanDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,0,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="躯干倾斜最大角度" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding TrunkTiltMaxDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,24,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="躯干倾斜最小角度" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding TrunkTiltMinDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,0,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="躯干倾斜活动范围" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding TrunkTiltRomDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,24,0">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="骨盆倾斜角" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding PelvicTiltMeanDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel>
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="躯干侧屈角" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding TrunkLateralFlexionMeanDisplay}" />
+                                                    </StackPanel>
+                                                </UniformGrid>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="2">
+                                            <StackPanel Margin="0,0,0,14" Orientation="Horizontal">
+                                                <Border
+                                                    Width="4"
+                                                    Height="18"
+                                                    Margin="0,0,10,0"
+                                                    Background="{StaticResource AccentOrangeBrush}"
+                                                    CornerRadius="2" />
+                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="对称性分析" />
+                                            </StackPanel>
+                                            <Border Height="250" Style="{StaticResource SectionCardStyle}">
+                                                <UniformGrid Columns="2">
+                                                    <StackPanel Margin="0,0,24,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左右步长差" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding StepLengthDiffDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,0,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左右步长差百分比" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding StepLengthDiffPercentDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,24,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="站立相差" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding StanceTimeDiffDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,0,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="摆动相差" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding SwingTimeDiffDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,24,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="膝关节 ROM 差" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding KneeRomDiffDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,0,14">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="髋关节 ROM 差" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding HipRomDiffDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel Margin="0,0,24,0">
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="踝关节 ROM 差" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding AnkleRomDiffDisplay}" />
+                                                    </StackPanel>
+                                                    <StackPanel>
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="综合对称性评分" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            Style="{StaticResource InfoValueTextStyle}"
+                                                            Text="{Binding SymmetryScoreDisplay}" />
+                                                    </StackPanel>
+                                                </UniformGrid>
+                                            </Border>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <StackPanel Margin="0,24,0,0" DockPanel.Dock="Top">
+                                        <StackPanel Margin="0,0,0,18" Orientation="Horizontal">
+                                            <Border
+                                                Width="4"
+                                                Height="18"
+                                                Margin="0,0,10,0"
+                                                Background="{StaticResource AccentOrangeBrush}"
+                                                CornerRadius="2" />
+                                            <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="左右侧参数" />
+                                        </StackPanel>
                                         <Border Style="{StaticResource SectionCardStyle}">
                                             <UniformGrid Columns="4">
                                                 <StackPanel Margin="0,0,24,14">
@@ -855,15 +1068,15 @@
                                     </StackPanel>
 
                                     <StackPanel Margin="0,24,0,0" DockPanel.Dock="Top">
-                                            <StackPanel Margin="0,0,0,18" Orientation="Horizontal">
-                                                <Border
-                                                    Width="4"
-                                                    Height="18"
-                                                    Margin="0,0,10,0"
-                                                    Background="{StaticResource AccentOrangeBrush}"
-                                                    CornerRadius="2" />
-                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="步态周期明细" />
-                                            </StackPanel>
+                                        <StackPanel Margin="0,0,0,18" Orientation="Horizontal">
+                                            <Border
+                                                Width="4"
+                                                Height="18"
+                                                Margin="0,0,10,0"
+                                                Background="{StaticResource AccentOrangeBrush}"
+                                                CornerRadius="2" />
+                                            <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="步态周期明细" />
+                                        </StackPanel>
                                         <Border Style="{StaticResource SectionCardStyle}">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
@@ -965,28 +1178,68 @@
                                     </StackPanel>
 
                                     <StackPanel Margin="0,24,0,0" DockPanel.Dock="Top">
-                                            <StackPanel Margin="0,0,0,18" Orientation="Horizontal">
-                                                <Border Width="4" Height="18" Margin="0,0,10,0" Background="{StaticResource AccentOrangeBrush}" CornerRadius="2" />
-                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="曲线图预留区域" />
-                                            </StackPanel>
+                                        <StackPanel Margin="0,0,0,18" Orientation="Horizontal">
+                                            <Border
+                                                Width="4"
+                                                Height="18"
+                                                Margin="0,0,10,0"
+                                                Background="{StaticResource AccentOrangeBrush}"
+                                                CornerRadius="2" />
+                                            <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="曲线图预留区域" />
+                                        </StackPanel>
                                         <Border Style="{StaticResource SectionCardStyle}">
                                             <StackPanel>
-                                                <Border Margin="0,0,0,12" Background="#FFFFFF" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                                                <Border
+                                                    Margin="0,0,0,12"
+                                                    Padding="14"
+                                                    Background="#FFFFFF"
+                                                    BorderBrush="{StaticResource CardBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8">
                                                     <oxy:PlotView Height="190" Model="{Binding LeftHipAnglePlotModel}" />
                                                 </Border>
-                                                <Border Margin="0,0,0,12" Background="#FFFFFF" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                                                <Border
+                                                    Margin="0,0,0,12"
+                                                    Padding="14"
+                                                    Background="#FFFFFF"
+                                                    BorderBrush="{StaticResource CardBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8">
                                                     <oxy:PlotView Height="190" Model="{Binding RightHipAnglePlotModel}" />
                                                 </Border>
-                                                <Border Margin="0,0,0,12" Background="#FFFFFF" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                                                <Border
+                                                    Margin="0,0,0,12"
+                                                    Padding="14"
+                                                    Background="#FFFFFF"
+                                                    BorderBrush="{StaticResource CardBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8">
                                                     <oxy:PlotView Height="190" Model="{Binding LeftKneeAnglePlotModel}" />
                                                 </Border>
-                                                <Border Margin="0,0,0,12" Background="#FFFFFF" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                                                <Border
+                                                    Margin="0,0,0,12"
+                                                    Padding="14"
+                                                    Background="#FFFFFF"
+                                                    BorderBrush="{StaticResource CardBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8">
                                                     <oxy:PlotView Height="190" Model="{Binding RightKneeAnglePlotModel}" />
                                                 </Border>
-                                                <Border Margin="0,0,0,12" Background="#FFFFFF" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                                                <Border
+                                                    Margin="0,0,0,12"
+                                                    Padding="14"
+                                                    Background="#FFFFFF"
+                                                    BorderBrush="{StaticResource CardBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8">
                                                     <oxy:PlotView Height="190" Model="{Binding LeftAnkleAnglePlotModel}" />
                                                 </Border>
-                                                <Border Background="#FFFFFF" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14">
+                                                <Border
+                                                    Padding="14"
+                                                    Background="#FFFFFF"
+                                                    BorderBrush="{StaticResource CardBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8">
                                                     <oxy:PlotView Height="190" Model="{Binding RightAnkleAnglePlotModel}" />
                                                 </Border>
                                             </StackPanel>
@@ -1090,7 +1343,7 @@
                                                 FontSize="12"
                                                 Foreground="White"
                                                 Text="0:00"
-                                                TextAlignment="Left" />
+                                                TextAlignment="Center" />
                                             <Slider
                                                 Grid.Column="2"
                                                 Margin="0,0,0,0"
@@ -1107,7 +1360,7 @@
                                                 FontSize="12"
                                                 Foreground="White"
                                                 Text="6.02s"
-                                                TextAlignment="Right" />
+                                                TextAlignment="Center" />
                                         </Grid>
                                     </Border>
 

@@ -1,7 +1,9 @@
 ﻿using BTFX.ViewModels;
 using MaterialDesignThemes.Wpf;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace BTFX.Views.Dialogs;
 
@@ -12,6 +14,7 @@ public partial class MeasurementDetailDialog
 {
     private GaitAnalysisDetailViewModel? _currentAnalysisViewModel;
     private MeasurementDetailViewModel? _currentMeasurementViewModel;
+    private bool _isResettingParameterScroll;
 
     public MeasurementDetailDialog()
     {
@@ -67,6 +70,54 @@ public partial class MeasurementDetailDialog
             parent.Visibility = Visibility.Collapsed;
             parent.IsHitTestVisible = false;
         }
+    }
+
+    private void AnalysisTabControl_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!ReferenceEquals(e.OriginalSource, sender))
+        {
+            return;
+        }
+
+        if (sender is TabControl { SelectedItem: TabItem { Header: "参数显示页" } })
+        {
+            ResetParameterScrollToTop();
+        }
+    }
+
+    private void ParameterDetailScrollViewer_OnLoaded(object sender, RoutedEventArgs e)
+    {
+        ResetParameterScrollToTop();
+    }
+
+    private void ParameterDetailScrollViewer_OnRequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
+    {
+        if (_isResettingParameterScroll)
+        {
+            e.Handled = true;
+        }
+    }
+
+    private void ResetParameterScrollToTop()
+    {
+        if (ParameterDetailScrollViewer is null)
+        {
+            return;
+        }
+
+        _isResettingParameterScroll = true;
+        ParameterDetailScrollViewer.ScrollToTop();
+
+        _ = Dispatcher.BeginInvoke(new Action(() =>
+        {
+            ParameterDetailScrollViewer.ScrollToTop();
+        }), DispatcherPriority.Loaded);
+
+        _ = Dispatcher.BeginInvoke(new Action(() =>
+        {
+            ParameterDetailScrollViewer.ScrollToTop();
+            _isResettingParameterScroll = false;
+        }), DispatcherPriority.ContextIdle);
     }
 
     private bool TryCloseDialogHost()
