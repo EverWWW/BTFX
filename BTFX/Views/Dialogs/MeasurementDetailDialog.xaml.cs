@@ -15,6 +15,7 @@ public partial class MeasurementDetailDialog
     private GaitAnalysisDetailViewModel? _currentAnalysisViewModel;
     private MeasurementDetailViewModel? _currentMeasurementViewModel;
     private bool _isResettingParameterScroll;
+    private bool _isResettingVideoPreviewScroll;
 
     public MeasurementDetailDialog()
     {
@@ -83,6 +84,10 @@ public partial class MeasurementDetailDialog
         {
             ResetParameterScrollToTop();
         }
+        else if (sender is TabControl { SelectedItem: TabItem { Header: "视频预览页" } })
+        {
+            ResetVideoPreviewScrollToTop();
+        }
     }
 
     private void ParameterDetailScrollViewer_OnLoaded(object sender, RoutedEventArgs e)
@@ -93,6 +98,19 @@ public partial class MeasurementDetailDialog
     private void ParameterDetailScrollViewer_OnRequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
     {
         if (_isResettingParameterScroll)
+        {
+            e.Handled = true;
+        }
+    }
+
+    private void VideoPreviewDetailScrollViewer_OnLoaded(object sender, RoutedEventArgs e)
+    {
+        ResetVideoPreviewScrollToTop();
+    }
+
+    private void VideoPreviewDetailScrollViewer_OnRequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
+    {
+        if (_isResettingVideoPreviewScroll)
         {
             e.Handled = true;
         }
@@ -117,6 +135,28 @@ public partial class MeasurementDetailDialog
         {
             ParameterDetailScrollViewer.ScrollToTop();
             _isResettingParameterScroll = false;
+        }), DispatcherPriority.ContextIdle);
+    }
+
+    private void ResetVideoPreviewScrollToTop()
+    {
+        if (VideoPreviewDetailScrollViewer is null)
+        {
+            return;
+        }
+
+        _isResettingVideoPreviewScroll = true;
+        VideoPreviewDetailScrollViewer.ScrollToTop();
+
+        _ = Dispatcher.BeginInvoke(new Action(() =>
+        {
+            VideoPreviewDetailScrollViewer.ScrollToTop();
+        }), DispatcherPriority.Loaded);
+
+        _ = Dispatcher.BeginInvoke(new Action(() =>
+        {
+            VideoPreviewDetailScrollViewer.ScrollToTop();
+            _isResettingVideoPreviewScroll = false;
         }), DispatcherPriority.ContextIdle);
     }
 

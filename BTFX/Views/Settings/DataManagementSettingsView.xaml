@@ -28,7 +28,7 @@
         <Style x:Key="SectionTitleTextStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
             <Setter Property="FontSize" Value="24" />
-            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="FontWeight" Value="Medium" />
             <Setter Property="Foreground" Value="#403B5B" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
@@ -733,7 +733,7 @@
                                         <TextBlock
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
-                                            FontFamily="Roboto"
+                                            FontFamily="{StaticResource AppFont}"
                                             FontSize="22"
                                             FontWeight="Medium"
                                             Foreground="#999999"
@@ -773,7 +773,7 @@
                                             <TextBlock
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center"
-                                                FontFamily="Roboto"
+                                                FontFamily="{StaticResource AppFont}"
                                                 FontSize="22"
                                                 FontWeight="Medium"
                                                 Foreground="White"
@@ -800,7 +800,7 @@
                                                 </Style>
                                             </Button.Style>
                                             <TextBlock
-                                                FontFamily="Roboto"
+                                                FontFamily="{StaticResource AppFont}"
                                                 FontSize="22"
                                                 FontWeight="Medium"
                                                 Foreground="#555555"

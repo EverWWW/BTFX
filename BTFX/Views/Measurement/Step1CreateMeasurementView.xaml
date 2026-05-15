@@ -441,6 +441,7 @@
                                 <ColumnDefinition Width="300" />
                                 <ColumnDefinition Width="80" />
                                 <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="80" />
                             </Grid.ColumnDefinitions>
 
                             <Border
@@ -488,10 +489,10 @@
                                 </Grid>
                             </Border>
 
-                            <Grid Grid.Column="2">
+                            <Grid Grid.Column="2" VerticalAlignment="Center">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="20" />
+                                    <RowDefinition Height="50" />
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
 
@@ -543,19 +544,20 @@
                                         Margin="0,0,0,26"
                                         Style="{StaticResource VideoInfoTextStyle}"
                                         Text="{Binding SideVideoInfo.FileSizeDisplay, StringFormat=大小：{0}}" />
-                                    <Button
-                                        HorizontalAlignment="Left"
-                                        Command="{Binding SelectSideVideoCommand}"
-                                        Style="{StaticResource PrimaryActionButtonStyle}">
-                                        <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="选择文件" />
-                                    </Button>
-                                    <Button
-                                        Margin="0,14,0,0"
-                                        HorizontalAlignment="Left"
-                                        Command="{Binding ClearSideVideoCommand}"
-                                        Style="{StaticResource SecondaryActionButtonStyle}">
-                                        <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="清除" />
-                                    </Button>
+                                    <Grid>
+                                        <Button
+                                            HorizontalAlignment="Left"
+                                            Command="{Binding SelectSideVideoCommand}"
+                                            Style="{StaticResource PrimaryActionButtonStyle}">
+                                            <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="选择文件" />
+                                        </Button>
+                                        <Button
+                                            HorizontalAlignment="Right"
+                                            Command="{Binding ClearSideVideoCommand}"
+                                            Style="{StaticResource SecondaryActionButtonStyle}">
+                                            <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="清除" />
+                                        </Button>
+                                    </Grid>
                                 </StackPanel>
                             </Grid>
                         </Grid>
@@ -584,6 +586,7 @@
                                 <ColumnDefinition Width="300" />
                                 <ColumnDefinition Width="80" />
                                 <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="80" />
                             </Grid.ColumnDefinitions>
 
                             <Border
@@ -631,10 +634,10 @@
                                 </Grid>
                             </Border>
 
-                            <Grid Grid.Column="2">
+                            <Grid Grid.Column="2" VerticalAlignment="Center">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="20" />
+                                    <RowDefinition Height="50" />
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
 
@@ -686,19 +689,20 @@
                                         Margin="0,0,0,26"
                                         Style="{StaticResource VideoInfoTextStyle}"
                                         Text="{Binding FrontVideoInfo.FileSizeDisplay, StringFormat=大小：{0}}" />
-                                    <Button
-                                        HorizontalAlignment="Left"
-                                        Command="{Binding SelectFrontVideoCommand}"
-                                        Style="{StaticResource PrimaryActionButtonStyle}">
-                                        <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="选择文件" />
-                                    </Button>
-                                    <Button
-                                        Margin="0,14,0,0"
-                                        HorizontalAlignment="Left"
-                                        Command="{Binding ClearFrontVideoCommand}"
-                                        Style="{StaticResource SecondaryActionButtonStyle}">
-                                        <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="清除" />
-                                    </Button>
+                                    <Grid>
+                                        <Button
+                                            HorizontalAlignment="Left"
+                                            Command="{Binding SelectFrontVideoCommand}"
+                                            Style="{StaticResource PrimaryActionButtonStyle}">
+                                            <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="选择文件" />
+                                        </Button>
+                                        <Button
+                                            HorizontalAlignment="Right"
+                                            Command="{Binding ClearFrontVideoCommand}"
+                                            Style="{StaticResource SecondaryActionButtonStyle}">
+                                            <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="清除" />
+                                        </Button>
+                                    </Grid>
                                 </StackPanel>
                             </Grid>
                         </Grid>

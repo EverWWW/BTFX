@@ -35,15 +35,15 @@
 
     <Style x:Key="SectionTitleTextStyle" TargetType="TextBlock">
       <Setter Property="VerticalAlignment" Value="Center" />
-      <Setter Property="FontFamily" Value="AlibabaPuHuiTi" />
+      <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
       <Setter Property="FontSize" Value="24" />
-      <Setter Property="FontWeight" Value="Normal" />
+      <Setter Property="FontWeight" Value="Medium" />
       <Setter Property="Foreground" Value="{StaticResource SystemInfoTitleBrush}" />
     </Style>
 
     <Style x:Key="InfoLineTextStyle" TargetType="TextBlock">
       <Setter Property="Foreground" Value="{StaticResource SystemInfoContentBrush}" />
-      <Setter Property="FontFamily" Value="AlibabaPuHuiTi" />
+      <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
       <Setter Property="FontSize" Value="20" />
       <Setter Property="FontWeight" Value="Normal" />
       <Setter Property="LineHeight" Value="30" />
@@ -86,7 +86,7 @@
     </Style>
 
     <Style x:Key="ActionButtonTextStyle" TargetType="TextBlock">
-      <Setter Property="FontFamily" Value="AlibabaPuHuiTi" />
+      <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
       <Setter Property="FontSize" Value="22" />
       <Setter Property="FontWeight" Value="Normal" />
       <Setter Property="Foreground" Value="{StaticResource SystemInfoAccentBrush}" />

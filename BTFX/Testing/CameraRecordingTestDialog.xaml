@@ -9,13 +9,61 @@
     Height="940"
     d:DesignHeight="940"
     d:DesignWidth="1400"
+    FontFamily="{StaticResource AppFont}"
     Unloaded="CameraRecordingTestDialog_OnUnloaded"
     mc:Ignorable="d">
 
     <UserControl.Resources>
+        <SolidColorBrush x:Key="CameraAccentBrush" Color="#E4004A" />
+
+        <Style x:Key="CameraDialogTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Foreground" Value="#403B5B" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="CameraSectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Foreground" Value="#403B5B" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="CameraFieldLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="Foreground" Value="#666666" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="CameraMetaTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="#666666" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style TargetType="RadioButton">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Foreground" Value="#403B5B" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Foreground" Value="#403B5B" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
         <Style x:Key="CameraSectionBorderStyle" TargetType="Border">
             <Setter Property="Background" Value="#FAFAFA" />
-            <Setter Property="BorderBrush" Value="#FFF1ECEF" />
+            <Setter Property="BorderBrush" Value="#EEF1F5" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="20,18" />
@@ -44,7 +92,7 @@
                         <Setter Property="SnapsToDevicePixels" Value="True" />
                         <Setter Property="OverridesDefaultStyle" Value="True" />
                         <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-                        <Setter Property="FontSize" Value="18" />
+                        <Setter Property="FontSize" Value="15" />
                         <Setter Property="Foreground" Value="#555555" />
                         <Setter Property="HorizontalContentAlignment" Value="Left" />
                         <Setter Property="Template">
@@ -246,7 +294,7 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="52" />
-                <RowDefinition Height="92" />
+                <RowDefinition Height="130" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="70" />
             </Grid.RowDefinitions>
@@ -254,11 +302,7 @@
             <Grid Grid.Row="0">
                 <TextBlock
                     HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontFamily="{StaticResource AppFont}"
-                    FontSize="24"
-                    FontWeight="Medium"
-                    Foreground="#403B5B"
+                    Style="{StaticResource CameraDialogTitleStyle}"
                     Text="相机视频采集" />
 
                 <Button
@@ -275,81 +319,88 @@
 
             <Border Grid.Row="1" Style="{StaticResource CameraSectionBorderStyle}">
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.35*" />
-                        <ColumnDefinition Width="1.15*" />
-                        <ColumnDefinition Width="1.05*" />
-                        <ColumnDefinition Width="1.05*" />
-                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="12" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-                    <StackPanel
-                        Grid.Column="0"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal">
-                        <TextBlock
+                    <StackPanel Orientation="Horizontal">
+                        <Border
+                            Width="4"
+                            Height="16"
+                            Margin="0,0,10,0"
                             VerticalAlignment="Center"
-                            FontWeight="SemiBold"
-                            Text="当前模式" />
-                        <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
-                            <Button
-                                Command="{Binding SetSingleModeCommand}"
-                                Content="单视角"
-                                Style="{StaticResource CameraSecondaryButtonStyle}" />
-                            <Button
-                                Margin="8,0,0,0"
-                                Command="{Binding SetDualModeCommand}"
-                                Content="双视角"
-                                Style="{StaticResource CameraPrimaryButtonStyle}" />
+                            Background="{StaticResource CameraAccentBrush}"
+                            CornerRadius="8" />
+                        <TextBlock Style="{StaticResource CameraSectionTitleStyle}" Text="采集参数" />
+                    </StackPanel>
+
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.35*" />
+                            <ColumnDefinition Width="1.15*" />
+                            <ColumnDefinition Width="1.05*" />
+                            <ColumnDefinition Width="1.05*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource CameraFieldLabelStyle}" Text="当前模式" />
+                            <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
+                                <Button
+                                    Command="{Binding SetSingleModeCommand}"
+                                    Content="单视角"
+                                    Style="{StaticResource CameraSecondaryButtonStyle}" />
+                                <Button
+                                    Margin="8,0,0,0"
+                                    Command="{Binding SetDualModeCommand}"
+                                    Content="双视角"
+                                    Style="{StaticResource CameraPrimaryButtonStyle}" />
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
 
-                    <StackPanel
-                        Grid.Column="1"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal">
-                        <TextBlock
+                        <StackPanel
+                            Grid.Column="1"
                             VerticalAlignment="Center"
-                            FontWeight="SemiBold"
-                            Text="录制分辨率" />
-                        <ComboBox
-                            Width="150"
-                            Margin="10,0,0,0"
-                            ItemsSource="{Binding Resolutions}"
-                            SelectedItem="{Binding SelectedResolution}"
-                            Style="{StaticResource CameraComboBoxStyle}" />
-                    </StackPanel>
+                            Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource CameraFieldLabelStyle}" Text="录制分辨率" />
+                            <ComboBox
+                                Width="150"
+                                Margin="10,0,0,0"
+                                ItemsSource="{Binding Resolutions}"
+                                SelectedItem="{Binding SelectedResolution}"
+                                Style="{StaticResource CameraComboBoxStyle}" />
+                        </StackPanel>
 
-                    <StackPanel
-                        Grid.Column="2"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal">
-                        <TextBlock
+                        <StackPanel
+                            Grid.Column="2"
                             VerticalAlignment="Center"
-                            FontWeight="SemiBold"
-                            Text="录制帧率" />
-                        <ComboBox
-                            Width="170"
-                            Margin="10,0,0,0"
-                            ItemsSource="{Binding FrameRateOptions}"
-                            SelectedItem="{Binding SelectedFrameRate}"
-                            Style="{StaticResource CameraComboBoxStyle}" />
-                    </StackPanel>
+                            Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource CameraFieldLabelStyle}" Text="录制帧率" />
+                            <ComboBox
+                                Width="170"
+                                Margin="10,0,0,0"
+                                ItemsSource="{Binding FrameRateOptions}"
+                                SelectedItem="{Binding SelectedFrameRate}"
+                                Style="{StaticResource CameraComboBoxStyle}" />
+                        </StackPanel>
 
-                    <StackPanel
-                        Grid.Column="3"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal">
-                        <TextBlock
+                        <StackPanel
+                            Grid.Column="3"
                             VerticalAlignment="Center"
-                            FontWeight="SemiBold"
-                            Text="录制时长" />
-                        <ComboBox
-                            Width="110"
-                            Margin="10,0,0,0"
-                            ItemsSource="{Binding DurationOptions}"
-                            SelectedItem="{Binding SelectedDuration}"
-                            Style="{StaticResource CameraComboBoxStyle}" />
-                    </StackPanel>
+                            Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource CameraFieldLabelStyle}" Text="录制时长" />
+                            <ComboBox
+                                Width="110"
+                                Margin="10,0,0,0"
+                                ItemsSource="{Binding DurationOptions}"
+                                SelectedItem="{Binding SelectedDuration}"
+                                Style="{StaticResource CameraComboBoxStyle}" />
+                        </StackPanel>
+                    </Grid>
                 </Grid>
             </Border>
 
@@ -386,11 +437,16 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontWeight="SemiBold"
-                              FontSize="20"
-                                Text="侧面相机" />
+                            <StackPanel Orientation="Horizontal">
+                                <Border
+                                    Width="4"
+                                    Height="16"
+                                    Margin="0,0,10,0"
+                                    VerticalAlignment="Center"
+                                    Background="{StaticResource CameraAccentBrush}"
+                                    CornerRadius="8" />
+                                <TextBlock Style="{StaticResource CameraSectionTitleStyle}" Text="侧面相机" />
+                            </StackPanel>
                             <Border
                                 Grid.Column="1"
                                 Margin="10,0,0,0"
@@ -422,20 +478,14 @@
                                     Margin="0,0,10,0"
                                     Command="{Binding EditSideCameraCommand}"
                                     Content="修改"
-                                    Style="{StaticResource CameraCompactSecondaryButtonStyle}" />       
-                                  <TextBlock
-                                    VerticalAlignment="Center"
-                                    FontSize="12"
-                                    Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
-                                    Text="相机ID：" />
+                                    Style="{StaticResource CameraCompactSecondaryButtonStyle}" />
+                                <TextBlock Style="{StaticResource CameraMetaTextStyle}" Text="相机ID：" />
                                 <TextBlock
                                     Width="170"
-                                    VerticalAlignment="Center"
-                                    FontSize="12"
-                                    Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
+                                    Style="{StaticResource CameraMetaTextStyle}"
                                     Text="{Binding SideCameraName}"
                                     TextTrimming="CharacterEllipsis" />
-                                
+
                             </StackPanel>
                         </Grid>
                         <Border
@@ -581,11 +631,16 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontWeight="SemiBold"
-                                FontSize="20"
-                                Text="正面相机" />
+                            <StackPanel Orientation="Horizontal">
+                                <Border
+                                    Width="4"
+                                    Height="16"
+                                    Margin="0,0,10,0"
+                                    VerticalAlignment="Center"
+                                    Background="{StaticResource CameraAccentBrush}"
+                                    CornerRadius="8" />
+                                <TextBlock Style="{StaticResource CameraSectionTitleStyle}" Text="正面相机" />
+                            </StackPanel>
                             <Border
                                 Grid.Column="1"
                                 Margin="10,0,0,0"
@@ -613,24 +668,18 @@
                                 Grid.Column="4"
                                 HorizontalAlignment="Right"
                                 Orientation="Horizontal">
-                            <Button
-                                  Margin="0,0,10,0"
+                                <Button
+                                    Margin="0,0,10,0"
                                     Command="{Binding EditFrontCameraCommand}"
                                     Content="修改"
                                     Style="{StaticResource CameraCompactSecondaryButtonStyle}" />
-                                <TextBlock
-                                    VerticalAlignment="Center"
-                                    FontSize="12"
-                                    Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
-                                    Text="相机ID：" />
+                                <TextBlock Style="{StaticResource CameraMetaTextStyle}" Text="相机ID：" />
                                 <TextBlock
                                     Width="170"
-                                    VerticalAlignment="Center"
-                                    FontSize="12"
-                                    Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
+                                    Style="{StaticResource CameraMetaTextStyle}"
                                     Text="{Binding FrontCameraName}"
                                     TextTrimming="CharacterEllipsis" />
-                                
+
                             </StackPanel>
                         </Grid>
                         <Border
@@ -774,11 +823,6 @@
                 </Button>
                 <Button
                     Margin="12,0,0,0"
-                    Command="{Binding OpenSaveDirectoryCommand}"
-                    Content="预览本地文件"
-                    Style="{StaticResource CameraSecondaryButtonStyle}" />
-                <Button
-                    Margin="12,0,0,0"
                     Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
                     CommandParameter="{Binding CaptureResult}"
                     Content="确定"
@@ -797,13 +841,12 @@
                     VerticalAlignment="Center"
                     UniformCornerRadius="6">
                     <StackPanel>
-                        <TextBlock
-                            FontSize="18"
-                            FontWeight="SemiBold"
-                            Text="修改相机编号" />
+                        <TextBlock Style="{StaticResource CameraSectionTitleStyle}" Text="修改相机编号" />
                         <TextBox
                             Margin="0,18,0,18"
                             materialDesign:HintAssist.Hint="DirectShow 相机设备名"
+                            FontFamily="{StaticResource AppFont}"
+                            FontSize="16"
                             Text="{Binding EditingCameraName, UpdateSourceTrigger=PropertyChanged}" />
                         <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                             <Button

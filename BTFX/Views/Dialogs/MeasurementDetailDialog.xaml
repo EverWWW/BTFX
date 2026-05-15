@@ -1251,7 +1251,11 @@
 
                         <TabItem Header="视频预览页">
 
-                            <ScrollViewer Style="{StaticResource DetailContentScrollViewerStyle}">
+                            <ScrollViewer
+                                x:Name="VideoPreviewDetailScrollViewer"
+                                Loaded="VideoPreviewDetailScrollViewer_OnLoaded"
+                                RequestBringIntoView="VideoPreviewDetailScrollViewer_OnRequestBringIntoView"
+                                Style="{StaticResource DetailContentScrollViewerStyle}">
                                 <DockPanel Width="1290" LastChildFill="False">
                                     <Border
                                         Margin="0,0,0,16"

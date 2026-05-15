@@ -27,6 +27,14 @@
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
 
+        <Style x:Key="SectionTitleTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Foreground" Value="#403B5B" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
         <Style x:Key="RoundedInputTextBoxStyle" TargetType="TextBox">
             <Setter Property="Height" Value="68" />
             <Setter Property="Padding" Value="24,0" />
@@ -162,6 +170,8 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="24" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="36" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
@@ -169,7 +179,18 @@
                     <RowDefinition Height="40" />
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0" VerticalAlignment="Center">
+                <StackPanel Grid.Row="0" Orientation="Horizontal">
+                    <Border
+                        Width="4"
+                        Height="16"
+                        Margin="0,0,12,0"
+                        VerticalAlignment="Center"
+                        Background="#E4004A"
+                        CornerRadius="8" />
+                    <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="单位信息" />
+                </StackPanel>
+
+                <Grid Grid.Row="2" VerticalAlignment="Center">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="110" />
                         <ColumnDefinition Width="28" />
@@ -188,7 +209,7 @@
                         Text="{Binding UnitName, UpdateSourceTrigger=PropertyChanged}" />
                 </Grid>
 
-                <Grid Grid.Row="2" VerticalAlignment="Top">
+                <Grid Grid.Row="4" VerticalAlignment="Top">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="110" />
                         <ColumnDefinition Width="28" />
@@ -198,7 +219,6 @@
                     <TextBlock
                         Grid.Column="0"
                         Margin="0,42,0,0"
-                        FontFamily="Roboto"
                         FontSize="20"
                         Style="{StaticResource SectionLabelTextStyle}"
                         Text="LOGO" />
@@ -250,7 +270,7 @@
                 </Grid>
 
                 <Button
-                    Grid.Row="4"
+                    Grid.Row="6"
                     HorizontalAlignment="Center"
                     Command="{Binding SaveUnitSettingsCommand}"
                     Content="确认"

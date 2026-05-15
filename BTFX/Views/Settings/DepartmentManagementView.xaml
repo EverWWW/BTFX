@@ -385,7 +385,7 @@
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    FontFamily="Roboto"
+                                    FontFamily="{StaticResource AppFont}"
                                     FontSize="22"
                                     FontWeight="Medium"
                                     Foreground="#999999"
@@ -425,7 +425,7 @@
                                     <TextBlock
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        FontFamily="Roboto"
+                                        FontFamily="{StaticResource AppFont}"
                                         FontSize="22"
                                         FontWeight="Medium"
                                         Foreground="White"
@@ -452,7 +452,7 @@
                                         </Style>
                                     </Button.Style>
                                     <TextBlock
-                                        FontFamily="Roboto"
+                                        FontFamily="{StaticResource AppFont}"
                                         FontSize="22"
                                         FontWeight="Medium"
                                         Foreground="#555555"
