@@ -206,6 +206,128 @@
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             </Style>
+
+            <Style x:Key="ReportPreviewSectionTitleStyle" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+                <Setter Property="FontSize" Value="20" />
+                <Setter Property="FontWeight" Value="Medium" />
+                <Setter Property="Foreground" Value="#403B5B" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+
+            <Style x:Key="ReportPreviewLabelStyle" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+                <Setter Property="FontSize" Value="15" />
+                <Setter Property="Foreground" Value="#888888" />
+                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            </Style>
+
+            <Style x:Key="ReportPreviewValueStyle" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+                <Setter Property="FontSize" Value="17" />
+                <Setter Property="FontWeight" Value="Medium" />
+                <Setter Property="Foreground" Value="#333333" />
+                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            </Style>
+
+            <Style x:Key="ReportPreviewPrimaryButtonStyle" TargetType="Button">
+                <Setter Property="Width" Value="148" />
+                <Setter Property="Height" Value="44" />
+                <Setter Property="Background" Value="#403B5B" />
+                <Setter Property="BorderBrush" Value="#403B5B" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Foreground" Value="#FFFFFF" />
+                <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="FontWeight" Value="Medium" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template" Value="{StaticResource RoundedButtonTemplate}" />
+            </Style>
+
+            <Style x:Key="ReportPreviewSecondaryButtonStyle" TargetType="Button">
+                <Setter Property="Width" Value="112" />
+                <Setter Property="Height" Value="44" />
+                <Setter Property="Background" Value="#FFFFFF" />
+                <Setter Property="BorderBrush" Value="#D9DDE7" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Foreground" Value="#403B5B" />
+                <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="FontWeight" Value="Medium" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template" Value="{StaticResource RoundedButtonTemplate}" />
+            </Style>
+
+            <DataTemplate x:Key="ReportPreviewFieldTemplate">
+                <Border
+                    Margin="0,0,10,12"
+                    Padding="14,10"
+                    Background="#FFFFFF"
+                    BorderBrush="#EEF1F5"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Style="{StaticResource ReportPreviewLabelStyle}" Text="{Binding Label}" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Style="{StaticResource ReportPreviewValueStyle}"
+                            Text="{Binding Value}"
+                            ToolTip="{Binding Value}" />
+                    </Grid>
+                </Border>
+            </DataTemplate>
+
+            <DataTemplate x:Key="ReportPreviewMetricTemplate">
+                <Border
+                    Margin="0,0,10,12"
+                    Padding="14,12"
+                    Background="#FFFFFF"
+                    BorderBrush="#EEF1F5"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="10" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Style="{StaticResource ReportPreviewLabelStyle}" Text="{Binding Name}" />
+                        <StackPanel Grid.Row="2" Orientation="Horizontal">
+                            <TextBlock
+                                FontFamily="{StaticResource AppFont}"
+                                FontSize="24"
+                                FontWeight="SemiBold"
+                                Foreground="#403B5B"
+                                Text="{Binding Value}" />
+                            <TextBlock
+                                Margin="6,6,0,0"
+                                FontFamily="{StaticResource AppFont}"
+                                FontSize="13"
+                                Foreground="#999999"
+                                Text="{Binding Unit}" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </DataTemplate>
+
+            <DataTemplate x:Key="ReportPreviewTagTemplate">
+                <Border
+                    Margin="0,0,8,8"
+                    Padding="12,5"
+                    Background="#EEF2F7"
+                    CornerRadius="14">
+                    <TextBlock
+                        FontFamily="{StaticResource AppFont}"
+                        FontSize="14"
+                        Foreground="#403B5B"
+                        Text="{Binding}" />
+                </Border>
+            </DataTemplate>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -288,13 +410,13 @@
                             <TextBox
                                 Grid.Column="0"
                                 VerticalAlignment="Center"
+                                materialDesign:TextFieldAssist.CharacterCounterVisibility="Collapsed"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 CaretBrush="#403B5B"
                                 FontFamily="{StaticResource AppFont}"
                                 FontSize="22"
                                 Foreground="#333333"
-                                materialDesign:TextFieldAssist.CharacterCounterVisibility="Collapsed"
                                 MaxLength="30"
                                 Text="{Binding ReportFilterPatientName, UpdateSourceTrigger=PropertyChanged}" />
 
@@ -1063,17 +1185,121 @@
                             Background="#FAFAFA"
                             CornerRadius="8">
                             <Grid>
-                                <ScrollViewer Padding="24" VerticalScrollBarVisibility="Auto">
-                                    <TextBlock
-                                        FontFamily="Consolas"
-                                        FontSize="15"
-                                        Foreground="#555555"
-                                        Text="{Binding PreviewContent}"
-                                        TextWrapping="Wrap"
-                                        Visibility="{Binding HasPreviewContent, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="16" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <ScrollViewer
+                                    Grid.Row="0"
+                                    Padding="22"
+                                    VerticalScrollBarVisibility="Visible"
+                                    Visibility="{Binding HasPreviewContent, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <StackPanel>
+                                        <Border
+                                            Margin="0,0,0,18"
+                                            Padding="18"
+                                            Background="#FFFFFF"
+                                            BorderBrush="#EEF1F5"
+                                            BorderThickness="1"
+                                            CornerRadius="8">
+                                            <StackPanel>
+                                                <StackPanel Margin="0,0,0,14" Orientation="Horizontal">
+                                                    <Border
+                                                        Width="4"
+                                                        Height="16"
+                                                        Margin="0,0,10,0"
+                                                        VerticalAlignment="Center"
+                                                        Background="#E4004A"
+                                                        CornerRadius="2" />
+                                                    <TextBlock Style="{StaticResource ReportPreviewSectionTitleStyle}" Text="报告基础信息" />
+                                                </StackPanel>
+
+                                                <ItemsControl ItemTemplate="{StaticResource ReportPreviewFieldTemplate}" ItemsSource="{Binding PreviewBasicFields}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <UniformGrid Columns="2" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border
+                                            Margin="0,0,0,18"
+                                            Padding="18"
+                                            Background="#FFFFFF"
+                                            BorderBrush="#EEF1F5"
+                                            BorderThickness="1"
+                                            CornerRadius="8">
+                                            <StackPanel>
+                                                <StackPanel Margin="0,0,0,14" Orientation="Horizontal">
+                                                    <Border
+                                                        Width="4"
+                                                        Height="16"
+                                                        Margin="0,0,10,0"
+                                                        VerticalAlignment="Center"
+                                                        Background="#E4004A"
+                                                        CornerRadius="2" />
+                                                    <TextBlock Style="{StaticResource ReportPreviewSectionTitleStyle}" Text="关键指标" />
+                                                </StackPanel>
+
+                                                <ItemsControl ItemTemplate="{StaticResource ReportPreviewMetricTemplate}" ItemsSource="{Binding PreviewMetrics}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <UniformGrid Columns="3" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border
+                                            Margin="0,0,0,18"
+                                            Padding="18"
+                                            Background="#FFFFFF"
+                                            BorderBrush="#EEF1F5"
+                                            BorderThickness="1"
+                                            CornerRadius="8">
+                                            <StackPanel>
+                                                <StackPanel Margin="0,0,0,14" Orientation="Horizontal">
+                                                    <Border
+                                                        Width="4"
+                                                        Height="16"
+                                                        Margin="0,0,10,0"
+                                                        VerticalAlignment="Center"
+                                                        Background="#E4004A"
+                                                        CornerRadius="2" />
+                                                    <TextBlock Style="{StaticResource ReportPreviewSectionTitleStyle}" Text="报告内容摘要" />
+                                                </StackPanel>
+
+                                                <ItemsControl ItemTemplate="{StaticResource ReportPreviewTagTemplate}" ItemsSource="{Binding PreviewSectionTags}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <WrapPanel />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                </ItemsControl>
+
+                                                <TextBlock
+                                                    Margin="0,8,0,0"
+                                                    FontFamily="{StaticResource AppFont}"
+                                                    FontSize="15"
+                                                    Foreground="#666666"
+                                                    LineHeight="24"
+                                                    Text="{Binding PreviewSummaryMessage}"
+                                                    TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Border>
+
+                                    </StackPanel>
                                 </ScrollViewer>
 
-                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <StackPanel
+                                    Grid.RowSpan="3"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
                                     <StackPanel.Style>
                                         <Style TargetType="StackPanel">
                                             <Setter Property="Visibility" Value="Visible" />
@@ -1096,6 +1322,32 @@
                                         FontSize="22"
                                         Foreground="#9E9E9E"
                                         Text="暂无数据" />
+                                </StackPanel>
+
+                                <StackPanel
+                                    Grid.Row="2"
+                                    Margin="0,0,0,22"
+                                    HorizontalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Visibility="{Binding HasPreviewContent, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Button
+                                        Margin="0,0,12,0"
+                                        Command="{Binding ViewReportCommand}"
+                                        CommandParameter="{Binding SelectedReport}"
+                                        Content="查看完整报告"
+                                        IsEnabled="{Binding HasPreviewContent}"
+                                        Style="{StaticResource ReportPreviewPrimaryButtonStyle}" />
+                                    <Button
+                                        Margin="0,0,12,0"
+                                        Command="{Binding ExportPdfCommand}"
+                                        Content="导出报告"
+                                        IsEnabled="{Binding HasPreviewContent}"
+                                        Style="{StaticResource ReportPreviewSecondaryButtonStyle}" />
+                                    <Button
+                                        Command="{Binding PrintReportCommand}"
+                                        Content="打印报告"
+                                        IsEnabled="{Binding HasPreviewContent}"
+                                        Style="{StaticResource ReportPreviewSecondaryButtonStyle}" />
                                 </StackPanel>
                             </Grid>
                         </Border>

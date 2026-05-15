@@ -261,6 +261,7 @@ public partial class ReportView : UserControl
             return;
         }
 
+        viewModel.SelectedReport = item;
         item.IsSelected = !item.IsSelected;
         viewModel.OnReportSelectionChanged(item);
         e.Handled = true;

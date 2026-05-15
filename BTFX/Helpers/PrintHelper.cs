@@ -60,11 +60,14 @@ public static class PrintHelper
                     return false;
             }
 
+            // 部分打印机驱动会在选择打印机后恢复默认双面设置，打印前再次强制单面。
+            ConfigurePrintDialogForA4(printDialog);
+
             // 创建文档分页器
-            var paginator = CreatePaginator(document, printDialog);
+            using var paginatorContext = CreatePaginator(document, printDialog);
 
             // 执行打印
-            printDialog.PrintDocument(paginator, documentName);
+            printDialog.PrintDocument(paginatorContext.Paginator, documentName);
 
             return true;
         }
@@ -414,6 +417,7 @@ public static class PrintHelper
             // 设置打印区域为A4尺寸
             printDialog.PrintTicket.PageMediaSize = new PageMediaSize(PageMediaSizeName.ISOA4);
             printDialog.PrintTicket.PageOrientation = PageOrientation.Portrait;
+            printDialog.PrintTicket.Duplexing = Duplexing.OneSided;
         }
         catch
         {
@@ -424,21 +428,33 @@ public static class PrintHelper
     /// <summary>
     /// 创建文档分页器
     /// </summary>
-    private static DocumentPaginator CreatePaginator(FlowDocument document, PrintDialog printDialog)
+    private static PaginatorContext CreatePaginator(FlowDocument document, PrintDialog printDialog)
     {
-        // 克隆文档以避免修改原始文档
-        var clonedDoc = CloneDocument(document);
+        var printDocument = document;
+        var originalPageWidth = document.PageWidth;
+        var originalPageHeight = document.PageHeight;
+        var originalColumnWidth = document.ColumnWidth;
+        var originalPagePadding = document.PagePadding;
+
+        Action restore = () =>
+        {
+            document.PageWidth = originalPageWidth;
+            document.PageHeight = originalPageHeight;
+            document.ColumnWidth = originalColumnWidth;
+            document.PagePadding = originalPagePadding;
+        };
 
         // 设置文档尺寸以匹配打印区域
-        clonedDoc.PageWidth = printDialog.PrintableAreaWidth;
-        clonedDoc.PageHeight = printDialog.PrintableAreaHeight;
-        clonedDoc.ColumnWidth = double.PositiveInfinity;
+        printDocument.PageWidth = printDialog.PrintableAreaWidth;
+        printDocument.PageHeight = printDialog.PrintableAreaHeight;
+        printDocument.ColumnWidth = double.PositiveInfinity;
+        printDocument.PagePadding = new Thickness(40);
 
         // 获取分页器
-        var paginator = ((IDocumentPaginatorSource)clonedDoc).DocumentPaginator;
+        var paginator = ((IDocumentPaginatorSource)printDocument).DocumentPaginator;
         paginator.PageSize = new Size(printDialog.PrintableAreaWidth, printDialog.PrintableAreaHeight);
 
-        return paginator;
+        return new PaginatorContext(printDocument, paginator, restore);
     }
 
     /// <summary>
@@ -451,6 +467,27 @@ public static class PrintHelper
         using var reader = new System.IO.StringReader(xaml);
         using var xmlReader = System.Xml.XmlReader.Create(reader);
         return (FlowDocument)System.Windows.Markup.XamlReader.Load(xmlReader);
+    }
+
+    private sealed class PaginatorContext : IDisposable
+    {
+        private readonly FlowDocument _document;
+        private readonly Action? _restore;
+
+        public PaginatorContext(FlowDocument document, DocumentPaginator paginator, Action? restore)
+        {
+            _document = document;
+            Paginator = paginator;
+            _restore = restore;
+        }
+
+        public DocumentPaginator Paginator { get; }
+
+        public void Dispose()
+        {
+            _restore?.Invoke();
+            GC.KeepAlive(_document);
+        }
     }
 
     #endregion

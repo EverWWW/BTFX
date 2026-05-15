@@ -149,9 +149,31 @@
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
             <Setter Property="FontSize" Value="14" />
             <Setter Property="Foreground" Value="{StaticResource ReportBodyTextBrush}" />
-            <Setter Property="Margin" Value="0,0,0,10" />
-            <Setter Property="IsHitTestVisible" Value="False" />
-            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="ReportToolbarTextButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{StaticResource ReportSecondaryTextBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <TextBlock
+                            Text="{TemplateBinding Content}"
+                            TextDecorations="Underline"
+                            Foreground="{TemplateBinding Foreground}"
+                            VerticalAlignment="Center" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </UserControl.Resources>
 
@@ -362,48 +384,34 @@
                                                 Style="{StaticResource ReportValueTextStyle}"
                                                 Text="报告内容选择" />
                                             <CheckBox
-                                                Content="基本信息"
-                                                IsChecked="{Binding IncludeBasicInfo, Mode=OneWay}"
-                                                Style="{StaticResource ReportCheckBoxStyle}" />
-                                            <CheckBox
-                                                Content="时空参数"
-                                                IsChecked="{Binding IncludeSpatiotemporalParameters, Mode=OneWay}"
-                                                Style="{StaticResource ReportCheckBoxStyle}" />
-                                            <CheckBox
-                                                Content="步态周期摘要"
-                                                IsChecked="{Binding IncludeGaitCycleSummary, Mode=OneWay}"
-                                                Style="{StaticResource ReportCheckBoxStyle}" />
-                                            <CheckBox
-                                                Content="左右对称性指标 暂无数据"
-                                                IsChecked="{Binding IncludeSymmetryMetrics, Mode=OneWay}"
-                                                Opacity="0.55"
+                                                Content="步态时空参数"
+                                                IsChecked="{Binding IncludeSpatiotemporalParameters, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Style="{StaticResource ReportCheckBoxStyle}" />
                                             <CheckBox
                                                 Content="运动学参数"
-                                                IsChecked="{Binding IncludeKinematicSummary, Mode=OneWay}"
+                                                IsChecked="{Binding IncludeKinematicParameters, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Style="{StaticResource ReportCheckBoxStyle}" />
                                             <CheckBox
-                                                Content="关节角度曲线 暂无数据"
-                                                IsChecked="{Binding IncludeJointAngleCurve, Mode=OneWay}"
-                                                Opacity="0.55"
+                                                Content="躯干和骨盆参数"
+                                                IsChecked="{Binding IncludeTrunkPelvisParameters, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Style="{StaticResource ReportCheckBoxStyle}" />
                                             <CheckBox
-                                                Content="质量控制信息"
-                                                IsChecked="{Binding IncludeQualityControl, Mode=OneWay}"
+                                                Content="对称性分析"
+                                                IsChecked="{Binding IncludeSymmetryAnalysis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Style="{StaticResource ReportCheckBoxStyle}" />
                                             <CheckBox
-                                                Content="视频截图或关键帧 暂无数据"
-                                                IsChecked="{Binding IncludeVideoKeyFrames, Mode=OneWay}"
-                                                Opacity="0.55"
+                                                Content="左右侧参数"
+                                                IsChecked="{Binding IncludeLeftRightParameters, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Style="{StaticResource ReportCheckBoxStyle}" />
                                             <CheckBox
-                                                Content="分析结论"
-                                                IsChecked="{Binding IncludeAnalysisConclusion, Mode=OneWay}"
+                                                Content="曲线图"
+                                                IsChecked="{Binding IncludeCurveCharts, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Style="{StaticResource ReportCheckBoxStyle}" />
-                                            <CheckBox
-                                                Content="备注说明"
-                                                IsChecked="{Binding IncludeRemarks, Mode=OneWay}"
-                                                Style="{StaticResource ReportCheckBoxStyle}" />
+
+                                            <TextBlock
+                                                Margin="0,4,0,0"
+                                                Style="{StaticResource ReportHintTextStyle}"
+                                                Text="勾选变化后，右侧报告预览会自动更新。打印会使用当前选择的报告内容。" />
                                         </StackPanel>
                                     </Border>
 
@@ -414,14 +422,30 @@
                                                 FontWeight="SemiBold"
                                                 Style="{StaticResource ReportValueTextStyle}"
                                                 Text="导出格式" />
-                                            <Border
-                                                Padding="12,8"
-                                                Background="#FFFFFF"
-                                                BorderBrush="{StaticResource ReportBorderBrush}"
-                                                BorderThickness="1"
-                                                CornerRadius="8">
-                                                <TextBlock Style="{StaticResource ReportValueTextStyle}" Text="{Binding ExportFormatDisplay}" />
-                                            </Border>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="12" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <ComboBox
+                                                    Grid.Column="0"
+                                                    Height="42"
+                                                    Padding="12,0"
+                                                    FontFamily="{StaticResource AppFont}"
+                                                    FontSize="14"
+                                                    ItemsSource="{Binding ExportFormats}"
+                                                    SelectedItem="{Binding SelectedExportFormat, Mode=TwoWay}"
+                                                    VerticalContentAlignment="Center" />
+
+                                                <Button
+                                                    Grid.Column="2"
+                                                    Width="112"
+                                                    Command="{Binding ExportReportCommand}"
+                                                    Content="导出报告"
+                                                    Style="{StaticResource ReportPrimaryButtonStyle}" />
+                                            </Grid>
                                         </StackPanel>
                                     </Border>
 
@@ -436,13 +460,8 @@
                                                 <Button
                                                     Width="110"
                                                     Margin="0,0,10,0"
-                                                    Content="打印预览"
-                                                    IsEnabled="False"
-                                                    Style="{StaticResource ReportSecondaryButtonStyle}" />
-                                                <Button
-                                                    Width="110"
-                                                    Content="页面设置"
-                                                    IsEnabled="False"
+                                                    Command="{Binding PrintCommand}"
+                                                    Content="打印"
                                                     Style="{StaticResource ReportSecondaryButtonStyle}" />
                                             </StackPanel>
 
@@ -491,13 +510,18 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                                        <TextBlock Style="{StaticResource ReportHintTextStyle}" Text="上一页" />
-                                        <TextBlock
+                                        <Button
+                                            Click="PreviousPageButton_OnClick"
+                                            Content="上一页"
+                                            Style="{StaticResource ReportToolbarTextButtonStyle}" />
+                                        <Button
                                             Margin="16,0,0,0"
-                                            Style="{StaticResource ReportHintTextStyle}"
-                                            Text="下一页" />
+                                            Click="NextPageButton_OnClick"
+                                            Content="下一页"
+                                            Style="{StaticResource ReportToolbarTextButtonStyle}" />
                                     </StackPanel>
                                     <TextBlock
+                                        x:Name="PageIndicatorTextBlock"
                                         Grid.Column="1"
                                         Margin="24,0,0,0"
                                         VerticalAlignment="Center"
@@ -507,16 +531,24 @@
                                         Grid.Column="3"
                                         VerticalAlignment="Center"
                                         Orientation="Horizontal">
-                                        <TextBlock Style="{StaticResource ReportHintTextStyle}" Text="缩小" />
+                                        <Button
+                                            Click="ZoomOutButton_OnClick"
+                                            Content="缩小"
+                                            Style="{StaticResource ReportToolbarTextButtonStyle}" />
                                         <TextBlock
+                                            x:Name="ZoomPercentTextBlock"
                                             Margin="18,0,18,0"
                                             Style="{StaticResource ReportHintTextStyle}"
                                             Text="100%" />
-                                        <TextBlock Style="{StaticResource ReportHintTextStyle}" Text="放大" />
-                                        <TextBlock
+                                        <Button
+                                            Click="ZoomInButton_OnClick"
+                                            Content="放大"
+                                            Style="{StaticResource ReportToolbarTextButtonStyle}" />
+                                        <Button
                                             Margin="18,0,0,0"
-                                            Style="{StaticResource ReportHintTextStyle}"
-                                            Text="适合宽度" />
+                                            Click="FitWidthButton_OnClick"
+                                            Content="适合宽度"
+                                            Style="{StaticResource ReportToolbarTextButtonStyle}" />
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -542,9 +574,13 @@
                                             Color="#1F2A37" />
                                     </Border.Effect>
                                     <FlowDocumentScrollViewer
+                                        x:Name="ReportDocumentViewer"
                                         Margin="12"
                                         Document="{Binding PreviewDocument}"
-                                        IsToolBarVisible="True"
+                                        IsToolBarVisible="False"
+                                        MaxZoom="220"
+                                        MinZoom="50"
+                                        Zoom="100"
                                         VerticalScrollBarVisibility="Auto" />
                                 </Border>
                             </Border>
@@ -565,15 +601,9 @@
 
                         <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                             <Button
-                                Margin="0,0,14,0"
                                 Command="{Binding CloseCommand}"
                                 Content="{DynamicResource AnalysisDetail.ReportPreview.Close}"
                                 Style="{StaticResource ReportSecondaryButtonStyle}" />
-                            <Button
-                                Content="导出报告"
-                                IsEnabled="False"
-                                Style="{StaticResource ReportPrimaryButtonStyle}"
-                                ToolTip="导出命令尚未接入当前预览弹窗" />
                         </StackPanel>
                     </Grid>
                 </Border>

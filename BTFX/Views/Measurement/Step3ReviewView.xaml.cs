@@ -624,6 +624,7 @@ public partial class Step3ReviewView : UserControl
         _isDragging = true;
         PausePlayback();
         SeekSliderToMousePosition(e);
+        PauseActiveMedia();
         ProgressSlider.CaptureMouse();
         e.Handled = true;
     }
@@ -636,6 +637,7 @@ public partial class Step3ReviewView : UserControl
         }
 
         SeekSliderToMousePosition(e);
+        PauseActiveMedia();
         e.Handled = true;
     }
 
@@ -654,6 +656,10 @@ public partial class Step3ReviewView : UserControl
         if (_resumeAfterDrag)
         {
             StartPlayback();
+        }
+        else
+        {
+            PausePlayback();
         }
 
         _resumeAfterDrag = false;
@@ -743,12 +749,29 @@ public partial class Step3ReviewView : UserControl
 
     private void PausePlayback()
     {
-        if (_isPlaying)
+        if (_activeMediaElement != null)
         {
-            _clockBaseSeconds = _activeMediaElement?.Position.TotalSeconds ?? _clockBaseSeconds;
-            _activeMediaElement?.Pause();
+            _clockBaseSeconds = Math.Clamp(
+                _activeMediaElement.Position.TotalSeconds,
+                0,
+                Math.Max(0, _durationSeconds));
+            _activeMediaElement.Pause();
         }
 
+        _isPlaying = false;
+        _clock.Reset();
+        _playbackTimer.Stop();
+        UpdatePlayIcon();
+    }
+
+    private void PauseActiveMedia()
+    {
+        if (_activeMediaElement == null)
+        {
+            return;
+        }
+
+        _activeMediaElement.Pause();
         _isPlaying = false;
         _clock.Reset();
         _playbackTimer.Stop();

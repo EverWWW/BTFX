@@ -3,6 +3,7 @@ using System.Windows;
 using BTFX.Common;
 using BTFX.Helpers;
 using BTFX.Models;
+using BTFX.Models.Analysis;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -254,6 +255,30 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     /// </summary>
     [ObservableProperty]
     private string _previewContent = string.Empty;
+
+    /// <summary>
+    /// 报告基础信息摘要。
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<ReportSummaryField> _previewBasicFields = new();
+
+    /// <summary>
+    /// 报告关键指标摘要。
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<ReportSummaryMetric> _previewMetrics = new();
+
+    /// <summary>
+    /// 报告包含内容标签。
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<string> _previewSectionTags = new();
+
+    /// <summary>
+    /// 报告摘要说明。
+    /// </summary>
+    [ObservableProperty]
+    private string _previewSummaryMessage = "请选择左侧报告，查看报告摘要。";
 
     /// <summary>
     /// 医生意见
@@ -1482,6 +1507,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             _currentPreviewReport = fullReport;
             DoctorOpinion = fullReport.DoctorOpinion ?? string.Empty;
             HasPreviewContent = true;
+            UpdatePreviewSummary(fullReport);
 
             // 构建预览内容
             var sb = new System.Text.StringBuilder();
@@ -1594,6 +1620,145 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         PreviewContent = string.Empty;
         DoctorOpinion = string.Empty;
         HasPreviewContent = false;
+        PreviewBasicFields.Clear();
+        PreviewMetrics.Clear();
+        PreviewSectionTags.Clear();
+        PreviewSummaryMessage = "请选择左侧报告，查看报告摘要。";
+    }
+
+    /// <summary>
+    /// 更新右侧报告摘要面板。
+    /// </summary>
+    private void UpdatePreviewSummary(Report report)
+    {
+        var record = report.MeasurementRecord;
+        var patient = record?.Patient ?? report.Patient;
+        var gait = record?.GaitParameters;
+        var analysis = report.AnalysisResult;
+        var quality = report.QualityControl ?? analysis?.QualityControl;
+
+        var title = string.IsNullOrWhiteSpace(report.Title) ? "步态分析报告" : report.Title;
+        var measurementType = record is null ? "--" : GetMeasurementTypeText(record.MeasurementType);
+        var videoMode = record is null
+            ? "--"
+            : record.HasDualVideo ? "双视频模式" : record.HasSideVideo || record.HasFrontVideo ? "单视频模式" : "--";
+
+        PreviewBasicFields = new ObservableCollection<ReportSummaryField>
+        {
+            new("报告标题", title),
+            new("报告编号", EmptyToDash(report.ReportNumber)),
+            new("患者姓名", EmptyToDash(patient?.Name)),
+            new("测量类型", measurementType),
+            new("视频模式", videoMode),
+            new("测量时间", record?.MeasurementDate.ToString(Constants.DATETIME_FORMAT) ?? "--"),
+            new("生成时间", report.CreatedAt.ToString(Constants.DATETIME_FORMAT)),
+            new("报告状态", GetStatusText(report.Status))
+        };
+
+        PreviewMetrics = new ObservableCollection<ReportSummaryMetric>
+        {
+            new("步态周期", FormatNumber(analysis?.GaitCycleDurationS ?? gait?.GaitCycleDurationS, "F2"), "s"),
+            new("平均步长", FormatNumber(analysis?.StepLengthM ?? gait?.StepLengthM, "F2"), "m"),
+            new("平均步频", FormatNumber(gait?.Cadence, "F1"), "step/min"),
+            new("平均步速", FormatNumber(analysis?.GaitSpeedMPerS ?? gait?.GaitSpeedMPerS ?? gait?.Velocity, "F2"), "m/s"),
+            new("质量等级", BuildQualityLevel(quality), string.Empty),
+            new("有效帧比例", FormatPercent(quality?.ValidFrameRatio), string.Empty)
+        };
+
+        PreviewSectionTags = new ObservableCollection<string>(BuildReportSectionTags(report));
+        PreviewSummaryMessage = BuildPreviewSummaryMessage(report, PreviewSectionTags.Count);
+    }
+
+    private static string BuildPreviewSummaryMessage(Report report, int sectionCount)
+    {
+        var status = GetStatusText(report.Status);
+        return $"当前选中报告为{status}状态，已包含 {sectionCount} 个报告模块。点击“查看完整报告”可查看正式报告版式、执行打印或导出。";
+    }
+
+    private static IReadOnlyList<string> BuildReportSectionTags(Report report)
+    {
+        var tags = new List<string>();
+        var options = ParseReportOptions(report.ReportOptionsJson);
+
+        if (options is null || options.IncludeSpatiotemporalParameters)
+        {
+            tags.Add("步态时空参数");
+        }
+
+        if (options is null || options.IncludeKinematicSummary)
+        {
+            tags.Add("运动学参数");
+            tags.Add("躯干和骨盆参数");
+            tags.Add("曲线图");
+        }
+
+        if (options is null || options.IncludeQualityControl)
+        {
+            tags.Add("对称性分析");
+        }
+
+        tags.Add("左右侧参数");
+        return tags.Distinct().ToArray();
+    }
+
+    private static ReportDraftOptions? ParseReportOptions(string? reportOptionsJson)
+    {
+        if (string.IsNullOrWhiteSpace(reportOptionsJson))
+        {
+            return null;
+        }
+
+        try
+        {
+            return System.Text.Json.JsonSerializer.Deserialize<ReportDraftOptions>(reportOptionsJson);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string EmptyToDash(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? "--" : value;
+    }
+
+    private static string FormatNumber(double? value, string format)
+    {
+        return value.HasValue ? value.Value.ToString(format) : "--";
+    }
+
+    private static string FormatPercent(double? value)
+    {
+        if (!value.HasValue)
+        {
+            return "--";
+        }
+
+        var percent = value.Value <= 1 ? value.Value * 100 : value.Value;
+        return $"{percent:F1}%";
+    }
+
+    private static string BuildQualityLevel(QualityControlInfo? quality)
+    {
+        if (quality?.ValidFrameRatio is not double ratio)
+        {
+            return "--";
+        }
+
+        return ratio >= 0.95 ? "A级" : ratio >= 0.85 ? "B级" : "C级";
+    }
+
+    private static string GetMeasurementTypeText(MeasurementType type)
+    {
+        return type switch
+        {
+            MeasurementType.NormalWalk => "自然步行",
+            MeasurementType.FastWalk => "快走",
+            MeasurementType.SlowWalk => "慢走",
+            MeasurementType.Other => "其他",
+            _ => type.ToString()
+        };
     }
 
         /// <summary>
@@ -1632,6 +1797,16 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     }
 
 #region 辅助类
+
+/// <summary>
+/// 报告摘要字段。
+/// </summary>
+public sealed record ReportSummaryField(string Label, string Value);
+
+/// <summary>
+/// 报告摘要指标。
+/// </summary>
+public sealed record ReportSummaryMetric(string Name, string Value, string Unit);
 
 /// <summary>
 /// 报告列表项

@@ -67,11 +67,14 @@
         </Style>
 
         <Style x:Key="ReviewProgressSliderStyle" TargetType="Slider">
-            <Setter Property="Height" Value="18" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Background" Value="Transparent" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Slider">
-                        <Grid Height="{TemplateBinding Height}">
+                        <Grid
+                            Height="{TemplateBinding Height}"
+                            Background="{TemplateBinding Background}">
                             <Track x:Name="PART_Track" VerticalAlignment="Center">
                                 <Track.DecreaseRepeatButton>
                                     <RepeatButton Height="4" Command="Slider.DecreaseLarge">
