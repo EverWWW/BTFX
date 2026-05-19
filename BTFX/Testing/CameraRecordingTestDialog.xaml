@@ -52,6 +52,43 @@
             <Setter Property="FontSize" Value="15" />
             <Setter Property="Foreground" Value="#403B5B" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Grid Width="16" Height="16" Margin="0,0,6,0">
+                                <Ellipse
+                                    x:Name="OuterCircle"
+                                    Fill="#FFFFFF"
+                                    Stroke="#C8CED8"
+                                    StrokeThickness="1.5" />
+                                <Ellipse
+                                    x:Name="InnerCircle"
+                                    Width="8"
+                                    Height="8"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Fill="{StaticResource CameraAccentBrush}"
+                                    Visibility="Collapsed" />
+                            </Grid>
+                            <ContentPresenter
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding Content}" />
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="OuterCircle" Property="Stroke" Value="{StaticResource CameraAccentBrush}" />
+                                <Setter TargetName="InnerCircle" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style TargetType="CheckBox">
@@ -59,6 +96,51 @@
             <Setter Property="FontSize" Value="15" />
             <Setter Property="Foreground" Value="#403B5B" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Border
+                                x:Name="CheckBoxBorder"
+                                Width="16"
+                                Height="16"
+                                Margin="0,0,6,0"
+                                Background="#FFFFFF"
+                                BorderBrush="#C8CED8"
+                                BorderThickness="1.5"
+                                CornerRadius="3">
+                                <Path
+                                    x:Name="CheckMark"
+                                    Width="9"
+                                    Height="7"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Data="M1,3.5 L3.4,6 L8,1"
+                                    Stroke="#FFFFFF"
+                                    StrokeEndLineCap="Round"
+                                    StrokeStartLineCap="Round"
+                                    StrokeThickness="1.8"
+                                    Visibility="Collapsed" />
+                            </Border>
+                            <ContentPresenter
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding Content}" />
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckBoxBorder" Property="Background" Value="{StaticResource CameraAccentBrush}" />
+                                <Setter TargetName="CheckBoxBorder" Property="BorderBrush" Value="{StaticResource CameraAccentBrush}" />
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="CameraSectionBorderStyle" TargetType="Border">
@@ -68,6 +150,72 @@
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="20,18" />
             <Setter Property="SnapsToDevicePixels" Value="True" />
+        </Style>
+
+        <Style x:Key="CameraModeSwitchStyle" TargetType="ToggleButton">
+            <Setter Property="Width" Value="136" />
+            <Setter Property="Height" Value="48" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Background" Value="#403B5B" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Grid>
+                            <Border
+                                x:Name="SwitchTrack"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="24" />
+                            <Grid Margin="14,0">
+                                <TextBlock
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="14"
+                                    Foreground="#FFFFFF"
+                                    Text="单视角" />
+                                <TextBlock
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="14"
+                                    Foreground="#FFFFFF"
+                                    Text="双视角" />
+                            </Grid>
+                            <Border
+                                x:Name="SwitchThumb"
+                                Width="62"
+                                Height="40"
+                                Margin="4"
+                                HorizontalAlignment="Left"
+                                Background="White"
+                                CornerRadius="20">
+                                <TextBlock
+                                    x:Name="SwitchText"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="15"
+                                    FontWeight="Medium"
+                                    Foreground="#403B5B"
+                                    Text="单视角" />
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="SwitchTrack" Property="Background" Value="#403B5B" />
+                                <Setter TargetName="SwitchThumb" Property="HorizontalAlignment" Value="Right" />
+                                <Setter TargetName="SwitchText" Property="Text" Value="双视角" />
+                                <Setter TargetName="SwitchText" Property="Foreground" Value="#403B5B" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="CameraComboBoxStyle" TargetType="ComboBox">
@@ -145,7 +293,7 @@
                                             Background="{Binding Background, RelativeSource={RelativeSource AncestorType=ComboBox}}"
                                             BorderBrush="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType=ComboBox}}"
                                             BorderThickness="{Binding BorderThickness, RelativeSource={RelativeSource AncestorType=ComboBox}}"
-                                            CornerRadius="16"
+                                            CornerRadius="10"
                                             SnapsToDevicePixels="True">
                                             <Path
                                                 Width="12"
@@ -221,7 +369,7 @@
                         <Border
                             x:Name="ButtonBorder"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="16">
+                            CornerRadius="10">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -260,7 +408,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="16">
+                            CornerRadius="10">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -349,17 +497,11 @@
                             VerticalAlignment="Center"
                             Orientation="Horizontal">
                             <TextBlock Style="{StaticResource CameraFieldLabelStyle}" Text="当前模式" />
-                            <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
-                                <Button
-                                    Command="{Binding SetSingleModeCommand}"
-                                    Content="单视角"
-                                    Style="{StaticResource CameraSecondaryButtonStyle}" />
-                                <Button
-                                    Margin="8,0,0,0"
-                                    Command="{Binding SetDualModeCommand}"
-                                    Content="双视角"
-                                    Style="{StaticResource CameraPrimaryButtonStyle}" />
-                            </StackPanel>
+                            <ToggleButton
+                                Margin="10,0,0,0"
+                                Command="{Binding ToggleCaptureModeCommand}"
+                                IsChecked="{Binding IsDualMode, Mode=OneWay}"
+                                Style="{StaticResource CameraModeSwitchStyle}" />
                         </StackPanel>
 
                         <StackPanel

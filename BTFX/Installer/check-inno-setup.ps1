@@ -13,6 +13,7 @@ $registryPaths = @(
 )
 
 $innoSetupFound = $false
+$foundPaths = @()
 foreach ($regPath in $registryPaths) {
     try {
         $apps = Get-ItemProperty $regPath -ErrorAction SilentlyContinue |
@@ -29,6 +30,7 @@ foreach ($regPath in $registryPaths) {
                     if (Test-Path $isccPath) {
                         Write-Host "  ISCC.exe: $isccPath" -ForegroundColor Green
                         $innoSetupFound = $true
+                        $foundPaths += $isccPath
                     }
                 }
             }
@@ -54,8 +56,6 @@ $searchPaths = @(
     "${env:ProgramFiles(x86)}"
 )
 
-$foundPaths = @()
-
 foreach ($searchPath in $searchPaths) {
     if (Test-Path $searchPath) {
         Write-Host "Searching in $searchPath..." -ForegroundColor Gray
@@ -69,11 +69,13 @@ foreach ($searchPath in $searchPaths) {
     }
 }
 
+$foundPaths = $foundPaths | Select-Object -Unique
+
 if ($foundPaths.Count -eq 0) {
     Write-Host ""
-    Write-Host "=" * 60 -ForegroundColor Red
+    Write-Host ("=" * 60) -ForegroundColor Red
     Write-Host "ISCC.exe NOT FOUND!" -ForegroundColor Red
-    Write-Host "=" * 60 -ForegroundColor Red
+    Write-Host ("=" * 60) -ForegroundColor Red
     Write-Host ""
     Write-Host "Inno Setup may not be installed correctly." -ForegroundColor Yellow
     Write-Host ""
@@ -85,9 +87,9 @@ if ($foundPaths.Count -eq 0) {
 }
 else {
     Write-Host ""
-    Write-Host "=" * 60 -ForegroundColor Green
+    Write-Host ("=" * 60) -ForegroundColor Green
     Write-Host "SUCCESS! Found $($foundPaths.Count) ISCC.exe location(s)" -ForegroundColor Green
-    Write-Host "=" * 60 -ForegroundColor Green
+    Write-Host ("=" * 60) -ForegroundColor Green
     Write-Host ""
     Write-Host "You can now run build-installer.bat" -ForegroundColor Green
 }

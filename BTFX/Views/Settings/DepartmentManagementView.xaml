@@ -342,7 +342,7 @@
                                             Width="28"
                                             Height="28"
                                             RenderOptions.BitmapScalingMode="HighQuality"
-                                            Source="/Resources/Images/DataManagement/shanchu2.png" />
+                                            Source="/Resources/Images/login/hongdelete.png" />
                                     </Button>
                                 </Grid>
                             </Border>

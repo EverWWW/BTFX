@@ -180,11 +180,13 @@ public class DatabaseInitializer
         {
             _logHelper?.Information($"数据库需要升级：{version} → {CurrentDatabaseVersion}");
             await UpgradeDatabaseAsync(db, version);
+            await EnsureSeedDataAsync(db);
             SetDatabaseVersion(db, CurrentDatabaseVersion);
             _logHelper?.Information("数据库升级完成。");
         }
         else
         {
+            await EnsureSeedDataAsync(db);
             _logHelper?.Information("数据库版本已是最新，无需迁移。");
         }
     }
@@ -400,6 +402,57 @@ public class DatabaseInitializer
                 throw new Exception($"Step 4.{i + 1} 写入系统配置（{key}）失败：{ex.Message}", ex);
             }
         }
+    }
+
+    /// <summary>
+    /// 对已存在数据库补齐必要的内置数据。
+    /// 用于升级安装或历史数据库缺少默认账号时，保证 admin 默认管理员可登录。
+    /// </summary>
+    private async Task EnsureSeedDataAsync(SqliteSugarHelper db)
+    {
+        await SeedDataAsync(db);
+        await UpgradeLegacyDefaultAdminPasswordAsync(db);
+    }
+
+    /// <summary>
+    /// 将仍使用旧默认密码 123456 的内置管理员迁移到当前默认密码。
+    /// 如果管理员已被用户改过密码，则不会覆盖。
+    /// </summary>
+    private async Task UpgradeLegacyDefaultAdminPasswordAsync(SqliteSugarHelper db)
+    {
+        var admin = await db.GetFirstAsync<User>(u => u.Username == Constants.ADMIN_USERNAME);
+        if (admin is null)
+        {
+            return;
+        }
+
+        var shouldUpgrade =
+            string.IsNullOrWhiteSpace(admin.PasswordHash)
+            || (!string.IsNullOrWhiteSpace(admin.PasswordSalt)
+                && PasswordHelper.VerifyPassword("123456", admin.PasswordHash, admin.PasswordSalt))
+            || (string.IsNullOrWhiteSpace(admin.PasswordSalt)
+                && PasswordHelper.VerifyPasswordLegacy("123456", admin.PasswordHash));
+
+        if (!shouldUpgrade)
+        {
+            return;
+        }
+
+        var salt = PasswordHelper.GenerateSalt();
+        var hash = PasswordHelper.HashPassword(Constants.DEFAULT_PASSWORD, salt);
+        await db.UpdateAsync<User>(
+            u => new User
+            {
+                PasswordHash = hash,
+                PasswordSalt = salt,
+                IsEnabled = true,
+                IsBuiltIn = true,
+                Role = UserRole.Administrator,
+                UpdatedAt = DateTime.Now
+            },
+            u => u.Id == admin.Id);
+
+        _logHelper?.Information("已将内置管理员默认密码迁移到当前默认密码。");
     }
 
     /// <summary>

@@ -484,11 +484,40 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </Button.Style>
-                                        <Image
-                                            Width="28"
-                                            Height="28"
-                                            RenderOptions.BitmapScalingMode="HighQuality"
-                                            Source="/Resources/Images/DataManagement/shanchu2.png" />
+                                        <Grid Width="28" Height="28">
+                                            <Image
+                                                Width="28"
+                                                Height="28"
+                                                RenderOptions.BitmapScalingMode="HighQuality"
+                                                Source="/Resources/Images/login/hongdelete.png">
+                                                <Image.Style>
+                                                    <Style TargetType="Image">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsBuiltIn}" Value="True">
+                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Image.Style>
+                                            </Image>
+                                            <Image
+                                                Width="28"
+                                                Height="28"
+                                                RenderOptions.BitmapScalingMode="HighQuality"
+                                                Source="/Resources/Images/login/huidelete.png">
+                                                <Image.Style>
+                                                    <Style TargetType="Image">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsBuiltIn}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Image.Style>
+                                            </Image>
+                                        </Grid>
                                     </Button>
                                 </Grid>
                             </Border>

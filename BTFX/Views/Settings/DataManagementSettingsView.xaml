@@ -75,7 +75,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="16">
+                            CornerRadius="10">
                             <ScrollViewer
                                 x:Name="PART_ContentHost"
                                 Margin="0"
@@ -129,10 +129,10 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="SwitchTrack" Property="Background" Value="#44BE13" />
+                                <Setter TargetName="SwitchTrack" Property="Background" Value="#403B5B" />
                                 <Setter TargetName="SwitchThumb" Property="HorizontalAlignment" Value="Right" />
                                 <Setter TargetName="SwitchText" Property="Text" Value="开" />
-                                <Setter TargetName="SwitchText" Property="Foreground" Value="#44BE13" />
+                                <Setter TargetName="SwitchText" Property="Foreground" Value="#403B5B" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.45" />
@@ -158,7 +158,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="16">
+                            CornerRadius="10">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -404,7 +404,7 @@
                             Height="16"
                             Margin="0,0,12,0"
                             Background="#E4004A"
-                            CornerRadius="8" />
+                            CornerRadius="2" />
                         <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="自动备份" />
                     </StackPanel>
 
@@ -496,7 +496,7 @@
                             Height="16"
                             Margin="0,0,12,0"
                             Background="#E4004A"
-                            CornerRadius="8" />
+                            CornerRadius="2" />
                         <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="手动备份" />
 
                         <Button
@@ -550,7 +550,7 @@
                                 Height="16"
                                 Margin="0,0,12,0"
                                 Background="#E4004A"
-                                CornerRadius="8" />
+                                CornerRadius="2" />
                             <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="备份历史" />
                         </StackPanel>
 
@@ -685,7 +685,7 @@
                                                     Width="28"
                                                     Height="28"
                                                     RenderOptions.BitmapScalingMode="HighQuality"
-                                                    Source="/Resources/Images/DataManagement/shanchu2.png" />
+                                                    Source="/Resources/Images/login/hongdelete.png" />
                                             </Button>
                                         </Grid>
                                     </Border>

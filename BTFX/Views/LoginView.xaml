@@ -16,13 +16,14 @@
         <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
 
         <!-- 输入框内左侧图标样式 -->
-        <Style x:Key="InputIconStyle" TargetType="materialDesign:PackIcon">
+        <Style x:Key="InputIconStyle" TargetType="Image">
             <Setter Property="Width" Value="22" />
             <Setter Property="Height" Value="22" />
             <Setter Property="Margin" Value="20,0,0,0" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="HorizontalAlignment" Value="Left" />
-            <Setter Property="Foreground" Value="#999999" />
+            <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality" />
+            <Setter Property="Stretch" Value="Uniform" />
         </Style>
 
         <!-- 无边框输入框基础样式 -->
@@ -288,8 +289,8 @@
                                     <KeyBinding Key="Return" Command="{Binding LoginCommand}" />
                                 </TextBox.InputBindings>
                             </TextBox>
-                            <materialDesign:PackIcon
-                                Kind="AccountOutline"
+                            <Image
+                                Source="/Resources/Images/login/user.png"
                                 Style="{StaticResource InputIconStyle}" />
                         </Grid>
 
@@ -320,8 +321,8 @@
                                 </TextBox.InputBindings>
                             </TextBox>
                             <!-- 左侧锁图标 -->
-                            <materialDesign:PackIcon
-                                Kind="LockOutline"
+                            <Image
+                                Source="/Resources/Images/login/password.png"
                                 Style="{StaticResource InputIconStyle}" />
                             <!-- 右侧密码可见性切换按钮 -->
                             <Button
@@ -463,7 +464,7 @@
                                             <Setter TargetName="LoginBtnBorder" Property="Background" Value="#332F4A" />
                                         </Trigger>
                                         <Trigger Property="IsEnabled" Value="False">
-                                            <Setter TargetName="LoginBtnBorder" Property="Opacity" Value="0.5" />
+                                            <Setter TargetName="LoginBtnBorder" Property="Background" Value="#D1D1D1" />
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>

@@ -76,6 +76,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Resources\Images\Device\deviceImage.jpeg" />
+    <None Remove="Resources\Images\login\hongDelete.png" />
+    <None Remove="Resources\Images\login\huiDelete.png" />
+    <None Remove="Resources\Images\login\out.png" />
+    <None Remove="Resources\Images\login\password.png" />
+    <None Remove="Resources\Images\login\user.png" />
     <None Remove="Resources\Images\NavigationItem\baogao1.png" />
     <None Remove="Resources\Images\NavigationItem\baogao2.png" />
     <None Remove="Resources\Images\NavigationItem\celiangpinggu1.png" />
@@ -131,6 +136,7 @@
     <Folder Include="Data\Videos\" />
     <Folder Include="Data\Temp\" />
     <Folder Include="Data\Config\" />
+    <Folder Include="Installer\Output\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ToolHelper.Communication\ToolHelper.Communication.csproj" />
@@ -140,6 +146,11 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Images\Device\deviceImage.jpeg" />
+    <Resource Include="Resources\Images\login\hongDelete.png" />
+    <Resource Include="Resources\Images\login\huiDelete.png" />
+    <Resource Include="Resources\Images\login\out.png" />
+    <Resource Include="Resources\Images\login\password.png" />
+    <Resource Include="Resources\Images\login\user.png" />
     <Resource Include="Resources\Images\Logo\app.ico" />
     <Resource Include="Resources\Images\Logo\logo1.png" />
     <Resource Include="Resources\Images\Logo\logo2.png" />

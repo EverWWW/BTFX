@@ -22,7 +22,8 @@
         <SolidColorBrush x:Key="ReportSecondaryTextBrush" Color="#666666" />
         <SolidColorBrush x:Key="ReportWeakTextBrush" Color="#999999" />
         <SolidColorBrush x:Key="ReportPrimaryBrush" Color="#40385F" />
-        <SolidColorBrush x:Key="ReportAccentBrush" Color="#FF8A00" />
+        <SolidColorBrush x:Key="ReportAccentBrush" Color="#E4004A" />
+        <SolidColorBrush x:Key="ReportCheckBrush" Color="#E4004A" />
         <Style BasedOn="{StaticResource DialogLightScrollBarStyle}" TargetType="ScrollBar" />
 
         <Style x:Key="ReportTitleTextStyle" TargetType="TextBlock">
@@ -119,6 +120,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border
+                            x:Name="ButtonBorder"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
@@ -130,7 +132,9 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Opacity" Value="0.48" />
+                    <Setter Property="Background" Value="#D1D1D1" />
+                    <Setter Property="BorderBrush" Value="#D1D1D1" />
+                    <Setter Property="Foreground" Value="#FFFFFF" />
                     <Setter Property="Cursor" Value="Arrow" />
                 </Trigger>
             </Style.Triggers>
@@ -152,6 +156,48 @@
             <Setter Property="Margin" Value="0,0,0,12" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <Border
+                                x:Name="CheckBoxBorder"
+                                Width="16"
+                                Height="16"
+                                Margin="0,0,8,0"
+                                Background="#FFFFFF"
+                                BorderBrush="#C8CED8"
+                                BorderThickness="1.5"
+                                CornerRadius="3">
+                                <Path
+                                    x:Name="CheckMark"
+                                    Width="9"
+                                    Height="7"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Data="M1,3.5 L3.4,6 L8,1"
+                                    Stroke="#FFFFFF"
+                                    StrokeEndLineCap="Round"
+                                    StrokeStartLineCap="Round"
+                                    StrokeThickness="1.8"
+                                    Visibility="Collapsed" />
+                            </Border>
+                            <ContentPresenter VerticalAlignment="Center" Content="{TemplateBinding Content}" />
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckBoxBorder" Property="Background" Value="{StaticResource ReportCheckBrush}" />
+                                <Setter TargetName="CheckBoxBorder" Property="BorderBrush" Value="{StaticResource ReportCheckBrush}" />
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="ReportToolbarTextButtonStyle" TargetType="Button">
@@ -167,10 +213,10 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <TextBlock
-                            Text="{TemplateBinding Content}"
-                            TextDecorations="Underline"
+                            VerticalAlignment="Center"
                             Foreground="{TemplateBinding Foreground}"
-                            VerticalAlignment="Center" />
+                            Text="{TemplateBinding Content}"
+                            TextDecorations="Underline" />
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -433,11 +479,11 @@
                                                     Grid.Column="0"
                                                     Height="42"
                                                     Padding="12,0"
+                                                    VerticalContentAlignment="Center"
                                                     FontFamily="{StaticResource AppFont}"
                                                     FontSize="14"
                                                     ItemsSource="{Binding ExportFormats}"
-                                                    SelectedItem="{Binding SelectedExportFormat, Mode=TwoWay}"
-                                                    VerticalContentAlignment="Center" />
+                                                    SelectedItem="{Binding SelectedExportFormat, Mode=TwoWay}" />
 
                                                 <Button
                                                     Grid.Column="2"
@@ -580,8 +626,8 @@
                                         IsToolBarVisible="False"
                                         MaxZoom="220"
                                         MinZoom="50"
-                                        Zoom="100"
-                                        VerticalScrollBarVisibility="Auto" />
+                                        VerticalScrollBarVisibility="Auto"
+                                        Zoom="100" />
                                 </Border>
                             </Border>
                         </Grid>

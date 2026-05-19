@@ -334,6 +334,9 @@ public partial class CameraRecordingTestViewModel : ObservableObject
     private void SetDualMode() => CurrentMode = CameraCaptureMode.Dual;
 
     [RelayCommand]
+    private void ToggleCaptureMode() => CurrentMode = IsDualMode ? CameraCaptureMode.Single : CameraCaptureMode.Dual;
+
+    [RelayCommand]
     private void EditSideCamera()
     {
         EditingCameraRole = CameraViewRole.Side;

@@ -49,18 +49,28 @@ Write-Info "Output Dir: $OutputDir"
 Write-Info "Configuration: $Configuration"
 Write-Info "Runtime: $Runtime"
 
-# Step 1: Clean publish directory
-Write-Step "Step 1/4: Clean publish directory"
-if (Test-Path $PublishDir) {
-    Remove-Item -Path $PublishDir -Recurse -Force
-    Write-Success "Cleaned publish directory"
+# Step 1: Prepare publish directory
+Write-Step "Step 1/4: Prepare publish directory"
+if (-not $SkipPublish) {
+    if (Test-Path $PublishDir) {
+        Remove-Item -Path $PublishDir -Recurse -Force
+        Write-Success "Cleaned publish directory"
+    }
+    else {
+        Write-Info "Publish directory does not exist"
+    }
+
+    New-Item -Path $PublishDir -ItemType Directory -Force | Out-Null
+    Write-Success "Created publish directory"
 }
 else {
-    Write-Info "Publish directory does not exist"
-}
+    if (-not (Test-Path $PublishDir)) {
+        Write-Error "SkipPublish was specified, but publish directory does not exist: $PublishDir"
+        exit 1
+    }
 
-New-Item -Path $PublishDir -ItemType Directory -Force | Out-Null
-Write-Success "Created publish directory"
+    Write-Info "SkipPublish specified; preserving existing publish directory"
+}
 
 # Step 2: Execute dotnet publish
 if (-not $SkipPublish) {

@@ -304,11 +304,11 @@
 
                     <StackPanel Grid.Row="0" Orientation="Horizontal">
                         <Border
-                            Width="3"
+                            Width="4"
                             Height="16"
                             Margin="0,0,8,0"
                             VerticalAlignment="Center"
-                            Background="#F2306A"
+                            Background="#E4004A"
                             CornerRadius="2" />
                         <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="分析结果" />
                     </StackPanel>

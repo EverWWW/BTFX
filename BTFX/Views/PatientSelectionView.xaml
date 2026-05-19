@@ -116,10 +116,14 @@
         <!--  ═══════════════════ 一、顶部返回区域 ═══════════════════  -->
         <Border
             Grid.Row="0"
-            Padding="20,10"
-            Background="#F5F5F5">
+            Height="72"
+            Padding="20,18,20,0"
+            Background="#F5F5F5"
+            ClipToBounds="False">
             <Button
+                Height="52"
                 HorizontalAlignment="Left"
+                VerticalAlignment="Center"
                 Background="Transparent"
                 BorderThickness="0"
                 Command="{Binding BackCommand}"
@@ -128,7 +132,8 @@
                     <ControlTemplate TargetType="Button">
                         <Border
                             x:Name="bd"
-                            Padding="8,4"
+                            Height="52"
+                            Padding="8,0"
                             Background="Transparent"
                             CornerRadius="6">
                             <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
@@ -140,11 +145,14 @@
                                     Source="/Resources/Images/PatientSelectionView/tuichu.png" />
                                 <TextBlock
                                     Margin="8,0,0,0"
+                                    Padding="0"
                                     VerticalAlignment="Center"
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="26"
                                     FontWeight="Medium"
                                     Foreground="#555555"
+                                    LineHeight="30"
+                                    LineStackingStrategy="BlockLineHeight"
                                     Text="退出" />
                             </StackPanel>
                         </Border>

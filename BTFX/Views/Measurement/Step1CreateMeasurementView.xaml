@@ -20,7 +20,7 @@
         <Style x:Key="SectionCardStyle" TargetType="Border">
             <Setter Property="Background" Value="#FAFAFA" />
             <Setter Property="BorderBrush" Value="#FFF1ECEF" />
-            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderThickness" Value="0" />
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="20,18" />
             <Setter Property="SnapsToDevicePixels" Value="True" />
@@ -230,7 +230,7 @@
                         <Border
                             x:Name="ButtonBorder"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="16">
+                            CornerRadius="10">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -266,7 +266,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="16">
+                            CornerRadius="10">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>

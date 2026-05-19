@@ -164,7 +164,7 @@
                             Height="480"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Top"
-                            Background="#D1D1D1"
+                            Background="#FFFFFF"
                             CornerRadius="8">
                             <Image
                                 RenderOptions.BitmapScalingMode="HighQuality"

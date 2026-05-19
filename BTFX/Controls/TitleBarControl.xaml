@@ -75,7 +75,7 @@
                                Margin="2,0,10,0" />
 
                     <!-- 账号图标 -->
-                    <Image Source="/Resources/Images/PatientSelectionView/zhanghaotubiao.png"
+                    <Image Source="/Resources/Images/login/user.png"
                            Width="28" Height="28"
 						   Margin="20,0,0,0"
                            VerticalAlignment="Center"

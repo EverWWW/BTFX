@@ -27,7 +27,8 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 
 ; 默认安装路径
-DefaultDirName={autopf}\BTFX
+; 当前程序会在安装目录下写入 Data、video 等调试数据，默认安装到用户目录以避免 Program Files 写权限问题。
+DefaultDirName={localappdata}\Programs\BTFX
 DefaultGroupName={#MyAppName}
 
 ; 许可协议和自述文件
@@ -47,7 +48,7 @@ LZMAUseSeparateProcess=yes
 ; SetupIconFile=Assets\installer.ico
 
 ; 权限设置
-PrivilegesRequired=admin
+PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 
 ; 向导样式
@@ -108,6 +109,7 @@ Name: "{app}\Data\Backups"
 Name: "{app}\Data\Videos"
 Name: "{app}\Data\Temp"
 Name: "{app}\Data\Config"
+Name: "{app}\video"
 
 [Icons]
 ; 开始菜单快捷方式

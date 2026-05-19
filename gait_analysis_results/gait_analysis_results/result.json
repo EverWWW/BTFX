@@ -1,0 +1,123 @@
+{
+  "task_id": "20260518_142822",
+  "patient_info": {
+    "height_m": 1.75,
+    "weight_kg": 68.0
+  },
+  "video_info": {
+    "fps": 60.0,
+    "duration_sec": 6.0,
+    "frame_count": 361
+  },
+  "gait_cycle": {
+    "cycle_count": 5,
+    "cycles": [
+      {
+        "cycle_id": 1,
+        "start_frame": 77,
+        "end_frame": 114,
+        "duration_sec": 0.617
+      },
+      {
+        "cycle_id": 2,
+        "start_frame": 114,
+        "end_frame": 147,
+        "duration_sec": 0.55
+      },
+      {
+        "cycle_id": 3,
+        "start_frame": 147,
+        "end_frame": 182,
+        "duration_sec": 0.583
+      },
+      {
+        "cycle_id": 4,
+        "start_frame": 182,
+        "end_frame": 216,
+        "duration_sec": 0.567
+      },
+      {
+        "cycle_id": 5,
+        "start_frame": 216,
+        "end_frame": 248,
+        "duration_sec": 0.533
+      }
+    ]
+  },
+  "gait_events": {
+    "left_heel_strike_frames": [
+      77,
+      147,
+      216
+    ],
+    "right_heel_strike_frames": [
+      114,
+      182,
+      248
+    ],
+    "left_toe_off_frames": [
+      125,
+      193,
+      262
+    ],
+    "right_toe_off_frames": [
+      91,
+      158,
+      225
+    ]
+  },
+  "spatiotemporal_parameters": {
+    "cadence_step_per_min": 95.6,
+    "gait_velocity_m_per_sec": 0.893,
+    "mean_step_length_m": 0.575,
+    "mean_stride_length_m": 1.177,
+    "mean_stance_time_sec": 1.117,
+    "mean_swing_time_sec": -0.489,
+    "mean_double_support_time_sec": 0.175,
+    "mean_single_support_time_sec": 0.374
+  },
+  "joint_angles": {
+    "left_knee": {
+      "max_flexion_deg": 63.8,
+      "min_flexion_deg": -0.6,
+      "rom_deg": 64.4
+    },
+    "right_knee": {
+      "max_flexion_deg": 74.3,
+      "min_flexion_deg": -1.6,
+      "rom_deg": 75.9
+    },
+    "left_ankle": {
+      "max_flexion_deg": 21.3,
+      "min_flexion_deg": -30.0,
+      "rom_deg": 51.3
+    },
+    "right_ankle": {
+      "max_flexion_deg": 19.2,
+      "min_flexion_deg": -10.0,
+      "rom_deg": 29.2
+    }
+  },
+  "segment_angles": {
+    "trunk_tilt_deg": {
+      "mean": 49.6,
+      "max": 52.8
+    },
+    "pelvis_tilt_deg": {
+      "mean": -40.6,
+      "max": -37.0
+    }
+  },
+  "trajectory_analysis": {
+    "toe_trajectory": "gait_analysis_results\\trajectory.csv",
+    "com_trajectory": "gait_analysis_results\\trajectory.csv"
+  },
+  "raw_keypoints": {
+    "csv_path": "gait_analysis_results\\keypoints.csv"
+  },
+  "output_files": {
+    "visualized_video": "output/result.mp4",
+    "angle_curve_png": "output/knee_angle.png",
+    "pose_csv": "gait_analysis_results\\keypoints.csv"
+  }
+}

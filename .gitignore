@@ -179,6 +179,9 @@ DocProject/Help/html
 # Click-Once directory
 publish/
 
+# Installer packages
+BTFX/Installer/Output/
+
 # Publish Web Output
 *.[Pp]ublish.xml
 *.azurePubxml
