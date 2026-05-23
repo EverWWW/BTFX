@@ -26,6 +26,8 @@ public class UserEditViewModel : ObservableObject
 
     public bool IsNewUser => _originalUser == null;
 
+    public string DialogTitle => IsNewUser ? "添加用户" : "编辑用户";
+
     private string _username = string.Empty;
     public string Username
     {
@@ -243,13 +245,13 @@ public class UserEditViewModel : ObservableObject
 
         if (string.IsNullOrWhiteSpace(Username))
         {
-            ValidationError = "账号不能为空";
+            ValidationError = "登录账号不能为空";
             return false;
         }
 
         if (Username.Length < 3 || Username.Length > 20)
         {
-            ValidationError = "账号长度应在3-20位之间";
+            ValidationError = "登录账号长度应在3-20位之间";
             return false;
         }
 
@@ -262,8 +264,23 @@ public class UserEditViewModel : ObservableObject
 
         if (string.IsNullOrWhiteSpace(Name))
         {
-            ValidationError = "姓名不能为空";
+            ValidationError = "用户姓名不能为空";
             return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(Phone))
+        {
+            if (Phone.Length > BTFX.Common.Constants.PHONE_MAX_LENGTH)
+            {
+                ValidationError = $"电话长度不能超过{BTFX.Common.Constants.PHONE_MAX_LENGTH}位";
+                return false;
+            }
+
+            if (!Phone.All(char.IsDigit))
+            {
+                ValidationError = "电话只能输入数字";
+                return false;
+            }
         }
 
         if (SelectedRole == null)
@@ -283,6 +300,18 @@ public class UserEditViewModel : ObservableObject
             if (Password.Length < 6)
             {
                 ValidationError = "密码长度至少为6位";
+                return false;
+            }
+
+            if (Password.Length > BTFX.Common.Constants.PASSWORD_MAX_LENGTH)
+            {
+                ValidationError = $"密码长度不能超过{BTFX.Common.Constants.PASSWORD_MAX_LENGTH}位";
+                return false;
+            }
+
+            if (!Password.All(char.IsDigit))
+            {
+                ValidationError = "密码由纯数字组成";
                 return false;
             }
 

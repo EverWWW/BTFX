@@ -105,6 +105,30 @@ public class AnalysisResult
     public double? AnalysisDurationSeconds { get; set; }
 
     /// <summary>
+    /// 分析结果包路径。
+    /// </summary>
+    [SugarColumn(Length = 500, IsNullable = true)]
+    public string? PackagePath { get; set; }
+
+    /// <summary>
+    /// 结果包创建时间。
+    /// </summary>
+    [SugarColumn(IsNullable = true)]
+    public DateTime? PackageCreatedAt { get; set; }
+
+    /// <summary>
+    /// 结果包校验状态。
+    /// </summary>
+    [SugarColumn(Length = 30, IsNullable = true)]
+    public string? PackageValidationStatus { get; set; }
+
+    /// <summary>
+    /// 结果包校验消息。
+    /// </summary>
+    [SugarColumn(Length = 500, IsNullable = true)]
+    public string? PackageValidationMessage { get; set; }
+
+    /// <summary>
     /// 创建时间
     /// </summary>
     [SugarColumn(IsNullable = false)]

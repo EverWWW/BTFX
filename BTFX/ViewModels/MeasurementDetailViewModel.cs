@@ -73,10 +73,10 @@ public partial class MeasurementDetailViewModel : ObservableObject
     public string Status => Record?.Status switch
     {
         MeasurementStatus.Pending => "待处理",
-        MeasurementStatus.InProgress => "进行中",
+        MeasurementStatus.InProgress => "分析中",
         MeasurementStatus.Completed => "已完成",
-        MeasurementStatus.Cancelled => "已取消",
-        MeasurementStatus.Failed => "测量失败",
+        MeasurementStatus.Cancelled => "待处理",
+        MeasurementStatus.Failed => "分析失败",
         _ => "--"
     };
 
@@ -88,7 +88,7 @@ public partial class MeasurementDetailViewModel : ObservableObject
         MeasurementStatus.Pending => "#FF9800",
         MeasurementStatus.InProgress => "#2196F3",
         MeasurementStatus.Completed => "#4CAF50",
-        MeasurementStatus.Cancelled => "#9E9E9E",
+        MeasurementStatus.Cancelled => "#FF9800",
         MeasurementStatus.Failed => "#F44336",
         _ => "#9E9E9E"
     };

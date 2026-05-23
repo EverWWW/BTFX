@@ -23,6 +23,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
 {
     private readonly IGaitAnalysisService _analysisService;
     private readonly IMeasurementService _measurementService;
+    private readonly IAnalysisPackageService _analysisPackageService;
     private readonly ISettingsService _settingsService;
     private readonly ILocalizationService _localizationService;
     private readonly ILogHelper? _logHelper;
@@ -66,7 +67,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(ToggleParamsViewCommand))]
     [NotifyCanExecuteChangedFor(nameof(ViewReportCommand))]
     [NotifyCanExecuteChangedFor(nameof(GenerateReportCommand))]
-    [NotifyCanExecuteChangedFor(nameof(RerunTemporaryAnalysisCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RerunAnalysisCommand))]
     [NotifyCanExecuteChangedFor(nameof(ViewLogCommand))]
     [NotifyCanExecuteChangedFor(nameof(GoToStep2Command))]
     [NotifyCanExecuteChangedFor(nameof(ReturnCoverCommand))]
@@ -499,12 +500,14 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     public Step4AnalyzeViewModel(
         IGaitAnalysisService analysisService,
         IMeasurementService measurementService,
+        IAnalysisPackageService analysisPackageService,
         ISettingsService settingsService,
         ILocalizationService localizationService,
         ILogHelper? logHelper = null)
     {
         _analysisService = analysisService;
         _measurementService = measurementService;
+        _analysisPackageService = analysisPackageService;
         _settingsService = settingsService;
         _localizationService = localizationService;
         _logHelper = logHelper;
@@ -575,19 +578,19 @@ public partial class Step4AnalyzeViewModel : ObservableObject
             Icon = "ScaleBathroom"
         });
 
-        // 相机距离
+        // 相机距离。未配置时算法配置使用 TOML 默认距离，后续可在设置中补充精确值。
         var hasCameraDistance = settings.Algorithm.SideCameraDistance > 0;
         items.Add(new PrerequisiteItem
         {
             Name = "相机距离已配置",
             IsMet = hasCameraDistance,
-            IsRequired = true,
+            IsRequired = false,
             Icon = "CameraOutline"
         });
 
         // 算法程序
-        var hasExe = !string.IsNullOrEmpty(settings.Algorithm.ExePath)
-                     && File.Exists(settings.Algorithm.ExePath);
+        var exePath = ResolveAlgorithmExePath(settings.Algorithm.ExePath);
+        var hasExe = !string.IsNullOrEmpty(exePath) && File.Exists(exePath);
         items.Add(new PrerequisiteItem
         {
             Name = "算法程序可用",
@@ -600,6 +603,114 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         AllPrerequisitesMet = items.Where(i => i.IsRequired).All(i => i.IsMet);
         OnPropertyChanged(nameof(PatientHeightDisplay));
         OnPropertyChanged(nameof(PatientWeightDisplay));
+    }
+
+    public async Task RestoreExistingMeasurementAsync(
+        MeasurementRecord record,
+        Patient? patient,
+        MeasurementResumeDecision decision)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+        ArgumentNullException.ThrowIfNull(decision);
+
+        StopElapsedTimer(updateElapsedTime: false);
+        _analysisCts?.Cancel();
+        _analysisCts?.Dispose();
+        _analysisCts = null;
+        PlayStateChanged?.Invoke(this, false);
+
+        CurrentMeasurement = record;
+        CurrentPatient = patient;
+        TaskLogs.Clear();
+        AddLog(decision.Message);
+        RefreshPrerequisites();
+
+        ErrorCode = null;
+        ErrorDescription = null;
+        ErrorSuggestion = null;
+        IsPlaying = false;
+        HasVideoError = false;
+        VideoErrorMessage = null;
+
+        if (record.Status == MeasurementStatus.Completed)
+        {
+            var latestResult = await _analysisService.GetLatestAnalysisResultAsync(record.Id);
+            if (latestResult is null)
+            {
+                AnalysisResult = null;
+                AnalysisState = AnalysisState.Failed;
+                Progress = 0;
+                CurrentStage = "结果缺失";
+                StatusMessage = "未找到该测量的分析结果，请重新分析。";
+                ErrorDescription = StatusMessage;
+                ErrorSuggestion = "点击重新分析后重新生成结果。";
+                AddLog(StatusMessage);
+                return;
+            }
+
+            AnalysisResult = latestResult;
+            PopulateResultDisplayData(latestResult);
+            AnnotatedVideoPath = !string.IsNullOrWhiteSpace(latestResult.AnnotatedVideoPath) && File.Exists(latestResult.AnnotatedVideoPath)
+                ? latestResult.AnnotatedVideoPath
+                : null;
+            HasVideoError = AnnotatedVideoPath is null;
+            VideoErrorMessage = HasVideoError ? "标注视频文件缺失，仅展示参数数据" : null;
+            IsShowingParams = HasVideoError;
+            LoadJointAngleDataAndBuildPlots(latestResult);
+            HasChartData = HipAnglePlotModel is not null;
+            Progress = 100;
+            CurrentStage = "分析完成";
+            StatusMessage = "已加载历史分析结果。";
+            AnalysisState = AnalysisState.Previewing;
+            AddLog(StatusMessage);
+            return;
+        }
+
+        if (record.Status == MeasurementStatus.InProgress && !decision.RequiresReanalysis)
+        {
+            _analysisStartTime = DateTime.Now;
+            StartElapsedTimer();
+            AnalysisResult = null;
+            Progress = Math.Max(Progress, 5);
+            CurrentStage = "分析中";
+            StatusMessage = "后台分析任务正在执行。";
+            AnalysisState = AnalysisState.Running;
+            return;
+        }
+
+        if (decision.RequiresReanalysis)
+        {
+            AnalysisResult = null;
+            Progress = 0;
+            CurrentStage = "等待重新分析";
+            StatusMessage = decision.Message;
+            ErrorDescription = decision.Message;
+            ErrorSuggestion = "请确认视频文件和算法配置后重新分析。";
+            AnalysisState = AnalysisState.Failed;
+            return;
+        }
+
+        AnalysisResult = null;
+        Progress = 0;
+        CurrentStage = "等待分析";
+        StatusMessage = decision.Message;
+        AnalysisState = AnalysisState.Ready;
+    }
+
+    private static string ResolveAlgorithmExePath(string? configuredPath)
+    {
+        var exePath = string.IsNullOrWhiteSpace(configuredPath)
+            ? Path.Combine(Constants.ALGORITHM_DIRECTORY, Constants.ALGORITHM_EXE_FILENAME)
+            : configuredPath;
+
+        if (string.Equals(exePath, Path.Combine("Algorithm", Constants.ALGORITHM_EXE_FILENAME), StringComparison.OrdinalIgnoreCase))
+        {
+            exePath = Path.Combine(Constants.ALGORITHM_DIRECTORY, Constants.ALGORITHM_EXE_FILENAME);
+        }
+
+        return Path.IsPathRooted(exePath)
+            ? exePath
+            : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exePath);
     }
 
     #region 命令
@@ -626,6 +737,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
             TaskLogs.Clear();
             IsLogExpanded = true;
             AddLog("开始分析任务");
+            await UpdateCurrentMeasurementStatusAsync(MeasurementStatus.InProgress, "测量状态已更新为分析中");
 
             // 启动计时
             _analysisStartTime = DateTime.Now;
@@ -665,20 +777,21 @@ public partial class Step4AnalyzeViewModel : ObservableObject
             }
             else
             {
-                OnAnalysisFailed(result.ErrorCode, result.ErrorMessage);
+                await OnAnalysisFailedAsync(result.ErrorCode, result.ErrorMessage);
             }
         }
         catch (OperationCanceledException)
         {
             StopElapsedTimer();
             AnalysisState = AnalysisState.Ready;
+            await UpdateCurrentMeasurementStatusAsync(MeasurementStatus.Pending, "分析已取消，测量状态已恢复为待处理");
             AddLog("分析已取消");
             _logHelper?.Information("分析已取消");
         }
         catch (Exception ex)
         {
             StopElapsedTimer();
-            OnAnalysisFailed(null, ex.Message);
+            await OnAnalysisFailedAsync(null, ex.Message);
             _logHelper?.Error("分析过程异常", ex);
         }
         finally
@@ -727,6 +840,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
             HasVideoError = false;
             VideoErrorMessage = null;
             AddLog("启动临时测试分析流程");
+            await UpdateCurrentMeasurementStatusAsync(MeasurementStatus.InProgress, "测量状态已更新为分析中");
 
             _analysisStartTime = DateTime.Now;
             StartElapsedTimer();
@@ -759,12 +873,13 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         {
             StopElapsedTimer();
             AnalysisState = AnalysisState.Ready;
+            await UpdateCurrentMeasurementStatusAsync(MeasurementStatus.Pending, "临时分析已取消，测量状态已恢复为待处理");
             AddLog("临时分析已取消");
         }
         catch (Exception ex)
         {
             StopElapsedTimer();
-            OnAnalysisFailed(null, ex.Message);
+            await OnAnalysisFailedAsync(null, ex.Message);
             _logHelper?.Error("临时分析过程异常", ex);
         }
         finally
@@ -799,15 +914,15 @@ public partial class Step4AnalyzeViewModel : ObservableObject
 
     private bool CanRetryAnalyze() => IsPreviewing || IsFailed;
 
-    [RelayCommand(CanExecute = nameof(CanRerunTemporaryAnalysis))]
-    private async Task RerunTemporaryAnalysisAsync()
+    [RelayCommand(CanExecute = nameof(CanRerunAnalysis))]
+    private async Task RerunAnalysisAsync()
     {
         ResetToReady();
         RefreshPrerequisites();
-        await RunTemporaryAnalysisAsync();
+        await StartAnalyzeAsync();
     }
 
-    private bool CanRerunTemporaryAnalysis() => !IsRunning;
+    private bool CanRerunAnalysis() => !IsRunning;
 
     [RelayCommand(CanExecute = nameof(CanReturnCover))]
     private void ReturnCover()
@@ -1000,23 +1115,29 @@ public partial class Step4AnalyzeViewModel : ObservableObject
                 result.Id = savedId;
                 AddLog($"分析结果已保存 (ID: {savedId})");
 
+                AddLog("正在生成分析结果包...");
+                var packageResult = await _analysisPackageService.CreatePackageAsync(result, CurrentMeasurement);
+                AddLog(packageResult.Success
+                    ? $"分析结果包已生成: {Path.GetFileName(packageResult.PackagePath)}"
+                    : $"⚠ {packageResult.Message}");
+
                 // 更新测量记录状态为已完成
                 if (CurrentMeasurement is not null)
                 {
-                    await _measurementService.UpdateMeasurementStatusAsync(
-                        CurrentMeasurement.Id, MeasurementStatus.Completed);
-                    AddLog("测量状态已更新为已完成");
+                    await UpdateCurrentMeasurementStatusAsync(MeasurementStatus.Completed, "测量状态已更新为已完成");
                 }
             }
             else
             {
                 AddLog("⚠ 分析结果保存失败，数据仅在内存中");
+                await UpdateCurrentMeasurementStatusAsync(MeasurementStatus.Failed, "分析结果保存失败，测量状态已更新为分析失败");
                 _logHelper?.Warning("分析结果入库失败");
             }
         }
         catch (Exception ex)
         {
             AddLog($"⚠ 保存分析结果时出错: {ex.Message}");
+            await UpdateCurrentMeasurementStatusAsync(MeasurementStatus.Failed, "分析结果保存异常，测量状态已更新为分析失败");
             _logHelper?.Error("分析结果入库异常", ex);
         }
 
@@ -1061,13 +1182,41 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     /// <summary>
     /// 分析失败处理
     /// </summary>
-    private void OnAnalysisFailed(int? errorCode, string? errorMessage)
+    private async Task OnAnalysisFailedAsync(int? errorCode, string? errorMessage)
     {
         ErrorCode = errorCode;
         ErrorDescription = errorMessage ?? "未知错误";
         ErrorSuggestion = GetErrorSuggestion(errorCode);
         AnalysisState = AnalysisState.Failed;
+        await UpdateCurrentMeasurementStatusAsync(MeasurementStatus.Failed, "测量状态已更新为分析失败");
         AddLog($"分析失败: [{errorCode}] {errorMessage}");
+    }
+
+    private async Task UpdateCurrentMeasurementStatusAsync(MeasurementStatus status, string logMessage)
+    {
+        if (CurrentMeasurement is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var success = await _measurementService.UpdateMeasurementStatusAsync(CurrentMeasurement.Id, status);
+            if (success)
+            {
+                CurrentMeasurement.Status = status;
+                AddLog(logMessage);
+            }
+            else
+            {
+                AddLog("⚠ 测量状态更新失败");
+            }
+        }
+        catch (Exception ex)
+        {
+            AddLog($"⚠ 测量状态更新异常: {ex.Message}");
+            _logHelper?.Error($"测量状态更新异常: MeasurementId={CurrentMeasurement.Id}, Status={status}", ex);
+        }
     }
 
     private AnalysisResult BuildTemporaryAnalysisResult()

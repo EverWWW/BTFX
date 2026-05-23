@@ -396,6 +396,11 @@ public partial class MeasurementViewModel : ObservableObject
         {
             CurrentMeasurement.Patient ??= CurrentPatient;
 
+            if (!await ValidateCurrentAnalysisPackageAsync())
+            {
+                return;
+            }
+
             var viewModel = App.Services.GetRequiredService<GaitAnalysisDetailViewModel>();
             await viewModel.InitializeAsync(CurrentMeasurement);
 
@@ -430,6 +435,11 @@ public partial class MeasurementViewModel : ObservableObject
             CurrentMeasurement.Patient ??= CurrentPatient;
 
             var analysisResult = AnalyzeViewModel.AnalysisResult;
+            if (!await ValidateCurrentAnalysisPackageAsync())
+            {
+                return;
+            }
+
             var operatorId = _sessionService.CurrentUser?.Id ?? CurrentMeasurement.OperatorId;
             var reportService = App.Services.GetRequiredService<IReportService>();
             var report = await reportService.GetOrCreateDraftReportAsync(CurrentMeasurement.Id, operatorId);
@@ -460,7 +470,10 @@ public partial class MeasurementViewModel : ObservableObject
             await reportService.SaveDraftSnapshotAsync(report);
 
             var previewViewModel = App.Services.GetRequiredService<ReportPreviewDialogViewModel>();
-            var previewDocument = ReportPreviewHelper.GenerateReportDocument(report, "步态智能分析系统");
+            var settingsService = App.Services.GetService<ISettingsService>();
+            var unitName = settingsService?.CurrentSettings?.Unit?.Name ?? BTFX.Common.Constants.APP_DISPLAY_NAME;
+            var logoPath = settingsService?.CurrentSettings?.Unit?.LogoPath;
+            var previewDocument = ReportPreviewHelper.GenerateReportDocument(report, unitName, logoPath);
             await previewViewModel.InitializeAsync(report, previewDocument);
 
             var dialog = new Views.Dialogs.ReportPreviewDialog
@@ -476,6 +489,34 @@ public partial class MeasurementViewModel : ObservableObject
             _logHelper?.Error($"从测量分析步骤打开报告预览失败：MeasurementId={CurrentMeasurement.Id}", ex);
             MessageBox.Show($"打开报告预览失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    private async Task<bool> ValidateCurrentAnalysisPackageAsync()
+    {
+        var analysisResult = AnalyzeViewModel.AnalysisResult;
+        if (analysisResult is null)
+        {
+            return true;
+        }
+
+        var packageService = App.Services.GetService<IAnalysisPackageService>();
+        if (packageService is null)
+        {
+            return true;
+        }
+
+        var validation = await packageService.ValidatePackageAsync(analysisResult);
+        if (validation.IsValid)
+        {
+            return true;
+        }
+
+        MessageBox.Show(
+            $"{validation.Message}\n请重新分析后再继续。",
+            "结果包校验失败",
+            MessageBoxButton.OK,
+            MessageBoxImage.Warning);
+        return false;
     }
 
     /// <summary>
@@ -602,7 +643,7 @@ public partial class MeasurementViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 从回放检查进入临时分析流程。
+    /// 从回放检查进入分析流程。
     /// </summary>
     [RelayCommand]
     private async Task BeginAnalyzeAsync()
@@ -614,7 +655,7 @@ public partial class MeasurementViewModel : ObservableObject
         }
 
         GoToStep(3);
-        await AnalyzeViewModel.RunTemporaryAnalysisAsync();
+        await AnalyzeViewModel.StartAnalyzeCommand.ExecuteAsync(null);
     }
 
     /// <summary>
@@ -625,6 +666,81 @@ public partial class MeasurementViewModel : ObservableObject
         AnalyzeViewModel.CurrentMeasurement = CurrentMeasurement;
         AnalyzeViewModel.CurrentPatient = CurrentPatient;
         AnalyzeViewModel.RefreshPrerequisites();
+    }
+
+    public async Task LoadExistingMeasurementAsync(MeasurementRecord record, MeasurementResumeDecision decision)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+        ArgumentNullException.ThrowIfNull(decision);
+
+        if (record.Patient is not null && _sessionService.CurrentPatient?.Id != record.Patient.Id)
+        {
+            _sessionService.SetCurrentPatient(record.Patient);
+        }
+
+        CurrentMeasurement = record;
+        HasMeasurementRecord = true;
+
+        MeasurementName = string.IsNullOrWhiteSpace(record.MeasurementName)
+            ? $"测量_{record.MeasurementDate:yyyyMMdd_HHmmss}"
+            : record.MeasurementName;
+        SelectedMeasurementType = record.MeasurementType;
+        Remark = record.Remark ?? string.Empty;
+        SelectedVideoSpec = record.VideoSpec;
+        WalkwayLength = record.WalkwayLength > 0 ? record.WalkwayLength : 6.0;
+        SelectedVideoImportMode = record.VideoImportMode;
+        SelectedImportStrategy = record.ImportStrategy;
+
+        FrontVideoPath = record.FrontVideoPath;
+        SideVideoPath = record.SideVideoPath;
+        HasFrontVideo = !string.IsNullOrWhiteSpace(FrontVideoPath);
+        HasSideVideo = !string.IsNullOrWhiteSpace(SideVideoPath);
+        SelectedAnalysisMode = HasFrontVideo && HasSideVideo
+            ? AnalysisVideoMode.Dual
+            : AnalysisVideoMode.Single;
+
+        FrontVideoInfo.Clear();
+        SideVideoInfo.Clear();
+
+        var loadTasks = new List<Task>();
+        if (!string.IsNullOrWhiteSpace(SideVideoPath))
+        {
+            loadTasks.Add(LoadVideoInfoAsync(SideVideoInfo, SideVideoPath));
+        }
+
+        if (!string.IsNullOrWhiteSpace(FrontVideoPath))
+        {
+            loadTasks.Add(LoadVideoInfoAsync(FrontVideoInfo, FrontVideoPath));
+        }
+
+        if (loadTasks.Count > 0)
+        {
+            await Task.WhenAll(loadTasks);
+        }
+
+        RefreshVideoValidationState();
+
+        var targetStep = Math.Clamp(decision.TargetStep, 1, 3);
+        if (targetStep == 2 && !CanGoToStep2)
+        {
+            targetStep = 1;
+        }
+
+        CurrentStep = targetStep;
+
+        if (CurrentStep == 3)
+        {
+            await AnalyzeViewModel.RestoreExistingMeasurementAsync(record, CurrentPatient, decision);
+        }
+        else
+        {
+            SyncContextToAnalyzeViewModel();
+        }
+
+        if (!string.IsNullOrWhiteSpace(decision.Message))
+        {
+            _logHelper?.Information($"恢复测量流程：MeasurementId={record.Id}, Step={CurrentStep}, Message={decision.Message}");
+        }
     }
 
     /// <summary>
@@ -873,7 +989,7 @@ public partial class MeasurementViewModel : ObservableObject
         {
             SelectedVideoImportMode = VideoImportMode.Capture;
 
-            var dialog = App.Services.GetRequiredService<BTFX.Testing.CameraRecordingTestDialog>();
+            var dialog = App.Services.GetRequiredService<BTFX.Views.Dialogs.CameraCaptureDialog>();
             dialog.Initialize(IsDualVideoMode
                 ? BTFX.Models.Camera.CameraCaptureMode.Dual
                 : BTFX.Models.Camera.CameraCaptureMode.Single);

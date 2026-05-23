@@ -29,6 +29,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     private readonly HashSet<int> _selectedReportIds = new();
     private List<Report> _filteredReports = new();
     private bool _isUpdatingSelection;
+    private int _previewLoadVersion;
     private const int MaxReportPageSize = 7;
     private const double ReportRowHeight = 60d;
     private const double ReportRowSpacing = 8d;
@@ -611,7 +612,101 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
         try
         {
-            var fullReport = await _reportService.GetReportWithAnalysisDataAsync(item.Report.Id);
+            await OpenReportPreviewAsync(item.Report.Id);
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"打开报告预览弹窗失败：ReportId={item.Report.Id}", ex);
+            MessageBox.Show($"打开报告预览失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// 单行导出报告命令。
+    /// </summary>
+    [RelayCommand]
+    private async Task ExportReportAsync(ReportItem? item)
+    {
+        if (item == null || _disposed || App.IsShuttingDown) return;
+        SelectedReport = item;
+        await ExportReportPdfAsync(item.Report.Id);
+    }
+
+    /// <summary>
+    /// 单行打印报告命令。
+    /// </summary>
+    [RelayCommand]
+    private async Task PrintReportItemAsync(ReportItem? item)
+    {
+        if (item == null || _disposed || App.IsShuttingDown) return;
+        SelectedReport = item;
+        await PrintReportByIdAsync(item.Report.Id);
+    }
+
+    [RelayCommand]
+    private async Task ResumeReportAsync(ReportItem? item)
+    {
+        if (item == null) return;
+        SelectedReport = item;
+
+        try
+        {
+            var report = item.Report;
+            if (report.Status is ReportStatus.Draft or ReportStatus.Outdated)
+            {
+                if (!CanGenerateReport)
+                {
+                    await ShowNoticeDialogAsync("提示", "当前账号没有生成报告权限。");
+                    return;
+                }
+
+                var analysisService = App.Services?.GetService(typeof(IGaitAnalysisService)) as IGaitAnalysisService;
+                var latestResult = analysisService is null
+                    ? null
+                    : await analysisService.GetLatestAnalysisResultAsync(report.MeasurementId);
+                if (latestResult?.Success != true)
+                {
+                    await ShowNoticeDialogAsync("提示", "该测量还没有可用的分析结果，请先完成测量分析。");
+                    return;
+                }
+
+                var regenerated = await _reportService.GenerateReportAsync(
+                    report.MeasurementId,
+                    _sessionService.CurrentUser?.Id ?? report.CreatedBy);
+
+                if (regenerated is null)
+                {
+                    await ShowNoticeDialogAsync("提示", "报告生成失败，请确认该测量已有可用分析结果。");
+                    return;
+                }
+
+                await LoadReportsAsync();
+                var refreshedItem = Reports.FirstOrDefault(r => r.Report.Id == regenerated.Id);
+                if (refreshedItem is not null)
+                {
+                    SelectedReport = refreshedItem;
+                    item = refreshedItem;
+                }
+
+                _logHelper?.Information($"继续生成报告：ID={regenerated.Id}, MeasurementId={regenerated.MeasurementId}");
+                await OpenReportPreviewAsync(regenerated.Id);
+                return;
+            }
+
+            await OpenReportPreviewAsync(report.Id);
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"继续处理报告失败：ReportId={item.Report.Id}", ex);
+            MessageBox.Show($"继续处理报告失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async Task OpenReportPreviewAsync(int reportId)
+    {
+        try
+        {
+            var fullReport = await _reportService.GetReportWithAnalysisDataAsync(reportId);
             if (fullReport is null)
             {
                 MessageBox.Show("未找到报告数据，无法打开预览。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -619,7 +714,10 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             }
 
             var previewViewModel = App.Services.GetRequiredService<ReportPreviewDialogViewModel>();
-            var previewDocument = ReportPreviewHelper.GenerateReportDocument(fullReport, "步态智能分析系统");
+            var settingsService = App.Services.GetService<ISettingsService>();
+            var unitName = settingsService?.CurrentSettings?.Unit?.Name ?? Constants.APP_DISPLAY_NAME;
+            var logoPath = settingsService?.CurrentSettings?.Unit?.LogoPath;
+            var previewDocument = ReportPreviewHelper.GenerateReportDocument(fullReport, unitName, logoPath);
             await previewViewModel.InitializeAsync(fullReport, previewDocument);
 
             await DialogHost.Show(
@@ -631,8 +729,8 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            _logHelper?.Error($"打开报告预览弹窗失败：ReportId={item.Report.Id}", ex);
-            MessageBox.Show($"打开报告预览失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            _logHelper?.Error($"打开报告预览弹窗失败：ReportId={reportId}", ex);
+            throw;
         }
     }
 
@@ -722,7 +820,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     /// <summary>
     /// 显示确认对话框。
     /// </summary>
-    private static async Task<bool> ShowConfirmDialogAsync(string title, string message)
+    private static async Task<bool> ShowConfirmDialogAsync(string title, string message, string iconKind = "HelpCircleOutline")
     {
         var result = await DialogHost.Show(
             new Views.Dialogs.ConfirmDialog
@@ -733,7 +831,8 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                     Message = message,
                     ConfirmText = "确定",
                     CancelText = "取消",
-                    IsCancelVisible = true
+                    IsCancelVisible = true,
+                    IconKind = iconKind
                 }
             },
             "RootDialog").ConfigureAwait(true);
@@ -754,7 +853,8 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                     Title = title,
                     Message = message,
                     ConfirmText = "确定",
-                    IsCancelVisible = false
+                    IsCancelVisible = false,
+                    IconKind = "InformationOutline"
                 }
             },
             "RootDialog");
@@ -803,52 +903,9 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task PrintReportAsync()
     {
-            if (_currentPreviewReport == null || _disposed || App.IsShuttingDown) return;
-
-            try
-            {
-                TryInvokeOnUI(() => IsLoading = true);
-
-                // 调用打印服务
-                var success = await _reportService.PrintReportAsync(_currentPreviewReport.Id);
-
-                if (_disposed || App.IsShuttingDown) return;
-
-                if (success)
-                {
-                    _logHelper?.Information($"打印报告成功：ID={_currentPreviewReport.Id}");
-                    await LoadReportsAsync();
-
-                    TryInvokeOnUI(() =>
-                    {
-                        if (_disposed || App.IsShuttingDown) return;
-                        // 刷新当前预览
-                        if (SelectedReport != null)
-                        {
-                            _ = LoadReportPreviewAsync(SelectedReport.Report);
-                        }
-                    });
-                }
-                else if (!App.IsShuttingDown)
-                {
-                    System.Windows.MessageBox.Show("打印失败或已取消", "提示",
-                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
-                }
-            }
-            catch (Exception ex)
-            {
-                if (!_disposed && !App.IsShuttingDown)
-                {
-                    _logHelper?.Error($"打印报告失败：ID={_currentPreviewReport?.Id}", ex);
-                    System.Windows.MessageBox.Show($"打印失败：{ex.Message}", "错误",
-                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                }
-            }
-            finally
-            {
-                TryInvokeOnUI(() => IsLoading = false);
-            }
-        }
+        if (_currentPreviewReport == null || _disposed || App.IsShuttingDown) return;
+        await PrintReportByIdAsync(_currentPreviewReport.Id, refreshPreview: true);
+    }
 
     /// <summary>
     /// 导出PDF命令
@@ -857,14 +914,27 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     private async Task ExportPdfAsync()
     {
         if (_currentPreviewReport == null || !CanExportReport || _disposed || App.IsShuttingDown) return;
+        await ExportReportPdfAsync(_currentPreviewReport.Id);
+    }
+
+    private async Task ExportReportPdfAsync(int reportId)
+    {
+        if (!CanExportReport || _disposed || App.IsShuttingDown) return;
 
         try
         {
+            var fullReport = await _reportService.GetReportWithAnalysisDataAsync(reportId);
+            if (!HasUsableReportDataSource(fullReport))
+            {
+                await ShowNoticeDialogAsync("提示", "该报告关联的测量或分析结果不可用，无法导出。");
+                return;
+            }
+
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
                 Title = "导出报告",
                 Filter = "PDF文件 (*.pdf)|*.pdf",
-                FileName = $"报告_{_currentPreviewReport.ReportNumber}"
+                FileName = $"报告_{fullReport!.ReportNumber}"
             };
 
             if (dialog.ShowDialog() == true)
@@ -876,8 +946,10 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                 if (settingsService != null)
                 {
                     // 异步导出在后台线程防止阻塞UI
-                    var report = _currentPreviewReport;
+                    var report = fullReport;
                     var fileName = dialog.FileName;
+                    var originalStatus = report.Status;
+                    report.Status = ReportStatus.Completed;
 
                     var success = await Task.Run(() =>
                     {
@@ -887,6 +959,17 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                     });
 
                     if (_disposed || App.IsShuttingDown) return;
+
+                    if (success)
+                    {
+                        report.PdfFilePath = fileName;
+                        await _reportService.UpdateReportAsync(report);
+                        await LoadReportsAsync();
+                    }
+                    else
+                    {
+                        report.Status = originalStatus;
+                    }
 
                     TryInvokeOnUI(() =>
                     {
@@ -923,8 +1006,62 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         {
             if (!_disposed && !App.IsShuttingDown)
             {
-                _logHelper?.Error($"导出报告PDF失败：ID={_currentPreviewReport?.Id}", ex);
+                _logHelper?.Error($"导出报告PDF失败：ID={reportId}", ex);
                 System.Windows.MessageBox.Show($"导出失败：{ex.Message}", "错误",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+        }
+        finally
+        {
+            TryInvokeOnUI(() => IsLoading = false);
+        }
+    }
+
+    private async Task PrintReportByIdAsync(int reportId, bool refreshPreview = false)
+    {
+        if (_disposed || App.IsShuttingDown) return;
+
+        try
+        {
+            var fullReport = await _reportService.GetReportWithAnalysisDataAsync(reportId);
+            if (!HasUsableReportDataSource(fullReport))
+            {
+                await ShowNoticeDialogAsync("提示", "该报告关联的测量或分析结果不可用，无法打印。");
+                return;
+            }
+
+            TryInvokeOnUI(() => IsLoading = true);
+
+            var success = await _reportService.PrintReportAsync(reportId);
+
+            if (_disposed || App.IsShuttingDown) return;
+
+            if (success)
+            {
+                _logHelper?.Information($"打印报告成功：ID={reportId}");
+                await LoadReportsAsync();
+
+                if (refreshPreview && SelectedReport != null)
+                {
+                    TryInvokeOnUI(() =>
+                    {
+                        if (_disposed || App.IsShuttingDown) return;
+                        _ = LoadReportPreviewAsync(SelectedReport.Report);
+                    });
+                }
+            }
+            else if (!App.IsShuttingDown)
+            {
+                System.Windows.MessageBox.Show("打印失败或已取消", "提示",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            if (!_disposed && !App.IsShuttingDown)
+            {
+                _logHelper?.Error($"打印报告失败：ID={reportId}", ex);
+                System.Windows.MessageBox.Show($"打印失败：{ex.Message}", "错误",
                     System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
@@ -942,13 +1079,12 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     {
         if (item == null || _disposed || App.IsShuttingDown) return;
 
-        var result = System.Windows.MessageBox.Show(
-            $"确定要删除报告 {item.Report.ReportNumber} 吗？此操作不可恢复！",
+        var result = await ShowConfirmDialogAsync(
             "确认删除",
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Warning);
+            $"确定要删除报告 {item.Report.ReportNumber} 吗？此操作不可恢复！",
+            "TrashCanOutline");
 
-        if (result != System.Windows.MessageBoxResult.Yes) return;
+        if (!result) return;
 
         try
         {
@@ -971,8 +1107,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
                 if (!App.IsShuttingDown)
                 {
-                    System.Windows.MessageBox.Show("删除成功！", "提示",
-                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    await ShowNoticeDialogAsync("提示", "删除成功！");
                 }
             }
         }
@@ -981,8 +1116,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             if (!_disposed && !App.IsShuttingDown)
             {
                 _logHelper?.Error($"删除报告失败：ID={item.Report.Id}", ex);
-                System.Windows.MessageBox.Show($"删除失败：{ex.Message}", "错误",
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                await ShowNoticeDialogAsync("错误", $"删除失败：{ex.Message}");
             }
         }
     }
@@ -1186,6 +1320,9 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                 ReportFilterPatientName,
                 ReportFilterStartDate,
                 ReportFilterEndDate);
+            var visibleReports = reports
+                .Where(HasUsableReportDataSource)
+                .ToList();
 
             if (_disposed || App.IsShuttingDown || _cancellationTokenSource.Token.IsCancellationRequested) return;
 
@@ -1194,7 +1331,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             {
                 if (_disposed) return;
 
-                _filteredReports = reports.ToList();
+                _filteredReports = visibleReports;
                 TotalRecords = _filteredReports.Count;
                 TotalPages = TotalRecords == 0 ? 0 : (int)Math.Ceiling(TotalRecords / (double)_reportPageSize);
 
@@ -1215,7 +1352,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                 }
             });
 
-            _logHelper?.Information($"加载报告列表：共{reports.Count}条");
+            _logHelper?.Information($"加载报告列表：共{visibleReports.Count}条，可用报告={visibleReports.Count}，原始记录={reports.Count}");
         }
         catch (OperationCanceledException)
         {
@@ -1232,6 +1369,15 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         {
             TryInvokeOnUI(() => IsLoading = false);
         }
+    }
+
+    /// <summary>
+    /// 报告列表只展示已有完整分析数据源的报告，避免旧草稿或孤立记录触发预览、导出、打印错误。
+    /// </summary>
+    private static bool HasUsableReportDataSource(Report? report)
+    {
+        return report?.MeasurementRecord?.Status == MeasurementStatus.Completed
+            && report.AnalysisResult?.Success == true;
     }
 
     /// <summary>
@@ -1484,6 +1630,49 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         }
     }
 
+    private async Task<bool> ValidateReportAnalysisPackageAsync(Report report)
+    {
+        if (report.AnalysisResult is null)
+        {
+            return true;
+        }
+
+        if (string.IsNullOrWhiteSpace(report.AnalysisResult.PackagePath))
+        {
+            return true;
+        }
+
+        if (!System.IO.File.Exists(report.AnalysisResult.PackagePath))
+        {
+            _logHelper?.Warning(
+                $"报告关联的结果包文件不存在，已跳过结果包校验: ReportId={report.Id}, AnalysisResultId={report.AnalysisResult.Id}, PackagePath={report.AnalysisResult.PackagePath}");
+            return true;
+        }
+
+        var packageService = App.Services?.GetService(typeof(IAnalysisPackageService)) as IAnalysisPackageService;
+        if (packageService is null)
+        {
+            return true;
+        }
+
+        var validation = await packageService.ValidatePackageAsync(report.AnalysisResult, _cancellationTokenSource.Token);
+        if (validation.IsValid)
+        {
+            return true;
+        }
+
+        TryInvokeOnUI(() =>
+        {
+            MessageBox.Show(
+                $"{validation.Message}\n请重新分析后再生成或查看报告。",
+                "结果包校验失败",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        });
+
+        return false;
+    }
+
     /// <summary>
     /// 加载报告预览
     /// </summary>
@@ -1492,15 +1681,20 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         // 如果应用正在关闭或已释放，不执行任何操作
         if (_disposed || App.IsShuttingDown) return;
 
+        var loadVersion = Interlocked.Increment(ref _previewLoadVersion);
+
         try
         {
-            TryInvokeOnUI(() => IsLoading = true);
-
-            // 重新加载报告（含分析数据）
-            var fullReport = await _reportService.GetReportWithAnalysisDataAsync(report.Id);
+            var fullReport = HasUsableReportDataSource(report)
+                ? report
+                : await _reportService.GetReportWithAnalysisDataAsync(report.Id);
             if (fullReport == null || _disposed || App.IsShuttingDown)
             {
-                TryInvokeOnUI(() => IsLoading = false);
+                return;
+            }
+
+            if (loadVersion != _previewLoadVersion)
+            {
                 return;
             }
 
@@ -1593,7 +1787,10 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             // 再次检查关闭状态
             if (_disposed || App.IsShuttingDown) return;
 
-            TryInvokeOnUI(() => PreviewContent = sb.ToString());
+            if (loadVersion == _previewLoadVersion)
+            {
+                TryInvokeOnUI(() => PreviewContent = sb.ToString());
+            }
         }
         catch (Exception ex)
         {
@@ -1601,10 +1798,6 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             {
                 _logHelper?.Error($"加载报告预览失败：ReportId={report.Id}", ex);
             }
-        }
-        finally
-        {
-            TryInvokeOnUI(() => IsLoading = false);
         }
     }
 
@@ -1615,6 +1808,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     {
         // 如果应用正在关闭或已释放，不执行任何操作
         if (_disposed || App.IsShuttingDown) return;
+        Interlocked.Increment(ref _previewLoadVersion);
 
         _currentPreviewReport = null;
         PreviewContent = string.Empty;
@@ -1671,8 +1865,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
     private static string BuildPreviewSummaryMessage(Report report, int sectionCount)
     {
-        var status = GetStatusText(report.Status);
-        return $"当前选中报告为{status}状态，已包含 {sectionCount} 个报告模块。点击“查看完整报告”可查看正式报告版式、执行打印或导出。";
+        return $"当前选中报告已包含 {sectionCount} 个报告模块。点击“查看完整报告”可查看正式报告版式、执行打印或导出。";
     }
 
     private static IReadOnlyList<string> BuildReportSectionTags(Report report)
@@ -1768,9 +1961,10 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         {
             return status switch
             {
-                ReportStatus.Draft => "草稿",
-                ReportStatus.Completed => "已完成",
-                ReportStatus.Printed => "已打印",
+                ReportStatus.Draft => "可查看",
+                ReportStatus.Completed => "可查看",
+                ReportStatus.Printed => "可查看",
+                ReportStatus.Outdated => "可查看",
                 _ => "未知"
             };
         }
@@ -1857,29 +2051,36 @@ public partial class ReportItem : ObservableObject
         ReportStatus.Draft => "待生成",
         ReportStatus.Completed => "已生成",
         ReportStatus.Printed => "已生成",
+        ReportStatus.Outdated => "需重新生成",
         _ => "待生成"
     };
 
     /// <summary>
     /// 状态图标
     /// </summary>
-    public string StatusIcon => Report.Status == ReportStatus.Draft
-        ? "/Resources/Images/Report/daishengcheng.png"
-        : "/Resources/Images/DataManagement/yiwancheng.png";
+    public string StatusIcon => Report.Status is ReportStatus.Completed or ReportStatus.Printed
+        ? "/Resources/Images/DataManagement/yiwancheng.png"
+        : "/Resources/Images/Report/daishengcheng.png";
 
     /// <summary>
     /// 状态背景
     /// </summary>
-    public string StatusBackground => Report.Status == ReportStatus.Draft
-        ? "#E1E1E1"
-        : "#E9F7E3";
+    public string StatusBackground => Report.Status switch
+    {
+        ReportStatus.Completed or ReportStatus.Printed => "#E9F7E3",
+        ReportStatus.Outdated => "#FDECEC",
+        _ => "#FDF4E6"
+    };
 
     /// <summary>
     /// 状态前景色
     /// </summary>
-    public string StatusForeground => Report.Status == ReportStatus.Draft
-        ? "#9E9E9E"
-        : "#44BE13";
+    public string StatusForeground => Report.Status switch
+    {
+        ReportStatus.Completed or ReportStatus.Printed => "#44BE13",
+        ReportStatus.Outdated => "#E4004A",
+        _ => "#FF932D"
+    };
 
     /// <summary>
     /// 详情提示
@@ -1887,13 +2088,29 @@ public partial class ReportItem : ObservableObject
     public string DetailHint => $"查看 {PatientName} 的报告详情";
 
     /// <summary>
+    /// 导出提示
+    /// </summary>
+    public string ExportHint => $"导出 {PatientName} 的报告";
+
+    /// <summary>
+    /// 打印提示
+    /// </summary>
+    public string PrintHint => $"打印 {PatientName} 的报告";
+
+    public string PrimaryActionText => Report.Status switch
+    {
+        _ => "查看报告"
+    };
+
+    /// <summary>
     /// 状态颜色
     /// </summary>
     public string StatusColor => Report.Status switch
     {
-        ReportStatus.Draft => "#9E9E9E",
+        ReportStatus.Draft => "#FF932D",
         ReportStatus.Completed => "#44BE13",
         ReportStatus.Printed => "#44BE13",
+        ReportStatus.Outdated => "#E4004A",
         _ => "#9E9E9E"
     };
 

@@ -5,10 +5,12 @@ using System.IO;
 using System.Linq;
 using BTFX.Services.Interfaces;
 using BTFX.ViewModels;
+using BTFX.Views.Dialogs;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ToolHelper.LoggingDiagnostics.Abstractions;
 using BtfxConstants = BTFX.Common.Constants;
+using DialogHost = MaterialDesignThemes.Wpf.DialogHost;
 
 namespace BTFX.ViewModels.Settings;
 
@@ -199,13 +201,12 @@ public partial class DataManagementSettingsViewModel : ObservableObject
             return;
         }
 
-        var result = System.Windows.MessageBox.Show(
-            $"确定要删除备份文件“{item.FileName}”吗？\n此操作不可恢复。",
+        var result = await ShowConfirmDialogAsync(
             "确认删除",
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Warning);
+            $"确定要删除备份文件“{item.FileName}”吗？\n此操作不可恢复。",
+            "TrashCanOutline");
 
-        if (result != System.Windows.MessageBoxResult.Yes)
+        if (!result)
         {
             return;
         }
@@ -217,25 +218,59 @@ public partial class DataManagementSettingsViewModel : ObservableObject
             if (success)
             {
                 await LoadBackupHistoryAsync();
-                System.Windows.MessageBox.Show("备份文件已删除。", "提示",
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                await ShowNoticeDialogAsync("提示", "备份文件已删除。");
                 _logHelper?.Information($"删除备份成功：{item.FileName}");
                 return;
             }
 
-            System.Windows.MessageBox.Show("删除备份失败，请重试。", "错误",
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            await ShowNoticeDialogAsync("错误", "删除备份失败，请重试。");
         }
         catch (Exception ex)
         {
             _logHelper?.Error($"删除备份失败：{item.FileName}", ex);
-            System.Windows.MessageBox.Show($"删除失败：{ex.Message}", "错误",
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            await ShowNoticeDialogAsync("错误", $"删除失败：{ex.Message}");
         }
         finally
         {
             IsSaving = false;
         }
+    }
+
+    private static async Task<bool> ShowConfirmDialogAsync(string title, string message, string iconKind = "HelpCircleOutline")
+    {
+        var result = await DialogHost.Show(
+            new ConfirmDialog
+            {
+                DataContext = new ConfirmDialogViewModel
+                {
+                    Title = title,
+                    Message = message,
+                    ConfirmText = "确定",
+                    CancelText = "取消",
+                    IsCancelVisible = true,
+                    IconKind = iconKind
+                }
+            },
+            "RootDialog").ConfigureAwait(true);
+
+        return result is true;
+    }
+
+    private static Task ShowNoticeDialogAsync(string title, string message)
+    {
+        return DialogHost.Show(
+            new ConfirmDialog
+            {
+                DataContext = new ConfirmDialogViewModel
+                {
+                    Title = title,
+                    Message = message,
+                    ConfirmText = "确定",
+                    IsCancelVisible = false,
+                    IconKind = "InformationOutline"
+                }
+            },
+            "RootDialog");
     }
 
     [RelayCommand]

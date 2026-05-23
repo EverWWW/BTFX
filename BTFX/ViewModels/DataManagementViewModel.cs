@@ -3,9 +3,11 @@ using System.Windows;
 using BTFX.Common;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
+using BTFX.ViewModels.Measurement;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ToolHelper.LoggingDiagnostics.Abstractions;
+using DialogHost = MaterialDesignThemes.Wpf.DialogHost;
 
 namespace BTFX.ViewModels;
 
@@ -18,6 +20,8 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
     private readonly ISessionService _sessionService;
     private readonly ILocalizationService _localizationService;
     private readonly IExportImportService _exportImportService;
+    private readonly IMeasurementWorkflowResumeService _measurementWorkflowResumeService;
+    private readonly IMeasurementWorkflowCoordinator _measurementWorkflowCoordinator;
     private readonly ILogHelper? _logHelper;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private volatile bool _disposed;
@@ -65,10 +69,9 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
     {
         new StatusOption { Value = null, Display = "全部" },
         new StatusOption { Value = MeasurementStatus.Pending, Display = "待处理" },
-        new StatusOption { Value = MeasurementStatus.InProgress, Display = "进行中" },
+        new StatusOption { Value = MeasurementStatus.InProgress, Display = "分析中" },
         new StatusOption { Value = MeasurementStatus.Completed, Display = "已完成" },
-        new StatusOption { Value = MeasurementStatus.Cancelled, Display = "已取消" },
-        new StatusOption { Value = MeasurementStatus.Failed, Display = "测量失败" }
+        new StatusOption { Value = MeasurementStatus.Failed, Display = "分析失败" }
     };
 
     /// <summary>
@@ -241,12 +244,16 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
         IMeasurementService measurementService,
         ISessionService sessionService,
         ILocalizationService localizationService,
-        IExportImportService exportImportService)
+        IExportImportService exportImportService,
+        IMeasurementWorkflowResumeService measurementWorkflowResumeService,
+        IMeasurementWorkflowCoordinator measurementWorkflowCoordinator)
     {
         _measurementService = measurementService;
         _sessionService = sessionService;
         _localizationService = localizationService;
         _exportImportService = exportImportService;
+        _measurementWorkflowResumeService = measurementWorkflowResumeService;
+        _measurementWorkflowCoordinator = measurementWorkflowCoordinator;
 
         try
         {
@@ -557,6 +564,76 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             }
         }
 
+    /// <summary>
+    /// 根据测量状态继续处理当前记录。
+    /// </summary>
+    [RelayCommand]
+    private async Task ResumeMeasurementAsync(MeasurementRecordItem? item)
+    {
+        if (item == null) return;
+
+        try
+        {
+            if (MergeActiveMeasurementState(item.Record))
+            {
+                await _measurementService.UpdateMeasurementAsync(item.Record);
+            }
+
+            var decision = await _measurementWorkflowResumeService.DecideAsync(item.Record, _cancellationTokenSource.Token);
+            if (!decision.CanResume)
+            {
+                MessageBox.Show(decision.Message, "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            _measurementWorkflowCoordinator.RequestResume(item.Record, decision);
+            _logHelper?.Information($"继续处理测量：ID={item.Record.Id}, Step={decision.TargetStep}, Action={decision.ActionText}");
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"继续处理测量失败：ID={item.Record.Id}", ex);
+            MessageBox.Show($"继续处理失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private static bool MergeActiveMeasurementState(MeasurementRecord record)
+    {
+        var measurementViewModel = App.Services?.GetService(typeof(MeasurementViewModel)) as MeasurementViewModel;
+        var activeMeasurement = measurementViewModel?.CurrentMeasurement;
+        if (activeMeasurement?.Id != record.Id)
+        {
+            return false;
+        }
+
+        var changed = false;
+
+        record.MeasurementName = string.IsNullOrWhiteSpace(record.MeasurementName)
+            ? activeMeasurement.MeasurementName
+            : record.MeasurementName;
+        record.MeasurementType = activeMeasurement.MeasurementType;
+        record.Remark = string.IsNullOrWhiteSpace(record.Remark)
+            ? activeMeasurement.Remark
+            : record.Remark;
+        record.VideoSpec = activeMeasurement.VideoSpec;
+        record.WalkwayLength = activeMeasurement.WalkwayLength;
+        record.VideoImportMode = activeMeasurement.VideoImportMode;
+        record.ImportStrategy = activeMeasurement.ImportStrategy;
+
+        if (string.IsNullOrWhiteSpace(record.FrontVideoPath))
+        {
+            record.FrontVideoPath = activeMeasurement.FrontVideoPath;
+            changed = !string.IsNullOrWhiteSpace(record.FrontVideoPath);
+        }
+
+        if (string.IsNullOrWhiteSpace(record.SideVideoPath))
+        {
+            record.SideVideoPath = activeMeasurement.SideVideoPath;
+            changed = changed || !string.IsNullOrWhiteSpace(record.SideVideoPath);
+        }
+
+        return changed;
+    }
+
         /// <summary>
         /// 导出单条命令
         /// </summary>
@@ -606,13 +683,12 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
     {
         if (item == null || !CanDelete) return;
 
-        var result = System.Windows.MessageBox.Show(
-            $"确定要删除 {item.Record.Patient?.Name} 的测量记录吗？\n此操作不可恢复。",
+        var result = await ShowConfirmDialogAsync(
             "确认删除",
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Warning);
+            $"确定要删除 {item.Record.Patient?.Name} 的测量记录吗？\n此操作不可恢复。",
+            "TrashCanOutline");
 
-        if (result != System.Windows.MessageBoxResult.Yes) return;
+        if (!result) return;
 
         try
         {
@@ -622,13 +698,13 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
                 _globalSelectedIds.Remove(item.Record.Id);
                 await LoadDataAsync();
                 _logHelper?.Information($"删除测量记录：ID={item.Record.Id}");
-                System.Windows.MessageBox.Show("删除成功！", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                await ShowNoticeDialogAsync("提示", "删除成功！");
             }
         }
         catch (Exception ex)
         {
             _logHelper?.Error($"删除测量记录失败：ID={item.Record.Id}", ex);
-            System.Windows.MessageBox.Show($"删除失败：{ex.Message}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            await ShowNoticeDialogAsync("错误", $"删除失败：{ex.Message}");
         }
     }
 
@@ -789,13 +865,12 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             return;
         }
 
-        var result = System.Windows.MessageBox.Show(
-            $"确定要删除选中的 {_globalSelectedIds.Count} 条记录吗？\n此操作不可恢复。",
+        var result = await ShowConfirmDialogAsync(
             "确认批量删除",
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Warning);
+            $"确定要删除选中的 {_globalSelectedIds.Count} 条记录吗？\n此操作不可恢复。",
+            "TrashCanOutline");
 
-        if (result != System.Windows.MessageBoxResult.Yes) return;
+        if (!result) return;
 
         try
         {
@@ -804,13 +879,50 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             _globalSelectedIds.Clear();
             await LoadDataAsync();
             _logHelper?.Information($"批量删除测量记录：{count}条");
-            System.Windows.MessageBox.Show($"成功删除 {count} 条记录！", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            await ShowNoticeDialogAsync("提示", $"成功删除 {count} 条记录！");
         }
         catch (Exception ex)
         {
             _logHelper?.Error($"批量删除测量记录失败", ex);
-            System.Windows.MessageBox.Show($"批量删除失败：{ex.Message}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            await ShowNoticeDialogAsync("错误", $"批量删除失败：{ex.Message}");
         }
+    }
+
+    private static async Task<bool> ShowConfirmDialogAsync(string title, string message, string iconKind = "HelpCircleOutline")
+    {
+        var result = await DialogHost.Show(
+            new Views.Dialogs.ConfirmDialog
+            {
+                DataContext = new ConfirmDialogViewModel
+                {
+                    Title = title,
+                    Message = message,
+                    ConfirmText = "确定",
+                    CancelText = "取消",
+                    IsCancelVisible = true,
+                    IconKind = iconKind
+                }
+            },
+            "RootDialog").ConfigureAwait(true);
+
+        return result is true;
+    }
+
+    private static Task ShowNoticeDialogAsync(string title, string message)
+    {
+        return DialogHost.Show(
+            new Views.Dialogs.ConfirmDialog
+            {
+                DataContext = new ConfirmDialogViewModel
+                {
+                    Title = title,
+                    Message = message,
+                    ConfirmText = "确定",
+                    IsCancelVisible = false,
+                    IconKind = "InformationOutline"
+                }
+            },
+            "RootDialog");
     }
 
     /// <summary>
@@ -949,33 +1061,43 @@ public partial class MeasurementRecordItem : ObservableObject
     public string StatusDisplay => Record.Status switch
     {
         MeasurementStatus.Pending => "待处理",
-        MeasurementStatus.InProgress => "进行中",
+        MeasurementStatus.InProgress => "分析中",
         MeasurementStatus.Completed => "已完成",
-        MeasurementStatus.Cancelled => "已取消",
-        MeasurementStatus.Failed => "测量失败",
+        MeasurementStatus.Cancelled => "待处理",
+        MeasurementStatus.Failed => "分析失败",
         _ => "--"
     };
 
     /// <summary>
     /// 状态图标
     /// </summary>
-    public string StatusIcon => Record.Status == MeasurementStatus.Completed
-        ? "/Resources/Images/DataManagement/yiwancheng.png"
-        : "/Resources/Images/DataManagement/daichuli.png";
+    public string StatusIcon => Record.Status switch
+    {
+        MeasurementStatus.Completed => "/Resources/Images/DataManagement/yiwancheng.png",
+        _ => "/Resources/Images/DataManagement/daichuli.png"
+    };
 
     /// <summary>
     /// 状态背景色
     /// </summary>
-    public string StatusBackground => Record.Status == MeasurementStatus.Completed
-        ? "#E9F7E3"
-        : "#FDF4E6";
+    public string StatusBackground => Record.Status switch
+    {
+        MeasurementStatus.Completed => "#E9F7E3",
+        MeasurementStatus.InProgress => "#EAF3FF",
+        MeasurementStatus.Failed => "#FDECEC",
+        _ => "#FDF4E6"
+    };
 
     /// <summary>
     /// 状态前景色
     /// </summary>
-    public string StatusForeground => Record.Status == MeasurementStatus.Completed
-        ? "#44BE13"
-        : "#FF932D";
+    public string StatusForeground => Record.Status switch
+    {
+        MeasurementStatus.Completed => "#44BE13",
+        MeasurementStatus.InProgress => "#2F80ED",
+        MeasurementStatus.Failed => "#E4004A",
+        _ => "#FF932D"
+    };
 
     /// <summary>
     /// 状态颜色
@@ -985,9 +1107,18 @@ public partial class MeasurementRecordItem : ObservableObject
         MeasurementStatus.Pending => "#FF9800",
         MeasurementStatus.InProgress => "#2196F3",
         MeasurementStatus.Completed => "#4CAF50",
-        MeasurementStatus.Cancelled => "#9E9E9E",
+        MeasurementStatus.Cancelled => "#FF9800",
         MeasurementStatus.Failed => "#F44336",
         _ => "#9E9E9E"
+    };
+
+    public string PrimaryActionText => Record.Status switch
+    {
+        MeasurementStatus.Pending => "继续处理",
+        MeasurementStatus.InProgress => "查看进度",
+        MeasurementStatus.Completed => "查看详情",
+        MeasurementStatus.Failed => "重新分析",
+        _ => "继续处理"
     };
 
     /// <summary>

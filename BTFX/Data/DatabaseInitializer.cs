@@ -19,7 +19,7 @@ public class DatabaseInitializer
     /// <summary>
     /// 当前数据库目标版本号。每次结构变更时递增，并在 <see cref="UpgradeDatabaseAsync"/> 中添加对应迁移逻辑。
     /// </summary>
-    public const int CurrentDatabaseVersion = 6;
+    public const int CurrentDatabaseVersion = 7;
 
     private readonly string _databasePath;
     private readonly ILogHelper? _logHelper;
@@ -491,6 +491,10 @@ public class DatabaseInitializer
                 case 6:
                     UpgradeToV6(db);
                     break;
+
+                case 7:
+                    UpgradeToV7(db);
+                    break;
             }
         }
 
@@ -677,6 +681,36 @@ public class DatabaseInitializer
 
         db.ExecuteSql("CREATE INDEX IF NOT EXISTS IX_Reports_AnalysisResultId ON Reports(AnalysisResultId);");
         _logHelper?.Information("v6 升级完成。");
+    }
+
+    /// <summary>
+    /// 升级到 v7：为 AnalysisResults 表添加结果包相关字段。
+    /// </summary>
+    private void UpgradeToV7(SqliteSugarHelper db)
+    {
+        _logHelper?.Information("升级到 v7：为 AnalysisResults 表添加结果包字段...");
+
+        var alterStatements = new[]
+        {
+            "ALTER TABLE AnalysisResults ADD COLUMN PackagePath TEXT;",
+            "ALTER TABLE AnalysisResults ADD COLUMN PackageCreatedAt TEXT;",
+            "ALTER TABLE AnalysisResults ADD COLUMN PackageValidationStatus TEXT;",
+            "ALTER TABLE AnalysisResults ADD COLUMN PackageValidationMessage TEXT;"
+        };
+
+        foreach (var sql in alterStatements)
+        {
+            try
+            {
+                db.ExecuteSql(sql);
+            }
+            catch (Exception ex)
+            {
+                _logHelper?.Debug($"v7 迁移跳过（列可能已存在）：{ex.Message}");
+            }
+        }
+
+        _logHelper?.Information("v7 升级完成。");
     }
 
     /// <summary>

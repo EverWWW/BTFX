@@ -621,7 +621,7 @@
                 Orientation="Horizontal">
                 <Button
                     Margin="0,0,12,0"
-                    Command="{Binding RerunTemporaryAnalysisCommand}"
+                    Command="{Binding RerunAnalysisCommand}"
                     Content="重新分析"
                     Style="{StaticResource ResultSecondaryButtonStyle}" />
                 <Button

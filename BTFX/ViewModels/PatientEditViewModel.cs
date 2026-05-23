@@ -39,6 +39,9 @@ public partial class PatientEditViewModel : ObservableObject
     private string _idNumber = string.Empty;
 
     [ObservableProperty]
+    private string _hospitalNumber = string.Empty;
+
+    [ObservableProperty]
     private double? _height;
 
     [ObservableProperty]
@@ -172,16 +175,21 @@ public partial class PatientEditViewModel : ObservableObject
                 return _localizationService.GetString("PhoneRequired");
             }
 
-            if (Phone.Length < 8 || Phone.Length > 20)
+        if (Phone.Length < 8 || Phone.Length > 20)
+        {
+            return _localizationService.GetString("PhoneLengthError");
+        }
+
+            if (!Height.HasValue)
             {
-                return _localizationService.GetString("PhoneLengthError");
+                return "身高不能为空";
             }
 
-            // Check IdNumber (optional, but if present must be valid)
-            if (!string.IsNullOrWhiteSpace(IdNumber) && IdNumber.Length != 18 && IdNumber.Length != 15)
-            {
-                return _localizationService.GetString("IdNumberLengthError");
-            }
+        // Check IdNumber (optional, but if present must be valid)
+        if (!string.IsNullOrWhiteSpace(IdNumber) && IdNumber.Length > 20)
+        {
+            return _localizationService.GetString("IdNumberLengthError");
+        }
 
             // Check Height (optional, but if present must be valid)
             if (Height.HasValue && (Height.Value < 50 || Height.Value > 250))
@@ -206,7 +214,7 @@ public partial class PatientEditViewModel : ObservableObject
     {
         _isEditMode = false;
         DialogResult = null;
-        DialogTitle = _localizationService.GetString("AddPatient");
+        DialogTitle = "添加新患者信息";
         PatientId = 0;
         ClearForm();
     }
@@ -218,13 +226,14 @@ public partial class PatientEditViewModel : ObservableObject
     {
         _isEditMode = true;
         DialogResult = null;
-        DialogTitle = _localizationService.GetString("EditPatient");
+        DialogTitle = "编辑患者信息";
         PatientId = patient.Id;
         Name = patient.Name;
         Gender = patient.Gender;
         BirthDate = patient.BirthDate;
         Phone = patient.Phone;
         IdNumber = patient.IdNumber ?? string.Empty;
+        HospitalNumber = patient.HospitalNumber ?? string.Empty;
         Height = patient.Height;
         Weight = patient.Weight;
         Address = patient.Address ?? string.Empty;
@@ -247,6 +256,7 @@ public partial class PatientEditViewModel : ObservableObject
         BirthDate = null;
         Phone = string.Empty;
         IdNumber = string.Empty;
+        HospitalNumber = string.Empty;
         Height = null;
         Weight = null;
         Address = string.Empty;
@@ -287,7 +297,13 @@ public partial class PatientEditViewModel : ObservableObject
             return false;
         }
 
-        if (!string.IsNullOrWhiteSpace(IdNumber) && IdNumber.Length != 18 && IdNumber.Length != 15)
+        if (!Height.HasValue)
+        {
+            ErrorMessage = "身高不能为空";
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(IdNumber) && IdNumber.Length > 20)
         {
             ErrorMessage = _localizationService.GetString("IdNumberLengthError");
             return false;
@@ -330,6 +346,7 @@ public partial class PatientEditViewModel : ObservableObject
                 BirthDate = BirthDate,
                 Phone = Phone.Trim(),
                 IdNumber = string.IsNullOrWhiteSpace(IdNumber) ? null : IdNumber.Trim(),
+                HospitalNumber = string.IsNullOrWhiteSpace(HospitalNumber) ? null : HospitalNumber.Trim(),
                 Height = Height,
                 Weight = Weight,
                 Address = string.IsNullOrWhiteSpace(Address) ? null : Address.Trim(),

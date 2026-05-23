@@ -353,7 +353,7 @@ public static class Constants
     /// <summary>
     /// 算法程序默认目录
     /// </summary>
-    public const string ALGORITHM_DIRECTORY = "Algorithm";
+    public const string ALGORITHM_DIRECTORY = "gait_analysis";
 
     /// <summary>
     /// 算法程序默认文件名

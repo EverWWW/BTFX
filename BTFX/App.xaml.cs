@@ -489,7 +489,12 @@ public partial class App : Application
         services.AddTransient<IUserService, UserService>();
         services.AddTransient<IExportImportService, ExportImportService>();
         services.AddTransient<IDepartmentService, DepartmentService>();
-        services.AddTransient<IGaitAnalysisService, GaitAnalysisService>();
+        services.AddTransient<IAnalysisOutputReader, AnalysisOutputReader>();
+        services.AddTransient<IAnalysisPackageService, AnalysisPackageService>();
+        services.AddTransient<IMeasurementVideoValidationService, MeasurementVideoValidationService>();
+        services.AddTransient<IMeasurementWorkflowResumeService, MeasurementWorkflowResumeService>();
+        services.AddSingleton<IMeasurementWorkflowCoordinator, MeasurementWorkflowCoordinator>();
+        services.AddSingleton<IGaitAnalysisService, GaitAnalysisService>();
         services.AddTransient<IChartService, ChartService>();
         services.AddTransient<ICameraRecordingService, FfmpegCameraRecordingService>();
         services.AddSingleton<ICameraCaptureSettingsService, CameraCaptureSettingsService>();
@@ -506,7 +511,7 @@ public partial class App : Application
         services.AddTransient<ReportPreviewDialogViewModel>();
         services.AddTransient<ReportViewModel>();
         services.AddTransient<SettingsViewModel>();
-        services.AddTransient<Testing.CameraRecordingTestViewModel>();
+        services.AddTransient<CameraCaptureDialogViewModel>();
 
         // Settings 子 ViewModel
         services.AddTransient<ViewModels.Settings.GeneralSettingsViewModel>();
@@ -534,7 +539,7 @@ public partial class App : Application
         services.AddTransient<Views.Dialogs.ReportPreviewDialog>();
         services.AddTransient<Views.Dialogs.ConfirmDialog>();
         services.AddTransient<Views.Dialogs.AboutDialog>();
-        services.AddTransient<Testing.CameraRecordingTestDialog>();
+        services.AddTransient<Views.Dialogs.CameraCaptureDialog>();
 
         // Measurement 模块 View
         services.AddTransient<Views.Measurement.MeasurementView>();

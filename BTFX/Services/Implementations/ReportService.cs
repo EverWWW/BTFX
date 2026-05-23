@@ -109,7 +109,7 @@ public class ReportService : IReportService
                 PatientId = measurement.PatientId,
                 Patient = measurement.Patient,
                 CreatedBy = operatorId,
-                Status = ReportStatus.Draft,
+                Status = ReportStatus.Completed,
                 Title = string.IsNullOrWhiteSpace(measurement.Patient?.Name)
                     ? "步态分析报告"
                     : $"步态分析报告 - {measurement.Patient.Name}",
@@ -126,7 +126,7 @@ public class ReportService : IReportService
 
             report.Id = id;
             await LoadAnalysisDataForReportAsync(report);
-            _logHelper?.Information($"已创建报告草稿: Id={report.Id}, MeasurementId={measurementRecordId}");
+            _logHelper?.Information($"已创建报告记录: Id={report.Id}, MeasurementId={measurementRecordId}");
             return report;
         }
         catch (Exception ex)
@@ -196,6 +196,10 @@ public class ReportService : IReportService
             var count = await db.UpdateAsync<Report>(
                 r => new Report
                 {
+                    MeasurementId = report.MeasurementId,
+                    PatientId = report.PatientId,
+                    CreatedBy = report.CreatedBy,
+                    ReportDate = report.ReportDate,
                     Title = report.Title,
                     DoctorOpinion = report.DoctorOpinion,
                     Status = report.Status,
@@ -294,6 +298,8 @@ public class ReportService : IReportService
                 var fileName = $"Report_{report.ReportNumber}_{DateTime.Now:yyyyMMddHHmmss}.pdf";
                 var filePath = System.IO.Path.Combine(reportDir, fileName);
 
+                report.Status = ReportStatus.Completed;
+
                 if (exporter.ExportToPdf(report, filePath))
                 {
                     report.PdfFilePath = filePath;
@@ -322,15 +328,20 @@ public class ReportService : IReportService
             // 使用 ReportPreviewHelper 生成 FlowDocument
             var settingsService = App.Services?.GetService(typeof(ISettingsService)) as ISettingsService;
             var unitName = settingsService?.CurrentSettings?.Unit?.Name ?? Common.Constants.APP_DISPLAY_NAME;
+            var logoPath = settingsService?.CurrentSettings?.Unit?.LogoPath;
 
-            var document = Helpers.ReportPreviewHelper.GenerateReportDocument(report, unitName);
+            if (report.Status is ReportStatus.Draft or ReportStatus.Outdated)
+            {
+                report.Status = ReportStatus.Completed;
+            }
+
+            var document = Helpers.ReportPreviewHelper.GenerateReportDocument(report, unitName, logoPath);
 
             // 使用 PrintHelper 打印
             var success = Helpers.PrintHelper.PrintDocument(document, $"报告_{report.ReportNumber}", true);
 
             if (success)
             {
-                report.Status = ReportStatus.Printed;
                 report.PrintedAt = DateTime.Now;
                 await UpdateReportAsync(report);
                 _logHelper?.Information($"打印报告成功：ReportId={reportId}");
@@ -469,11 +480,18 @@ public class ReportService : IReportService
         if (existing != null)
         {
             // 更新现有报告
-            existing.Status = ReportStatus.Draft;
-            await UpdateReportAsync(existing);
-            
-            // 加载分析数据
             await LoadAnalysisDataForReportAsync(existing);
+            existing.Status = ReportStatus.Completed;
+            if (string.IsNullOrWhiteSpace(existing.Title))
+            {
+                existing.Title = string.IsNullOrWhiteSpace(measurement.Patient?.Name)
+                    ? "步态分析报告"
+                    : $"步态分析报告 - {measurement.Patient.Name}";
+            }
+            existing.PatientId = measurement.PatientId;
+            existing.Patient = measurement.Patient;
+            existing.MeasurementRecord = measurement;
+            await UpdateReportAsync(existing);
             
             _logHelper?.Information($"重置报告：ID={existing.Id}");
             return existing;
@@ -489,7 +507,7 @@ public class ReportService : IReportService
                 PatientId = measurement.PatientId,
                 Patient = measurement.Patient,
                 CreatedBy = operatorId,
-                Status = ReportStatus.Draft,
+                Status = ReportStatus.Completed,
                 Title = string.IsNullOrWhiteSpace(measurement.Patient?.Name)
                     ? "步态分析报告"
                     : $"步态分析报告 - {measurement.Patient.Name}",
@@ -503,6 +521,7 @@ public class ReportService : IReportService
             
             // 加载分析数据
             await LoadAnalysisDataForReportAsync(report);
+            await UpdateReportAsync(report);
             
             _logHelper?.Information($"新建报告：ID={report.Id}, Number={report.ReportNumber}");
             return report;

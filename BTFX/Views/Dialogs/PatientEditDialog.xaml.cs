@@ -1,6 +1,7 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
+using System.Windows.Media;
 using BTFX.Services.Interfaces;
 using BTFX.ViewModels;
 using MaterialDesignThemes.Wpf;
@@ -26,7 +27,8 @@ public partial class PatientEditDialog : UserControl
     private void PatientEditDialog_Loaded(object sender, RoutedEventArgs e)
     {
         AttachViewModel(DataContext as PatientEditViewModel);
-        SetDatePickerLanguage();
+        SetCalendarLanguage();
+        SyncBirthDateDisplay();
 
         if (_localizationService == null
             && App.Services?.GetService(typeof(ILocalizationService)) is ILocalizationService localizationService)
@@ -50,6 +52,7 @@ public partial class PatientEditDialog : UserControl
     private void PatientEditDialog_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         AttachViewModel(e.NewValue as PatientEditViewModel);
+        SyncBirthDateDisplay();
     }
 
     private void AttachViewModel(PatientEditViewModel? viewModel)
@@ -81,45 +84,68 @@ public partial class PatientEditDialog : UserControl
                 DialogHost.Close("RootDialog", viewModel.DialogResult);
             }
         }
+        else if (e.PropertyName == nameof(PatientEditViewModel.BirthDate))
+        {
+            SyncBirthDateDisplay();
+        }
     }
 
     private void OnLanguageChanged(object? sender, Common.AppLanguage language)
     {
-        SetDatePickerLanguage();
+        SetCalendarLanguage();
     }
 
-    private void SetDatePickerLanguage()
+    private void SetCalendarLanguage()
     {
-        // Get all DatePickers in the dialog
-        var datePickers = FindVisualChildren<DatePicker>(this);
-
-        // Set language based on current UI culture
         var culture = System.Threading.Thread.CurrentThread.CurrentUICulture;
-        var xmlLanguage = XmlLanguage.GetLanguage(culture.Name);
+        BirthDateCalendar.Language = XmlLanguage.GetLanguage(culture.Name);
+    }
 
-        foreach (var datePicker in datePickers)
+    private void BirthDateButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is PatientEditViewModel vm && vm.BirthDate.HasValue)
         {
-            datePicker.Language = xmlLanguage;
+            BirthDateCalendar.SelectedDate = vm.BirthDate.Value;
+            BirthDateCalendar.DisplayDate = vm.BirthDate.Value;
+        }
+        else
+        {
+            BirthDateCalendar.SelectedDate = null;
+            BirthDateCalendar.DisplayDate = DateTime.Today;
+        }
+
+        BirthDatePopup.IsOpen = true;
+    }
+
+    private void BirthDateCalendar_SelectedDatesChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (DataContext is PatientEditViewModel vm && BirthDateCalendar.SelectedDate.HasValue)
+        {
+            vm.BirthDate = BirthDateCalendar.SelectedDate.Value;
+            BirthDatePopup.IsOpen = false;
+            SyncBirthDateDisplay();
         }
     }
 
-    private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
+    private void SyncBirthDateDisplay()
     {
-        if (depObj == null) yield break;
-
-        for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(depObj); i++)
+        if (BirthDateText == null || BirthDateCalendar == null)
         {
-            var child = System.Windows.Media.VisualTreeHelper.GetChild(depObj, i);
+            return;
+        }
 
-            if (child is T typedChild)
-            {
-                yield return typedChild;
-            }
-
-            foreach (var childOfChild in FindVisualChildren<T>(child))
-            {
-                yield return childOfChild;
-            }
+        if (DataContext is PatientEditViewModel vm && vm.BirthDate.HasValue)
+        {
+            BirthDateText.Text = vm.BirthDate.Value.ToString("yyyy/M/d");
+            BirthDateText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#333333"));
+            BirthDateCalendar.SelectedDate = vm.BirthDate.Value;
+            BirthDateCalendar.DisplayDate = vm.BirthDate.Value;
+        }
+        else
+        {
+            BirthDateText.Text = "请选择日期";
+            BirthDateText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#999999"));
+            BirthDateCalendar.SelectedDate = null;
         }
     }
 }

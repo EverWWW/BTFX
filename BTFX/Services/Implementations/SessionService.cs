@@ -112,6 +112,7 @@ public class SessionService : ISessionService
 
             // 删除报告权限 - 仅管理员
             "deletereport" => CurrentUserRole == UserRole.Administrator,
+            "delete_report" => CurrentUserRole == UserRole.Administrator,
 
             // 患者管理权限 - 管理员和操作员
             "patientmanagement" => CurrentUserRole == UserRole.Administrator ||
@@ -127,10 +128,16 @@ public class SessionService : ISessionService
             // 报告管理权限 - 管理员和操作员
             "reportmanagement" => CurrentUserRole == UserRole.Administrator ||
                                   CurrentUserRole == UserRole.Operator,
+            "generate_report" => CurrentUserRole == UserRole.Administrator ||
+                                 CurrentUserRole == UserRole.Operator,
+            "edit_report" => CurrentUserRole == UserRole.Administrator ||
+                             CurrentUserRole == UserRole.Operator,
 
             // 导出权限 - 管理员和操作员
             "export" => CurrentUserRole == UserRole.Administrator ||
                         CurrentUserRole == UserRole.Operator,
+            "export_report" => CurrentUserRole == UserRole.Administrator ||
+                               CurrentUserRole == UserRole.Operator,
 
             // 设置权限 - 所有用户（部分受限）
             "settings" => true,

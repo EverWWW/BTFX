@@ -73,6 +73,19 @@ public static class ReportPreviewHelper
     /// </summary>
     private static void AddHeader(FlowDocument document, string unitName, string reportNumber, string? logoPath)
     {
+        if (!string.IsNullOrWhiteSpace(logoPath) && File.Exists(logoPath))
+        {
+            var logo = TryCreateReportLogo(logoPath);
+            if (logo != null)
+            {
+                document.Blocks.Add(new Paragraph(new InlineUIContainer(logo))
+                {
+                    TextAlignment = TextAlignment.Center,
+                    Margin = new Thickness(0, 0, 0, 6)
+                });
+            }
+        }
+
         // 单位名称
         if (!string.IsNullOrEmpty(unitName))
         {
@@ -108,6 +121,32 @@ public static class ReportPreviewHelper
 
         // 分隔线
         AddSeparator(document);
+    }
+
+    private static Image? TryCreateReportLogo(string logoPath)
+    {
+        try
+        {
+            var bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.UriSource = new Uri(logoPath, UriKind.Absolute);
+            bitmap.DecodePixelHeight = 72;
+            bitmap.EndInit();
+            bitmap.Freeze();
+
+            return new Image
+            {
+                Source = bitmap,
+                Width = 72,
+                Height = 72,
+                Stretch = Stretch.Uniform
+            };
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     /// <summary>
@@ -628,10 +667,10 @@ public static class ReportPreviewHelper
         return status switch
         {
             MeasurementStatus.Pending => "待处理",
-            MeasurementStatus.InProgress => "进行中",
+            MeasurementStatus.InProgress => "分析中",
             MeasurementStatus.Completed => "已完成",
-            MeasurementStatus.Cancelled => "已取消",
-            MeasurementStatus.Failed => "失败",
+            MeasurementStatus.Cancelled => "待处理",
+            MeasurementStatus.Failed => "分析失败",
             _ => "未知"
         };
     }
@@ -643,9 +682,10 @@ public static class ReportPreviewHelper
     {
         return status switch
         {
-            ReportStatus.Draft => "草稿",
-            ReportStatus.Completed => "已完成",
-            ReportStatus.Printed => "已打印",
+            ReportStatus.Draft => "待生成",
+            ReportStatus.Completed => "已生成",
+            ReportStatus.Printed => "已生成",
+            ReportStatus.Outdated => "需重新生成",
             _ => "未知"
         };
     }

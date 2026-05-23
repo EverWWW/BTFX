@@ -359,7 +359,8 @@ public partial class PatientSelectionViewModel : ObservableObject
 
         var result = await ShowConfirmDialogAsync(
             _localizationService.GetString("ConfirmDelete"),
-            _localizationService.GetString("ConfirmDeletePatient"));
+            _localizationService.GetString("ConfirmDeletePatient"),
+            "TrashCanOutline");
 
         if (!result)
             return;
@@ -393,7 +394,7 @@ public partial class PatientSelectionViewModel : ObservableObject
     /// <summary>
     /// 显示确认对话框。
     /// </summary>
-    private static async Task<bool> ShowConfirmDialogAsync(string title, string message)
+    private static async Task<bool> ShowConfirmDialogAsync(string title, string message, string iconKind = "HelpCircleOutline")
     {
         var result = await DialogHost.Show(
             new Views.Dialogs.ConfirmDialog
@@ -404,7 +405,8 @@ public partial class PatientSelectionViewModel : ObservableObject
                     Message = message,
                     ConfirmText = "确定",
                     CancelText = "取消",
-                    IsCancelVisible = true
+                    IsCancelVisible = true,
+                    IconKind = iconKind
                 }
             },
             "RootDialog").ConfigureAwait(true);
@@ -425,7 +427,8 @@ public partial class PatientSelectionViewModel : ObservableObject
                     Title = title,
                     Message = message,
                     ConfirmText = "确定",
-                    IsCancelVisible = false
+                    IsCancelVisible = false,
+                    IconKind = "InformationOutline"
                 }
             },
             "RootDialog");

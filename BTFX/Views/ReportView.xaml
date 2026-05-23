@@ -145,6 +145,20 @@
                 </Setter>
             </Style>
 
+            <Style x:Key="RowPrimaryActionButtonStyle" TargetType="Button">
+                <Setter Property="Width" Value="112" />
+                <Setter Property="Height" Value="36" />
+                <Setter Property="Background" Value="#403B5B" />
+                <Setter Property="BorderBrush" Value="#403B5B" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template" Value="{StaticResource RoundedButtonTemplate}" />
+                <Setter Property="Foreground" Value="#FFFFFF" />
+                <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="FontWeight" Value="Medium" />
+            </Style>
+
             <Style x:Key="PageArrowButtonStyle" TargetType="Button">
                 <Setter Property="Width" Value="40" />
                 <Setter Property="Height" Value="40" />
@@ -739,9 +753,9 @@
                                         <ColumnDefinition Width="1.1*" />
                                         <ColumnDefinition Width="1.1*" />
                                         <ColumnDefinition Width="1.8*" />
-                                        <ColumnDefinition Width="1.25*" />
-                                        <ColumnDefinition Width="0.9*" />
-                                        <ColumnDefinition Width="0.9*" />
+                                        <ColumnDefinition Width="1*" />
+                                        <ColumnDefinition Width="1*" />
+                                        <ColumnDefinition Width="1*" />
                                     </Grid.ColumnDefinitions>
 
                                     <Button
@@ -764,15 +778,15 @@
                                     <TextBlock
                                         Grid.Column="4"
                                         Style="{StaticResource HeaderTextStyle}"
-                                        Text="状态" />
+                                        Text="详情" />
                                     <TextBlock
                                         Grid.Column="5"
                                         Style="{StaticResource HeaderTextStyle}"
-                                        Text="详情" />
+                                        Text="导出" />
                                     <TextBlock
                                         Grid.Column="6"
                                         Style="{StaticResource HeaderTextStyle}"
-                                        Text="删除" />
+                                        Text="打印" />
                                 </Grid>
                             </Border>
 
@@ -805,9 +819,9 @@
                                                         <ColumnDefinition Width="1.1*" />
                                                         <ColumnDefinition Width="1.1*" />
                                                         <ColumnDefinition Width="1.8*" />
-                                                        <ColumnDefinition Width="1.25*" />
-                                                        <ColumnDefinition Width="0.9*" />
-                                                        <ColumnDefinition Width="0.9*" />
+                                                        <ColumnDefinition Width="1*" />
+                                                        <ColumnDefinition Width="1*" />
+                                                        <ColumnDefinition Width="1*" />
                                                     </Grid.ColumnDefinitions>
 
                                                     <CheckBox
@@ -832,36 +846,8 @@
                                                         Style="{StaticResource RowTextStyle}"
                                                         Text="{Binding GeneratedDateDisplay}" />
 
-                                                    <Border
-                                                        Grid.Column="4"
-                                                        Width="120"
-                                                        Height="36"
-                                                        HorizontalAlignment="Center"
-                                                        VerticalAlignment="Center"
-                                                        Background="{Binding StatusBackground}"
-                                                        CornerRadius="20">
-                                                        <StackPanel
-                                                            HorizontalAlignment="Center"
-                                                            VerticalAlignment="Center"
-                                                            Orientation="Horizontal">
-                                                            <Image
-                                                                Width="18"
-                                                                Height="18"
-                                                                Margin="0,0,6,0"
-                                                                RenderOptions.BitmapScalingMode="HighQuality"
-                                                                Source="{Binding StatusIcon}" />
-                                                            <TextBlock
-                                                                VerticalAlignment="Center"
-                                                                FontFamily="{StaticResource AppFont}"
-                                                                FontSize="18"
-                                                                FontWeight="Medium"
-                                                                Foreground="{Binding StatusForeground}"
-                                                                Text="{Binding StatusDisplay}" />
-                                                        </StackPanel>
-                                                    </Border>
-
                                                     <Button
-                                                        Grid.Column="5"
+                                                        Grid.Column="4"
                                                         Command="{Binding DataContext.ViewReportCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                         CommandParameter="{Binding}"
                                                         Style="{StaticResource ActionIconButtonStyle}"
@@ -874,15 +860,29 @@
                                                     </Button>
 
                                                     <Button
-                                                        Grid.Column="6"
-                                                        Command="{Binding DataContext.DeleteReportCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        Grid.Column="5"
+                                                        Command="{Binding DataContext.ExportReportCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                         CommandParameter="{Binding}"
-                                                        Style="{StaticResource ActionIconButtonStyle}">
+                                                        Style="{StaticResource ActionIconButtonStyle}"
+                                                        ToolTip="{Binding ExportHint}">
                                                         <Image
                                                             Width="28"
                                                             Height="28"
                                                             RenderOptions.BitmapScalingMode="HighQuality"
-                                                            Source="/Resources/Images/DataManagement/shanchu.png" />
+                                                            Source="/Resources/Images/login/out.png" />
+                                                    </Button>
+
+                                                    <Button
+                                                        Grid.Column="6"
+                                                        Command="{Binding DataContext.PrintReportItemCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource ActionIconButtonStyle}"
+                                                        ToolTip="{Binding PrintHint}">
+                                                        <Image
+                                                            Width="28"
+                                                            Height="28"
+                                                            RenderOptions.BitmapScalingMode="HighQuality"
+                                                            Source="/Resources/Images/Report/dayin.png" />
                                                     </Button>
                                                 </Grid>
                                             </Border>
@@ -1149,7 +1149,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="24"
                                     Foreground="#403B5B"
-                                    Text="预览报告" />
+                                    Text="报告摘要" />
                             </StackPanel>
 
                             <StackPanel
@@ -1161,7 +1161,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="18"
                                     Foreground="#999999"
-                                    Text="点击左侧列表的“详情”" />
+                                    Text="选中左侧列表的一行" />
                                 <Image
                                     Width="22"
                                     Height="22"
@@ -1173,7 +1173,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="18"
                                     Foreground="#999999"
-                                    Text="可预览报告" />
+                                    Text="可预览报告摘要" />
                             </StackPanel>
                         </Grid>
 

@@ -68,15 +68,15 @@ public enum PatientStatus
 public enum MeasurementStatus
 {
     /// <summary>
-    /// 待测量
+    /// 待处理
     /// </summary>
-    [Description("待测量")]
+    [Description("待处理")]
     Pending = 0,
 
     /// <summary>
-    /// 测量中
+    /// 分析中
     /// </summary>
-    [Description("测量中")]
+    [Description("分析中")]
     InProgress = 1,
 
     /// <summary>
@@ -92,9 +92,9 @@ public enum MeasurementStatus
     Cancelled = 3,
 
     /// <summary>
-    /// 测量失败
+    /// 分析失败
     /// </summary>
-    [Description("测量失败")]
+    [Description("分析失败")]
     Failed = 4
 }
 
@@ -104,22 +104,28 @@ public enum MeasurementStatus
 public enum ReportStatus
 {
     /// <summary>
-    /// 草稿
+    /// 待生成
     /// </summary>
-    [Description("草稿")]
+    [Description("待生成")]
     Draft = 0,
 
     /// <summary>
-    /// 已完成
+    /// 已生成
     /// </summary>
-    [Description("已完成")]
+    [Description("已生成")]
     Completed = 1,
 
     /// <summary>
     /// 已打印
     /// </summary>
-    [Description("已打印")]
-    Printed = 2
+    [Description("已生成")]
+    Printed = 2,
+
+    /// <summary>
+    /// 需重新生成
+    /// </summary>
+    [Description("需重新生成")]
+    Outdated = 3
 }
 
 /// <summary>

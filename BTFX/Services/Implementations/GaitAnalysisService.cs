@@ -1,6 +1,8 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
+using System.Text;
 using System.Text.Json;
 using BTFX.Common;
 using BTFX.Data;
@@ -17,13 +19,26 @@ namespace BTFX.Services.Implementations;
 /// </summary>
 public class GaitAnalysisService : IGaitAnalysisService
 {
+    private const string SideConfigFileName = "Config_side.toml";
+    private const string FrontConfigFileName = "Config_front.toml";
+    private const string InternalRuntimeZipFileName = "_internal.zip";
+    private const string InternalRuntimeDirectoryName = "_internal";
+    private const string InputDirectoryName = "input";
+    private const string ConfigSnapshotDirectoryName = "config_snapshot";
+    private const string LogDirectoryName = "logs";
+    private const string SideInputFileName = "side.mp4";
+    private const string FrontInputFileName = "front.mp4";
+
     private readonly ISettingsService _settingsService;
+    private readonly IAnalysisOutputReader _analysisOutputReader;
     private readonly ILogHelper? _logHelper;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     private Process? _currentProcess;
     private CancellationTokenSource? _linkedCts;
     private volatile bool _isRunning;
+
+    private sealed record PreparedAnalysisInput(string? SideVideoPath, string? FrontVideoPath);
 
     /// <inheritdoc/>
     public bool IsAnalysisRunning => _isRunning;
@@ -37,24 +52,29 @@ public class GaitAnalysisService : IGaitAnalysisService
     /// <summary>
     /// 构造函数
     /// </summary>
-    public GaitAnalysisService(ISettingsService settingsService, ILogHelper? logHelper = null)
+    public GaitAnalysisService(
+        ISettingsService settingsService,
+        IAnalysisOutputReader analysisOutputReader,
+        ILogHelper? logHelper = null)
     {
         _settingsService = settingsService;
+        _analysisOutputReader = analysisOutputReader;
         _logHelper = logHelper;
     }
 
     /// <inheritdoc/>
     public async Task<bool> ValidateEnvironmentAsync()
     {
-        var exePath = GetAlgorithmExePath();
-        var exists = File.Exists(exePath);
-
-        if (!exists)
+        try
         {
-            _logHelper?.Warning($"算法程序文件不存在: {exePath}");
+            EnsureAlgorithmRuntimeReady();
+            return await Task.FromResult(true);
         }
-
-        return await Task.FromResult(exists);
+        catch (Exception ex)
+        {
+            _logHelper?.Warning($"算法运行环境校验失败: {ex.Message}");
+            return await Task.FromResult(false);
+        }
     }
 
     /// <inheritdoc/>
@@ -72,65 +92,87 @@ public class GaitAnalysisService : IGaitAnalysisService
         try
         {
             _isRunning = true;
-
-            // [1] 验证输入
             ValidateRequest(request);
 
-            // [2] 构建配置文件
             var requestId = GenerateRequestId();
             var outputDir = request.OutputDirectory;
             Directory.CreateDirectory(outputDir);
+            var algorithmDirectory = EnsureAlgorithmRuntimeReady();
+            var inputDir = Path.Combine(outputDir, InputDirectoryName);
+            var configSnapshotDir = Path.Combine(outputDir, ConfigSnapshotDirectoryName);
+            var logDir = Path.Combine(outputDir, LogDirectoryName);
 
-            var taskConfig = BuildTaskConfig(request, requestId);
-            var configPath = Path.Combine(outputDir, Constants.TASK_CONFIG_FILENAME);
-            await WriteTaskConfigAsync(taskConfig, configPath, ct);
+            Directory.CreateDirectory(inputDir);
+            Directory.CreateDirectory(configSnapshotDir);
+            Directory.CreateDirectory(logDir);
 
-            RaiseLog($"配置文件已生成: {configPath}");
-
-            // [3] 设置超时+取消
+            var preparedInput = PrepareInputVideos(request, inputDir);
+            var configPath = PrepareAlgorithmTomlConfigs(
+                request,
+                algorithmDirectory,
+                configSnapshotDir,
+                inputDir,
+                outputDir,
+                preparedInput);
             var settings = _settingsService.CurrentSettings.Algorithm;
             var timeoutMs = settings.TimeoutMinutes * 60 * 1000;
 
             using var timeoutCts = new CancellationTokenSource(timeoutMs);
             _linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token);
 
-            RaiseProgress(requestId, "pending", 0, "任务已接受");
+            RaiseProgress(requestId, "pending", 0, "任务已接收");
 
-            // [4] 启动算法进程
             var exePath = GetAlgorithmExePath();
-            var exitCode = await RunProcessAsync(exePath, configPath, requestId, _linkedCts.Token);
+            RaiseLog($"算法程序路径: {exePath}");
+            var exitCode = await RunProcessAsync(exePath, requestId, logDir, _linkedCts.Token);
 
-            // [5] 判断结果
             stopwatch.Stop();
             var analysisDuration = stopwatch.Elapsed.TotalSeconds;
 
             if (exitCode != 0)
             {
                 var errorCode = (AnalysisErrorCode)exitCode;
-                var errorMessage = $"算法进程退出码: {exitCode} ({errorCode})";
+                var stderrTail = ReadLastLogLines(Path.Combine(logDir, "stderr.log"), 12);
+                var errorMessage = string.IsNullOrWhiteSpace(stderrTail)
+                    ? $"算法进程退出码: {exitCode} ({errorCode})，日志目录: {logDir}"
+                    : $"算法进程退出码: {exitCode} ({errorCode})，日志目录: {logDir}\n{stderrTail}";
                 _logHelper?.Error(errorMessage);
-
                 return BuildFailedResult(request, requestId, outputDir, configPath, exitCode, errorMessage, analysisDuration);
             }
 
-            // [6] 解析结果（成功时）
-            var summaryPath = Path.Combine(outputDir, Constants.SUMMARY_FILENAME);
-            if (!File.Exists(summaryPath))
+            AnalysisOutputReadResult outputReadResult;
+            try
             {
-                var errorMessage = $"算法输出文件不存在: {summaryPath}";
-                _logHelper?.Error(errorMessage);
+                outputReadResult = await _analysisOutputReader.ReadAsync(outputDir, ct);
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = $"算法输出读取失败: {ex.Message}";
+                _logHelper?.Error(errorMessage, ex);
                 return BuildFailedResult(request, requestId, outputDir, configPath, (int)AnalysisErrorCode.ExportFailed, errorMessage, analysisDuration);
             }
 
-            var summary = await ReadSummaryAsync(summaryPath, ct);
-
+            var summary = outputReadResult.Summary;
             if (!summary.Success)
             {
-                return BuildFailedResult(request, requestId, outputDir, configPath, summary.ErrorCode, summary.ErrorMessage ?? "算法返回失败", analysisDuration);
+                return BuildFailedResult(
+                    request,
+                    requestId,
+                    outputDir,
+                    configPath,
+                    summary.ErrorCode,
+                    summary.ErrorMessage ?? "算法返回失败",
+                    analysisDuration);
             }
 
-            // [7] 构建成功结果
-            var result = BuildSuccessResult(request, requestId, outputDir, configPath, summaryPath, summary, analysisDuration);
+            var result = BuildSuccessResult(
+                request,
+                requestId,
+                outputDir,
+                configPath,
+                outputReadResult.SummaryPath,
+                summary,
+                analysisDuration);
 
             RaiseProgress(requestId, "completed", 100, "分析完成");
             RaiseLog($"分析完成，耗时: {analysisDuration:F1}s");
@@ -142,7 +184,6 @@ public class GaitAnalysisService : IGaitAnalysisService
             stopwatch.Stop();
             _logHelper?.Information("分析任务已取消");
             RaiseLog("分析任务已取消");
-
             throw;
         }
         catch (Exception ex)
@@ -150,7 +191,6 @@ public class GaitAnalysisService : IGaitAnalysisService
             stopwatch.Stop();
             _logHelper?.Error("分析任务异常", ex);
             RaiseLog($"分析异常: {ex.Message}", isError: true);
-
             throw;
         }
         finally
@@ -162,7 +202,6 @@ public class GaitAnalysisService : IGaitAnalysisService
             _semaphore.Release();
         }
     }
-
     /// <inheritdoc/>
     public Task CancelCurrentAnalysisAsync()
     {
@@ -175,10 +214,10 @@ public class GaitAnalysisService : IGaitAnalysisService
         return Task.CompletedTask;
     }
 
-    #region 私有方法 — 配置构建
+    #region 私有方法 - 配置构建
 
     /// <summary>
-    /// 生成请求ID：GAIT_{yyyyMMdd}_{3位序号}
+    /// 生成请求ID：GAIT_{yyyyMMdd}_{HHmmss}
     /// </summary>
     private static string GenerateRequestId()
     {
@@ -194,6 +233,13 @@ public class GaitAnalysisService : IGaitAnalysisService
     {
         var settings = _settingsService.CurrentSettings.Algorithm;
         var exePath = settings.ExePath;
+        var oldDefaultPath = Path.Combine("Algorithm", Constants.ALGORITHM_EXE_FILENAME);
+        if (string.Equals(exePath, oldDefaultPath, StringComparison.OrdinalIgnoreCase))
+        {
+            exePath = Path.Combine(Constants.ALGORITHM_DIRECTORY, Constants.ALGORITHM_EXE_FILENAME);
+            settings.ExePath = exePath;
+            _settingsService.SaveSettings();
+        }
 
         // 若为相对路径，则基于应用程序目录解析
         if (!Path.IsPathRooted(exePath))
@@ -202,6 +248,55 @@ public class GaitAnalysisService : IGaitAnalysisService
         }
 
         return exePath;
+    }
+
+    private string EnsureAlgorithmRuntimeReady()
+    {
+        var exePath = GetAlgorithmExePath();
+        var algorithmDirectory = Path.GetDirectoryName(exePath)
+            ?? throw new InvalidOperationException("无法解析算法程序目录。");
+
+        if (!Directory.Exists(algorithmDirectory))
+        {
+            throw new DirectoryNotFoundException($"算法目录不存在: {algorithmDirectory}");
+        }
+
+        var runtimeDirectory = Path.Combine(algorithmDirectory, InternalRuntimeDirectoryName);
+        if (!Directory.Exists(runtimeDirectory))
+        {
+            var zipPath = Path.Combine(algorithmDirectory, InternalRuntimeZipFileName);
+            if (!File.Exists(zipPath))
+            {
+                throw new FileNotFoundException($"算法运行库不存在，请确认已随程序复制 {InternalRuntimeZipFileName}。", runtimeDirectory);
+            }
+
+            RaiseLog("正在解压算法运行库，首次运行可能需要等待一段时间。");
+            ZipFile.ExtractToDirectory(zipPath, algorithmDirectory, overwriteFiles: true);
+        }
+
+        if (!Directory.Exists(runtimeDirectory))
+        {
+            throw new DirectoryNotFoundException($"算法运行库解压后仍未找到: {runtimeDirectory}");
+        }
+
+        if (!File.Exists(exePath))
+        {
+            throw new FileNotFoundException($"算法程序文件不存在: {exePath}", exePath);
+        }
+
+        var sideConfigPath = Path.Combine(algorithmDirectory, SideConfigFileName);
+        var frontConfigPath = Path.Combine(algorithmDirectory, FrontConfigFileName);
+        if (!File.Exists(sideConfigPath))
+        {
+            throw new FileNotFoundException($"侧面算法配置文件不存在: {sideConfigPath}", sideConfigPath);
+        }
+
+        if (!File.Exists(frontConfigPath))
+        {
+            throw new FileNotFoundException($"正面算法配置文件不存在: {frontConfigPath}", frontConfigPath);
+        }
+
+        return algorithmDirectory;
     }
 
     /// <summary>
@@ -214,10 +309,9 @@ public class GaitAnalysisService : IGaitAnalysisService
             throw new InvalidOperationException("患者身高未填写，算法必填参数。");
         }
 
-        var cameraDistance = _settingsService.CurrentSettings.Algorithm.SideCameraDistance;
-        if (cameraDistance is null or <= 0)
+        if (string.IsNullOrWhiteSpace(request.Record.SideVideoPath))
         {
-            throw new InvalidOperationException("侧向相机距离未配置，请在设置页面中配置。");
+            throw new InvalidOperationException("侧面视频未选择，无法启动步态分析。");
         }
 
         if (!string.IsNullOrEmpty(request.Record.SideVideoPath) && !File.Exists(request.Record.SideVideoPath))
@@ -229,6 +323,155 @@ public class GaitAnalysisService : IGaitAnalysisService
         {
             throw new InvalidOperationException($"正面视频文件不存在: {request.Record.FrontVideoPath}");
         }
+    }
+
+    private static PreparedAnalysisInput PrepareInputVideos(AnalysisRequest request, string inputDir)
+    {
+        string? sideInputPath = null;
+        string? frontInputPath = null;
+
+        if (!string.IsNullOrWhiteSpace(request.Record.SideVideoPath))
+        {
+            sideInputPath = CopyInputVideo(request.Record.SideVideoPath, Path.Combine(inputDir, SideInputFileName));
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Record.FrontVideoPath))
+        {
+            frontInputPath = CopyInputVideo(request.Record.FrontVideoPath, Path.Combine(inputDir, FrontInputFileName));
+        }
+
+        return new PreparedAnalysisInput(sideInputPath, frontInputPath);
+    }
+
+    private static string CopyInputVideo(string sourcePath, string destinationPath)
+    {
+        if (!File.Exists(sourcePath))
+        {
+            throw new FileNotFoundException($"输入视频不存在: {sourcePath}", sourcePath);
+        }
+
+        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+
+        var sourceFullPath = Path.GetFullPath(sourcePath);
+        var destinationFullPath = Path.GetFullPath(destinationPath);
+        if (!string.Equals(sourceFullPath, destinationFullPath, StringComparison.OrdinalIgnoreCase))
+        {
+            File.Copy(sourceFullPath, destinationFullPath, overwrite: true);
+        }
+
+        return destinationFullPath;
+    }
+
+    private string PrepareAlgorithmTomlConfigs(
+        AnalysisRequest request,
+        string algorithmDirectory,
+        string configSnapshotDir,
+        string inputDir,
+        string outputDir,
+        PreparedAnalysisInput preparedInput)
+    {
+        var heightM = (request.Patient.Height ?? 0) / 100.0;
+        var cameraDistance = _settingsService.CurrentSettings.Algorithm.SideCameraDistance ?? 10.0;
+
+        var sideConfigPath = Path.Combine(algorithmDirectory, SideConfigFileName);
+        var frontConfigPath = Path.Combine(algorithmDirectory, FrontConfigFileName);
+
+        WriteAlgorithmToml(
+            sideConfigPath,
+            preparedInput.SideVideoPath is null ? "[]" : $"['{SideInputFileName}']",
+            inputDir,
+            outputDir,
+            heightM,
+            cameraDistance);
+
+        WriteAlgorithmToml(
+            frontConfigPath,
+            preparedInput.FrontVideoPath is null ? "[]" : $"['{FrontInputFileName}']",
+            inputDir,
+            outputDir,
+            heightM,
+            cameraDistance);
+
+        Directory.CreateDirectory(configSnapshotDir);
+        File.Copy(sideConfigPath, Path.Combine(configSnapshotDir, SideConfigFileName), overwrite: true);
+        File.Copy(frontConfigPath, Path.Combine(configSnapshotDir, FrontConfigFileName), overwrite: true);
+
+        var manifestPath = Path.Combine(configSnapshotDir, Constants.TASK_CONFIG_FILENAME);
+        var manifest = new
+        {
+            request_id = request.Record.Id,
+            side_video = preparedInput.SideVideoPath,
+            front_video = preparedInput.FrontVideoPath,
+            input_dir = inputDir,
+            result_dir = outputDir,
+            side_config = Path.Combine(configSnapshotDir, SideConfigFileName),
+            front_config = Path.Combine(configSnapshotDir, FrontConfigFileName),
+            height_m = heightM,
+            perspective_value = cameraDistance,
+            generated_at = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
+        };
+        File.WriteAllText(manifestPath, JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }));
+
+        RaiseLog($"算法配置已写入固定 TOML，输入目录: {inputDir}，输出目录: {outputDir}，快照目录: {configSnapshotDir}");
+        return manifestPath;
+    }
+
+    private static void WriteAlgorithmToml(
+        string configPath,
+        string videoInputValue,
+        string inputDir,
+        string outputDir,
+        double heightM,
+        double perspectiveValue)
+    {
+        var lines = File.ReadAllLines(configPath).ToList();
+        UpsertTomlValue(lines, "base", "video_input", videoInputValue);
+        UpsertTomlValue(lines, "base", "video_dir", ToTomlString(inputDir));
+        UpsertTomlValue(lines, "base", "first_person_height", heightM.ToString("0.###", CultureInfo.InvariantCulture));
+        UpsertTomlValue(lines, "base", "time_range", "[]");
+        UpsertTomlValue(lines, "base", "result_dir", ToTomlString(outputDir));
+        UpsertTomlValue(lines, "px_to_meters_conversion", "perspective_value", perspectiveValue.ToString("0.###", CultureInfo.InvariantCulture));
+        File.WriteAllLines(configPath, lines);
+    }
+
+    private static void UpsertTomlValue(List<string> lines, string section, string key, string value)
+    {
+        var sectionHeader = $"[{section}]";
+        var sectionStart = lines.FindIndex(line => string.Equals(line.Trim(), sectionHeader, StringComparison.OrdinalIgnoreCase));
+        if (sectionStart < 0)
+        {
+            lines.Add(string.Empty);
+            lines.Add(sectionHeader);
+            lines.Add($"{key} = {value}");
+            return;
+        }
+
+        var insertIndex = lines.Count;
+        for (var i = sectionStart + 1; i < lines.Count; i++)
+        {
+            var trimmed = lines[i].Trim();
+            if (trimmed.StartsWith('['))
+            {
+                insertIndex = i;
+                break;
+            }
+
+            if (trimmed.StartsWith($"{key} ", StringComparison.OrdinalIgnoreCase) ||
+                trimmed.StartsWith($"{key}=", StringComparison.OrdinalIgnoreCase))
+            {
+                var commentIndex = lines[i].IndexOf('#');
+                var comment = commentIndex >= 0 ? " " + lines[i][commentIndex..].Trim() : string.Empty;
+                lines[i] = $"{key} = {value}{comment}";
+                return;
+            }
+        }
+
+        lines.Insert(insertIndex, $"{key} = {value}");
+    }
+
+    private static string ToTomlString(string path)
+    {
+        return $"'{path.Replace("\\", "/", StringComparison.Ordinal).Replace("'", "\\'", StringComparison.Ordinal)}'";
     }
 
     /// <summary>
@@ -244,7 +487,7 @@ public class GaitAnalysisService : IGaitAnalysisService
             ? (int)((DateTime.Now - patient.BirthDate.Value).TotalDays / 365.25)
             : 0;
 
-        // Patient.Height 存 cm，需转换为 m
+        // Patient.Height 瀛?cm锛岄渶杞崲涓?m
         var heightM = (patient.Height ?? 0) / 100.0;
 
         // 根据 VideoSpec 推算分辨率和帧率
@@ -314,38 +557,49 @@ public class GaitAnalysisService : IGaitAnalysisService
 
     #endregion
 
-    #region 私有方法 — 进程管理
+    #region 私有方法 - 进程管理
 
     /// <summary>
     /// 启动算法进程并等待完成
     /// </summary>
-    private async Task<int> RunProcessAsync(string exePath, string configPath, string requestId, CancellationToken ct)
+    private async Task<int> RunProcessAsync(string exePath, string requestId, string logDir, CancellationToken ct)
     {
+        Directory.CreateDirectory(logDir);
+        var stdoutLogPath = Path.Combine(logDir, "stdout.log");
+        var stderrLogPath = Path.Combine(logDir, "stderr.log");
+
         var startInfo = new ProcessStartInfo
         {
             FileName = exePath,
-            Arguments = $"--config \"{configPath}\"",
+            Arguments = string.Empty,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8,
             WorkingDirectory = Path.GetDirectoryName(exePath) ?? AppDomain.CurrentDomain.BaseDirectory
         };
+
+        startInfo.EnvironmentVariables["PYTHONIOENCODING"] = "utf-8";
+        startInfo.EnvironmentVariables["PYTHONUTF8"] = "1";
 
         var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
         _currentProcess = process;
 
-        var tcs = new TaskCompletionSource<int>();
+        var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         process.OutputDataReceived += (_, e) =>
         {
             if (App.IsShuttingDown || string.IsNullOrEmpty(e.Data)) return;
+            AppendProcessLog(stdoutLogPath, e.Data);
             HandleStdoutLine(e.Data, requestId);
         };
 
         process.ErrorDataReceived += (_, e) =>
         {
             if (App.IsShuttingDown || string.IsNullOrEmpty(e.Data)) return;
+            AppendProcessLog(stderrLogPath, e.Data);
             RaiseLog($"[stderr] {e.Data}", isError: true);
             _logHelper?.Warning($"算法 stderr: {e.Data}");
         };
@@ -364,7 +618,6 @@ public class GaitAnalysisService : IGaitAnalysisService
             RaiseLog($"算法进程已启动 (PID: {process.Id})");
             _logHelper?.Information($"算法进程已启动: PID={process.Id}, exe={exePath}");
 
-            // 等待进程退出或取消
             using var registration = ct.Register(() =>
             {
                 try
@@ -392,22 +645,43 @@ public class GaitAnalysisService : IGaitAnalysisService
     }
 
     /// <summary>
-    /// 处理 stdout 单行输出
+    /// 澶勭悊 stdout 鍗曡杈撳嚭
     /// </summary>
     private void HandleStdoutLine(string line, string requestId)
     {
         try
         {
+            if (TryHandlePlainProgressLine(line, requestId))
+            {
+                return;
+            }
+
             var message = JsonSerializer.Deserialize<TaskStatusMessage>(line);
-            if (message is null || message.Type != Constants.STATUS_MESSAGE_TYPE)
+            if (message is null || !message.IsStatusMessage)
             {
                 // 非状态消息，作为普通日志
                 RaiseLog(line);
                 return;
             }
 
-            RaiseProgress(requestId, message.TaskStatus, message.Progress, message.Message, message.ErrorCode);
-            RaiseLog($"[{message.TaskStatus}] {message.Progress}% - {message.Message}");
+            var effectiveRequestId = string.IsNullOrWhiteSpace(message.EffectiveRequestId)
+                ? requestId
+                : message.EffectiveRequestId;
+            var status = string.IsNullOrWhiteSpace(message.EffectiveStatus)
+                ? "processing"
+                : message.EffectiveStatus;
+            var progress = Math.Clamp(message.EffectiveProgress, 0, 100);
+            var text = !string.IsNullOrWhiteSpace(message.Message)
+                ? message.Message
+                : (!string.IsNullOrWhiteSpace(message.CurrentStage) ? message.CurrentStage : status);
+            var errorCode = message.ErrorCode ?? (string.IsNullOrWhiteSpace(message.Error) ? null : (int?)AnalysisErrorCode.Unknown);
+
+            RaiseProgress(effectiveRequestId, status, progress, text, errorCode);
+            RaiseLog($"[{status}] {progress}% - {text}", errorCode.HasValue);
+            if (!string.IsNullOrWhiteSpace(message.Error))
+            {
+                RaiseLog($"算法错误: {message.Error}", isError: true);
+            }
         }
         catch (JsonException)
         {
@@ -416,9 +690,60 @@ public class GaitAnalysisService : IGaitAnalysisService
         }
     }
 
+    private static void AppendProcessLog(string path, string line)
+    {
+        try
+        {
+            File.AppendAllText(path, line + Environment.NewLine);
+        }
+        catch
+        {
+            // 日志写入不能影响算法主流程。
+        }
+    }
+
+    private static string ReadLastLogLines(string path, int maxLines)
+    {
+        try
+        {
+            if (!File.Exists(path))
+            {
+                return string.Empty;
+            }
+
+            var lines = File.ReadLines(path).TakeLast(maxLines);
+            return string.Join(Environment.NewLine, lines);
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    private bool TryHandlePlainProgressLine(string line, string requestId)
+    {
+        if (!line.StartsWith("PROGRESS ", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var parts = line.Split(' ', 4, StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length < 3 || !int.TryParse(parts[1], out var progress))
+        {
+            RaiseLog(line);
+            return true;
+        }
+
+        var status = parts[2];
+        var message = parts.Length >= 4 ? parts[3] : status;
+        RaiseProgress(requestId, status, Math.Clamp(progress, 0, 100), message);
+        RaiseLog($"[{status}] {progress}% - {message}");
+        return true;
+    }
+
     #endregion
 
-    #region 私有方法 — 结果解析
+    #region 私有方法 - 结果解析
 
     /// <summary>
     /// 读取 summary.json
@@ -492,10 +817,10 @@ public class GaitAnalysisService : IGaitAnalysisService
             };
         }
 
-        // CSV 文件记录
+        // CSV 鏂囦欢璁板綍
         result.CsvFiles = BuildCsvFileRecords(outputDir, summary.CsvFiles);
 
-        // 质量控制
+        // 璐ㄩ噺鎺у埗
         if (summary.QualityControl is not null)
         {
             result.QualityControl = new QualityControlInfo
@@ -589,7 +914,7 @@ public class GaitAnalysisService : IGaitAnalysisService
 
     #endregion
 
-    #region 私有方法 — 事件触发
+    #region 私有方法 - 事件触发
 
     /// <summary>
     /// 触发进度事件
@@ -649,7 +974,7 @@ public class GaitAnalysisService : IGaitAnalysisService
 
     #endregion
 
-    #region 数据持久化
+    #region 鏁版嵁鎸佷箙鍖?
 
     /// <inheritdoc/>
     public async Task<int> SaveAnalysisResultAsync(AnalysisResult result)
@@ -664,7 +989,7 @@ public class GaitAnalysisService : IGaitAnalysisService
 
             await db.ExecuteInTransactionAsync(async () =>
             {
-                // [1] 插入主表
+                // [1] 鎻掑叆涓昏〃
                 result.CreatedAt = DateTime.Now;
                 var id = await db.InsertReturnIdentityAsync(result);
                 resultId = (int)id;
@@ -678,7 +1003,7 @@ public class GaitAnalysisService : IGaitAnalysisService
                     await db.InsertAsync(result.KinematicSummary);
                 }
 
-                // [3] 插入 CSV 文件记录
+                // [3] 鎻掑叆 CSV 鏂囦欢璁板綍
                 if (result.CsvFiles is { Count: > 0 })
                 {
                     foreach (var csv in result.CsvFiles)
@@ -698,7 +1023,7 @@ public class GaitAnalysisService : IGaitAnalysisService
                     await db.InsertAsync(result.QualityControl);
                 }
 
-                // [5] 更新 GaitParameters 扩展字段（若有步态事件数据）
+                // [5] 鏇存柊 GaitParameters 鎵╁睍瀛楁锛堣嫢鏈夋鎬佷簨浠舵暟鎹級
                 if (result.GaitCycleDurationS.HasValue)
                 {
                     var gaitParams = await db.GetFirstAsync<GaitParameters>(
@@ -780,7 +1105,7 @@ public class GaitAnalysisService : IGaitAnalysisService
     }
 
     /// <summary>
-    /// 加载分析结果的子表数据（运动学汇总/CSV文件/质量控制）
+    /// 加载分析结果的子表数据（运动学汇总/CSV 文件/质量控制）
     /// </summary>
     private static async Task LoadAnalysisResultChildrenAsync(SqliteSugarHelper db, AnalysisResult result)
     {

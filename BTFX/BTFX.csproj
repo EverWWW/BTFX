@@ -117,6 +117,7 @@
     <None Remove="Resources\Images\DataManagement\xiangqing.png" />
     <None Remove="Resources\Images\DataManagement\yiwancheng.png" />
     <None Remove="Resources\Images\Report\daishengcheng.png" />
+    <None Remove="Resources\Images\Report\dayin.png" />
     <None Remove="Resources\Images\Report\zanwushuju.png" />
     <None Remove="Resources\Images\Settings\beifen.png" />
     <None Remove="Resources\Images\Settings\chongzhimima.png" />
@@ -194,6 +195,7 @@
     <Resource Include="Resources\Images\DataManagement\xiangqing.png" />
     <Resource Include="Resources\Images\DataManagement\yiwancheng.png" />
     <Resource Include="Resources\Images\Report\daishengcheng.png" />
+    <Resource Include="Resources\Images\Report\dayin.png" />
     <Resource Include="Resources\Images\Report\zanwushuju.png" />
     <Resource Include="Resources\Images\Settings\beifen.png" />
     <Resource Include="Resources\Images\Settings\chongzhimima.png" />
@@ -215,6 +217,34 @@
     <None Update="ffmpeg\ffprobe.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="gait_analysis\Config_front.toml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Update="gait_analysis\Config_side.toml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Update="gait_analysis\gait_analysis.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Update="gait_analysis\logs.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="gait_analysis\_internal.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
   </ItemGroup>
+
+  <Target Name="ExtractGaitAnalysisRuntimeAfterBuild" AfterTargets="Build">
+    <Exec Condition="Exists('$(TargetDir)gait_analysis\_internal.zip') And !Exists('$(TargetDir)gait_analysis\_internal')" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;Expand-Archive -LiteralPath '$(TargetDir)gait_analysis\_internal.zip' -DestinationPath '$(TargetDir)gait_analysis' -Force&quot;" />
+  </Target>
+
+  <Target Name="ExtractGaitAnalysisRuntimeAfterPublish" AfterTargets="Publish">
+    <Exec Condition="Exists('$(PublishDir)gait_analysis\_internal.zip') And !Exists('$(PublishDir)gait_analysis\_internal')" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;Expand-Archive -LiteralPath '$(PublishDir)gait_analysis\_internal.zip' -DestinationPath '$(PublishDir)gait_analysis' -Force&quot;" />
+    <Delete Files="$(PublishDir)gait_analysis\_internal.zip" Condition="Exists('$(PublishDir)gait_analysis\_internal')" />
+  </Target>
 
 </Project>

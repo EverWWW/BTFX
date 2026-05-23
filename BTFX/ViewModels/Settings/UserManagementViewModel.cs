@@ -198,23 +198,23 @@ public partial class UserManagementViewModel : ObservableObject
             return;
         }
 
-        var result = await ShowConfirmDialogAsync(
-            _localizationService.GetString("Confirm"),
-            _localizationService.GetString("ConfirmResetPassword"));
+        var resetResult = await DialogHost.Show(
+            new PasswordResetDialog(new PasswordResetDialogViewModel()),
+            "RootDialog");
 
-        if (!result)
+        if (resetResult is not string newPassword || string.IsNullOrWhiteSpace(newPassword))
         {
             return;
         }
 
         try
         {
-            var success = await _authenticationService.ResetPasswordAsync(item.User.Id, BtfxConstants.DEFAULT_PASSWORD);
+            var success = await _authenticationService.ResetPasswordAsync(item.User.Id, newPassword);
             if (success)
             {
                 await LoadUsersAsync();
                 await ShowNoticeDialogAsync(
-                    $"密码已重置为默认密码：{BtfxConstants.DEFAULT_PASSWORD}",
+                    "密码已重置",
                     _localizationService.GetString("Information"));
                 _logHelper?.Information($"重置用户密码: {item.User.Username}");
                 return;
@@ -296,7 +296,8 @@ public partial class UserManagementViewModel : ObservableObject
 
         var result = await ShowConfirmDialogAsync(
             _localizationService.GetString("DeleteUser"),
-            _localizationService.GetString("ConfirmDeleteUserMessage", item.User.Username));
+            _localizationService.GetString("ConfirmDeleteUserMessage", item.User.Username),
+            "TrashCanOutline");
 
         if (!result)
         {
@@ -332,7 +333,7 @@ public partial class UserManagementViewModel : ObservableObject
     /// <summary>
     /// 显示确认对话框。
     /// </summary>
-    private static async Task<bool> ShowConfirmDialogAsync(string title, string message)
+    private static async Task<bool> ShowConfirmDialogAsync(string title, string message, string iconKind = "HelpCircleOutline")
     {
         var result = await DialogHost.Show(
             new ConfirmDialog
@@ -343,7 +344,8 @@ public partial class UserManagementViewModel : ObservableObject
                     Message = message,
                     ConfirmText = "确定",
                     CancelText = "取消",
-                    IsCancelVisible = true
+                    IsCancelVisible = true,
+                    IconKind = iconKind
                 }
             },
             "RootDialog").ConfigureAwait(true);
@@ -364,7 +366,8 @@ public partial class UserManagementViewModel : ObservableObject
                     Title = title,
                     Message = message,
                     ConfirmText = "确定",
-                    IsCancelVisible = false
+                    IsCancelVisible = false,
+                    IconKind = "InformationOutline"
                 }
             },
             "RootDialog");

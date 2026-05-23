@@ -1,0 +1,1009 @@
+﻿<UserControl
+    x:Class="BTFX.Views.Dialogs.CameraCaptureDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Width="1400"
+    Height="940"
+    d:DesignHeight="940"
+    d:DesignWidth="1400"
+    FontFamily="{StaticResource AppFont}"
+    Unloaded="CameraCaptureDialog_OnUnloaded"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="CameraAccentBrush" Color="#E4004A" />
+
+        <Style x:Key="CameraDialogTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Foreground" Value="#403B5B" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="CameraSectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Foreground" Value="#403B5B" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="CameraFieldLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="Foreground" Value="#666666" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="CameraMetaTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="#666666" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style TargetType="RadioButton">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Foreground" Value="#403B5B" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Grid Width="16" Height="16" Margin="0,0,6,0">
+                                <Ellipse
+                                    x:Name="OuterCircle"
+                                    Fill="#FFFFFF"
+                                    Stroke="#C8CED8"
+                                    StrokeThickness="1.5" />
+                                <Ellipse
+                                    x:Name="InnerCircle"
+                                    Width="8"
+                                    Height="8"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Fill="{StaticResource CameraAccentBrush}"
+                                    Visibility="Collapsed" />
+                            </Grid>
+                            <ContentPresenter
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding Content}" />
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="OuterCircle" Property="Stroke" Value="{StaticResource CameraAccentBrush}" />
+                                <Setter TargetName="InnerCircle" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Foreground" Value="#403B5B" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Border
+                                x:Name="CheckBoxBorder"
+                                Width="16"
+                                Height="16"
+                                Margin="0,0,6,0"
+                                Background="#FFFFFF"
+                                BorderBrush="#C8CED8"
+                                BorderThickness="1.5"
+                                CornerRadius="3">
+                                <Path
+                                    x:Name="CheckMark"
+                                    Width="9"
+                                    Height="7"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Data="M1,3.5 L3.4,6 L8,1"
+                                    Stroke="#FFFFFF"
+                                    StrokeEndLineCap="Round"
+                                    StrokeStartLineCap="Round"
+                                    StrokeThickness="1.8"
+                                    Visibility="Collapsed" />
+                            </Border>
+                            <ContentPresenter
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding Content}" />
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckBoxBorder" Property="Background" Value="{StaticResource CameraAccentBrush}" />
+                                <Setter TargetName="CheckBoxBorder" Property="BorderBrush" Value="{StaticResource CameraAccentBrush}" />
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CameraSectionBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="#FAFAFA" />
+            <Setter Property="BorderBrush" Value="#EEF1F5" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="20,18" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+        </Style>
+
+        <Style x:Key="CameraModeSwitchStyle" TargetType="ToggleButton">
+            <Setter Property="Width" Value="136" />
+            <Setter Property="Height" Value="48" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Background" Value="#403B5B" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Grid>
+                            <Border
+                                x:Name="SwitchTrack"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="24" />
+                            <Grid Margin="14,0">
+                                <TextBlock
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="14"
+                                    Foreground="#FFFFFF"
+                                    Text="单视角" />
+                                <TextBlock
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="14"
+                                    Foreground="#FFFFFF"
+                                    Text="双视角" />
+                            </Grid>
+                            <Border
+                                x:Name="SwitchThumb"
+                                Width="62"
+                                Height="40"
+                                Margin="4"
+                                HorizontalAlignment="Left"
+                                Background="White"
+                                CornerRadius="20">
+                                <TextBlock
+                                    x:Name="SwitchText"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="15"
+                                    FontWeight="Medium"
+                                    Foreground="#403B5B"
+                                    Text="单视角" />
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="SwitchTrack" Property="Background" Value="#403B5B" />
+                                <Setter TargetName="SwitchThumb" Property="HorizontalAlignment" Value="Right" />
+                                <Setter TargetName="SwitchText" Property="Text" Value="双视角" />
+                                <Setter TargetName="SwitchText" Property="Foreground" Value="#403B5B" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CameraComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Foreground" Value="#555555" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#D1D1D1" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Height" Value="48" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+            <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ComboBoxItem">
+                        <Setter Property="SnapsToDevicePixels" Value="True" />
+                        <Setter Property="OverridesDefaultStyle" Value="True" />
+                        <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+                        <Setter Property="FontSize" Value="15" />
+                        <Setter Property="Foreground" Value="#555555" />
+                        <Setter Property="HorizontalContentAlignment" Value="Left" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ComboBoxItem">
+                                    <Border
+                                        x:Name="ItemBorder"
+                                        Padding="18,12"
+                                        Background="Transparent"
+                                        CornerRadius="10">
+                                        <ContentPresenter VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsHighlighted" Value="True">
+                                            <Setter TargetName="ItemBorder" Property="Background" Value="#F0F4F9" />
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="ItemBorder" Property="Background" Value="#EEF2F7" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid
+                            Width="{TemplateBinding Width}"
+                            Height="{TemplateBinding Height}"
+                            SnapsToDevicePixels="True">
+                            <ToggleButton
+                                Width="{TemplateBinding Width}"
+                                Height="{TemplateBinding Height}"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Stretch"
+                                ClickMode="Press"
+                                Cursor="Hand"
+                                Focusable="False"
+                                IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                OverridesDefaultStyle="True">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border
+                                            x:Name="OuterBorder"
+                                            Background="{Binding Background, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                            BorderBrush="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                            BorderThickness="{Binding BorderThickness, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                            CornerRadius="10"
+                                            SnapsToDevicePixels="True">
+                                            <Path
+                                                Width="12"
+                                                Height="7"
+                                                Margin="0,0,18,0"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                Data="M0,0 L6,6 L12,0"
+                                                Fill="Transparent"
+                                                Stroke="#999999"
+                                                StrokeThickness="1.5" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="OuterBorder" Property="BorderBrush" Value="#B0B0B0" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <ContentPresenter
+                                Margin="18,0,40,0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding SelectionBoxItem}"
+                                ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                IsHitTestVisible="False" />
+                            <Popup
+                                AllowsTransparency="True"
+                                Focusable="False"
+                                IsOpen="{TemplateBinding IsDropDownOpen}"
+                                Placement="Bottom"
+                                PopupAnimation="Fade">
+                                <Border
+                                    Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                    Margin="0,6,0,0"
+                                    Padding="8"
+                                    Background="White"
+                                    BorderBrush="#E2E2E2"
+                                    BorderThickness="1"
+                                    CornerRadius="16">
+                                    <ScrollViewer MaxHeight="260" CanContentScroll="True">
+                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CameraPrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="48" />
+            <Setter Property="MinWidth" Value="132" />
+            <Setter Property="Padding" Value="22,0" />
+            <Setter Property="Background" Value="#403B5B" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ButtonBorder"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.92" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.82" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CameraSecondaryButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="48" />
+            <Setter Property="MinWidth" Value="112" />
+            <Setter Property="Padding" Value="20,0" />
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="Foreground" Value="#403B5B" />
+            <Setter Property="BorderBrush" Value="#403B5B" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ButtonBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#F7F6FB" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.82" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style
+            x:Key="CameraCompactSecondaryButtonStyle"
+            BasedOn="{StaticResource CameraSecondaryButtonStyle}"
+            TargetType="Button">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="MinWidth" Value="58" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+    </UserControl.Resources>
+
+    <Border Padding="20" Style="{StaticResource DialogSurfaceBorderStyle}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="52" />
+                <RowDefinition Height="130" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="70" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    Style="{StaticResource CameraDialogTitleStyle}"
+                    Text="相机视频采集" />
+
+                <Button
+                    Width="34"
+                    Height="34"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Click="CloseButton_OnClick"
+                    Style="{StaticResource MaterialDesignIconButton}"
+                    ToolTip="关闭">
+                    <materialDesign:PackIcon Kind="Close" />
+                </Button>
+            </Grid>
+
+            <Border Grid.Row="1" Style="{StaticResource CameraSectionBorderStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="12" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Border
+                            Width="4"
+                            Height="16"
+                            Margin="0,0,10,0"
+                            VerticalAlignment="Center"
+                            Background="{StaticResource CameraAccentBrush}"
+                            CornerRadius="8" />
+                        <TextBlock Style="{StaticResource CameraSectionTitleStyle}" Text="采集参数" />
+                    </StackPanel>
+
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.35*" />
+                            <ColumnDefinition Width="1.15*" />
+                            <ColumnDefinition Width="1.05*" />
+                            <ColumnDefinition Width="1.05*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource CameraFieldLabelStyle}" Text="当前模式" />
+                            <ToggleButton
+                                Margin="10,0,0,0"
+                                Command="{Binding ToggleCaptureModeCommand}"
+                                IsChecked="{Binding IsDualMode, Mode=OneWay}"
+                                Style="{StaticResource CameraModeSwitchStyle}" />
+                        </StackPanel>
+
+                        <StackPanel
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource CameraFieldLabelStyle}" Text="录制分辨率" />
+                            <ComboBox
+                                Width="150"
+                                Margin="10,0,0,0"
+                                ItemsSource="{Binding Resolutions}"
+                                SelectedItem="{Binding SelectedResolution}"
+                                Style="{StaticResource CameraComboBoxStyle}" />
+                        </StackPanel>
+
+                        <StackPanel
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource CameraFieldLabelStyle}" Text="录制帧率" />
+                            <ComboBox
+                                Width="170"
+                                Margin="10,0,0,0"
+                                ItemsSource="{Binding FrameRateOptions}"
+                                SelectedItem="{Binding SelectedFrameRate}"
+                                Style="{StaticResource CameraComboBoxStyle}" />
+                        </StackPanel>
+
+                        <StackPanel
+                            Grid.Column="3"
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource CameraFieldLabelStyle}" Text="录制时长" />
+                            <ComboBox
+                                Width="110"
+                                Margin="10,0,0,0"
+                                ItemsSource="{Binding DurationOptions}"
+                                SelectedItem="{Binding SelectedDuration}"
+                                Style="{StaticResource CameraComboBoxStyle}" />
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="2" Margin="0,14,0,14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0">
+                    <Border.Style>
+                        <Style BasedOn="{StaticResource CameraSectionBorderStyle}" TargetType="Border">
+                            <Setter Property="Grid.ColumnSpan" Value="1" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsDualMode}" Value="False">
+                                    <Setter Property="Grid.ColumnSpan" Value="3" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Horizontal">
+                                <Border
+                                    Width="4"
+                                    Height="16"
+                                    Margin="0,0,10,0"
+                                    VerticalAlignment="Center"
+                                    Background="{StaticResource CameraAccentBrush}"
+                                    CornerRadius="8" />
+                                <TextBlock Style="{StaticResource CameraSectionTitleStyle}" Text="侧面相机" />
+                            </StackPanel>
+                            <Border
+                                Grid.Column="1"
+                                Margin="10,0,0,0"
+                                Padding="8,3"
+                                VerticalAlignment="Center"
+                                Background="#F4F7F5"
+                                CornerRadius="4">
+                                <TextBlock
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Foreground="{Binding SideCameraStatusBrush}"
+                                    Text="{Binding SideCameraStatus}" />
+                            </Border>
+                            <Button
+                                Grid.Column="2"
+                                Width="32"
+                                Height="32"
+                                Margin="4,0,0,0"
+                                Command="{Binding RefreshCameraStatusCommand}"
+                                Style="{StaticResource MaterialDesignIconButton}"
+                                ToolTip="刷新相机状态">
+                                <materialDesign:PackIcon Kind="Refresh" />
+                            </Button>
+                            <StackPanel
+                                Grid.Column="4"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal">
+                                <Button
+                                    Margin="0,0,10,0"
+                                    Command="{Binding EditSideCameraCommand}"
+                                    Content="修改"
+                                    Style="{StaticResource CameraCompactSecondaryButtonStyle}" />
+                                <TextBlock Style="{StaticResource CameraMetaTextStyle}" Text="相机ID：" />
+                                <TextBlock
+                                    Width="170"
+                                    Style="{StaticResource CameraMetaTextStyle}"
+                                    Text="{Binding SideCameraName}"
+                                    TextTrimming="CharacterEllipsis" />
+
+                            </StackPanel>
+                        </Grid>
+                        <Border
+                            Grid.Row="1"
+                            Width="500"
+                            Height="500"
+                            Margin="0,10,0,10"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Background="#111827"
+                            CornerRadius="4">
+                            <Grid>
+                                <Image
+                                    Source="{Binding SidePreviewImage}"
+                                    Stretch="Uniform"
+                                    Visibility="{Binding IsPreviewState, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                <Image
+                                    x:Name="SidePlaybackPosterImage"
+                                    Source="{Binding SidePlaybackPosterImage}"
+                                    Stretch="Uniform"
+                                    Visibility="{Binding IsCompletedState, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                <StackPanel
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Visibility="{Binding IsRecordingState, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                        <Ellipse
+                                            Width="10"
+                                            Height="10"
+                                            Margin="0,0,8,0"
+                                            VerticalAlignment="Center"
+                                            Fill="#EF4444" />
+                                        <TextBlock
+                                            FontSize="20"
+                                            FontWeight="SemiBold"
+                                            Foreground="#F87171"
+                                            Text="{Binding RecordingStageText}" />
+                                    </StackPanel>
+                                    <TextBlock
+                                        Margin="0,12,0,0"
+                                        HorizontalAlignment="Center"
+                                        FontSize="18"
+                                        Foreground="White"
+                                        Text="{Binding RecordingElapsedDisplayText}"
+                                        Visibility="{Binding IsRecordingCountdownVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    <TextBlock
+                                        Width="420"
+                                        Margin="0,12,0,0"
+                                        HorizontalAlignment="Center"
+                                        FontSize="12"
+                                        Foreground="#D1D5DB"
+                                        Text="{Binding TranscodeLogText}"
+                                        TextAlignment="Center"
+                                        TextTrimming="CharacterEllipsis"
+                                        Visibility="{Binding IsTranscodingVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                </StackPanel>
+                                <MediaElement
+                                    x:Name="SidePlaybackMediaElement"
+                                    LoadedBehavior="Manual"
+                                    Stretch="Uniform"
+                                    UnloadedBehavior="Stop"
+                                    Visibility="Hidden" />
+                            </Grid>
+                        </Border>
+                        <Grid
+                            Grid.Row="2"
+                            Margin="0,0,0,10"
+                            Visibility="{Binding IsCompletedState, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                <Button
+                                    Width="34"
+                                    Height="34"
+                                    VerticalAlignment="Center"
+                                    Click="SidePlaybackButton_OnClick"
+                                    Style="{StaticResource MaterialDesignIconButton}">
+                                    <materialDesign:PackIcon x:Name="SidePlaybackIcon" Kind="Play" />
+                                </Button>
+                                <TextBlock
+                                    x:Name="SidePlaybackElapsedText"
+                                    Width="52"
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="13"
+                                    Foreground="#666666"
+                                    Text="00:00" />
+                                <Slider
+                                    x:Name="SidePlaybackSlider"
+                                    Width="260"
+                                    Margin="8,0,8,0"
+                                    VerticalAlignment="Center"
+                                    Focusable="False"
+                                    IsHitTestVisible="False" />
+                                <TextBlock
+                                    x:Name="SidePlaybackDurationText"
+                                    Width="52"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="13"
+                                    Foreground="#666666"
+                                    Text="00:00" />
+                            </StackPanel>
+                        </Grid>
+                        <Grid Grid.Row="3">
+                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                <RadioButton
+                                    Content="横向"
+                                    GroupName="SideOrientation"
+                                    IsChecked="{Binding SideOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Landscape}"
+                                    IsEnabled="{Binding IsPreviewState}" />
+                                <RadioButton
+                                    Margin="12,0,0,0"
+                                    Content="纵向"
+                                    GroupName="SideOrientation"
+                                    IsChecked="{Binding SideOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=PortraitClockwise}"
+                                    IsEnabled="{Binding IsPreviewState}" />
+                                <CheckBox
+                                    Margin="14,0,0,0"
+                                    Content="上下翻转"
+                                    IsChecked="{Binding SideFlipHorizontal}"
+                                    IsEnabled="{Binding IsPreviewState}" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <Border
+                    Grid.Column="2"
+                    Style="{StaticResource CameraSectionBorderStyle}"
+                    Visibility="{Binding IsDualMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Horizontal">
+                                <Border
+                                    Width="4"
+                                    Height="16"
+                                    Margin="0,0,10,0"
+                                    VerticalAlignment="Center"
+                                    Background="{StaticResource CameraAccentBrush}"
+                                    CornerRadius="8" />
+                                <TextBlock Style="{StaticResource CameraSectionTitleStyle}" Text="正面相机" />
+                            </StackPanel>
+                            <Border
+                                Grid.Column="1"
+                                Margin="10,0,0,0"
+                                Padding="8,3"
+                                VerticalAlignment="Center"
+                                Background="#F4F7F5"
+                                CornerRadius="4">
+                                <TextBlock
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Foreground="{Binding FrontCameraStatusBrush}"
+                                    Text="{Binding FrontCameraStatus}" />
+                            </Border>
+                            <Button
+                                Grid.Column="2"
+                                Width="32"
+                                Height="32"
+                                Margin="4,0,0,0"
+                                Command="{Binding RefreshCameraStatusCommand}"
+                                Style="{StaticResource MaterialDesignIconButton}"
+                                ToolTip="刷新相机状态">
+                                <materialDesign:PackIcon Kind="Refresh" />
+                            </Button>
+                            <StackPanel
+                                Grid.Column="4"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal">
+                                <Button
+                                    Margin="0,0,10,0"
+                                    Command="{Binding EditFrontCameraCommand}"
+                                    Content="修改"
+                                    Style="{StaticResource CameraCompactSecondaryButtonStyle}" />
+                                <TextBlock Style="{StaticResource CameraMetaTextStyle}" Text="相机ID：" />
+                                <TextBlock
+                                    Width="170"
+                                    Style="{StaticResource CameraMetaTextStyle}"
+                                    Text="{Binding FrontCameraName}"
+                                    TextTrimming="CharacterEllipsis" />
+
+                            </StackPanel>
+                        </Grid>
+                        <Border
+                            Grid.Row="1"
+                            Width="500"
+                            Height="500"
+                            Margin="0,10,0,10"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Background="#111827"
+                            CornerRadius="4">
+                            <Grid>
+                                <Image
+                                    Source="{Binding FrontPreviewImage}"
+                                    Stretch="Uniform"
+                                    Visibility="{Binding IsPreviewState, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                <Image
+                                    x:Name="FrontPlaybackPosterImage"
+                                    Source="{Binding FrontPlaybackPosterImage}"
+                                    Stretch="Uniform"
+                                    Visibility="{Binding IsCompletedState, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                <StackPanel
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Visibility="{Binding IsRecordingState, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                        <Ellipse
+                                            Width="10"
+                                            Height="10"
+                                            Margin="0,0,8,0"
+                                            VerticalAlignment="Center"
+                                            Fill="#EF4444" />
+                                        <TextBlock
+                                            FontSize="20"
+                                            FontWeight="SemiBold"
+                                            Foreground="#F87171"
+                                            Text="{Binding RecordingStageText}" />
+                                    </StackPanel>
+                                    <TextBlock
+                                        Margin="0,12,0,0"
+                                        HorizontalAlignment="Center"
+                                        FontSize="18"
+                                        Foreground="White"
+                                        Text="{Binding RecordingElapsedDisplayText}"
+                                        Visibility="{Binding IsRecordingCountdownVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    <TextBlock
+                                        Width="420"
+                                        Margin="0,12,0,0"
+                                        HorizontalAlignment="Center"
+                                        FontSize="12"
+                                        Foreground="#D1D5DB"
+                                        Text="{Binding TranscodeLogText}"
+                                        TextAlignment="Center"
+                                        TextTrimming="CharacterEllipsis"
+                                        Visibility="{Binding IsTranscodingVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                </StackPanel>
+                                <MediaElement
+                                    x:Name="FrontPlaybackMediaElement"
+                                    LoadedBehavior="Manual"
+                                    Stretch="Uniform"
+                                    UnloadedBehavior="Stop"
+                                    Visibility="Hidden" />
+                            </Grid>
+                        </Border>
+                        <Grid
+                            Grid.Row="2"
+                            Margin="0,0,0,10"
+                            Visibility="{Binding IsCompletedState, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                <Button
+                                    Width="34"
+                                    Height="34"
+                                    VerticalAlignment="Center"
+                                    Click="FrontPlaybackButton_OnClick"
+                                    Style="{StaticResource MaterialDesignIconButton}">
+                                    <materialDesign:PackIcon x:Name="FrontPlaybackIcon" Kind="Play" />
+                                </Button>
+                                <TextBlock
+                                    x:Name="FrontPlaybackElapsedText"
+                                    Width="52"
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="13"
+                                    Foreground="#666666"
+                                    Text="00:00" />
+                                <Slider
+                                    x:Name="FrontPlaybackSlider"
+                                    Width="260"
+                                    Margin="8,0,8,0"
+                                    VerticalAlignment="Center"
+                                    Focusable="False"
+                                    IsHitTestVisible="False" />
+                                <TextBlock
+                                    x:Name="FrontPlaybackDurationText"
+                                    Width="52"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="13"
+                                    Foreground="#666666"
+                                    Text="00:00" />
+                            </StackPanel>
+                        </Grid>
+                        <Grid Grid.Row="3">
+                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                <RadioButton
+                                    Content="横向"
+                                    GroupName="FrontOrientation"
+                                    IsChecked="{Binding FrontOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Landscape}"
+                                    IsEnabled="{Binding IsPreviewState}" />
+                                <RadioButton
+                                    Margin="12,0,0,0"
+                                    Content="纵向"
+                                    GroupName="FrontOrientation"
+                                    IsChecked="{Binding FrontOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=PortraitClockwise}"
+                                    IsEnabled="{Binding IsPreviewState}" />
+                                <CheckBox
+                                    Margin="14,0,0,0"
+                                    Content="上下翻转"
+                                    IsChecked="{Binding FrontFlipHorizontal}"
+                                    IsEnabled="{Binding IsPreviewState}" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <StackPanel
+                Grid.Row="3"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Orientation="Horizontal">
+                <Button
+                    Command="{Binding StartOrResetRecordingCommand}"
+                    IsEnabled="{Binding IsRecordingState, Converter={StaticResource InverseBooleanConverter}}"
+                    Style="{StaticResource CameraPrimaryButtonStyle}">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Margin="0,0,6,0" Kind="RecordRec" />
+                        <TextBlock Text="{Binding PrimaryActionText}" />
+                    </StackPanel>
+                </Button>
+                <Button
+                    Margin="12,0,0,0"
+                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                    CommandParameter="{Binding CaptureResult}"
+                    Content="确定"
+                    IsEnabled="{Binding CanConfirm}"
+                    Style="{StaticResource CameraPrimaryButtonStyle}" />
+            </StackPanel>
+
+            <Border
+                Grid.RowSpan="4"
+                Background="#66000000"
+                Visibility="{Binding IsCameraNameEditorOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <materialDesign:Card
+                    Width="360"
+                    Padding="20"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    UniformCornerRadius="6">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource CameraSectionTitleStyle}" Text="修改相机编号" />
+                        <TextBox
+                            Margin="0,18,0,18"
+                            materialDesign:HintAssist.Hint="DirectShow 相机设备名"
+                            FontFamily="{StaticResource AppFont}"
+                            FontSize="16"
+                            Text="{Binding EditingCameraName, UpdateSourceTrigger=PropertyChanged}" />
+                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                            <Button
+                                Command="{Binding CancelEditCameraNameCommand}"
+                                Content="取消"
+                                Style="{StaticResource CameraSecondaryButtonStyle}" />
+                            <Button
+                                Margin="8,0,0,0"
+                                Command="{Binding ConfirmEditCameraNameCommand}"
+                                Content="确认"
+                                Style="{StaticResource CameraPrimaryButtonStyle}" />
+                        </StackPanel>
+                    </StackPanel>
+                </materialDesign:Card>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

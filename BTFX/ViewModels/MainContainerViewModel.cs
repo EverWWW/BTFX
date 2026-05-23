@@ -3,6 +3,7 @@ using System.Windows.Threading;
 using BTFX.Common;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
+using BTFX.ViewModels.Measurement;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
@@ -18,6 +19,7 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     private readonly INavigationService _navigationService;
     private readonly ISessionService _sessionService;
     private readonly ILocalizationService _localizationService;
+    private readonly IMeasurementWorkflowCoordinator _measurementWorkflowCoordinator;
     private readonly ILogHelper? _logHelper;
     private readonly DispatcherTimer _timeUpdateTimer;
     private bool _disposed;
@@ -115,11 +117,13 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     public MainContainerViewModel(
         INavigationService navigationService,
         ISessionService sessionService,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IMeasurementWorkflowCoordinator measurementWorkflowCoordinator)
     {
         _navigationService = navigationService;
         _sessionService = sessionService;
         _localizationService = localizationService;
+        _measurementWorkflowCoordinator = measurementWorkflowCoordinator;
 
         // 尝试获取日志服务
         try
@@ -148,12 +152,55 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
         // 订阅会话变化事件
         _sessionService.CurrentPatientChanged += OnCurrentPatientChanged;
         _sessionService.CurrentUserChanged += OnCurrentUserChanged;
+        _measurementWorkflowCoordinator.ResumeRequested += OnMeasurementResumeRequested;
 
         // 初始化当前状态
         UpdateUserInfo();
         UpdatePatientInfo();
 
         _logHelper?.Information("MainContainerViewModel 初始化完成");
+    }
+
+    private async void OnMeasurementResumeRequested(object? sender, MeasurementWorkflowResumeRequestedEventArgs e)
+    {
+        if (_disposed || App.IsShuttingDown) return;
+
+        try
+        {
+            var measurementItem = NavigationItems.FirstOrDefault(item => item.Key == "Measurement");
+            if (measurementItem is null || !measurementItem.IsEnabled)
+            {
+                return;
+            }
+
+            if (SelectedNavigationItem != measurementItem)
+            {
+                SelectedNavigationItem = measurementItem;
+            }
+            else if (CurrentContent is null)
+            {
+                LoadSubView(measurementItem.ViewModelName);
+            }
+
+            MeasurementViewModel? viewModel = null;
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                if (CurrentContent is Views.Measurement.MeasurementView view &&
+                    view.DataContext is MeasurementViewModel measurementViewModel)
+                {
+                    viewModel = measurementViewModel;
+                }
+            });
+
+            if (viewModel is not null)
+            {
+                await viewModel.LoadExistingMeasurementAsync(e.Record, e.Decision);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error($"恢复测量流程失败: MeasurementId={e.Record.Id}", ex);
+        }
     }
 
     /// <summary>
@@ -504,6 +551,7 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
         _sessionService.CurrentPatientChanged -= OnCurrentPatientChanged;
         _sessionService.CurrentUserChanged -= OnCurrentUserChanged;
         _localizationService.LanguageChanged -= OnLanguageChanged;
+        _measurementWorkflowCoordinator.ResumeRequested -= OnMeasurementResumeRequested;
 
         _disposed = true;
         GC.SuppressFinalize(this);
@@ -546,4 +594,10 @@ public partial class ConfirmDialogViewModel : ObservableObject
     /// </summary>
     [ObservableProperty]
     private bool _isCancelVisible = true;
+
+    /// <summary>
+    /// 图标名称，使用 MaterialDesign PackIconKind 字符串。
+    /// </summary>
+    [ObservableProperty]
+    private string _iconKind = "InformationOutline";
 }

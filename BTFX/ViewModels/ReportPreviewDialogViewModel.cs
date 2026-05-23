@@ -22,7 +22,7 @@ namespace BTFX.ViewModels;
 /// </summary>
 public partial class ReportPreviewDialogViewModel : ObservableObject
 {
-    private const string UnitName = "步态智能分析系统";
+    private const string DefaultUnitName = "步态智能分析系统";
     private Report? _report;
     private FlowDocument? _previewDocument;
     private string _previewStatus = "尚未加载报告预览。";
@@ -254,11 +254,29 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
 
             var report = Report;
             var filePath = dialog.FileName;
+            var originalStatus = report.Status;
+            report.Status = ReportStatus.Completed;
             var success = await Task.Run(() =>
             {
                 var exporter = new ReportPdfExporter(settingsService);
                 return exporter.ExportToPdf(report, filePath);
             });
+
+            if (success)
+            {
+                report.PdfFilePath = filePath;
+
+                if (App.Services?.GetService(typeof(IReportService)) is IReportService reportService)
+                {
+                    await reportService.UpdateReportAsync(report);
+                }
+
+                OnPropertyChanged(nameof(ReportStatusDisplay));
+            }
+            else
+            {
+                report.Status = originalStatus;
+            }
 
             MessageBox.Show(
                 success ? $"报告已导出至：\n{filePath}" : "PDF 导出失败。",
@@ -449,7 +467,21 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
 
     private void AddHeader(FlowDocument document, Report report)
     {
-        document.Blocks.Add(new Paragraph(new Run(UnitName))
+        var settingsService = App.Services?.GetService(typeof(ISettingsService)) as ISettingsService;
+        var unitName = settingsService?.CurrentSettings?.Unit?.Name ?? DefaultUnitName;
+        var logoPath = settingsService?.CurrentSettings?.Unit?.LogoPath;
+
+        var logo = TryCreateReportLogo(logoPath);
+        if (logo != null)
+        {
+            document.Blocks.Add(new Paragraph(new InlineUIContainer(logo))
+            {
+                TextAlignment = TextAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 6)
+            });
+        }
+
+        document.Blocks.Add(new Paragraph(new Run(unitName))
         {
             FontSize = 15,
             FontWeight = FontWeights.SemiBold,
@@ -474,6 +506,37 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         });
 
         AddSeparator(document);
+    }
+
+    private static Image? TryCreateReportLogo(string? logoPath)
+    {
+        if (string.IsNullOrWhiteSpace(logoPath) || !File.Exists(logoPath))
+        {
+            return null;
+        }
+
+        try
+        {
+            var bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.UriSource = new Uri(logoPath, UriKind.Absolute);
+            bitmap.DecodePixelHeight = 72;
+            bitmap.EndInit();
+            bitmap.Freeze();
+
+            return new Image
+            {
+                Source = bitmap,
+                Width = 72,
+                Height = 72,
+                Stretch = Stretch.Uniform
+            };
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private void AddBasicInfo(FlowDocument document, Report report)

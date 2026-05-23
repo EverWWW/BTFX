@@ -1309,7 +1309,10 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         report.MeasurementRecord ??= Record;
         report.Patient ??= Record?.Patient;
 
-        return ReportPreviewHelper.GenerateReportDocument(report, "步态智能分析系统");
+        var settingsService = App.Services?.GetService(typeof(ISettingsService)) as ISettingsService;
+        var unitName = settingsService?.CurrentSettings?.Unit?.Name ?? Constants.APP_DISPLAY_NAME;
+        var logoPath = settingsService?.CurrentSettings?.Unit?.LogoPath;
+        return ReportPreviewHelper.GenerateReportDocument(report, unitName, logoPath);
     }
 
     private static ReportDraftOptions? ParseReportOptions(string? reportOptionsJson)

@@ -50,6 +50,7 @@ public class ReportPdfExporter
             }
 
             var unitName = _settingsService.CurrentSettings?.Unit?.Name ?? Constants.APP_DISPLAY_NAME;
+            var logoPath = _settingsService.CurrentSettings?.Unit?.LogoPath;
 
             Document.Create(container =>
             {
@@ -61,7 +62,7 @@ public class ReportPdfExporter
                     page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Microsoft YaHei UI"));
 
                     // 页眉
-                    page.Header().Element(c => ComposeHeader(c, report, unitName));
+                    page.Header().Element(c => ComposeHeader(c, report, unitName, logoPath));
 
                     // 内容
                     page.Content().Element(c => ComposeContent(c, report));
@@ -89,6 +90,7 @@ public class ReportPdfExporter
         try
         {
             var unitName = _settingsService.CurrentSettings?.Unit?.Name ?? Constants.APP_DISPLAY_NAME;
+            var logoPath = _settingsService.CurrentSettings?.Unit?.LogoPath;
 
             return Document.Create(container =>
             {
@@ -98,7 +100,7 @@ public class ReportPdfExporter
                     page.Margin(40);
                     page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Microsoft YaHei UI"));
 
-                    page.Header().Element(c => ComposeHeader(c, report, unitName));
+                    page.Header().Element(c => ComposeHeader(c, report, unitName, logoPath));
                     page.Content().Element(c => ComposeContent(c, report));
                     page.Footer().Element(c => ComposeFooter(c, report));
                 });
@@ -116,10 +118,16 @@ public class ReportPdfExporter
     /// <summary>
     /// 页眉
     /// </summary>
-    private void ComposeHeader(IContainer container, Report report, string unitName)
+    private void ComposeHeader(IContainer container, Report report, string unitName, string? logoPath)
     {
         container.Column(column =>
         {
+            if (!string.IsNullOrWhiteSpace(logoPath) && System.IO.File.Exists(logoPath))
+            {
+                column.Item().AlignCenter().Width(56).Height(56).Image(logoPath).FitArea();
+                column.Item().PaddingVertical(4);
+            }
+
             // 单位名称
             if (!string.IsNullOrEmpty(unitName))
             {
@@ -619,9 +627,10 @@ public class ReportPdfExporter
     {
         return status switch
         {
-            ReportStatus.Draft => "草稿",
-            ReportStatus.Completed => "已完成",
-            ReportStatus.Printed => "已打印",
+            ReportStatus.Draft => "待生成",
+            ReportStatus.Completed => "已生成",
+            ReportStatus.Printed => "已生成",
+            ReportStatus.Outdated => "需重新生成",
             _ => "未知"
         };
     }

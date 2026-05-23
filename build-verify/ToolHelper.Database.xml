@@ -1,0 +1,3224 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ToolHelper.Database</name>
+    </assembly>
+    <members>
+        <member name="T:ToolHelper.Database.Abstractions.IDataStorage`2">
+            <summary>
+            数据存储接口
+            提供通用的CRUD操作
+            </summary>
+            <typeparam name="TEntity">实体类型</typeparam>
+            <typeparam name="TKey">主键类型</typeparam>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.IDataStorage`2.TableName">
+            <summary>
+            表名
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDataStorage`2.GetByIdAsync(`1,System.Threading.CancellationToken)">
+            <summary>
+            根据主键获取实体
+            </summary>
+            <param name="id">主键</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>实体对象</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDataStorage`2.GetAllAsync(System.Threading.CancellationToken)">
+            <summary>
+            获取所有实体
+            </summary>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>实体集合</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDataStorage`2.GetByConditionAsync(System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            根据条件查询
+            </summary>
+            <param name="whereClause">WHERE子句（不含WHERE关键字）</param>
+            <param name="parameters">参数</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>实体集合</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDataStorage`2.GetPagedAsync(System.Int32,System.Int32,System.String,System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            分页查询
+            </summary>
+            <param name="pageIndex">页索引（从0开始）</param>
+            <param name="pageSize">页大小</param>
+            <param name="orderBy">排序字段</param>
+            <param name="whereClause">WHERE子句</param>
+            <param name="parameters">参数</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>分页结果</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDataStorage`2.InsertAsync(`0,System.Threading.CancellationToken)">
+            <summary>
+            插入实体
+            </summary>
+            <param name="entity">实体对象</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>插入后的实体（含自增ID）</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDataStorage`2.InsertRangeAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)">
+            <summary>
+            批量插入
+            </summary>
+            <param name="entities">实体集合</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>插入的行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDataStorage`2.UpdateAsync(`0,System.Threading.CancellationToken)">
+            <summary>
+            更新实体
+            </summary>
+            <param name="entity">实体对象</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>是否成功</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDataStorage`2.UpdateRangeAsync(System.Collections.Generic.IEnumerable{`0},System.Threading.CancellationToken)">
+            <summary>
+            批量更新
+            </summary>
+            <param name="entities">实体集合</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>更新的行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDataStorage`2.DeleteAsync(`1,System.Threading.CancellationToken)">
+            <summary>
+            删除实体
+            </summary>
+            <param name="id">主键</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>是否成功</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDataStorage`2.DeleteRangeAsync(System.Collections.Generic.IEnumerable{`1},System.Threading.CancellationToken)">
+            <summary>
+            批量删除
+            </summary>
+            <param name="ids">主键集合</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>删除的行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDataStorage`2.DeleteByConditionAsync(System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            根据条件删除
+            </summary>
+            <param name="whereClause">WHERE子句</param>
+            <param name="parameters">参数</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>删除的行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDataStorage`2.CountAsync(System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            统计记录数
+            </summary>
+            <param name="whereClause">WHERE子句</param>
+            <param name="parameters">参数</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>记录数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDataStorage`2.ExistsAsync(`1,System.Threading.CancellationToken)">
+            <summary>
+            检查是否存在
+            </summary>
+            <param name="id">主键</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>是否存在</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDataStorage`2.ExistsByConditionAsync(System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            根据条件检查是否存在
+            </summary>
+            <param name="whereClause">WHERE子句</param>
+            <param name="parameters">参数</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>是否存在</returns>
+        </member>
+        <member name="T:ToolHelper.Database.Abstractions.PagedResult`1">
+            <summary>
+            分页结果
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.PagedResult`1.Items">
+            <summary>数据集合</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.PagedResult`1.PageIndex">
+            <summary>当前页索引</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.PagedResult`1.PageSize">
+            <summary>页大小</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.PagedResult`1.TotalCount">
+            <summary>总记录数</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.PagedResult`1.TotalPages">
+            <summary>总页数</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.PagedResult`1.HasPrevious">
+            <summary>是否有上一页</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.PagedResult`1.HasNext">
+            <summary>是否有下一页</summary>
+        </member>
+        <member name="T:ToolHelper.Database.Abstractions.IDbConnectionFactory">
+            <summary>
+            数据库连接工厂接口
+            用于创建和管理数据库连接
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.IDbConnectionFactory.DatabaseType">
+            <summary>
+            数据库类型
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDbConnectionFactory.CreateConnection">
+            <summary>
+            创建新连接
+            </summary>
+            <returns>数据库连接</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDbConnectionFactory.CreateAndOpenAsync(System.Threading.CancellationToken)">
+            <summary>
+            创建并打开连接
+            </summary>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>已打开的数据库连接</returns>
+        </member>
+        <member name="T:ToolHelper.Database.Abstractions.DbParameter">
+            <summary>
+            数据库命令参数
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.DbParameter.Name">
+            <summary>参数名</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.DbParameter.Value">
+            <summary>参数值</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.DbParameter.ParameterType">
+            <summary>参数类型</summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.DbParameter.#ctor(System.String,System.Object)">
+            <summary>
+            创建参数
+            </summary>
+            <param name="name">参数名</param>
+            <param name="value">参数值</param>
+        </member>
+        <member name="T:ToolHelper.Database.Abstractions.IResultMapper`1">
+            <summary>
+            查询结果映射器接口
+            </summary>
+            <typeparam name="T">目标类型</typeparam>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IResultMapper`1.Map(System.Data.Common.DbDataReader)">
+            <summary>
+            从数据读取器映射到实体
+            </summary>
+            <param name="reader">数据读取器</param>
+            <returns>实体对象</returns>
+        </member>
+        <member name="T:ToolHelper.Database.Abstractions.IDbHelper">
+            <summary>
+            数据库帮助类基础接口
+            定义所有数据库操作的通用方法
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.IDbHelper.DatabaseType">
+            <summary>
+            数据库类型
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.IDbHelper.ConnectionString">
+            <summary>
+            连接字符串
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.IDbHelper.IsConnected">
+            <summary>
+            是否已连接
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDbHelper.OpenAsync(System.Threading.CancellationToken)">
+            <summary>
+            打开数据库连接
+            </summary>
+            <param name="cancellationToken">取消令牌</param>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDbHelper.CloseAsync">
+            <summary>
+            关闭数据库连接
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDbHelper.TestConnectionAsync(System.Threading.CancellationToken)">
+            <summary>
+            测试数据库连接
+            </summary>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>连接是否成功</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDbHelper.ExecuteNonQueryAsync(System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            执行非查询命令（INSERT, UPDATE, DELETE）
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="parameters">参数</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>受影响的行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDbHelper.ExecuteScalarAsync``1(System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            执行标量查询
+            </summary>
+            <typeparam name="T">返回类型</typeparam>
+            <param name="sql">SQL语句</param>
+            <param name="parameters">参数</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>查询结果</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDbHelper.QueryFirstOrDefaultAsync``1(System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            查询单条记录
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="sql">SQL语句</param>
+            <param name="parameters">参数</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>实体对象</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDbHelper.QueryAsync``1(System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            查询多条记录
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="sql">SQL语句</param>
+            <param name="parameters">参数</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>实体集合</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDbHelper.QueryStreamAsync``1(System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            流式查询（适用于大数据量）
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="sql">SQL语句</param>
+            <param name="parameters">参数</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>异步枚举</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDbHelper.QueryDataTableAsync(System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            执行查询返回DataTable
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="parameters">参数</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>DataTable</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDbHelper.BeginTransactionAsync(System.Data.IsolationLevel,System.Threading.CancellationToken)">
+            <summary>
+            开始事务
+            </summary>
+            <param name="isolationLevel">隔离级别</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>事务对象</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDbHelper.ExecuteInTransactionAsync(System.Func{System.Data.IDbTransaction,System.Threading.Tasks.Task},System.Data.IsolationLevel,System.Threading.CancellationToken)">
+            <summary>
+            在事务中执行操作
+            </summary>
+            <param name="action">要执行的操作</param>
+            <param name="isolationLevel">隔离级别</param>
+            <param name="cancellationToken">取消令牌</param>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDbHelper.ExecuteInTransactionAsync``1(System.Func{System.Data.IDbTransaction,System.Threading.Tasks.Task{``0}},System.Data.IsolationLevel,System.Threading.CancellationToken)">
+            <summary>
+            在事务中执行操作并返回结果
+            </summary>
+            <typeparam name="T">返回类型</typeparam>
+            <param name="action">要执行的操作</param>
+            <param name="isolationLevel">隔离级别</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>操作结果</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDbHelper.BulkInsertAsync``1(System.String,System.Collections.Generic.IEnumerable{``0},System.Threading.CancellationToken)">
+            <summary>
+            批量插入
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="tableName">表名</param>
+            <param name="entities">实体集合</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>插入的行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDbHelper.BulkUpdateAsync``1(System.String,System.Collections.Generic.IEnumerable{``0},System.String[],System.Threading.CancellationToken)">
+            <summary>
+            批量更新
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="tableName">表名</param>
+            <param name="entities">实体集合</param>
+            <param name="keyColumns">主键列</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>更新的行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.IDbHelper.BulkDeleteAsync``1(System.String,System.Collections.Generic.IEnumerable{``0},System.String[],System.Threading.CancellationToken)">
+            <summary>
+            批量删除
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="tableName">表名</param>
+            <param name="entities">实体集合</param>
+            <param name="keyColumns">主键列</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>删除的行数</returns>
+        </member>
+        <member name="T:ToolHelper.Database.Abstractions.DatabaseType">
+            <summary>
+            数据库类型枚举
+            </summary>
+        </member>
+        <member name="F:ToolHelper.Database.Abstractions.DatabaseType.Sqlite">
+            <summary>SQLite数据库</summary>
+        </member>
+        <member name="F:ToolHelper.Database.Abstractions.DatabaseType.SqlServer">
+            <summary>SQL Server数据库</summary>
+        </member>
+        <member name="F:ToolHelper.Database.Abstractions.DatabaseType.MySql">
+            <summary>MySQL数据库</summary>
+        </member>
+        <member name="T:ToolHelper.Database.Abstractions.ISqlSugarDbHelper">
+            <summary>
+            SqlSugar 数据库帮助类接口
+            提供基于 ORM 的数据库操作，无需编写 SQL 语句
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.Db">
+            <summary>
+            获取 SqlSugar 客户端实例
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.DatabaseType">
+            <summary>
+            数据库类型
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.IsConnected">
+            <summary>
+            是否已连接
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.TestConnection">
+            <summary>
+            测试数据库连接
+            </summary>
+            <returns>连接是否成功</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.TestConnectionAsync">
+            <summary>
+            异步测试数据库连接
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.GetById``1(System.Object)">
+            <summary>
+            根据主键获取实体
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="id">主键值</param>
+            <returns>实体对象</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.GetByIdAsync``1(System.Object)">
+            <summary>
+            异步根据主键获取实体
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.GetAll``1">
+            <summary>
+            获取所有数据
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <returns>实体集合</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.GetAllAsync``1">
+            <summary>
+            异步获取所有数据
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.GetList``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            根据条件查询
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="whereExpression">条件表达式</param>
+            <returns>实体集合</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.GetListAsync``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            异步根据条件查询
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.GetFirst``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            获取单条记录
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="whereExpression">条件表达式</param>
+            <returns>实体对象</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.GetFirstAsync``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            异步获取单条记录
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.GetPageList``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Int32,System.Int32@,System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Boolean)">
+            <summary>
+            分页查询
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="whereExpression">条件表达式</param>
+            <param name="pageIndex">页码（从1开始）</param>
+            <param name="pageSize">每页大小</param>
+            <param name="totalCount">总记录数</param>
+            <param name="orderByExpression">排序表达式</param>
+            <param name="isAsc">是否升序</param>
+            <returns>分页数据</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.GetPageListAsync``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Boolean)">
+            <summary>
+            异步分页查询
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.Any``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            判断是否存在
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="whereExpression">条件表达式</param>
+            <returns>是否存在</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.AnyAsync``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            异步判断是否存在
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.Count``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            获取记录数
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="whereExpression">条件表达式</param>
+            <returns>记录数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.CountAsync``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            异步获取记录数
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.Insert``1(``0)">
+            <summary>
+            插入实体
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="entity">实体对象</param>
+            <returns>是否成功</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.InsertAsync``1(``0)">
+            <summary>
+            异步插入实体
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.InsertReturnIdentity``1(``0)">
+            <summary>
+            插入并返回自增ID
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="entity">实体对象</param>
+            <returns>自增ID</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.InsertReturnIdentityAsync``1(``0)">
+            <summary>
+            异步插入并返回自增ID
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.InsertReturnEntity``1(``0)">
+            <summary>
+            插入并返回实体（含自增ID）
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="entity">实体对象</param>
+            <returns>包含ID的实体</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.InsertReturnEntityAsync``1(``0)">
+            <summary>
+            异步插入并返回实体
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.InsertRange``1(System.Collections.Generic.List{``0})">
+            <summary>
+            批量插入
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="entities">实体集合</param>
+            <returns>插入行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.InsertRangeAsync``1(System.Collections.Generic.List{``0})">
+            <summary>
+            异步批量插入
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.Update``1(``0)">
+            <summary>
+            更新实体
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="entity">实体对象</param>
+            <returns>是否成功</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.UpdateAsync``1(``0)">
+            <summary>
+            异步更新实体
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.UpdateRange``1(System.Collections.Generic.List{``0})">
+            <summary>
+            批量更新
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="entities">实体集合</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.UpdateRangeAsync``1(System.Collections.Generic.List{``0})">
+            <summary>
+            异步批量更新
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.Update``1(System.Linq.Expressions.Expression{System.Func{``0,``0}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            根据条件更新指定列
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="columns">要更新的列</param>
+            <param name="whereExpression">条件表达式</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.UpdateAsync``1(System.Linq.Expressions.Expression{System.Func{``0,``0}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            异步根据条件更新指定列
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.DeleteById``1(System.Object)">
+            <summary>
+            根据主键删除
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="id">主键值</param>
+            <returns>是否成功</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.DeleteByIdAsync``1(System.Object)">
+            <summary>
+            异步根据主键删除
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.Delete``1(``0)">
+            <summary>
+            删除实体
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="entity">实体对象</param>
+            <returns>是否成功</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.DeleteAsync``1(``0)">
+            <summary>
+            异步删除实体
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.Delete``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            根据条件删除
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="whereExpression">条件表达式</param>
+            <returns>删除行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.DeleteAsync``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            异步根据条件删除
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.DeleteByIds``1(System.Object[])">
+            <summary>
+            批量删除
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="ids">主键集合</param>
+            <returns>删除行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.DeleteByIdsAsync``1(System.Object[])">
+            <summary>
+            异步批量删除
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.BeginTran">
+            <summary>
+            开始事务
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.CommitTran">
+            <summary>
+            提交事务
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.RollbackTran">
+            <summary>
+            回滚事务
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.ExecuteInTransaction(System.Action)">
+            <summary>
+            在事务中执行操作
+            </summary>
+            <param name="action">要执行的操作</param>
+            <returns>是否成功</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.ExecuteInTransaction``1(System.Func{``0})">
+            <summary>
+            在事务中执行操作并返回结果
+            </summary>
+            <typeparam name="T">返回类型</typeparam>
+            <param name="func">要执行的操作</param>
+            <returns>操作结果</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.ExecuteInTransactionAsync(System.Func{System.Threading.Tasks.Task})">
+            <summary>
+            异步在事务中执行操作
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.CreateTable``1">
+            <summary>
+            创建表（如果不存在）
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.CreateTables(System.Type[])">
+            <summary>
+            创建多个表
+            </summary>
+            <param name="types">实体类型数组</param>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.DropTable``1">
+            <summary>
+            删除表
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.TruncateTable``1">
+            <summary>
+            清空表
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.TableExists``1">
+            <summary>
+            判断表是否存在
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <returns>是否存在</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.TableExists(System.String)">
+            <summary>
+            判断表是否存在
+            </summary>
+            <param name="tableName">表名</param>
+            <returns>是否存在</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.ExecuteSql(System.String,System.Object)">
+            <summary>
+            执行原生SQL（增删改）
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="parameters">参数</param>
+            <returns>受影响的行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.ExecuteSqlAsync(System.String,System.Object)">
+            <summary>
+            异步执行原生SQL
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.SqlQuery``1(System.String,System.Object)">
+            <summary>
+            执行原生SQL查询
+            </summary>
+            <typeparam name="T">返回类型</typeparam>
+            <param name="sql">SQL语句</param>
+            <param name="parameters">参数</param>
+            <returns>查询结果</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.SqlQueryAsync``1(System.String,System.Object)">
+            <summary>
+            异步执行原生SQL查询
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.SqlQueryScalar``1(System.String,System.Object)">
+            <summary>
+            执行标量查询
+            </summary>
+            <typeparam name="T">返回类型</typeparam>
+            <param name="sql">SQL语句</param>
+            <param name="parameters">参数</param>
+            <returns>标量值</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.SqlQueryScalarAsync``1(System.String,System.Object)">
+            <summary>
+            异步执行标量查询
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.Queryable``1">
+            <summary>
+            获取可查询对象（支持链式调用）
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <returns>可查询对象</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.Insertable``1(``0)">
+            <summary>
+            获取可插入对象
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="entity">实体对象</param>
+            <returns>可插入对象</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.Insertable``1(System.Collections.Generic.List{``0})">
+            <summary>
+            获取可插入对象（批量）
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="entities">实体集合</param>
+            <returns>可插入对象</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.Updateable``1(``0)">
+            <summary>
+            获取可更新对象
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="entity">实体对象</param>
+            <returns>可更新对象</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Abstractions.ISqlSugarDbHelper.Deleteable``1">
+            <summary>
+            获取可删除对象
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <returns>可删除对象</returns>
+        </member>
+        <member name="T:ToolHelper.Database.Abstractions.DbPagedResult`1">
+            <summary>
+            分页结果
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.DbPagedResult`1.Items">
+            <summary>数据集合</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.DbPagedResult`1.PageIndex">
+            <summary>当前页码</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.DbPagedResult`1.PageSize">
+            <summary>每页大小</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.DbPagedResult`1.TotalCount">
+            <summary>总记录数</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.DbPagedResult`1.TotalPages">
+            <summary>总页数</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.DbPagedResult`1.HasPrevious">
+            <summary>是否有上一页</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Abstractions.DbPagedResult`1.HasNext">
+            <summary>是否有下一页</summary>
+        </member>
+        <member name="T:ToolHelper.Database.ModuleInfo">
+            <summary>
+            ToolHelper.Database 模块信息
+            提供数据库操作相关的工具类库
+            </summary>
+        </member>
+        <member name="T:ToolHelper.Database.Configuration.DatabaseOptions">
+            <summary>
+            数据库配置基类
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.DatabaseOptions.DatabaseType">
+            <summary>
+            数据库类型
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.DatabaseOptions.ConnectionString">
+            <summary>
+            连接字符串
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.DatabaseOptions.CommandTimeout">
+            <summary>
+            命令超时时间（秒）
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.DatabaseOptions.ConnectionTimeout">
+            <summary>
+            连接超时时间（秒）
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.DatabaseOptions.EnablePooling">
+            <summary>
+            是否启用连接池
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.DatabaseOptions.MinPoolSize">
+            <summary>
+            最小连接池大小
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.DatabaseOptions.MaxPoolSize">
+            <summary>
+            最大连接池大小
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.DatabaseOptions.RetryCount">
+            <summary>
+            重试次数
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.DatabaseOptions.RetryIntervalMs">
+            <summary>
+            重试间隔（毫秒）
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.DatabaseOptions.EnableLogging">
+            <summary>
+            是否启用日志记录
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.DatabaseOptions.BatchSize">
+            <summary>
+            批量操作大小
+            </summary>
+        </member>
+        <member name="T:ToolHelper.Database.Configuration.SqliteOptions">
+            <summary>
+            SQLite 数据库配置
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqliteOptions.DatabaseType">
+            <inheritdoc/>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqliteOptions.DatabasePath">
+            <summary>
+            数据库文件路径
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqliteOptions.InMemory">
+            <summary>
+            是否使用内存数据库
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqliteOptions.CacheSize">
+            <summary>
+            缓存大小（页数）
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqliteOptions.JournalMode">
+            <summary>
+            日志模式
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqliteOptions.SynchronousMode">
+            <summary>
+            同步模式
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqliteOptions.ForeignKeys">
+            <summary>
+            是否外键约束
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqliteOptions.Password">
+            <summary>
+            密码（加密）
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Configuration.SqliteOptions.BuildConnectionString">
+            <summary>
+            构建连接字符串
+            </summary>
+        </member>
+        <member name="T:ToolHelper.Database.Configuration.SqliteJournalMode">
+            <summary>
+            SQLite 日志模式
+            </summary>
+        </member>
+        <member name="F:ToolHelper.Database.Configuration.SqliteJournalMode.Delete">
+            <summary>删除模式</summary>
+        </member>
+        <member name="F:ToolHelper.Database.Configuration.SqliteJournalMode.Truncate">
+            <summary>截断模式</summary>
+        </member>
+        <member name="F:ToolHelper.Database.Configuration.SqliteJournalMode.Persist">
+            <summary>持久模式</summary>
+        </member>
+        <member name="F:ToolHelper.Database.Configuration.SqliteJournalMode.Memory">
+            <summary>内存模式</summary>
+        </member>
+        <member name="F:ToolHelper.Database.Configuration.SqliteJournalMode.Wal">
+            <summary>WAL模式（推荐）</summary>
+        </member>
+        <member name="F:ToolHelper.Database.Configuration.SqliteJournalMode.Off">
+            <summary>关闭</summary>
+        </member>
+        <member name="T:ToolHelper.Database.Configuration.SqliteSynchronousMode">
+            <summary>
+            SQLite 同步模式
+            </summary>
+        </member>
+        <member name="F:ToolHelper.Database.Configuration.SqliteSynchronousMode.Off">
+            <summary>关闭同步</summary>
+        </member>
+        <member name="F:ToolHelper.Database.Configuration.SqliteSynchronousMode.Normal">
+            <summary>普通同步</summary>
+        </member>
+        <member name="F:ToolHelper.Database.Configuration.SqliteSynchronousMode.Full">
+            <summary>完全同步</summary>
+        </member>
+        <member name="F:ToolHelper.Database.Configuration.SqliteSynchronousMode.Extra">
+            <summary>额外同步</summary>
+        </member>
+        <member name="T:ToolHelper.Database.Configuration.SqlServerOptions">
+            <summary>
+            SQL Server 数据库配置
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlServerOptions.DatabaseType">
+            <inheritdoc/>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlServerOptions.Server">
+            <summary>
+            服务器地址
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlServerOptions.Port">
+            <summary>
+            端口
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlServerOptions.Database">
+            <summary>
+            数据库名称
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlServerOptions.UserId">
+            <summary>
+            用户名
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlServerOptions.Password">
+            <summary>
+            密码
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlServerOptions.IntegratedSecurity">
+            <summary>
+            是否使用集成安全性（Windows认证）
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlServerOptions.Encrypt">
+            <summary>
+            是否加密连接
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlServerOptions.TrustServerCertificate">
+            <summary>
+            是否信任服务器证书
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlServerOptions.ApplicationName">
+            <summary>
+            应用程序名称
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlServerOptions.MultipleActiveResultSets">
+            <summary>
+            多活动结果集
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Configuration.SqlServerOptions.BuildConnectionString">
+            <summary>
+            构建连接字符串
+            </summary>
+        </member>
+        <member name="T:ToolHelper.Database.Configuration.MySqlOptions">
+            <summary>
+            MySQL 数据库配置
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.MySqlOptions.DatabaseType">
+            <inheritdoc/>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.MySqlOptions.Server">
+            <summary>
+            服务器地址
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.MySqlOptions.Port">
+            <summary>
+            端口
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.MySqlOptions.Database">
+            <summary>
+            数据库名称
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.MySqlOptions.UserId">
+            <summary>
+            用户名
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.MySqlOptions.Password">
+            <summary>
+            密码
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.MySqlOptions.Charset">
+            <summary>
+            字符集
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.MySqlOptions.SslMode">
+            <summary>
+            SSL模式
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.MySqlOptions.AllowUserVariables">
+            <summary>
+            是否允许用户变量
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.MySqlOptions.AllowLoadLocalInfile">
+            <summary>
+            是否允许加载本地文件
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Configuration.MySqlOptions.BuildConnectionString">
+            <summary>
+            构建连接字符串
+            </summary>
+        </member>
+        <member name="T:ToolHelper.Database.Configuration.MySqlSslMode">
+            <summary>
+            MySQL SSL模式
+            </summary>
+        </member>
+        <member name="F:ToolHelper.Database.Configuration.MySqlSslMode.None">
+            <summary>禁用SSL</summary>
+        </member>
+        <member name="F:ToolHelper.Database.Configuration.MySqlSslMode.Preferred">
+            <summary>首选SSL</summary>
+        </member>
+        <member name="F:ToolHelper.Database.Configuration.MySqlSslMode.Required">
+            <summary>必须SSL</summary>
+        </member>
+        <member name="F:ToolHelper.Database.Configuration.MySqlSslMode.VerifyCA">
+            <summary>验证CA</summary>
+        </member>
+        <member name="F:ToolHelper.Database.Configuration.MySqlSslMode.VerifyFull">
+            <summary>完全验证</summary>
+        </member>
+        <member name="T:ToolHelper.Database.Configuration.SqlSugarOptions">
+            <summary>
+            SqlSugar 数据库配置选项
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlSugarOptions.DbType">
+            <summary>
+            数据库类型
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlSugarOptions.ConnectionString">
+            <summary>
+            连接字符串
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlSugarOptions.IsAutoCloseConnection">
+            <summary>
+            是否自动关闭连接
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlSugarOptions.CommandTimeout">
+            <summary>
+            命令超时时间（秒）
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlSugarOptions.EnableSqlLog">
+            <summary>
+            是否启用 SQL 日志
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlSugarOptions.OnLogExecuting">
+            <summary>
+            SQL 日志回调
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlSugarOptions.OnLogExecuted">
+            <summary>
+            SQL 执行完成回调
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlSugarOptions.OnError">
+            <summary>
+            错误回调
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlSugarOptions.InitDatabase">
+            <summary>
+            初始化数据库（建表等）
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlSugarOptions.InitEntityTypes">
+            <summary>
+            初始化时创建的实体类型
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Configuration.SqlSugarOptions.ToConnectionConfig">
+            <summary>
+            构建 ConnectionConfig
+            </summary>
+            <returns>SqlSugar 连接配置</returns>
+        </member>
+        <member name="T:ToolHelper.Database.Configuration.SqliteSugarOptions">
+            <summary>
+            SQLite SqlSugar 配置
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqliteSugarOptions.DatabasePath">
+            <summary>
+            数据库文件路径
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqliteSugarOptions.InMemory">
+            <summary>
+            是否使用内存数据库
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Configuration.SqliteSugarOptions.#ctor">
+            <summary>
+            创建 SqliteSugarOptions 实例
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Configuration.SqliteSugarOptions.BuildConnectionString">
+            <summary>
+            构建连接字符串
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Configuration.SqliteSugarOptions.AutoSetConnectionString">
+            <summary>
+            自动设置连接字符串
+            </summary>
+        </member>
+        <member name="T:ToolHelper.Database.Configuration.SqlServerSugarOptions">
+            <summary>
+            SQL Server SqlSugar 配置
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlServerSugarOptions.Server">
+            <summary>
+            服务器地址
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlServerSugarOptions.Port">
+            <summary>
+            端口
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlServerSugarOptions.Database">
+            <summary>
+            数据库名称
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlServerSugarOptions.UserId">
+            <summary>
+            用户名
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlServerSugarOptions.Password">
+            <summary>
+            密码
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlServerSugarOptions.IntegratedSecurity">
+            <summary>
+            是否使用 Windows 认证
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.SqlServerSugarOptions.TrustServerCertificate">
+            <summary>
+            是否信任服务器证书
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Configuration.SqlServerSugarOptions.#ctor">
+            <summary>
+            创建 SqlServerSugarOptions 实例
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Configuration.SqlServerSugarOptions.BuildConnectionString">
+            <summary>
+            构建连接字符串
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Configuration.SqlServerSugarOptions.AutoSetConnectionString">
+            <summary>
+            自动设置连接字符串
+            </summary>
+        </member>
+        <member name="T:ToolHelper.Database.Configuration.MySqlSugarOptions">
+            <summary>
+            MySQL SqlSugar 配置
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.MySqlSugarOptions.Server">
+            <summary>
+            服务器地址
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.MySqlSugarOptions.Port">
+            <summary>
+            端口
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.MySqlSugarOptions.Database">
+            <summary>
+            数据库名称
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.MySqlSugarOptions.UserId">
+            <summary>
+            用户名
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.MySqlSugarOptions.Password">
+            <summary>
+            密码
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Configuration.MySqlSugarOptions.Charset">
+            <summary>
+            字符集
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Configuration.MySqlSugarOptions.#ctor">
+            <summary>
+            创建 MySqlSugarOptions 实例
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Configuration.MySqlSugarOptions.BuildConnectionString">
+            <summary>
+            构建连接字符串
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Configuration.MySqlSugarOptions.AutoSetConnectionString">
+            <summary>
+            自动设置连接字符串
+            </summary>
+        </member>
+        <member name="T:ToolHelper.Database.Core.DbHelperBase">
+            <summary>
+            数据库帮助类基类
+            提供通用数据库操作实现
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Core.DbHelperBase.DatabaseType">
+            <inheritdoc/>
+        </member>
+        <member name="P:ToolHelper.Database.Core.DbHelperBase.ConnectionString">
+            <inheritdoc/>
+        </member>
+        <member name="P:ToolHelper.Database.Core.DbHelperBase.IsConnected">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.#ctor(ToolHelper.Database.Configuration.DatabaseOptions,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            创建DbHelperBase实例
+            </summary>
+            <param name="options">数据库配置</param>
+            <param name="logger">日志记录器</param>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.CreateConnection">
+            <summary>
+            创建数据库连接
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Core.DbHelperBase.ParameterPrefix">
+            <summary>
+            获取参数前缀
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.OpenAsync(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.CloseAsync">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.TestConnectionAsync(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.GetConnectionAsync(System.Threading.CancellationToken)">
+            <summary>
+            获取或创建连接
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.ExecuteNonQueryAsync(System.String,System.Object,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.ExecuteScalarAsync``1(System.String,System.Object,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.QueryFirstOrDefaultAsync``1(System.String,System.Object,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.QueryAsync``1(System.String,System.Object,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.QueryStreamAsync``1(System.String,System.Object,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.QueryDataTableAsync(System.String,System.Object,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.BeginTransactionAsync(System.Data.IsolationLevel,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.ExecuteInTransactionAsync(System.Func{System.Data.IDbTransaction,System.Threading.Tasks.Task},System.Data.IsolationLevel,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.ExecuteInTransactionAsync``1(System.Func{System.Data.IDbTransaction,System.Threading.Tasks.Task{``0}},System.Data.IsolationLevel,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.BulkInsertAsync``1(System.String,System.Collections.Generic.IEnumerable{``0},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.BulkUpdateAsync``1(System.String,System.Collections.Generic.IEnumerable{``0},System.String[],System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.BulkDeleteAsync``1(System.String,System.Collections.Generic.IEnumerable{``0},System.String[],System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.CreateCommand(System.Data.Common.DbConnection,System.String,System.Object)">
+            <summary>
+            创建命令对象
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.AddParameters(System.Data.Common.DbCommand,System.Object)">
+            <summary>
+            添加参数
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.MapToEntity``1(System.Data.Common.DbDataReader)">
+            <summary>
+            映射到实体
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.GetColumnNames(System.Data.Common.DbDataReader)">
+            <summary>
+            获取列名
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.GetCachedProperties(System.Type)">
+            <summary>
+            获取缓存的属性
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.LogSql(System.String,System.Object)">
+            <summary>
+            记录SQL日志
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.LogDebug(System.String)">
+            <summary>
+            记录调试日志
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.LogError(System.String,System.Exception)">
+            <summary>
+            记录错误日志
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.DisposeAsync">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.Dispose(System.Boolean)">
+            <summary>
+            释放资源
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Core.DbHelperBase.DisposeAsyncCore">
+            <summary>
+            异步释放资源
+            </summary>
+        </member>
+        <member name="T:ToolHelper.Database.Core.SqlSugarDbHelper">
+            <summary>
+            SqlSugar 数据库帮助类实现
+            基于 SqlSugar ORM，无需编写 SQL 语句
+            </summary>
+            <example>
+            <code>
+            // 创建帮助类
+            var options = Options.Create(new SqliteSugarOptions
+            {
+                DatabasePath = "mydata.db"
+            });
+            var helper = new SqlSugarDbHelper(options);
+            
+            // 创建表
+            helper.CreateTable&lt;User&gt;();
+            
+            // 插入数据（无需写SQL）
+            var user = new User { Name = "张三", Age = 25 };
+            helper.Insert(user);
+            
+            // 查询数据（Lambda表达式）
+            var users = helper.GetList&lt;User&gt;(u => u.Age > 18);
+            
+            // 分页查询
+            var pagedResult = await helper.GetPageListAsync&lt;User&gt;(
+                u => u.IsActive,
+                pageIndex: 1,
+                pageSize: 10,
+                orderByExpression: u => u.CreateTime,
+                isAsc: false);
+            </code>
+            </example>
+        </member>
+        <member name="P:ToolHelper.Database.Core.SqlSugarDbHelper.Db">
+            <inheritdoc/>
+        </member>
+        <member name="P:ToolHelper.Database.Core.SqlSugarDbHelper.DatabaseType">
+            <inheritdoc/>
+        </member>
+        <member name="P:ToolHelper.Database.Core.SqlSugarDbHelper.IsConnected">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.#ctor(Microsoft.Extensions.Options.IOptions{ToolHelper.Database.Configuration.SqlSugarOptions},Microsoft.Extensions.Logging.ILogger{ToolHelper.Database.Core.SqlSugarDbHelper})">
+            <summary>
+            创建 SqlSugarDbHelper 实例
+            </summary>
+            <param name="options">SqlSugar配置选项</param>
+            <param name="logger">日志记录器（可选）</param>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.#ctor(ToolHelper.Database.Configuration.SqlSugarOptions,Microsoft.Extensions.Logging.ILogger{ToolHelper.Database.Core.SqlSugarDbHelper})">
+            <summary>
+            使用具体配置创建实例
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.CreateSqlSugarClient">
+            <summary>
+            创建 SqlSugarClient
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.TestConnection">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.TestConnectionAsync">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.GetById``1(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.GetByIdAsync``1(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.GetAll``1">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.GetAllAsync``1">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.GetList``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.GetListAsync``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.GetFirst``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.GetFirstAsync``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.GetPageList``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Int32,System.Int32@,System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.GetPageListAsync``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Int32,System.Int32,System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.Any``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.AnyAsync``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.Count``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.CountAsync``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.Insert``1(``0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.InsertAsync``1(``0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.InsertReturnIdentity``1(``0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.InsertReturnIdentityAsync``1(``0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.InsertReturnEntity``1(``0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.InsertReturnEntityAsync``1(``0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.InsertRange``1(System.Collections.Generic.List{``0})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.InsertRangeAsync``1(System.Collections.Generic.List{``0})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.Update``1(``0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.UpdateAsync``1(``0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.UpdateRange``1(System.Collections.Generic.List{``0})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.UpdateRangeAsync``1(System.Collections.Generic.List{``0})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.Update``1(System.Linq.Expressions.Expression{System.Func{``0,``0}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.UpdateAsync``1(System.Linq.Expressions.Expression{System.Func{``0,``0}},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.DeleteById``1(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.DeleteByIdAsync``1(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.Delete``1(``0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.DeleteAsync``1(``0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.Delete``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.DeleteAsync``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.DeleteByIds``1(System.Object[])">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.DeleteByIdsAsync``1(System.Object[])">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.BeginTran">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.CommitTran">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.RollbackTran">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.ExecuteInTransaction(System.Action)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.ExecuteInTransaction``1(System.Func{``0})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.ExecuteInTransactionAsync(System.Func{System.Threading.Tasks.Task})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.CreateTable``1">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.CreateTables(System.Type[])">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.DropTable``1">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.TruncateTable``1">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.TableExists``1">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.TableExists(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.ExecuteSql(System.String,System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.ExecuteSqlAsync(System.String,System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.SqlQuery``1(System.String,System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.SqlQueryAsync``1(System.String,System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.SqlQueryScalar``1(System.String,System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.SqlQueryScalarAsync``1(System.String,System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.Queryable``1">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.Insertable``1(``0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.Insertable``1(System.Collections.Generic.List{``0})">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.Updateable``1(``0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.Deleteable``1">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.Dispose">
+            <summary>
+            释放资源
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Core.SqlSugarDbHelper.Dispose(System.Boolean)">
+            <summary>
+            释放资源（受保护的虚方法，允许子类重写）
+            </summary>
+            <param name="disposing">是否正在释放托管资源</param>
+        </member>
+        <member name="T:ToolHelper.Database.Extensions.ServiceCollectionExtensions">
+            <summary>
+            服务集合扩展方法
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ServiceCollectionExtensions.AddSqliteSugar(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{ToolHelper.Database.Configuration.SqliteSugarOptions})">
+            <summary>
+            添加 SqlSugar SQLite 数据库支持（推荐）
+            </summary>
+            <param name="services">服务集合</param>
+            <param name="configure">配置委托</param>
+            <returns>服务集合</returns>
+            <example>
+            <code>
+            services.AddSqliteSugar(options =>
+            {
+                options.DatabasePath = "mydata.db";
+                options.EnableSqlLog = true;
+            });
+            </code>
+            </example>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ServiceCollectionExtensions.AddSqliteSugar(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String)">
+            <summary>
+            添加 SqlSugar SQLite 数据库支持（使用数据库路径）
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ServiceCollectionExtensions.AddSqlServerSugar(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{ToolHelper.Database.Configuration.SqlServerSugarOptions})">
+            <summary>
+            添加 SqlSugar SQL Server 数据库支持（推荐）
+            </summary>
+            <param name="services">服务集合</param>
+            <param name="configure">配置委托</param>
+            <returns>服务集合</returns>
+            <example>
+            <code>
+            services.AddSqlServerSugar(options =>
+            {
+                options.Server = "localhost";
+                options.Database = "MyDatabase";
+                options.UserId = "sa";
+                options.Password = "YourPassword";
+                options.EnableSqlLog = true;
+            });
+            </code>
+            </example>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ServiceCollectionExtensions.AddSqlServerSugar(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String)">
+            <summary>
+            添加 SqlSugar SQL Server 数据库支持（使用连接字符串）
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ServiceCollectionExtensions.AddMySqlSugar(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{ToolHelper.Database.Configuration.MySqlSugarOptions})">
+            <summary>
+            添加 SqlSugar MySQL 数据库支持（推荐）
+            </summary>
+            <param name="services">服务集合</param>
+            <param name="configure">配置委托</param>
+            <returns>服务集合</returns>
+            <example>
+            <code>
+            services.AddMySqlSugar(options =>
+            {
+                options.Server = "localhost";
+                options.Port = 3306;
+                options.Database = "mydb";
+                options.UserId = "root";
+                options.Password = "password";
+                options.EnableSqlLog = true;
+            });
+            </code>
+            </example>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ServiceCollectionExtensions.AddMySqlSugar(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String)">
+            <summary>
+            添加 SqlSugar MySQL 数据库支持（使用连接字符串）
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ServiceCollectionExtensions.AddSqlSugarFactory(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            添加 SqlSugar 数据库帮助类工厂
+            </summary>
+            <param name="services">服务集合</param>
+            <returns>服务集合</returns>
+            <example>
+            <code>
+            services.AddSqlSugarFactory();
+            
+            // 使用工厂
+            var factory = serviceProvider.GetRequiredService&lt;ISqlSugarDbHelperFactory&gt;();
+            var sqliteHelper = factory.CreateSqlite("mydata.db");
+            </code>
+            </example>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ServiceCollectionExtensions.AddSqlite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{ToolHelper.Database.Configuration.SqliteOptions})">
+            <summary>
+            添加 SQLite 数据库支持（旧版，建议使用 AddSqliteSugar）
+            </summary>
+            <param name="services">服务集合</param>
+            <param name="configure">配置委托</param>
+            <returns>服务集合</returns>
+            <example>
+            <code>
+            services.AddSqlite(options =>
+            {
+                options.DatabasePath = "mydata.db";
+                options.JournalMode = SqliteJournalMode.Wal;
+            });
+            </code>
+            </example>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ServiceCollectionExtensions.AddSqlite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String)">
+            <summary>
+            添加 SQLite 数据库支持（使用连接字符串）
+            </summary>
+            <param name="services">服务集合</param>
+            <param name="connectionString">连接字符串</param>
+            <returns>服务集合</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ServiceCollectionExtensions.AddSqlite(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.Action{ToolHelper.Database.Configuration.SqliteOptions})">
+            <summary>
+            添加命名的 SQLite 数据库支持
+            </summary>
+            <param name="services">服务集合</param>
+            <param name="name">名称</param>
+            <param name="configure">配置委托</param>
+            <returns>服务集合</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ServiceCollectionExtensions.AddSqlServer(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{ToolHelper.Database.Configuration.SqlServerOptions})">
+            <summary>
+            添加 SQL Server 数据库支持（旧版，建议使用 AddSqlServerSugar）
+            </summary>
+            <param name="services">服务集合</param>
+            <param name="configure">配置委托</param>
+            <returns>服务集合</returns>
+            <example>
+            <code>
+            services.AddSqlServer(options =>
+            {
+                options.Server = "localhost";
+                options.Database = "MyDatabase";
+                options.UserId = "sa";
+                options.Password = "YourPassword";
+            });
+            </code>
+            </example>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ServiceCollectionExtensions.AddSqlServer(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String)">
+            <summary>
+            添加 SQL Server 数据库支持（使用连接字符串）
+            </summary>
+            <param name="services">服务集合</param>
+            <param name="connectionString">连接字符串</param>
+            <returns>服务集合</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ServiceCollectionExtensions.AddSqlServer(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.Action{ToolHelper.Database.Configuration.SqlServerOptions})">
+            <summary>
+            添加命名的 SQL Server 数据库支持
+            </summary>
+            <param name="services">服务集合</param>
+            <param name="name">名称</param>
+            <param name="configure">配置委托</param>
+            <returns>服务集合</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ServiceCollectionExtensions.AddMySql(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{ToolHelper.Database.Configuration.MySqlOptions})">
+            <summary>
+            添加 MySQL 数据库支持（旧版，建议使用 AddMySqlSugar）
+            </summary>
+            <param name="services">服务集合</param>
+            <param name="configure">配置委托</param>
+            <returns>服务集合</returns>
+            <example>
+            <code>
+            services.AddMySql(options =>
+            {
+                options.Server = "localhost";
+                options.Port = 3306;
+                options.Database = "mydb";
+                options.UserId = "root";
+                options.Password = "password";
+            });
+            </code>
+            </example>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ServiceCollectionExtensions.AddMySql(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String)">
+            <summary>
+            添加 MySQL 数据库支持（使用连接字符串）
+            </summary>
+            <param name="services">服务集合</param>
+            <param name="connectionString">连接字符串</param>
+            <returns>服务集合</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ServiceCollectionExtensions.AddMySql(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.Action{ToolHelper.Database.Configuration.MySqlOptions})">
+            <summary>
+            添加命名的 MySQL 数据库支持
+            </summary>
+            <param name="services">服务集合</param>
+            <param name="name">名称</param>
+            <param name="configure">配置委托</param>
+            <returns>服务集合</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ServiceCollectionExtensions.AddDatabaseFactory(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            添加数据库帮助类工厂（旧版，建议使用 AddSqlSugarFactory）
+            </summary>
+            <param name="services">服务集合</param>
+            <returns>服务集合</returns>
+            <example>
+            <code>
+            services.AddDatabaseFactory();
+            
+            // 使用工厂
+            var factory = serviceProvider.GetRequiredService&lt;IDbHelperFactory&gt;();
+            var sqliteHelper = factory.Create(DatabaseType.Sqlite, "Data Source=test.db");
+            </code>
+            </example>
+        </member>
+        <member name="T:ToolHelper.Database.Extensions.IDbHelperFactory">
+            <summary>
+            数据库帮助类工厂接口
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.IDbHelperFactory.Create(ToolHelper.Database.Abstractions.DatabaseType,System.String)">
+            <summary>
+            创建数据库帮助类
+            </summary>
+            <param name="type">数据库类型</param>
+            <param name="connectionString">连接字符串</param>
+            <returns>数据库帮助类</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.IDbHelperFactory.CreateSqlite(System.String)">
+            <summary>
+            创建SQLite帮助类
+            </summary>
+            <param name="databasePath">数据库路径</param>
+            <returns>SQLite帮助类</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.IDbHelperFactory.CreateSqlServer(System.String)">
+            <summary>
+            创建SQL Server帮助类
+            </summary>
+            <param name="connectionString">连接字符串</param>
+            <returns>SQL Server帮助类</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.IDbHelperFactory.CreateMySql(System.String)">
+            <summary>
+            创建MySQL帮助类
+            </summary>
+            <param name="connectionString">连接字符串</param>
+            <returns>MySQL帮助类</returns>
+        </member>
+        <member name="T:ToolHelper.Database.Extensions.DbHelperFactory">
+            <summary>
+            数据库帮助类工厂实现
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.DbHelperFactory.Create(ToolHelper.Database.Abstractions.DatabaseType,System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.DbHelperFactory.CreateSqlite(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.DbHelperFactory.CreateSqlServer(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.DbHelperFactory.CreateMySql(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="T:ToolHelper.Database.Extensions.ISqlSugarDbHelperFactory">
+            <summary>
+            SqlSugar 数据库帮助类工厂接口
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ISqlSugarDbHelperFactory.CreateSqlite(System.String)">
+            <summary>
+            创建 SQLite 帮助类
+            </summary>
+            <param name="databasePath">数据库文件路径</param>
+            <returns>SQLite 帮助类</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ISqlSugarDbHelperFactory.CreateSqlite(ToolHelper.Database.Configuration.SqliteSugarOptions)">
+            <summary>
+            创建 SQLite 帮助类（使用选项）
+            </summary>
+            <param name="options">配置选项</param>
+            <returns>SQLite 帮助类</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ISqlSugarDbHelperFactory.CreateSqlServer(System.String)">
+            <summary>
+            创建 SQL Server 帮助类
+            </summary>
+            <param name="connectionString">连接字符串</param>
+            <returns>SQL Server 帮助类</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ISqlSugarDbHelperFactory.CreateSqlServer(ToolHelper.Database.Configuration.SqlServerSugarOptions)">
+            <summary>
+            创建 SQL Server 帮助类（使用选项）
+            </summary>
+            <param name="options">配置选项</param>
+            <returns>SQL Server 帮助类</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ISqlSugarDbHelperFactory.CreateMySql(System.String)">
+            <summary>
+            创建 MySQL 帮助类
+            </summary>
+            <param name="connectionString">连接字符串</param>
+            <returns>MySQL 帮助类</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.ISqlSugarDbHelperFactory.CreateMySql(ToolHelper.Database.Configuration.MySqlSugarOptions)">
+            <summary>
+            创建 MySQL 帮助类（使用选项）
+            </summary>
+            <param name="options">配置选项</param>
+            <returns>MySQL 帮助类</returns>
+        </member>
+        <member name="T:ToolHelper.Database.Extensions.SqlSugarDbHelperFactory">
+            <summary>
+            SqlSugar 数据库帮助类工厂实现
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.SqlSugarDbHelperFactory.CreateSqlite(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.SqlSugarDbHelperFactory.CreateSqlite(ToolHelper.Database.Configuration.SqliteSugarOptions)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.SqlSugarDbHelperFactory.CreateSqlServer(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.SqlSugarDbHelperFactory.CreateSqlServer(ToolHelper.Database.Configuration.SqlServerSugarOptions)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.SqlSugarDbHelperFactory.CreateMySql(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Extensions.SqlSugarDbHelperFactory.CreateMySql(ToolHelper.Database.Configuration.MySqlSugarOptions)">
+            <inheritdoc/>
+        </member>
+        <member name="T:ToolHelper.Database.MySql.MySqlHelper">
+            <summary>
+            MySQL 数据库帮助类
+            提供MySQL数据库的操作封装
+            </summary>
+            <example>
+            <code>
+            // 创建MySQL帮助类
+            var options = Options.Create(new MySqlOptions
+            {
+                Server = "localhost",
+                Port = 3306,
+                Database = "mydb",
+                UserId = "root",
+                Password = "password"
+            });
+            
+            using var helper = new MySqlHelper(options);
+            
+            // 创建表
+            await helper.ExecuteNonQueryAsync(@"
+                CREATE TABLE IF NOT EXISTS Users (
+                    Id INT AUTO_INCREMENT PRIMARY KEY,
+                    Name VARCHAR(100) NOT NULL,
+                    Email VARCHAR(200) UNIQUE,
+                    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            
+            // 插入数据
+            var id = await helper.InsertAndGetIdAsync(
+                "INSERT INTO Users (Name, Email) VALUES (@Name, @Email)",
+                new { Name = "张三", Email = "zhang@example.com" });
+            </code>
+            </example>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlHelper.DatabaseType">
+            <inheritdoc/>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlHelper.ParameterPrefix">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.#ctor(Microsoft.Extensions.Options.IOptions{ToolHelper.Database.Configuration.MySqlOptions},Microsoft.Extensions.Logging.ILogger{ToolHelper.Database.MySql.MySqlHelper})">
+            <summary>
+            创建 MySqlHelper 实例
+            </summary>
+            <param name="options">MySQL配置选项</param>
+            <param name="logger">日志记录器（可选）</param>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.#ctor(System.String,Microsoft.Extensions.Logging.ILogger{ToolHelper.Database.MySql.MySqlHelper})">
+            <summary>
+            使用连接字符串创建 MySqlHelper 实例
+            </summary>
+            <param name="connectionString">连接字符串</param>
+            <param name="logger">日志记录器（可选）</param>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.CreateConnection">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.GetLastInsertIdAsync(System.Threading.CancellationToken)">
+            <summary>
+            获取最后插入的自增ID
+            </summary>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>最后插入的ID</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.InsertAndGetIdAsync(System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            插入数据并返回自增ID
+            </summary>
+            <param name="sql">INSERT SQL语句</param>
+            <param name="parameters">参数</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>自增ID</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.ExecuteStoredProcedureAsync(System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            执行存储过程（无返回值）
+            </summary>
+            <param name="procedureName">存储过程名称</param>
+            <param name="parameters">参数</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>受影响的行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.ExecuteStoredProcedureAsync``1(System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            执行存储过程（返回结果）
+            </summary>
+            <typeparam name="T">返回类型</typeparam>
+            <param name="procedureName">存储过程名称</param>
+            <param name="parameters">参数</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>查询结果集合</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.BulkInsertAsync``1(System.String,System.Collections.Generic.IEnumerable{``0},System.Threading.CancellationToken)">
+            <summary>
+            批量插入（使用MySqlBulkCopy）
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="tableName">表名</param>
+            <param name="entities">实体集合</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>插入行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.BulkInsertWithLoadDataAsync``1(System.String,System.Collections.Generic.IEnumerable{``0},System.Threading.CancellationToken)">
+            <summary>
+            使用 LOAD DATA INFILE 批量导入（高性能）
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="tableName">表名</param>
+            <param name="entities">实体集合</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>插入行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.InsertOrUpdateAsync``1(System.String,``0,System.String[],System.Threading.CancellationToken)">
+            <summary>
+            INSERT ... ON DUPLICATE KEY UPDATE (插入或更新)
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="tableName">表名</param>
+            <param name="entity">实体</param>
+            <param name="updateColumns">需要更新的列（为空时更新所有非主键列）</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>受影响的行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.TableExistsAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            检查表是否存在
+            </summary>
+            <param name="tableName">表名</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>是否存在</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.GetTableNamesAsync(System.Threading.CancellationToken)">
+            <summary>
+            获取所有表名
+            </summary>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>表名列表</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.GetTableSchemaAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            获取表结构信息
+            </summary>
+            <param name="tableName">表名</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>列信息</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.GetDatabaseInfoAsync(System.Threading.CancellationToken)">
+            <summary>
+            获取数据库大小信息
+            </summary>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>数据库大小信息</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.GetServerVersionAsync(System.Threading.CancellationToken)">
+            <summary>
+            获取服务器版本
+            </summary>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>版本字符串</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.GetConnectionCountAsync(System.Threading.CancellationToken)">
+            <summary>
+            获取当前连接数
+            </summary>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>连接数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.TruncateTableAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            截断表
+            </summary>
+            <param name="tableName">表名</param>
+            <param name="cancellationToken">取消令牌</param>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.OptimizeTableAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            优化表
+            </summary>
+            <param name="tableName">表名</param>
+            <param name="cancellationToken">取消令牌</param>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.AnalyzeTableAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            分析表
+            </summary>
+            <param name="tableName">表名</param>
+            <param name="cancellationToken">取消令牌</param>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.CheckTableAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            检查表
+            </summary>
+            <param name="tableName">表名</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>检查结果</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.CreateIndexAsync(System.String,System.String,System.String[],System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            创建索引
+            </summary>
+            <param name="tableName">表名</param>
+            <param name="indexName">索引名</param>
+            <param name="columns">列名</param>
+            <param name="isUnique">是否唯一索引</param>
+            <param name="cancellationToken">取消令牌</param>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.DropIndexAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            删除索引
+            </summary>
+            <param name="tableName">表名</param>
+            <param name="indexName">索引名</param>
+            <param name="cancellationToken">取消令牌</param>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlHelper.ToDataTable``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            将实体列表转换为DataTable
+            </summary>
+        </member>
+        <member name="T:ToolHelper.Database.MySql.TableNameInfo">
+            <summary>
+            表名信息
+            </summary>
+        </member>
+        <member name="T:ToolHelper.Database.MySql.MySqlColumnInfo">
+            <summary>
+            MySQL 列信息
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlColumnInfo.ColumnName">
+            <summary>列名</summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlColumnInfo.DataType">
+            <summary>数据类型</summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlColumnInfo.MaxLength">
+            <summary>最大长度</summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlColumnInfo.NumericPrecision">
+            <summary>数字精度</summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlColumnInfo.NumericScale">
+            <summary>数字小数位数</summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlColumnInfo.IsNullable">
+            <summary>是否允许为空</summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlColumnInfo.IsPrimaryKey">
+            <summary>是否主键</summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlColumnInfo.IsAutoIncrement">
+            <summary>是否自增</summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlColumnInfo.DefaultValue">
+            <summary>默认值</summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlColumnInfo.Comment">
+            <summary>注释</summary>
+        </member>
+        <member name="T:ToolHelper.Database.MySql.MySqlDatabaseInfo">
+            <summary>
+            MySQL 数据库信息
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlDatabaseInfo.DatabaseName">
+            <summary>数据库名称</summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlDatabaseInfo.DataSizeMB">
+            <summary>数据大小(MB)</summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlDatabaseInfo.IndexSizeMB">
+            <summary>索引大小(MB)</summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlDatabaseInfo.TotalSizeMB">
+            <summary>总大小(MB)</summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlDatabaseInfo.TableCount">
+            <summary>表数量</summary>
+        </member>
+        <member name="T:ToolHelper.Database.MySql.MySqlCheckResult">
+            <summary>
+            MySQL 检查结果
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlCheckResult.Table">
+            <summary>表名</summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlCheckResult.Op">
+            <summary>操作类型</summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlCheckResult.Msg_type">
+            <summary>消息类型</summary>
+        </member>
+        <member name="P:ToolHelper.Database.MySql.MySqlCheckResult.Msg_text">
+            <summary>消息内容</summary>
+        </member>
+        <member name="T:ToolHelper.Database.MySql.MySqlSugarHelper">
+            <summary>
+            MySQL 数据库帮助类（基于 SqlSugar ORM）
+            提供 MySQL 数据库的 ORM 操作
+            </summary>
+            <example>
+            <code>
+            // 创建 MySQL 帮助类
+            var options = Options.Create(new MySqlSugarOptions
+            {
+                Server = "localhost",
+                Port = 3306,
+                Database = "mydb",
+                UserId = "root",
+                Password = "password"
+            });
+            
+            using var db = new MySqlSugarHelper(options);
+            
+            // 自动创建表
+            db.CreateTable&lt;User&gt;();
+            
+            // 批量插入（高性能）
+            var users = new List&lt;User&gt; { ... };
+            db.BulkInsert(users);
+            
+            // 插入或更新（ON DUPLICATE KEY UPDATE）
+            db.InsertOrUpdate(user);
+            </code>
+            </example>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.#ctor(Microsoft.Extensions.Options.IOptions{ToolHelper.Database.Configuration.MySqlSugarOptions},Microsoft.Extensions.Logging.ILogger{ToolHelper.Database.MySql.MySqlSugarHelper})">
+            <summary>
+            创建 MySqlSugarHelper 实例
+            </summary>
+            <param name="options">MySQL 配置选项</param>
+            <param name="logger">日志记录器（可选）</param>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.#ctor(ToolHelper.Database.Configuration.MySqlSugarOptions,Microsoft.Extensions.Logging.ILogger{ToolHelper.Database.MySql.MySqlSugarHelper})">
+            <summary>
+            使用配置创建实例
+            </summary>
+            <param name="options">配置选项</param>
+            <param name="logger">日志记录器</param>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.#ctor(System.String,Microsoft.Extensions.Logging.ILogger{ToolHelper.Database.MySql.MySqlSugarHelper})">
+            <summary>
+            使用连接字符串创建实例
+            </summary>
+            <param name="connectionString">连接字符串</param>
+            <param name="logger">日志记录器</param>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.BulkInsert``1(System.Collections.Generic.List{``0})">
+            <summary>
+            高性能批量插入
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="entities">实体集合</param>
+            <returns>插入行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.BulkInsertAsync``1(System.Collections.Generic.List{``0})">
+            <summary>
+            异步高性能批量插入
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.BulkUpdate``1(System.Collections.Generic.List{``0})">
+            <summary>
+            高性能批量更新
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.BulkUpdateAsync``1(System.Collections.Generic.List{``0})">
+            <summary>
+            异步高性能批量更新
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.BulkMerge``1(System.Collections.Generic.List{``0})">
+            <summary>
+            批量合并（插入或更新，ON DUPLICATE KEY UPDATE）
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="entities">实体集合</param>
+            <returns>受影响行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.BulkMergeAsync``1(System.Collections.Generic.List{``0})">
+            <summary>
+            异步批量合并
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.InsertOrUpdate``1(``0)">
+            <summary>
+            插入或更新（ON DUPLICATE KEY UPDATE）
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="entity">实体对象</param>
+            <returns>是否成功</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.InsertOrUpdateAsync``1(``0)">
+            <summary>
+            异步插入或更新
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.InsertOrUpdateRange``1(System.Collections.Generic.List{``0})">
+            <summary>
+            批量插入或更新
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.InsertOrUpdateRangeAsync``1(System.Collections.Generic.List{``0})">
+            <summary>
+            异步批量插入或更新
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.ExecuteStoredProcedure(System.String,System.Object)">
+            <summary>
+            执行存储过程（无返回值）
+            </summary>
+            <param name="procedureName">存储过程名称</param>
+            <param name="parameters">参数</param>
+            <returns>受影响行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.ExecuteStoredProcedure``1(System.String,System.Object)">
+            <summary>
+            执行存储过程并返回结果
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.GetDatabaseInfo">
+            <summary>
+            获取数据库信息
+            </summary>
+            <returns>数据库信息</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.GetServerVersion">
+            <summary>
+            获取 MySQL 服务器版本
+            </summary>
+            <returns>版本字符串</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.GetConnectionCount">
+            <summary>
+            获取当前连接数
+            </summary>
+            <returns>连接数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.GetAllTableNames">
+            <summary>
+            获取所有表名
+            </summary>
+            <returns>表名列表</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.OptimizeTable(System.String)">
+            <summary>
+            优化表
+            </summary>
+            <param name="tableName">表名</param>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.AnalyzeTable(System.String)">
+            <summary>
+            分析表
+            </summary>
+            <param name="tableName">表名</param>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.CheckTable(System.String)">
+            <summary>
+            检查表
+            </summary>
+            <param name="tableName">表名</param>
+            <returns>检查结果</returns>
+        </member>
+        <member name="M:ToolHelper.Database.MySql.MySqlSugarHelper.TruncateTable(System.String)">
+            <summary>
+            截断表
+            </summary>
+            <param name="tableName">表名</param>
+        </member>
+        <member name="T:ToolHelper.Database.Sqlite.SqliteHelper">
+            <summary>
+            SQLite 数据库帮助类
+            提供SQLite数据库的操作封装
+            </summary>
+            <example>
+            <code>
+            // 创建SQLite帮助类
+            var options = Options.Create(new SqliteOptions
+            {
+                DatabasePath = "mydata.db",
+                JournalMode = SqliteJournalMode.Wal
+            });
+            
+            using var helper = new SqliteHelper(options);
+            
+            // 创建表
+            await helper.ExecuteNonQueryAsync(@"
+                CREATE TABLE IF NOT EXISTS Users (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Name TEXT NOT NULL,
+                    Email TEXT UNIQUE
+                )");
+            
+            // 插入数据
+            await helper.ExecuteNonQueryAsync(
+                "INSERT INTO Users (Name, Email) VALUES (@Name, @Email)",
+                new { Name = "张三", Email = "zhang@example.com" });
+            
+            // 查询数据
+            var users = await helper.QueryAsync&lt;User&gt;("SELECT * FROM Users");
+            </code>
+            </example>
+        </member>
+        <member name="P:ToolHelper.Database.Sqlite.SqliteHelper.DatabaseType">
+            <inheritdoc/>
+        </member>
+        <member name="P:ToolHelper.Database.Sqlite.SqliteHelper.ParameterPrefix">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteHelper.#ctor(Microsoft.Extensions.Options.IOptions{ToolHelper.Database.Configuration.SqliteOptions},Microsoft.Extensions.Logging.ILogger{ToolHelper.Database.Sqlite.SqliteHelper})">
+            <summary>
+            创建 SqliteHelper 实例
+            </summary>
+            <param name="options">SQLite配置选项</param>
+            <param name="logger">日志记录器（可选）</param>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteHelper.#ctor(System.String,Microsoft.Extensions.Logging.ILogger{ToolHelper.Database.Sqlite.SqliteHelper})">
+            <summary>
+            使用连接字符串创建 SqliteHelper 实例
+            </summary>
+            <param name="connectionString">连接字符串</param>
+            <param name="logger">日志记录器（可选）</param>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteHelper.CreateConnection">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteHelper.InitializeAsync(System.Threading.CancellationToken)">
+            <summary>
+            初始化数据库（设置PRAGMA）
+            </summary>
+            <param name="cancellationToken">取消令牌</param>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteHelper.GetLastInsertRowIdAsync(System.Threading.CancellationToken)">
+            <summary>
+            获取最后插入的行ID
+            </summary>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>最后插入的行ID</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteHelper.InsertAndGetIdAsync(System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            插入数据并返回自增ID
+            </summary>
+            <param name="sql">INSERT SQL语句</param>
+            <param name="parameters">参数</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>自增ID</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteHelper.VacuumAsync(System.Threading.CancellationToken)">
+            <summary>
+            执行VACUUM操作（整理数据库）
+            </summary>
+            <param name="cancellationToken">取消令牌</param>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteHelper.TableExistsAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            检查表是否存在
+            </summary>
+            <param name="tableName">表名</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>是否存在</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteHelper.GetTableNamesAsync(System.Threading.CancellationToken)">
+            <summary>
+            获取所有表名
+            </summary>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>表名列表</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteHelper.GetTableSchemaAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            获取表结构信息
+            </summary>
+            <param name="tableName">表名</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>列信息列表</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteHelper.CreateIndexAsync(System.String,System.String,System.String[],System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            创建索引
+            </summary>
+            <param name="tableName">表名</param>
+            <param name="indexName">索引名</param>
+            <param name="columns">列名</param>
+            <param name="isUnique">是否唯一索引</param>
+            <param name="cancellationToken">取消令牌</param>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteHelper.DropIndexAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            删除索引
+            </summary>
+            <param name="indexName">索引名</param>
+            <param name="cancellationToken">取消令牌</param>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteHelper.BackupToFileAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            备份数据库到文件
+            </summary>
+            <param name="backupPath">备份文件路径</param>
+            <param name="cancellationToken">取消令牌</param>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteHelper.RestoreFromFileAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            从文件恢复数据库
+            </summary>
+            <param name="backupPath">备份文件路径</param>
+            <param name="cancellationToken">取消令牌</param>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteHelper.GetDatabaseSizeAsync(System.Threading.CancellationToken)">
+            <summary>
+            获取数据库大小（字节）
+            </summary>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>数据库大小</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteHelper.IntegrityCheckAsync(System.Threading.CancellationToken)">
+            <summary>
+            执行完整性检查
+            </summary>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>检查结果</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteHelper.BulkInsertAsync``1(System.String,System.Collections.Generic.IEnumerable{``0},System.Threading.CancellationToken)">
+            <summary>
+            批量插入优化（使用事务和预编译语句）
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="tableName">表名</param>
+            <param name="entities">实体集合</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>插入行数</returns>
+        </member>
+        <member name="T:ToolHelper.Database.Sqlite.TableInfo">
+            <summary>
+            表信息
+            </summary>
+        </member>
+        <member name="T:ToolHelper.Database.Sqlite.SqliteColumnInfo">
+            <summary>
+            SQLite列信息
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.Sqlite.SqliteColumnInfo.cid">
+            <summary>列ID</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Sqlite.SqliteColumnInfo.name">
+            <summary>列名</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Sqlite.SqliteColumnInfo.type">
+            <summary>数据类型</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Sqlite.SqliteColumnInfo.notnull">
+            <summary>是否非空</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Sqlite.SqliteColumnInfo.dflt_value">
+            <summary>默认值</summary>
+        </member>
+        <member name="P:ToolHelper.Database.Sqlite.SqliteColumnInfo.pk">
+            <summary>是否主键</summary>
+        </member>
+        <member name="T:ToolHelper.Database.Sqlite.IntegrityResult">
+            <summary>
+            完整性检查结果
+            </summary>
+        </member>
+        <member name="T:ToolHelper.Database.Sqlite.SqliteSugarHelper">
+            <summary>
+            SQLite 数据库帮助类（基于 SqlSugar ORM）
+            提供 SQLite 数据库的 ORM 操作
+            </summary>
+            <example>
+            <code>
+            // 创建 SQLite 帮助类
+            var options = Options.Create(new SqliteSugarOptions
+            {
+                DatabasePath = "mydata.db"
+            });
+            
+            using var db = new SqliteSugarHelper(options);
+            
+            // 自动创建表（根据实体类）
+            db.CreateTable&lt;User&gt;();
+            
+            // 插入数据（无需写SQL）
+            var user = new User { Name = "张三", Age = 25 };
+            db.Insert(user);
+            
+            // 查询数据（Lambda表达式）
+            var users = db.GetList&lt;User&gt;(u => u.Age > 18);
+            
+            // 更新数据
+            user.Age = 26;
+            db.Update(user);
+            
+            // 条件更新（只更新指定字段）
+            db.Update&lt;User&gt;(
+                u => new User { Age = 30 },
+                u => u.Name == "张三");
+            
+            // 删除数据
+            db.Delete&lt;User&gt;(u => u.Age &lt; 18);
+            </code>
+            </example>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteSugarHelper.#ctor(Microsoft.Extensions.Options.IOptions{ToolHelper.Database.Configuration.SqliteSugarOptions},Microsoft.Extensions.Logging.ILogger{ToolHelper.Database.Sqlite.SqliteSugarHelper})">
+            <summary>
+            创建 SqliteSugarHelper 实例
+            </summary>
+            <param name="options">SQLite 配置选项</param>
+            <param name="logger">日志记录器（可选）</param>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteSugarHelper.#ctor(ToolHelper.Database.Configuration.SqliteSugarOptions,Microsoft.Extensions.Logging.ILogger{ToolHelper.Database.Sqlite.SqliteSugarHelper})">
+            <summary>
+            使用配置创建实例
+            </summary>
+            <param name="options">配置选项</param>
+            <param name="logger">日志记录器</param>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteSugarHelper.#ctor(System.String,Microsoft.Extensions.Logging.ILogger{ToolHelper.Database.Sqlite.SqliteSugarHelper})">
+            <summary>
+            使用数据库路径创建实例
+            </summary>
+            <param name="databasePath">数据库文件路径</param>
+            <param name="logger">日志记录器</param>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteSugarHelper.Vacuum">
+            <summary>
+            执行 VACUUM 操作（整理数据库）
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteSugarHelper.VacuumAsync">
+            <summary>
+            异步执行 VACUUM 操作
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteSugarHelper.IntegrityCheck">
+            <summary>
+            执行完整性检查
+            </summary>
+            <returns>检查结果列表</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteSugarHelper.GetDatabaseSize">
+            <summary>
+            获取数据库大小（字节）
+            </summary>
+            <returns>数据库大小</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteSugarHelper.EnableWalMode">
+            <summary>
+            设置 WAL 模式
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteSugarHelper.GetJournalMode">
+            <summary>
+            获取当前日志模式
+            </summary>
+            <returns>日志模式</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteSugarHelper.BackupTo(System.String)">
+            <summary>
+            备份数据库到文件
+            </summary>
+            <param name="backupPath">备份文件路径</param>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteSugarHelper.GetAllTableNames">
+            <summary>
+            获取所有表名
+            </summary>
+            <returns>表名列表</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteSugarHelper.GetTableColumns(System.String)">
+            <summary>
+            获取表的列信息
+            </summary>
+            <param name="tableName">表名</param>
+            <returns>列信息列表</returns>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteSugarHelper.CloseAllConnections">
+            <summary>
+            关闭所有连接（用于确保 SQLite 文件可以被删除）
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.Sqlite.SqliteSugarHelper.Dispose(System.Boolean)">
+            <summary>
+            释放资源（重写以确保 SQLite 文件被正确释放）
+            </summary>
+        </member>
+        <member name="T:ToolHelper.Database.SqlServer.SqlServerHelper">
+            <summary>
+            SQL Server 数据库帮助类
+            提供SQL Server数据库的操作封装
+            </summary>
+            <example>
+            <code>
+            // 创建SQL Server帮助类
+            var options = Options.Create(new SqlServerOptions
+            {
+                Server = "localhost",
+                Database = "MyDatabase",
+                UserId = "sa",
+                Password = "YourPassword",
+                TrustServerCertificate = true
+            });
+            
+            using var helper = new SqlServerHelper(options);
+            
+            // 测试连接
+            if (await helper.TestConnectionAsync())
+            {
+                Console.WriteLine("连接成功!");
+            }
+            
+            // 执行存储过程
+            var result = await helper.ExecuteStoredProcedureAsync&lt;User&gt;(
+                "sp_GetUserById",
+                new { UserId = 1 });
+            </code>
+            </example>
+        </member>
+        <member name="P:ToolHelper.Database.SqlServer.SqlServerHelper.DatabaseType">
+            <inheritdoc/>
+        </member>
+        <member name="P:ToolHelper.Database.SqlServer.SqlServerHelper.ParameterPrefix">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerHelper.#ctor(Microsoft.Extensions.Options.IOptions{ToolHelper.Database.Configuration.SqlServerOptions},Microsoft.Extensions.Logging.ILogger{ToolHelper.Database.SqlServer.SqlServerHelper})">
+            <summary>
+            创建 SqlServerHelper 实例
+            </summary>
+            <param name="options">SQL Server配置选项</param>
+            <param name="logger">日志记录器（可选）</param>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerHelper.#ctor(System.String,Microsoft.Extensions.Logging.ILogger{ToolHelper.Database.SqlServer.SqlServerHelper})">
+            <summary>
+            使用连接字符串创建 SqlServerHelper 实例
+            </summary>
+            <param name="connectionString">连接字符串</param>
+            <param name="logger">日志记录器（可选）</param>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerHelper.CreateConnection">
+            <inheritdoc/>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerHelper.ExecuteStoredProcedureAsync(System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            执行存储过程（无返回值）
+            </summary>
+            <param name="procedureName">存储过程名称</param>
+            <param name="parameters">参数</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>受影响的行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerHelper.ExecuteStoredProcedureAsync``1(System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            执行存储过程（返回单条记录）
+            </summary>
+            <typeparam name="T">返回类型</typeparam>
+            <param name="procedureName">存储过程名称</param>
+            <param name="parameters">参数</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>查询结果</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerHelper.ExecuteStoredProcedureListAsync``1(System.String,System.Object,System.Threading.CancellationToken)">
+            <summary>
+            执行存储过程（返回多条记录）
+            </summary>
+            <typeparam name="T">返回类型</typeparam>
+            <param name="procedureName">存储过程名称</param>
+            <param name="parameters">参数</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>查询结果集合</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerHelper.ExecuteStoredProcedureWithOutputAsync(System.String,System.Object,System.Collections.Generic.Dictionary{System.String,System.Data.SqlDbType},System.Threading.CancellationToken)">
+            <summary>
+            执行存储过程（带输出参数）
+            </summary>
+            <param name="procedureName">存储过程名称</param>
+            <param name="inputParameters">输入参数</param>
+            <param name="outputParameters">输出参数定义</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>输出参数值字典</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerHelper.BulkInsertAsync``1(System.String,System.Collections.Generic.IEnumerable{``0},System.Threading.CancellationToken)">
+            <summary>
+            批量插入（使用SqlBulkCopy）
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="tableName">表名</param>
+            <param name="entities">实体集合</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>插入行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerHelper.BulkMergeAsync``1(System.String,System.Collections.Generic.IEnumerable{``0},System.String[],System.Threading.CancellationToken)">
+            <summary>
+            批量合并（MERGE语句）
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="tableName">表名</param>
+            <param name="entities">实体集合</param>
+            <param name="keyColumns">主键列</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>受影响的行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerHelper.TableExistsAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            检查表是否存在
+            </summary>
+            <param name="tableName">表名</param>
+            <param name="schema">架构名（默认dbo）</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>是否存在</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerHelper.GetTableNamesAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            获取所有表名
+            </summary>
+            <param name="schema">架构名</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>表名列表</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerHelper.GetTableSchemaAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            获取表结构信息
+            </summary>
+            <param name="tableName">表名</param>
+            <param name="schema">架构名</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>列信息</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerHelper.GetDatabaseInfoAsync(System.Threading.CancellationToken)">
+            <summary>
+            获取数据库大小信息
+            </summary>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>数据库大小信息</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerHelper.TruncateTableAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            截断表
+            </summary>
+            <param name="tableName">表名</param>
+            <param name="cancellationToken">取消令牌</param>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerHelper.ExecuteWithRetryAsync``1(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{``0}},System.Threading.CancellationToken)">
+            <summary>
+            执行带重试的操作
+            </summary>
+            <typeparam name="T">返回类型</typeparam>
+            <param name="operation">操作</param>
+            <param name="cancellationToken">取消令牌</param>
+            <returns>操作结果</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerHelper.IsTransientError(Microsoft.Data.SqlClient.SqlException)">
+            <summary>
+            判断是否为瞬态错误
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerHelper.ToDataTable``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            将实体列表转换为DataTable
+            </summary>
+        </member>
+        <member name="T:ToolHelper.Database.SqlServer.TableInfo">
+            <summary>
+            表信息
+            </summary>
+        </member>
+        <member name="T:ToolHelper.Database.SqlServer.SqlServerColumnInfo">
+            <summary>
+            SQL Server 列信息
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.SqlServer.SqlServerColumnInfo.ColumnName">
+            <summary>列名</summary>
+        </member>
+        <member name="P:ToolHelper.Database.SqlServer.SqlServerColumnInfo.DataType">
+            <summary>数据类型</summary>
+        </member>
+        <member name="P:ToolHelper.Database.SqlServer.SqlServerColumnInfo.MaxLength">
+            <summary>最大长度</summary>
+        </member>
+        <member name="P:ToolHelper.Database.SqlServer.SqlServerColumnInfo.NumericPrecision">
+            <summary>数字精度</summary>
+        </member>
+        <member name="P:ToolHelper.Database.SqlServer.SqlServerColumnInfo.NumericScale">
+            <summary>数字小数位数</summary>
+        </member>
+        <member name="P:ToolHelper.Database.SqlServer.SqlServerColumnInfo.IsNullable">
+            <summary>是否允许为空</summary>
+        </member>
+        <member name="P:ToolHelper.Database.SqlServer.SqlServerColumnInfo.IsPrimaryKey">
+            <summary>是否主键</summary>
+        </member>
+        <member name="P:ToolHelper.Database.SqlServer.SqlServerColumnInfo.IsIdentity">
+            <summary>是否自增</summary>
+        </member>
+        <member name="P:ToolHelper.Database.SqlServer.SqlServerColumnInfo.DefaultValue">
+            <summary>默认值</summary>
+        </member>
+        <member name="T:ToolHelper.Database.SqlServer.SqlServerDatabaseInfo">
+            <summary>
+            SQL Server 数据库信息
+            </summary>
+        </member>
+        <member name="P:ToolHelper.Database.SqlServer.SqlServerDatabaseInfo.DatabaseName">
+            <summary>数据库名称</summary>
+        </member>
+        <member name="P:ToolHelper.Database.SqlServer.SqlServerDatabaseInfo.DataSizeMB">
+            <summary>数据文件大小(MB)</summary>
+        </member>
+        <member name="P:ToolHelper.Database.SqlServer.SqlServerDatabaseInfo.LogSizeMB">
+            <summary>日志文件大小(MB)</summary>
+        </member>
+        <member name="P:ToolHelper.Database.SqlServer.SqlServerDatabaseInfo.TotalSizeMB">
+            <summary>总大小(MB)</summary>
+        </member>
+        <member name="T:ToolHelper.Database.SqlServer.SqlServerSugarHelper">
+            <summary>
+            SQL Server 数据库帮助类（基于 SqlSugar ORM）
+            提供 SQL Server 数据库的 ORM 操作
+            </summary>
+            <example>
+            <code>
+            // 创建 SQL Server 帮助类
+            var options = Options.Create(new SqlServerSugarOptions
+            {
+                Server = "localhost",
+                Database = "MyDatabase",
+                UserId = "sa",
+                Password = "YourPassword"
+            });
+            
+            using var db = new SqlServerSugarHelper(options);
+            
+            // 自动创建表
+            db.CreateTable&lt;User&gt;();
+            
+            // 批量插入（高性能）
+            var users = new List&lt;User&gt; { ... };
+            db.BulkInsert(users);
+            
+            // 存储过程调用
+            var result = db.ExecuteStoredProcedure&lt;User&gt;("sp_GetUsers", new { Age = 18 });
+            </code>
+            </example>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerSugarHelper.#ctor(Microsoft.Extensions.Options.IOptions{ToolHelper.Database.Configuration.SqlServerSugarOptions},Microsoft.Extensions.Logging.ILogger{ToolHelper.Database.SqlServer.SqlServerSugarHelper})">
+            <summary>
+            创建 SqlServerSugarHelper 实例
+            </summary>
+            <param name="options">SQL Server 配置选项</param>
+            <param name="logger">日志记录器（可选）</param>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerSugarHelper.#ctor(ToolHelper.Database.Configuration.SqlServerSugarOptions,Microsoft.Extensions.Logging.ILogger{ToolHelper.Database.SqlServer.SqlServerSugarHelper})">
+            <summary>
+            使用配置创建实例
+            </summary>
+            <param name="options">配置选项</param>
+            <param name="logger">日志记录器</param>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerSugarHelper.#ctor(System.String,Microsoft.Extensions.Logging.ILogger{ToolHelper.Database.SqlServer.SqlServerSugarHelper})">
+            <summary>
+            使用连接字符串创建实例
+            </summary>
+            <param name="connectionString">连接字符串</param>
+            <param name="logger">日志记录器</param>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerSugarHelper.BulkInsert``1(System.Collections.Generic.List{``0})">
+            <summary>
+            高性能批量插入（使用 BulkCopy）
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="entities">实体集合</param>
+            <returns>插入行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerSugarHelper.BulkInsertAsync``1(System.Collections.Generic.List{``0})">
+            <summary>
+            异步高性能批量插入
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="entities">实体集合</param>
+            <returns>插入行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerSugarHelper.BulkUpdate``1(System.Collections.Generic.List{``0})">
+            <summary>
+            高性能批量更新
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="entities">实体集合</param>
+            <returns>更新行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerSugarHelper.BulkUpdateAsync``1(System.Collections.Generic.List{``0})">
+            <summary>
+            异步高性能批量更新
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerSugarHelper.BulkMerge``1(System.Collections.Generic.List{``0})">
+            <summary>
+            批量合并（插入或更新）
+            </summary>
+            <typeparam name="T">实体类型</typeparam>
+            <param name="entities">实体集合</param>
+            <returns>受影响行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerSugarHelper.BulkMergeAsync``1(System.Collections.Generic.List{``0})">
+            <summary>
+            异步批量合并
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerSugarHelper.ExecuteStoredProcedure(System.String,System.Object)">
+            <summary>
+            执行存储过程（无返回值）
+            </summary>
+            <param name="procedureName">存储过程名称</param>
+            <param name="parameters">参数</param>
+            <returns>受影响行数</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerSugarHelper.ExecuteStoredProcedureAsync(System.String,System.Object)">
+            <summary>
+            异步执行存储过程
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerSugarHelper.ExecuteStoredProcedure``1(System.String,System.Object)">
+            <summary>
+            执行存储过程并返回结果
+            </summary>
+            <typeparam name="T">返回类型</typeparam>
+            <param name="procedureName">存储过程名称</param>
+            <param name="parameters">参数</param>
+            <returns>查询结果</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerSugarHelper.ExecuteStoredProcedureAsync``1(System.String,System.Object)">
+            <summary>
+            异步执行存储过程并返回结果
+            </summary>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerSugarHelper.GetDatabaseInfo">
+            <summary>
+            获取数据库信息
+            </summary>
+            <returns>数据库信息</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerSugarHelper.GetAllTableNames">
+            <summary>
+            获取所有表名
+            </summary>
+            <returns>表名列表</returns>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerSugarHelper.TruncateTable(System.String)">
+            <summary>
+            截断表
+            </summary>
+            <param name="tableName">表名</param>
+        </member>
+        <member name="M:ToolHelper.Database.SqlServer.SqlServerSugarHelper.ShrinkDatabase">
+            <summary>
+            收缩数据库
+            </summary>
+        </member>
+    </members>
+</doc>

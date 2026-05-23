@@ -116,6 +116,19 @@ public class MeasurementService : IMeasurementService
                     Status = record.Status,
                     VideoFilePath = record.VideoFilePath,
                     DurationSeconds = record.DurationSeconds,
+                    MeasurementName = record.MeasurementName,
+                    MeasurementType = record.MeasurementType,
+                    FrontVideoPath = record.FrontVideoPath,
+                    SideVideoPath = record.SideVideoPath,
+                    VideoSpec = record.VideoSpec,
+                    WalkwayLength = record.WalkwayLength,
+                    ImportStrategy = record.ImportStrategy,
+                    VideoImportMode = record.VideoImportMode,
+                    CurrentAnalysisStage = record.CurrentAnalysisStage,
+                    KeypointsCompleted = record.KeypointsCompleted,
+                    EventsCompleted = record.EventsCompleted,
+                    KinematicsCompleted = record.KinematicsCompleted,
+                    MeasurementFolderPath = record.MeasurementFolderPath,
                     Remark = record.Remark,
                     UpdatedAt = record.UpdatedAt
                 },
@@ -238,6 +251,18 @@ public class MeasurementService : IMeasurementService
                     UpdatedAt = now
                 },
                 m => m.Id == measurementId);
+
+            if (count > 0 && status == MeasurementStatus.Completed)
+            {
+                await db.UpdateAsync<Report>(
+                    r => new Report
+                    {
+                        Status = ReportStatus.Outdated,
+                        UpdatedAt = now
+                    },
+                    r => r.MeasurementId == measurementId
+                         && (r.Status == ReportStatus.Completed || r.Status == ReportStatus.Printed));
+            }
 
             return count > 0;
         }

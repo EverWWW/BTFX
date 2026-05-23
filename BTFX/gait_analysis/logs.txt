@@ -1,0 +1,273 @@
+
+
+---------------------------------------------------------------------
+Processing side.mp4
+On Friday 22. May 2026, 09:43:38
+---------------------------------------------------------------------
+
+Estimating pose...
+Using HALPE_26 model (body and feet) for pose estimation in balanced mode.
+Using cpu device with onnxruntime backend.
+Using cpu device with onnxruntime backend.
+Persons detection is run every 16 frames (pose estimation is run at every frame). Tracking is done with sports2d.
+1 person is analyzed. Person ordering method is least_displacement.
+keypoint_likelihood_threshold=0.3, average_likelihood_threshold=0.5, keypoint_number_threshold=0.3
+
+Processing video stream...
+Video processing completed.
+Reordered persons: IDs of persons [0] become [0].
+
+Post-processing pose:
+- Person 0: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+Rejecting outliers with a Hampel filter.
+Filtering with Butterworth filter, 4th order, 6 Hz.
+Pose in pixels saved to E:\A_ZUT_Research\2025课题组横向\2025基于单目视觉的运动分析系统\打包程序exe\gait_analysis0522\gait_analysis\side_Sports2D\side_Sports2D_px_person00.trc.
+
+Converting pose to meters:
+Converting from pixels to meters using a person height of 1.58 in meters (manual input), and of 891.72 in pixels (calculated).
+Perspective effects corrected using a camera-to-person distance of 10.00 m (obtained from a manual input).
+Camera horizon: -1.09°, corrected using gait kinematics.
+Floor level: 974.15 px (from the top of the image), gait starting at 0.00 px in the right direction for the first person. Corrected using gait kinematics.
+
+- Person 0: Seen from the left.
+Pose plots (m) saved in E:\A_ZUT_Research\2025课题组横向\2025基于单目视觉的运动分析系统\打包程序exe\gait_analysis0522\gait_analysis\side_Sports2D\side_Sports2D_graphs.
+Pose in meters saved to E:\A_ZUT_Research\2025课题组横向\2025基于单目视觉的运动分析系统\打包程序exe\gait_analysis0522\gait_analysis\side_Sports2D\side_Sports2D_m_person00.trc. 
+
+Post-processing angles (without inverse kinematics):
+- Person 0: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+Rejecting outliers with a Hampel filter.
+Filtering with Butterworth filter, 4th order, 6 Hz.
+Correcting segment angles by removing the -1.09° floor angle.
+Angles saved to E:\A_ZUT_Research\2025课题组横向\2025基于单目视觉的运动分析系统\打包程序exe\gait_analysis0522\gait_analysis\side_Sports2D\side_Sports2D_angles_person00.mot.
+Pose plots (m) saved in E:\A_ZUT_Research\2025课题组横向\2025基于单目视觉的运动分析系统\打包程序exe\gait_analysis0522\gait_analysis\side_Sports2D\side_Sports2D_graphs.
+
+Saving images of processed pose and angles:
+Processed video saved to E:\A_ZUT_Research\2025课题组横向\2025基于单目视觉的运动分析系统\打包程序exe\gait_analysis0522\gait_analysis\side_Sports2D\side_Sports2D.mp4.
+
+Processing side.mp4 took 28.57 s.
+
+
+---------------------------------------------------------------------
+Processing front.mp4
+On Friday 22. May 2026, 09:44:06
+---------------------------------------------------------------------
+
+Estimating pose...
+Using HALPE_26 model (body and feet) for pose estimation in balanced mode.
+Using cpu device with onnxruntime backend.
+Using cpu device with onnxruntime backend.
+Persons detection is run every 16 frames (pose estimation is run at every frame). Tracking is done with sports2d.
+1 person is analyzed. Person ordering method is least_displacement.
+keypoint_likelihood_threshold=0.3, average_likelihood_threshold=0.5, keypoint_number_threshold=0.3
+
+Processing video stream...
+Video processing completed.
+Reordered persons: IDs of persons [0] become [0].
+
+Post-processing pose:
+- Person 0: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+Rejecting outliers with a Hampel filter.
+Filtering with Butterworth filter, 4th order, 6 Hz.
+Pose in pixels saved to E:\A_ZUT_Research\2025课题组横向\2025基于单目视觉的运动分析系统\打包程序exe\gait_analysis0522\gait_analysis\front_Sports2D\front_Sports2D_px_person00.trc.
+
+Converting pose to meters:
+Converting from pixels to meters using a person height of 1.58 in meters (manual input), and of 833.91 in pixels (calculated).
+Perspective effects corrected using a camera-to-person distance of 10.00 m (obtained from a manual input).
+Camera horizon: -72.54°, corrected using gait kinematics.
+Floor level: -457.05 px (from the top of the image), gait starting at 0.00 px in the right direction for the first person. Corrected using gait kinematics.
+
+- Person 0: Seen from the front.
+Pose plots (m) saved in E:\A_ZUT_Research\2025课题组横向\2025基于单目视觉的运动分析系统\打包程序exe\gait_analysis0522\gait_analysis\front_Sports2D\front_Sports2D_graphs.
+Pose in meters saved to E:\A_ZUT_Research\2025课题组横向\2025基于单目视觉的运动分析系统\打包程序exe\gait_analysis0522\gait_analysis\front_Sports2D\front_Sports2D_m_person00.trc. 
+
+Post-processing angles (without inverse kinematics):
+- Person 0: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+Rejecting outliers with a Hampel filter.
+Filtering with Butterworth filter, 4th order, 6 Hz.
+Correcting segment angles by removing the -72.54° floor angle.
+Angles saved to E:\A_ZUT_Research\2025课题组横向\2025基于单目视觉的运动分析系统\打包程序exe\gait_analysis0522\gait_analysis\front_Sports2D\front_Sports2D_angles_person00.mot.
+Pose plots (m) saved in E:\A_ZUT_Research\2025课题组横向\2025基于单目视觉的运动分析系统\打包程序exe\gait_analysis0522\gait_analysis\front_Sports2D\front_Sports2D_graphs.
+
+Processing front.mp4 took 11.64 s.
+
+
+---------------------------------------------------------------------
+Processing side.mp4
+On Friday 22. May 2026, 10:48:14
+---------------------------------------------------------------------
+
+Estimating pose...
+Using HALPE_26 model (body and feet) for pose estimation in balanced mode.
+Using cpu device with onnxruntime backend.
+Using cpu device with onnxruntime backend.
+Persons detection is run every 16 frames (pose estimation is run at every frame). Tracking is done with sports2d.
+1 person is analyzed. Person ordering method is least_displacement.
+keypoint_likelihood_threshold=0.3, average_likelihood_threshold=0.5, keypoint_number_threshold=0.3
+
+Processing video stream...
+Video processing completed.
+Reordered persons: IDs of persons [0] become [0].
+
+Post-processing pose:
+- Person 0: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+Rejecting outliers with a Hampel filter.
+Filtering with Butterworth filter, 4th order, 6 Hz.
+Pose in pixels saved to E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\side_Sports2D\side_Sports2D_px_person00.trc.
+
+Converting pose to meters:
+Converting from pixels to meters using a person height of 1.58 in meters (manual input), and of 891.72 in pixels (calculated).
+Perspective effects corrected using a camera-to-person distance of 10.00 m (obtained from a manual input).
+Camera horizon: -1.09°, corrected using gait kinematics.
+Floor level: 974.15 px (from the top of the image), gait starting at 0.00 px in the right direction for the first person. Corrected using gait kinematics.
+
+- Person 0: Seen from the left.
+Pose plots (m) saved in E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\side_Sports2D\side_Sports2D_graphs.
+Pose in meters saved to E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\side_Sports2D\side_Sports2D_m_person00.trc. 
+
+Post-processing angles (without inverse kinematics):
+- Person 0: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+Rejecting outliers with a Hampel filter.
+Filtering with Butterworth filter, 4th order, 6 Hz.
+Correcting segment angles by removing the -1.09° floor angle.
+Angles saved to E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\side_Sports2D\side_Sports2D_angles_person00.mot.
+Pose plots (m) saved in E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\side_Sports2D\side_Sports2D_graphs.
+
+Saving images of processed pose and angles:
+Processed video saved to E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\side_Sports2D\side_Sports2D.mp4.
+
+Processing side.mp4 took 51.07 s.
+
+
+---------------------------------------------------------------------
+Processing front.mp4
+On Friday 22. May 2026, 10:49:05
+---------------------------------------------------------------------
+
+Estimating pose...
+Using HALPE_26 model (body and feet) for pose estimation in balanced mode.
+Using cpu device with onnxruntime backend.
+Using cpu device with onnxruntime backend.
+Persons detection is run every 16 frames (pose estimation is run at every frame). Tracking is done with sports2d.
+1 person is analyzed. Person ordering method is least_displacement.
+keypoint_likelihood_threshold=0.3, average_likelihood_threshold=0.5, keypoint_number_threshold=0.3
+
+Processing video stream...
+Video processing completed.
+Reordered persons: IDs of persons [0] become [0].
+
+Post-processing pose:
+- Person 0: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+Rejecting outliers with a Hampel filter.
+Filtering with Butterworth filter, 4th order, 6 Hz.
+Pose in pixels saved to E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\front_Sports2D\front_Sports2D_px_person00.trc.
+
+Converting pose to meters:
+Converting from pixels to meters using a person height of 1.58 in meters (manual input), and of 833.91 in pixels (calculated).
+Perspective effects corrected using a camera-to-person distance of 10.00 m (obtained from a manual input).
+Camera horizon: -72.54°, corrected using gait kinematics.
+Floor level: -457.05 px (from the top of the image), gait starting at 0.00 px in the right direction for the first person. Corrected using gait kinematics.
+
+- Person 0: Seen from the front.
+Pose plots (m) saved in E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\front_Sports2D\front_Sports2D_graphs.
+Pose in meters saved to E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\front_Sports2D\front_Sports2D_m_person00.trc. 
+
+Post-processing angles (without inverse kinematics):
+- Person 0: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+Rejecting outliers with a Hampel filter.
+Filtering with Butterworth filter, 4th order, 6 Hz.
+Correcting segment angles by removing the -72.54° floor angle.
+Angles saved to E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\front_Sports2D\front_Sports2D_angles_person00.mot.
+Pose plots (m) saved in E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\front_Sports2D\front_Sports2D_graphs.
+
+Processing front.mp4 took 17.75 s.
+
+
+---------------------------------------------------------------------
+Processing side.mp4
+On Friday 22. May 2026, 10:49:49
+---------------------------------------------------------------------
+
+Estimating pose...
+Using HALPE_26 model (body and feet) for pose estimation in balanced mode.
+Using cpu device with onnxruntime backend.
+Using cpu device with onnxruntime backend.
+Persons detection is run every 16 frames (pose estimation is run at every frame). Tracking is done with sports2d.
+1 person is analyzed. Person ordering method is least_displacement.
+keypoint_likelihood_threshold=0.3, average_likelihood_threshold=0.5, keypoint_number_threshold=0.3
+
+Processing video stream...
+Video processing completed.
+Reordered persons: IDs of persons [0] become [0].
+
+Post-processing pose:
+- Person 0: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+Rejecting outliers with a Hampel filter.
+Filtering with Butterworth filter, 4th order, 6 Hz.
+Pose in pixels saved to E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\side_Sports2D\side_Sports2D_px_person00.trc.
+
+Converting pose to meters:
+Converting from pixels to meters using a person height of 1.58 in meters (manual input), and of 891.72 in pixels (calculated).
+Perspective effects corrected using a camera-to-person distance of 10.00 m (obtained from a manual input).
+Camera horizon: -1.09°, corrected using gait kinematics.
+Floor level: 974.15 px (from the top of the image), gait starting at 0.00 px in the right direction for the first person. Corrected using gait kinematics.
+
+- Person 0: Seen from the left.
+Pose plots (m) saved in E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\side_Sports2D\side_Sports2D_graphs.
+Pose in meters saved to E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\side_Sports2D\side_Sports2D_m_person00.trc. 
+
+Post-processing angles (without inverse kinematics):
+- Person 0: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+Rejecting outliers with a Hampel filter.
+Filtering with Butterworth filter, 4th order, 6 Hz.
+Correcting segment angles by removing the -1.09° floor angle.
+Angles saved to E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\side_Sports2D\side_Sports2D_angles_person00.mot.
+Pose plots (m) saved in E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\side_Sports2D\side_Sports2D_graphs.
+
+Saving images of processed pose and angles:
+Processed video saved to E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\side_Sports2D\side_Sports2D.mp4.
+
+Processing side.mp4 took 25.28 s.
+
+
+---------------------------------------------------------------------
+Processing front.mp4
+On Friday 22. May 2026, 10:50:14
+---------------------------------------------------------------------
+
+Estimating pose...
+Using HALPE_26 model (body and feet) for pose estimation in balanced mode.
+Using cpu device with onnxruntime backend.
+Using cpu device with onnxruntime backend.
+Persons detection is run every 16 frames (pose estimation is run at every frame). Tracking is done with sports2d.
+1 person is analyzed. Person ordering method is least_displacement.
+keypoint_likelihood_threshold=0.3, average_likelihood_threshold=0.5, keypoint_number_threshold=0.3
+
+Processing video stream...
+Video processing completed.
+Reordered persons: IDs of persons [0] become [0].
+
+Post-processing pose:
+- Person 0: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+Rejecting outliers with a Hampel filter.
+Filtering with Butterworth filter, 4th order, 6 Hz.
+Pose in pixels saved to E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\front_Sports2D\front_Sports2D_px_person00.trc.
+
+Converting pose to meters:
+Converting from pixels to meters using a person height of 1.58 in meters (manual input), and of 833.91 in pixels (calculated).
+Perspective effects corrected using a camera-to-person distance of 10.00 m (obtained from a manual input).
+Camera horizon: -72.54°, corrected using gait kinematics.
+Floor level: -457.05 px (from the top of the image), gait starting at 0.00 px in the right direction for the first person. Corrected using gait kinematics.
+
+- Person 0: Seen from the front.
+Pose plots (m) saved in E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\front_Sports2D\front_Sports2D_graphs.
+Pose in meters saved to E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\front_Sports2D\front_Sports2D_m_person00.trc. 
+
+Post-processing angles (without inverse kinematics):
+- Person 0: Interpolating missing sequences if they are smaller than 100 frames. Large gaps filled with last_value.
+Rejecting outliers with a Hampel filter.
+Filtering with Butterworth filter, 4th order, 6 Hz.
+Correcting segment angles by removing the -72.54° floor angle.
+Angles saved to E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\front_Sports2D\front_Sports2D_angles_person00.mot.
+Pose plots (m) saved in E:\6.项目资料\1.步态分析\技术委托开发\gait_analysis_0522\front_Sports2D\front_Sports2D_graphs.
+
+Processing front.mp4 took 17.83 s.
