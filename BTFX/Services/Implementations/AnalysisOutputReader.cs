@@ -23,22 +23,22 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
             throw new ArgumentException("Output directory is required.", nameof(outputDirectory));
         }
 
-        var resultPath = Path.Combine(outputDirectory, "result.json");
-        var summaryPath = Path.Combine(outputDirectory, "summary.json");
+        var resultPath = FindFirstFile(outputDirectory, "result.json");
+        var summaryPath = FindFirstFile(outputDirectory, "summary.json");
 
-        if (File.Exists(resultPath))
+        if (!string.IsNullOrWhiteSpace(resultPath) && File.Exists(resultPath))
         {
             var json = await File.ReadAllTextAsync(resultPath, cancellationToken);
             var summary = ConvertResultJson(json, outputDirectory);
             return new AnalysisOutputReadResult
             {
-                SummaryPath = File.Exists(summaryPath) ? summaryPath : resultPath,
+                SummaryPath = !string.IsNullOrWhiteSpace(summaryPath) && File.Exists(summaryPath) ? summaryPath : resultPath,
                 ResultPath = resultPath,
                 Summary = summary
             };
         }
 
-        if (File.Exists(summaryPath))
+        if (!string.IsNullOrWhiteSpace(summaryPath) && File.Exists(summaryPath))
         {
             var json = await File.ReadAllTextAsync(summaryPath, cancellationToken);
             var summary = JsonSerializer.Deserialize<AnalysisSummary>(json, JsonOptions)
@@ -74,6 +74,7 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
         var spatiotemporal = root["spatiotemporal_parameters"] as JsonObject;
         var jointAngles = root["joint_angles"] as JsonObject;
         var quality = root["quality_control"] as JsonObject;
+        var status = ReadString(root, "status");
 
         var summary = new AnalysisSummary
         {
@@ -81,18 +82,21 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
             ProtocolVersion = ReadString(root, "protocol_version") ?? "result-json",
             AlgorithmVersion = ReadString(root, "algorithm_version") ?? "external",
             ModelVersion = ReadString(root, "model_version") ?? "external",
-            TaskStatus = ReadString(root, "task_status") ?? ReadString(root, "status") ?? "completed",
-            Success = ReadBool(root, "success") ?? string.Equals(ReadString(root, "status"), "completed", StringComparison.OrdinalIgnoreCase),
+            TaskStatus = ReadString(root, "task_status") ?? status ?? "completed",
+            Success = ReadBool(root, "success") ?? !string.Equals(status, "failed", StringComparison.OrdinalIgnoreCase),
             ErrorCode = ReadInt(root, "error_code") ?? 0,
             ErrorMessage = ReadString(root, "error_message"),
             GeneratedTime = ReadString(root, "generated_time") ?? DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
             OutputDir = ReadString(root, "output_dir") ?? outputDirectory,
             AnnotatedVideoPath = ReadString(outputFiles, "visualized_video")
                 ?? ReadString(outputFiles, "annotated_video")
-                ?? ReadString(root, "annotated_video_path"),
+                ?? ReadString(root, "annotated_video_path")
+                ?? FindAnnotatedVideo(outputDirectory),
             GaitEventParameters = new GaitEventParametersDto
             {
-                GaitCycleDurationS = ReadDouble(gaitCycle, "mean_cycle_duration_sec") ?? ReadDouble(gaitCycle, "cycle_time_sec"),
+                GaitCycleDurationS = ReadDouble(gaitCycle, "mean_cycle_duration_sec")
+                    ?? ReadDouble(gaitCycle, "cycle_time_sec")
+                    ?? AverageCycleDuration(gaitCycle),
                 StepLengthM = ReadDouble(spatiotemporal, "mean_step_length_m"),
                 StrideLengthM = ReadDouble(spatiotemporal, "mean_stride_length_m"),
                 CadenceStepPerMin = ReadDouble(spatiotemporal, "cadence_step_per_min"),
@@ -114,6 +118,9 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
                     ReadDouble(jointAngles?["left_ankle"] as JsonObject, "rom_deg"),
                     ReadDouble(jointAngles?["right_ankle"] as JsonObject, "rom_deg")),
                 PelvisCoronalRomDeg = ReadDouble(root["segment_angles"]?["pelvis_coronal_rom_deg"] as JsonObject, "rom")
+                    ?? Difference(
+                        ReadDouble(root["segment_angles"]?["pelvis_tilt_deg"] as JsonObject, "max"),
+                        ReadDouble(root["segment_angles"]?["pelvis_tilt_deg"] as JsonObject, "min"))
             },
             CsvFiles = new CsvFilesDto
             {
@@ -136,20 +143,23 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
 
     private static void EnsureCsvFallbacks(AnalysisSummary summary, string outputDirectory)
     {
-        var csvFiles = Directory.Exists(outputDirectory)
-            ? Directory.GetFiles(outputDirectory, "*.csv", SearchOption.TopDirectoryOnly)
-                .Select(Path.GetFileName)
-                .Where(name => !string.IsNullOrWhiteSpace(name))
+        var dataFiles = Directory.Exists(outputDirectory)
+            ? Directory.GetFiles(outputDirectory, "*.*", SearchOption.AllDirectories)
+                .Where(path => IsAnalysisDataFile(path))
+                .Select(path => ToOutputRelativePath(outputDirectory, path))
                 .ToList()
             : [];
 
         summary.CsvFiles ??= new CsvFilesDto();
 
-        summary.CsvFiles.JointAngleCsv ??= csvFiles.FirstOrDefault(name => name!.Contains("joint", StringComparison.OrdinalIgnoreCase));
-        summary.CsvFiles.KeypointTrajectoryCsv ??= csvFiles.FirstOrDefault(name => name!.Contains("keypoint", StringComparison.OrdinalIgnoreCase));
-        summary.CsvFiles.KeypointVelocityCsv ??= csvFiles.FirstOrDefault(name => name!.Contains("trajectory", StringComparison.OrdinalIgnoreCase));
+        summary.CsvFiles.JointAngleCsv ??= dataFiles.FirstOrDefault(path => Path.GetFileName(path).Equals("joint_angle.csv", StringComparison.OrdinalIgnoreCase))
+            ?? dataFiles.FirstOrDefault(path => path.Contains("joint", StringComparison.OrdinalIgnoreCase) || path.Contains("angle", StringComparison.OrdinalIgnoreCase));
+        summary.CsvFiles.KeypointTrajectoryCsv ??= dataFiles.FirstOrDefault(path => path.EndsWith(".trc", StringComparison.OrdinalIgnoreCase))
+            ?? dataFiles.FirstOrDefault(path => path.Contains("keypoint", StringComparison.OrdinalIgnoreCase) || path.Contains("trajectory", StringComparison.OrdinalIgnoreCase));
+        summary.CsvFiles.KeypointVelocityCsv ??= dataFiles.FirstOrDefault(path => path.Contains("velocity", StringComparison.OrdinalIgnoreCase))
+            ?? dataFiles.FirstOrDefault(path => path.EndsWith(".mot", StringComparison.OrdinalIgnoreCase));
 
-        var remaining = csvFiles
+        var remaining = dataFiles
             .Where(name => name != summary.CsvFiles.JointAngleCsv
                            && name != summary.CsvFiles.KeypointTrajectoryCsv
                            && name != summary.CsvFiles.KeypointVelocityCsv)
@@ -227,5 +237,72 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
             (null, { } r) => r,
             _ => null
         };
+    }
+
+    private static double? Difference(double? max, double? min)
+    {
+        return max.HasValue && min.HasValue ? Math.Abs(max.Value - min.Value) : null;
+    }
+
+    private static string? FindFirstFile(string outputDirectory, string fileName)
+    {
+        if (!Directory.Exists(outputDirectory))
+        {
+            return null;
+        }
+
+        var rootPath = Path.Combine(outputDirectory, fileName);
+        if (File.Exists(rootPath))
+        {
+            return rootPath;
+        }
+
+        return Directory.GetFiles(outputDirectory, fileName, SearchOption.AllDirectories).FirstOrDefault();
+    }
+
+    private static string? FindAnnotatedVideo(string outputDirectory)
+    {
+        if (!Directory.Exists(outputDirectory))
+        {
+            return null;
+        }
+
+        var videos = Directory.GetFiles(outputDirectory, "*.mp4", SearchOption.AllDirectories)
+            .Where(path => Path.GetFileName(path).Contains("Sports2D", StringComparison.OrdinalIgnoreCase)
+                           || Path.GetFileName(path).Contains("annotated", StringComparison.OrdinalIgnoreCase)
+                           || Path.GetFileName(path).Contains("visual", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        var preferred = videos.FirstOrDefault(path => path.Contains("side", StringComparison.OrdinalIgnoreCase) || path.Contains("侧面", StringComparison.OrdinalIgnoreCase))
+            ?? videos.FirstOrDefault();
+        return preferred is null ? null : ToOutputRelativePath(outputDirectory, preferred);
+    }
+
+    private static bool IsAnalysisDataFile(string path)
+    {
+        var extension = Path.GetExtension(path);
+        return extension.Equals(".csv", StringComparison.OrdinalIgnoreCase)
+               || extension.Equals(".mot", StringComparison.OrdinalIgnoreCase)
+               || extension.Equals(".trc", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ToOutputRelativePath(string outputDirectory, string path)
+    {
+        return Path.GetRelativePath(outputDirectory, path);
+    }
+
+    private static double? AverageCycleDuration(JsonObject? gaitCycle)
+    {
+        if (gaitCycle?["cycles"] is not JsonArray cycles || cycles.Count == 0)
+        {
+            return null;
+        }
+
+        var values = cycles
+            .OfType<JsonObject>()
+            .Select(cycle => ReadDouble(cycle, "duration_sec"))
+            .Where(value => value.HasValue)
+            .Select(value => value!.Value)
+            .ToList();
+        return values.Count == 0 ? null : values.Average();
     }
 }

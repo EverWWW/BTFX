@@ -28,14 +28,39 @@ public class GaitAnalysisService : IGaitAnalysisService
     private const string LogDirectoryName = "logs";
     private const string SideInputFileName = "side.mp4";
     private const string FrontInputFileName = "front.mp4";
+    private const string PreferredAlgorithmExeFileName = "Gait_analysis.exe";
+    private const string LegacyAlgorithmExeFileName = "gait_analysis.exe";
+    private static readonly string[] AlgorithmStatusFiles =
+    [
+        "status.json",
+        "status_history.json",
+        "logs.txt"
+    ];
+    private static readonly string[] SideJointAngles =
+    [
+        "Right ankle",
+        "Left ankle",
+        "Right knee",
+        "Left knee",
+        "Right hip",
+        "Left hip"
+    ];
+    private static readonly string[] FrontSegmentAngles =
+    [
+        "Pelvis",
+        "Trunk"
+    ];
 
     private readonly ISettingsService _settingsService;
     private readonly IAnalysisOutputReader _analysisOutputReader;
     private readonly ILogHelper? _logHelper;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
+    private readonly object _stdoutStatusLock = new();
 
     private Process? _currentProcess;
     private CancellationTokenSource? _linkedCts;
+    private TaskStatusMessage? _lastStdoutStatus;
+    private TaskStatusMessage? _stdoutFailureStatus;
     private volatile bool _isRunning;
 
     private sealed record PreparedAnalysisInput(string? SideVideoPath, string? FrontVideoPath);
@@ -92,6 +117,7 @@ public class GaitAnalysisService : IGaitAnalysisService
         try
         {
             _isRunning = true;
+            ResetStdoutStatus();
             ValidateRequest(request);
 
             var requestId = GenerateRequestId();
@@ -105,6 +131,7 @@ public class GaitAnalysisService : IGaitAnalysisService
             Directory.CreateDirectory(inputDir);
             Directory.CreateDirectory(configSnapshotDir);
             Directory.CreateDirectory(logDir);
+            CleanupAlgorithmStatusFiles(algorithmDirectory, outputDir);
 
             var preparedInput = PrepareInputVideos(request, inputDir);
             var configPath = PrepareAlgorithmTomlConfigs(
@@ -124,20 +151,47 @@ public class GaitAnalysisService : IGaitAnalysisService
 
             var exePath = GetAlgorithmExePath();
             RaiseLog($"算法程序路径: {exePath}");
-            var exitCode = await RunProcessAsync(exePath, requestId, logDir, _linkedCts.Token);
+            RaiseLog($"算法工作目录: {outputDir}");
+            WriteRunInfo(outputDir, logDir, request, requestId, exePath, configPath, inputDir, outputDir);
+            var exitCode = await RunProcessAsync(exePath, requestId, logDir, outputDir, _linkedCts.Token);
 
             stopwatch.Stop();
             var analysisDuration = stopwatch.Elapsed.TotalSeconds;
+            var stdoutFailure = GetStdoutFailureStatus();
+            if (stdoutFailure is not null)
+            {
+                var errorMessage = BuildStdoutFailureMessage(stdoutFailure, logDir);
+                _logHelper?.Error(errorMessage);
+                return BuildFailedResult(
+                    request,
+                    string.IsNullOrWhiteSpace(stdoutFailure.EffectiveRequestId) ? requestId : stdoutFailure.EffectiveRequestId,
+                    outputDir,
+                    configPath,
+                    stdoutFailure.ErrorCode ?? (int)AnalysisErrorCode.AnalysisFailed,
+                    errorMessage,
+                    analysisDuration);
+            }
 
             if (exitCode != 0)
             {
-                var errorCode = (AnalysisErrorCode)exitCode;
                 var stderrTail = ReadLastLogLines(Path.Combine(logDir, "stderr.log"), 12);
-                var errorMessage = string.IsNullOrWhiteSpace(stderrTail)
-                    ? $"算法进程退出码: {exitCode} ({errorCode})，日志目录: {logDir}"
-                    : $"算法进程退出码: {exitCode} ({errorCode})，日志目录: {logDir}\n{stderrTail}";
-                _logHelper?.Error(errorMessage);
-                return BuildFailedResult(request, requestId, outputDir, configPath, exitCode, errorMessage, analysisDuration);
+                if (IsStdoutCompleted())
+                {
+                    var warningMessage = string.IsNullOrWhiteSpace(stderrTail)
+                        ? $"算法进程退出码非 0: {exitCode}，但 stdout 已返回 completed，继续读取结果。日志目录: {logDir}"
+                        : $"算法进程退出码非 0: {exitCode}，但 stdout 已返回 completed，继续读取结果。日志目录: {logDir}\n{stderrTail}";
+                    RaiseLog(warningMessage, isError: true);
+                    _logHelper?.Warning(warningMessage);
+                }
+                else
+                {
+                    var errorCode = (AnalysisErrorCode)exitCode;
+                    var errorMessage = string.IsNullOrWhiteSpace(stderrTail)
+                        ? $"算法进程退出码: {exitCode} ({errorCode})，日志目录: {logDir}"
+                        : $"算法进程退出码: {exitCode} ({errorCode})，日志目录: {logDir}\n{stderrTail}";
+                    _logHelper?.Error(errorMessage);
+                    return BuildFailedResult(request, requestId, outputDir, configPath, exitCode, errorMessage, analysisDuration);
+                }
             }
 
             AnalysisOutputReadResult outputReadResult;
@@ -245,6 +299,39 @@ public class GaitAnalysisService : IGaitAnalysisService
         if (!Path.IsPathRooted(exePath))
         {
             exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exePath);
+        }
+
+        if (File.Exists(exePath))
+        {
+            return exePath;
+        }
+
+        var directory = Path.GetDirectoryName(exePath) ?? AppDomain.CurrentDomain.BaseDirectory;
+        var preferredPath = Path.Combine(directory, PreferredAlgorithmExeFileName);
+        if (File.Exists(preferredPath))
+        {
+            settings.ExePath = Path.GetRelativePath(AppDomain.CurrentDomain.BaseDirectory, preferredPath);
+            _settingsService.SaveSettings();
+            return preferredPath;
+        }
+
+        var legacyPath = Path.Combine(directory, LegacyAlgorithmExeFileName);
+        if (File.Exists(legacyPath))
+        {
+            return legacyPath;
+        }
+
+        var algorithmDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Constants.ALGORITHM_DIRECTORY);
+        var fallbackExe = Directory.Exists(algorithmDirectory)
+            ? Directory.GetFiles(algorithmDirectory, "*.exe", SearchOption.TopDirectoryOnly)
+                .FirstOrDefault(path => string.Equals(Path.GetFileName(path), PreferredAlgorithmExeFileName, StringComparison.OrdinalIgnoreCase))
+                ?? Directory.GetFiles(algorithmDirectory, "*.exe", SearchOption.TopDirectoryOnly).FirstOrDefault()
+            : null;
+        if (!string.IsNullOrWhiteSpace(fallbackExe) && File.Exists(fallbackExe))
+        {
+            settings.ExePath = Path.GetRelativePath(AppDomain.CurrentDomain.BaseDirectory, fallbackExe);
+            _settingsService.SaveSettings();
+            return fallbackExe;
         }
 
         return exePath;
@@ -373,8 +460,13 @@ public class GaitAnalysisService : IGaitAnalysisService
         var heightM = (request.Patient.Height ?? 0) / 100.0;
         var cameraDistance = _settingsService.CurrentSettings.Algorithm.SideCameraDistance ?? 10.0;
 
-        var sideConfigPath = Path.Combine(algorithmDirectory, SideConfigFileName);
-        var frontConfigPath = Path.Combine(algorithmDirectory, FrontConfigFileName);
+        var sideConfigTemplatePath = Path.Combine(algorithmDirectory, SideConfigFileName);
+        var frontConfigTemplatePath = Path.Combine(algorithmDirectory, FrontConfigFileName);
+        var sideConfigPath = Path.Combine(outputDir, SideConfigFileName);
+        var frontConfigPath = Path.Combine(outputDir, FrontConfigFileName);
+
+        File.Copy(sideConfigTemplatePath, sideConfigPath, overwrite: true);
+        File.Copy(frontConfigTemplatePath, frontConfigPath, overwrite: true);
 
         WriteAlgorithmToml(
             sideConfigPath,
@@ -382,7 +474,8 @@ public class GaitAnalysisService : IGaitAnalysisService
             inputDir,
             outputDir,
             heightM,
-            cameraDistance);
+            cameraDistance,
+            isSideConfig: true);
 
         WriteAlgorithmToml(
             frontConfigPath,
@@ -390,7 +483,8 @@ public class GaitAnalysisService : IGaitAnalysisService
             inputDir,
             outputDir,
             heightM,
-            cameraDistance);
+            cameraDistance,
+            isSideConfig: false);
 
         Directory.CreateDirectory(configSnapshotDir);
         File.Copy(sideConfigPath, Path.Combine(configSnapshotDir, SideConfigFileName), overwrite: true);
@@ -404,15 +498,17 @@ public class GaitAnalysisService : IGaitAnalysisService
             front_video = preparedInput.FrontVideoPath,
             input_dir = inputDir,
             result_dir = outputDir,
-            side_config = Path.Combine(configSnapshotDir, SideConfigFileName),
-            front_config = Path.Combine(configSnapshotDir, FrontConfigFileName),
+            side_config = sideConfigPath,
+            front_config = frontConfigPath,
+            side_config_snapshot = Path.Combine(configSnapshotDir, SideConfigFileName),
+            front_config_snapshot = Path.Combine(configSnapshotDir, FrontConfigFileName),
             height_m = heightM,
             perspective_value = cameraDistance,
             generated_at = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
         };
         File.WriteAllText(manifestPath, JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }));
 
-        RaiseLog($"算法配置已写入固定 TOML，输入目录: {inputDir}，输出目录: {outputDir}，快照目录: {configSnapshotDir}");
+        RaiseLog($"算法配置已写入本次输出目录，输入目录: {inputDir}，输出目录: {outputDir}，快照目录: {configSnapshotDir}");
         return manifestPath;
     }
 
@@ -422,15 +518,24 @@ public class GaitAnalysisService : IGaitAnalysisService
         string inputDir,
         string outputDir,
         double heightM,
-        double perspectiveValue)
+        double perspectiveValue,
+        bool isSideConfig)
     {
         var lines = File.ReadAllLines(configPath).ToList();
         UpsertTomlValue(lines, "base", "video_input", videoInputValue);
         UpsertTomlValue(lines, "base", "video_dir", ToTomlString(inputDir));
         UpsertTomlValue(lines, "base", "first_person_height", heightM.ToString("0.###", CultureInfo.InvariantCulture));
         UpsertTomlValue(lines, "base", "time_range", "[]");
+        UpsertTomlValue(lines, "base", "cut_off_frequency", "6");
+        UpsertTomlValue(lines, "base", "show_realtime_results", "false");
+        UpsertTomlValue(lines, "base", "save_vid", "true");
+        UpsertTomlValue(lines, "base", "save_img", "false");
+        UpsertTomlValue(lines, "base", "save_graphs", "false");
         UpsertTomlValue(lines, "base", "result_dir", ToTomlString(outputDir));
+        UpsertTomlValue(lines, "base", "joint_angles", ToTomlStringArray(isSideConfig ? SideJointAngles : []));
+        UpsertTomlValue(lines, "base", "segment_angles", ToTomlStringArray(isSideConfig ? [] : FrontSegmentAngles));
         UpsertTomlValue(lines, "px_to_meters_conversion", "perspective_value", perspectiveValue.ToString("0.###", CultureInfo.InvariantCulture));
+        UpsertTomlValue(lines, "post-processing.butterworth", "cut_off_frequency", "6");
         File.WriteAllLines(configPath, lines);
     }
 
@@ -472,6 +577,72 @@ public class GaitAnalysisService : IGaitAnalysisService
     private static string ToTomlString(string path)
     {
         return $"'{path.Replace("\\", "/", StringComparison.Ordinal).Replace("'", "\\'", StringComparison.Ordinal)}'";
+    }
+
+    private static string ToTomlStringArray(IEnumerable<string> values)
+    {
+        return $"[{string.Join(", ", values.Select(value => $"'{value.Replace("'", "\\'", StringComparison.Ordinal)}'"))}]";
+    }
+
+    private static void CleanupAlgorithmStatusFiles(params string[] directories)
+    {
+        foreach (var directory in directories.Where(Directory.Exists).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            foreach (var fileName in AlgorithmStatusFiles)
+            {
+                var path = Path.Combine(directory, fileName);
+                try
+                {
+                    if (File.Exists(path))
+                    {
+                        File.Delete(path);
+                    }
+                }
+                catch
+                {
+                    // 状态文件清理失败不应阻断分析，新的 stdout 状态仍然是主通道。
+                }
+            }
+        }
+    }
+
+    private static void WriteRunInfo(
+        string outputDir,
+        string logDir,
+        AnalysisRequest request,
+        string requestId,
+        string exePath,
+        string configPath,
+        string inputDir,
+        string workingDirectory)
+    {
+        try
+        {
+            Directory.CreateDirectory(logDir);
+            var runInfo = new
+            {
+                request_id = requestId,
+                measurement_id = request.Record.Id,
+                measurement_name = request.Record.MeasurementName,
+                patient_id = request.Patient.Id,
+                patient_name = request.Patient.Name,
+                exe_path = exePath,
+                working_directory = workingDirectory,
+                config_manifest = configPath,
+                input_dir = inputDir,
+                output_dir = outputDir,
+                side_video_source = request.Record.SideVideoPath,
+                front_video_source = request.Record.FrontVideoPath,
+                started_at = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
+            };
+
+            var json = JsonSerializer.Serialize(runInfo, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(Path.Combine(logDir, "run_info.json"), json, Encoding.UTF8);
+        }
+        catch
+        {
+            // run_info 仅用于联调定位，写入失败不能影响分析。
+        }
     }
 
     /// <summary>
@@ -562,11 +733,13 @@ public class GaitAnalysisService : IGaitAnalysisService
     /// <summary>
     /// 启动算法进程并等待完成
     /// </summary>
-    private async Task<int> RunProcessAsync(string exePath, string requestId, string logDir, CancellationToken ct)
+    private async Task<int> RunProcessAsync(string exePath, string requestId, string logDir, string workingDirectory, CancellationToken ct)
     {
         Directory.CreateDirectory(logDir);
         var stdoutLogPath = Path.Combine(logDir, "stdout.log");
         var stderrLogPath = Path.Combine(logDir, "stderr.log");
+        ResetProcessLog(stdoutLogPath);
+        ResetProcessLog(stderrLogPath);
 
         var startInfo = new ProcessStartInfo
         {
@@ -578,7 +751,7 @@ public class GaitAnalysisService : IGaitAnalysisService
             CreateNoWindow = true,
             StandardOutputEncoding = Encoding.UTF8,
             StandardErrorEncoding = Encoding.UTF8,
-            WorkingDirectory = Path.GetDirectoryName(exePath) ?? AppDomain.CurrentDomain.BaseDirectory
+            WorkingDirectory = workingDirectory
         };
 
         startInfo.EnvironmentVariables["PYTHONIOENCODING"] = "utf-8";
@@ -676,6 +849,8 @@ public class GaitAnalysisService : IGaitAnalysisService
                 : (!string.IsNullOrWhiteSpace(message.CurrentStage) ? message.CurrentStage : status);
             var errorCode = message.ErrorCode ?? (string.IsNullOrWhiteSpace(message.Error) ? null : (int?)AnalysisErrorCode.Unknown);
 
+            CaptureStdoutStatus(message, status);
+
             RaiseProgress(effectiveRequestId, status, progress, text, errorCode);
             RaiseLog($"[{status}] {progress}% - {text}", errorCode.HasValue);
             if (!string.IsNullOrWhiteSpace(message.Error))
@@ -690,6 +865,52 @@ public class GaitAnalysisService : IGaitAnalysisService
         }
     }
 
+    private void ResetStdoutStatus()
+    {
+        lock (_stdoutStatusLock)
+        {
+            _lastStdoutStatus = null;
+            _stdoutFailureStatus = null;
+        }
+    }
+
+    private void CaptureStdoutStatus(TaskStatusMessage message, string status)
+    {
+        lock (_stdoutStatusLock)
+        {
+            _lastStdoutStatus = message;
+            if (string.Equals(status, "failed", StringComparison.OrdinalIgnoreCase))
+            {
+                _stdoutFailureStatus = message;
+            }
+        }
+    }
+
+    private TaskStatusMessage? GetStdoutFailureStatus()
+    {
+        lock (_stdoutStatusLock)
+        {
+            return _stdoutFailureStatus;
+        }
+    }
+
+    private bool IsStdoutCompleted()
+    {
+        lock (_stdoutStatusLock)
+        {
+            return string.Equals(_lastStdoutStatus?.EffectiveStatus, "completed", StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private static string BuildStdoutFailureMessage(TaskStatusMessage status, string logDir)
+    {
+        var message = !string.IsNullOrWhiteSpace(status.Error)
+            ? status.Error
+            : (!string.IsNullOrWhiteSpace(status.Message) ? status.Message : "算法返回失败状态。");
+        var stage = string.IsNullOrWhiteSpace(status.CurrentStage) ? string.Empty : $"阶段: {status.CurrentStage}，";
+        return $"算法执行失败，{stage}原因: {message}，日志目录: {logDir}";
+    }
+
     private static void AppendProcessLog(string path, string line)
     {
         try
@@ -699,6 +920,19 @@ public class GaitAnalysisService : IGaitAnalysisService
         catch
         {
             // 日志写入不能影响算法主流程。
+        }
+    }
+
+    private static void ResetProcessLog(string path)
+    {
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, string.Empty, Encoding.UTF8);
+        }
+        catch
+        {
+            // 日志初始化失败不能影响算法主流程。
         }
     }
 

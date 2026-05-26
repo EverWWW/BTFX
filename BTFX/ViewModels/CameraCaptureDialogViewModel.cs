@@ -15,6 +15,7 @@ namespace BTFX.ViewModels;
 public partial class CameraCaptureDialogViewModel : ObservableObject
 {
     private const int PreviewDisplayFrameRate = 8;
+    private const int RecordingStartDelaySeconds = 5;
     private readonly ICameraRecordingService _cameraRecordingService;
     private readonly ICameraCaptureSettingsService _settingsService;
     private readonly List<PreviewProcess> _previewProcesses = new();
@@ -83,6 +84,15 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsTranscodingVisible))]
     [NotifyPropertyChangedFor(nameof(RecordingStageText))]
     private bool _isTranscoding;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsRecordingCountdownVisible))]
+    [NotifyPropertyChangedFor(nameof(RecordingStageText))]
+    private bool _isPreparingRecording;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(RecordingStageText))]
+    private int _recordingStartDelayRemainingSeconds;
 
     [ObservableProperty]
     private string _transcodeLogText = string.Empty;
@@ -165,7 +175,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
 
     public bool IsCompletedState => CaptureState == CameraCaptureUiState.Completed;
 
-    public bool IsRecordingCountdownVisible => IsRecordingState && !IsTranscoding;
+    public bool IsRecordingCountdownVisible => IsRecordingState && !IsTranscoding && !IsPreparingRecording;
 
     public bool IsTranscodingVisible => IsRecordingState && IsTranscoding;
 
@@ -177,7 +187,9 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
 
     public string PrimaryActionText => CaptureState == CameraCaptureUiState.Completed ? "重新录制" : "开始录制";
 
-    public string RecordingStageText => IsTranscodingVisible ? "视频录制完成，正在转码" : IsRecordingState ? "正在录制" : string.Empty;
+    public string RecordingStageText => IsPreparingRecording
+        ? $"\u51c6\u5907\u5f55\u5236\uff0c{RecordingStartDelayRemainingSeconds}s \u540e\u5f00\u59cb"
+        : IsTranscodingVisible ? "视频录制完成，正在转码" : IsRecordingState ? "正在录制" : string.Empty;
 
     public string RecordingElapsedDisplayText =>
         $"{FormatDuration(SelectedDuration.Value - RecordingRemainingSeconds)} / {FormatDuration(SelectedDuration.Value)}";
@@ -465,16 +477,21 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         RecordingProgress = 0;
         RecordingRemainingSeconds = SelectedDuration.Value;
         IsTranscoding = false;
+        IsPreparingRecording = true;
+        RecordingStartDelayRemainingSeconds = RecordingStartDelaySeconds;
         TranscodeLogText = string.Empty;
         LogLines.Clear();
         CaptureState = CameraCaptureUiState.Recording;
-        StatusText = "录制中";
+        StatusText = "准备录制";
 
         using var progressCancellation = new CancellationTokenSource();
         var progressTask = TrackRecordingProgressAsync(progressCancellation.Token);
 
         try
         {
+            await DelayBeforeRecordingAsync(_recordingCancellation.Token);
+            StatusText = "录制中";
+
             Directory.CreateDirectory(SaveDirectory);
             var cameraNames = IsDualMode
                 ? new[] { SideCameraName, FrontCameraName }
@@ -553,6 +570,8 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         }
         finally
         {
+            IsPreparingRecording = false;
+            RecordingStartDelayRemainingSeconds = 0;
             progressCancellation.Cancel();
             try
             {
@@ -567,11 +586,40 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         }
     }
 
+    private async Task DelayBeforeRecordingAsync(CancellationToken cancellationToken)
+    {
+        for (var remaining = RecordingStartDelaySeconds; remaining > 0; remaining--)
+        {
+            RecordingStartDelayRemainingSeconds = remaining;
+            StatusText = $"准备录制，{remaining}s 后开始";
+            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+        }
+
+        RecordingStartDelayRemainingSeconds = 0;
+        IsPreparingRecording = false;
+    }
+
     private async Task TrackRecordingProgressAsync(CancellationToken cancellationToken)
     {
         var startedAt = DateTime.Now;
+        var wasPreparing = IsPreparingRecording;
         while (!cancellationToken.IsCancellationRequested && CaptureState == CameraCaptureUiState.Recording)
         {
+            if (IsPreparingRecording)
+            {
+                wasPreparing = true;
+                RecordingRemainingSeconds = SelectedDuration.Value;
+                RecordingProgress = 0;
+                await Task.Delay(200, cancellationToken);
+                continue;
+            }
+
+            if (wasPreparing)
+            {
+                startedAt = DateTime.Now;
+                wasPreparing = false;
+            }
+
             if (!IsTranscoding)
             {
                 var elapsed = (DateTime.Now - startedAt).TotalSeconds;

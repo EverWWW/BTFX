@@ -743,11 +743,10 @@ public partial class Step4AnalyzeViewModel : ObservableObject
             _analysisStartTime = DateTime.Now;
             StartElapsedTimer();
 
-            // 准备输出目录
-            var outputDir = Path.Combine(
-                CurrentMeasurement.MeasurementFolderPath ?? Path.GetTempPath(),
-                "analysis_output");
+            // 准备输出目录：固定在程序目录下，便于联调时直接查看输入、配置、日志和算法输出。
+            var outputDir = CreateAnalysisOutputDirectory(CurrentMeasurement);
             Directory.CreateDirectory(outputDir);
+            AddLog($"分析输出目录: {outputDir}");
 
             // 构建请求
             var request = new AnalysisRequest
@@ -1219,11 +1218,35 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         }
     }
 
+    private static string GetAnalysisRootDirectory()
+    {
+        return Path.Combine(AppContext.BaseDirectory, "Data", "Analysis");
+    }
+
+    private static string CreateAnalysisOutputDirectory(MeasurementRecord measurement)
+    {
+        var measurementName = string.IsNullOrWhiteSpace(measurement.MeasurementName)
+            ? $"measurement_{measurement.Id}"
+            : SanitizePathSegment(measurement.MeasurementName);
+        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        return Path.Combine(GetAnalysisRootDirectory(), $"{measurement.Id}_{measurementName}_{timestamp}");
+    }
+
+    private static string SanitizePathSegment(string value)
+    {
+        var invalidChars = Path.GetInvalidFileNameChars();
+        var chars = value
+            .Select(ch => invalidChars.Contains(ch) ? '_' : ch)
+            .ToArray();
+        var sanitized = new string(chars).Trim(' ', '.', '_');
+        return string.IsNullOrWhiteSpace(sanitized) ? "measurement" : sanitized;
+    }
+
     private AnalysisResult BuildTemporaryAnalysisResult()
     {
-        var outputDir = Path.Combine(
-            CurrentMeasurement?.MeasurementFolderPath ?? Path.GetTempPath(),
-            "analysis_output");
+        var outputDir = CurrentMeasurement is null
+            ? Path.Combine(GetAnalysisRootDirectory(), $"temporary_{DateTime.Now:yyyyMMdd_HHmmss}")
+            : CreateAnalysisOutputDirectory(CurrentMeasurement);
         Directory.CreateDirectory(outputDir);
 
         var previewVideoPath = GetTemporaryPreviewVideoPath();
