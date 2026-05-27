@@ -26,6 +26,11 @@ public class GaitAnalysisService : IGaitAnalysisService
     private const string InputDirectoryName = "input";
     private const string ConfigSnapshotDirectoryName = "config_snapshot";
     private const string LogDirectoryName = "logs";
+    private const string AnalysisRuntimeDirectoryName = "AnalysisRuntime";
+    private const string AnalysisFailedDirectoryName = "AnalysisFailed";
+    private const string PreviewDirectoryName = "preview";
+    private const string AnalysisPreviewVideoFileName = "analysis_preview.mp4";
+    private const int MinimumAlgorithmTimeoutMinutes = 30;
     private const string SideInputFileName = "side.mp4";
     private const string FrontInputFileName = "front.mp4";
     private const string PreferredAlgorithmExeFileName = "Gait_analysis.exe";
@@ -121,17 +126,18 @@ public class GaitAnalysisService : IGaitAnalysisService
             ValidateRequest(request);
 
             var requestId = GenerateRequestId();
-            var outputDir = request.OutputDirectory;
-            Directory.CreateDirectory(outputDir);
+            var archiveDir = request.OutputDirectory;
             var algorithmDirectory = EnsureAlgorithmRuntimeReady();
-            var inputDir = Path.Combine(outputDir, InputDirectoryName);
-            var configSnapshotDir = Path.Combine(outputDir, ConfigSnapshotDirectoryName);
-            var logDir = Path.Combine(outputDir, LogDirectoryName);
+            var runtimeDir = CreateRuntimeDirectory(archiveDir);
+            var inputDir = Path.Combine(runtimeDir, InputDirectoryName);
+            var configSnapshotDir = Path.Combine(runtimeDir, ConfigSnapshotDirectoryName);
+            var logDir = Path.Combine(runtimeDir, LogDirectoryName);
 
+            Directory.CreateDirectory(runtimeDir);
             Directory.CreateDirectory(inputDir);
             Directory.CreateDirectory(configSnapshotDir);
             Directory.CreateDirectory(logDir);
-            CleanupAlgorithmStatusFiles(algorithmDirectory, outputDir);
+            CleanupAlgorithmStatusFiles(algorithmDirectory, runtimeDir);
 
             var preparedInput = PrepareInputVideos(request, inputDir);
             var configPath = PrepareAlgorithmTomlConfigs(
@@ -139,10 +145,18 @@ public class GaitAnalysisService : IGaitAnalysisService
                 algorithmDirectory,
                 configSnapshotDir,
                 inputDir,
-                outputDir,
+                runtimeDir,
                 preparedInput);
             var settings = _settingsService.CurrentSettings.Algorithm;
-            var timeoutMs = settings.TimeoutMinutes * 60 * 1000;
+            var timeoutMinutes = Math.Max(settings.TimeoutMinutes, MinimumAlgorithmTimeoutMinutes);
+            if (settings.TimeoutMinutes < MinimumAlgorithmTimeoutMinutes)
+            {
+                RaiseLog($"当前算法超时配置为 {settings.TimeoutMinutes} 分钟，低于后台分析最低保护值，已按 {MinimumAlgorithmTimeoutMinutes} 分钟执行。");
+                settings.TimeoutMinutes = MinimumAlgorithmTimeoutMinutes;
+                _settingsService.SaveSettings();
+            }
+
+            var timeoutMs = timeoutMinutes * 60 * 1000;
 
             using var timeoutCts = new CancellationTokenSource(timeoutMs);
             _linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token);
@@ -151,9 +165,10 @@ public class GaitAnalysisService : IGaitAnalysisService
 
             var exePath = GetAlgorithmExePath();
             RaiseLog($"算法程序路径: {exePath}");
-            RaiseLog($"算法工作目录: {outputDir}");
-            WriteRunInfo(outputDir, logDir, request, requestId, exePath, configPath, inputDir, outputDir);
-            var exitCode = await RunProcessAsync(exePath, requestId, logDir, outputDir, _linkedCts.Token);
+            RaiseLog($"算法运行目录: {runtimeDir}");
+            RaiseLog($"分析归档目录: {archiveDir}");
+            WriteRunInfo(runtimeDir, logDir, request, requestId, exePath, configPath, inputDir, runtimeDir);
+            var exitCode = await RunProcessAsync(exePath, requestId, logDir, runtimeDir, _linkedCts.Token);
 
             stopwatch.Stop();
             var analysisDuration = stopwatch.Elapsed.TotalSeconds;
@@ -162,11 +177,13 @@ public class GaitAnalysisService : IGaitAnalysisService
             {
                 var errorMessage = BuildStdoutFailureMessage(stdoutFailure, logDir);
                 _logHelper?.Error(errorMessage);
+                var failedDir = ArchiveFailedRuntimeDirectory(runtimeDir, archiveDir);
+                errorMessage = errorMessage.Replace(logDir, Path.Combine(failedDir, LogDirectoryName), StringComparison.OrdinalIgnoreCase);
                 return BuildFailedResult(
                     request,
                     string.IsNullOrWhiteSpace(stdoutFailure.EffectiveRequestId) ? requestId : stdoutFailure.EffectiveRequestId,
-                    outputDir,
-                    configPath,
+                    failedDir,
+                    MapPathToArchive(runtimeDir, failedDir, configPath),
                     stdoutFailure.ErrorCode ?? (int)AnalysisErrorCode.AnalysisFailed,
                     errorMessage,
                     analysisDuration);
@@ -190,43 +207,58 @@ public class GaitAnalysisService : IGaitAnalysisService
                         ? $"算法进程退出码: {exitCode} ({errorCode})，日志目录: {logDir}"
                         : $"算法进程退出码: {exitCode} ({errorCode})，日志目录: {logDir}\n{stderrTail}";
                     _logHelper?.Error(errorMessage);
-                    return BuildFailedResult(request, requestId, outputDir, configPath, exitCode, errorMessage, analysisDuration);
+                    var failedDir = ArchiveFailedRuntimeDirectory(runtimeDir, archiveDir);
+                    errorMessage = errorMessage.Replace(logDir, Path.Combine(failedDir, LogDirectoryName), StringComparison.OrdinalIgnoreCase);
+                    return BuildFailedResult(request, requestId, failedDir, MapPathToArchive(runtimeDir, failedDir, configPath), exitCode, errorMessage, analysisDuration);
                 }
             }
+
+            await TryCreateAnalysisPreviewVideoAsync(runtimeDir, logDir, _linkedCts.Token);
 
             AnalysisOutputReadResult outputReadResult;
             try
             {
-                outputReadResult = await _analysisOutputReader.ReadAsync(outputDir, ct);
+                outputReadResult = await _analysisOutputReader.ReadAsync(runtimeDir, ct);
             }
             catch (Exception ex)
             {
                 var errorMessage = $"算法输出读取失败: {ex.Message}";
                 _logHelper?.Error(errorMessage, ex);
-                return BuildFailedResult(request, requestId, outputDir, configPath, (int)AnalysisErrorCode.ExportFailed, errorMessage, analysisDuration);
+                var failedDir = ArchiveFailedRuntimeDirectory(runtimeDir, archiveDir);
+                return BuildFailedResult(request, requestId, failedDir, MapPathToArchive(runtimeDir, failedDir, configPath), (int)AnalysisErrorCode.ExportFailed, errorMessage, analysisDuration);
             }
 
             var summary = outputReadResult.Summary;
             if (!summary.Success)
             {
+                var failedDir = ArchiveFailedRuntimeDirectory(runtimeDir, archiveDir);
                 return BuildFailedResult(
                     request,
                     requestId,
-                    outputDir,
-                    configPath,
+                    failedDir,
+                    MapPathToArchive(runtimeDir, failedDir, configPath),
                     summary.ErrorCode,
                     summary.ErrorMessage ?? "算法返回失败",
                     analysisDuration);
             }
 
+            ArchiveSuccessfulRuntimeDirectory(runtimeDir, archiveDir);
+            var archivedConfigPath = MapPathToArchive(runtimeDir, archiveDir, configPath);
+            var archivedSummaryPath = MapPathToArchive(runtimeDir, archiveDir, outputReadResult.SummaryPath);
+
             var result = BuildSuccessResult(
                 request,
                 requestId,
-                outputDir,
-                configPath,
-                outputReadResult.SummaryPath,
+                archiveDir,
+                archivedConfigPath,
+                archivedSummaryPath,
                 summary,
                 analysisDuration);
+            var archivedPreviewPath = Path.Combine(archiveDir, PreviewDirectoryName, AnalysisPreviewVideoFileName);
+            if (File.Exists(archivedPreviewPath))
+            {
+                result.AnnotatedVideoPath = archivedPreviewPath;
+            }
 
             RaiseProgress(requestId, "completed", 100, "分析完成");
             RaiseLog($"分析完成，耗时: {analysisDuration:F1}s");
@@ -430,6 +462,113 @@ public class GaitAnalysisService : IGaitAnalysisService
         return new PreparedAnalysisInput(sideInputPath, frontInputPath);
     }
 
+    private static string CreateRuntimeDirectory(string archiveDir)
+    {
+        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        var runtimeRoot = Path.Combine(baseDir, "Data", AnalysisRuntimeDirectoryName);
+        Directory.CreateDirectory(runtimeRoot);
+
+        var archiveName = Path.GetFileName(Path.TrimEndingDirectorySeparator(Path.GetFullPath(archiveDir)));
+        if (string.IsNullOrWhiteSpace(archiveName))
+        {
+            archiveName = $"analysis_{DateTime.Now:yyyyMMdd_HHmmss}";
+        }
+
+        return EnsureUniqueDirectoryPath(Path.Combine(runtimeRoot, archiveName));
+    }
+
+    private static string ArchiveFailedRuntimeDirectory(string runtimeDir, string requestedArchiveDir)
+    {
+        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        var failedRoot = Path.Combine(baseDir, "Data", AnalysisFailedDirectoryName);
+        Directory.CreateDirectory(failedRoot);
+
+        var requestedName = Path.GetFileName(Path.TrimEndingDirectorySeparator(Path.GetFullPath(requestedArchiveDir)));
+        var failedName = string.IsNullOrWhiteSpace(requestedName)
+            ? $"analysis_failed_{DateTime.Now:yyyyMMdd_HHmmss}"
+            : requestedName;
+        var failedDir = EnsureUniqueDirectoryPath(Path.Combine(failedRoot, failedName));
+        CopyDirectory(runtimeDir, failedDir, overwrite: true);
+        TryDeleteDirectory(runtimeDir);
+        return failedDir;
+    }
+
+    private void ArchiveSuccessfulRuntimeDirectory(string runtimeDir, string archiveDir)
+    {
+        Directory.CreateDirectory(archiveDir);
+        CopyDirectory(runtimeDir, archiveDir, overwrite: true);
+        TryDeleteDirectory(runtimeDir);
+        RaiseLog($"算法输出已归档: {archiveDir}");
+    }
+
+    private static string EnsureUniqueDirectoryPath(string path)
+    {
+        if (!Directory.Exists(path) && !File.Exists(path))
+        {
+            return path;
+        }
+
+        for (var i = 1; i < 1000; i++)
+        {
+            var candidate = $"{path}_{i}";
+            if (!Directory.Exists(candidate) && !File.Exists(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        return $"{path}_{Guid.NewGuid():N}";
+    }
+
+    private static void CopyDirectory(string sourceDir, string destinationDir, bool overwrite)
+    {
+        if (!Directory.Exists(sourceDir))
+        {
+            return;
+        }
+
+        Directory.CreateDirectory(destinationDir);
+        foreach (var file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
+        {
+            var relativePath = Path.GetRelativePath(sourceDir, file);
+            var destinationPath = Path.Combine(destinationDir, relativePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+            File.Copy(file, destinationPath, overwrite);
+        }
+    }
+
+    private static void TryDeleteDirectory(string directory)
+    {
+        try
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+        catch
+        {
+            // 删除临时运行目录失败不影响分析结果，目录会留作排查。
+        }
+    }
+
+    private static string MapPathToArchive(string runtimeDir, string archiveDir, string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return path;
+        }
+
+        var fullRuntimeDir = Path.GetFullPath(runtimeDir);
+        var fullPath = Path.GetFullPath(path);
+        if (!fullPath.StartsWith(fullRuntimeDir, StringComparison.OrdinalIgnoreCase))
+        {
+            return path;
+        }
+
+        return Path.Combine(archiveDir, Path.GetRelativePath(runtimeDir, fullPath));
+    }
+
     private static string CopyInputVideo(string sourcePath, string destinationPath)
     {
         if (!File.Exists(sourcePath))
@@ -604,6 +743,118 @@ public class GaitAnalysisService : IGaitAnalysisService
                 }
             }
         }
+    }
+
+    private async Task<string?> TryCreateAnalysisPreviewVideoAsync(string outputDir, string logDir, CancellationToken ct)
+    {
+        try
+        {
+            var ffmpegPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffmpeg", "ffmpeg.exe");
+            if (!File.Exists(ffmpegPath))
+            {
+                RaiseLog("未找到 ffmpeg.exe，跳过分析详情拼接预览生成。");
+                return null;
+            }
+
+            var sideVideo = FindSports2DVideo(outputDir, "side", "侧面", "渚ч潰");
+            var frontVideo = FindSports2DVideo(outputDir, "front", "正面", "姝ｉ潰");
+            if (string.IsNullOrWhiteSpace(sideVideo) || string.IsNullOrWhiteSpace(frontVideo))
+            {
+                RaiseLog("未同时找到侧面和正面标注视频，跳过双视频拼接预览生成。");
+                return null;
+            }
+
+            var previewDir = Path.Combine(outputDir, PreviewDirectoryName);
+            Directory.CreateDirectory(previewDir);
+            var previewPath = Path.Combine(previewDir, AnalysisPreviewVideoFileName);
+            var previewLogPath = Path.Combine(logDir, "preview_ffmpeg.log");
+            ResetProcessLog(previewLogPath);
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = ffmpegPath,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8
+            };
+
+            startInfo.ArgumentList.Add("-y");
+            startInfo.ArgumentList.Add("-i");
+            startInfo.ArgumentList.Add(sideVideo);
+            startInfo.ArgumentList.Add("-i");
+            startInfo.ArgumentList.Add(frontVideo);
+            startInfo.ArgumentList.Add("-filter_complex");
+            startInfo.ArgumentList.Add("[0:v]scale=-2:720,pad=iw+16:ih+16:8:8:black[s];[1:v]scale=-2:720,pad=iw+16:ih+16:8:8:black[f];[s][f]hstack=inputs=2,format=yuv420p[v]");
+            startInfo.ArgumentList.Add("-map");
+            startInfo.ArgumentList.Add("[v]");
+            startInfo.ArgumentList.Add("-an");
+            startInfo.ArgumentList.Add("-c:v");
+            startInfo.ArgumentList.Add("libx264");
+            startInfo.ArgumentList.Add("-preset");
+            startInfo.ArgumentList.Add("veryfast");
+            startInfo.ArgumentList.Add("-crf");
+            startInfo.ArgumentList.Add("23");
+            startInfo.ArgumentList.Add("-movflags");
+            startInfo.ArgumentList.Add("+faststart");
+            startInfo.ArgumentList.Add(previewPath);
+
+            using var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
+            process.OutputDataReceived += (_, e) =>
+            {
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                {
+                    AppendProcessLog(previewLogPath, e.Data);
+                }
+            };
+            process.ErrorDataReceived += (_, e) =>
+            {
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                {
+                    AppendProcessLog(previewLogPath, e.Data);
+                }
+            };
+
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            await process.WaitForExitAsync(ct);
+
+            if (process.ExitCode == 0 && File.Exists(previewPath))
+            {
+                RaiseLog($"分析详情拼接预览已生成: {previewPath}");
+                return previewPath;
+            }
+
+            RaiseLog($"分析详情拼接预览生成失败，退出码: {process.ExitCode}，日志: {previewLogPath}", isError: true);
+            return null;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            RaiseLog($"生成分析详情拼接预览异常: {ex.Message}", isError: true);
+            _logHelper?.Warning($"生成分析详情拼接预览异常: {ex.Message}");
+            return null;
+        }
+    }
+
+    private static string? FindSports2DVideo(string outputDir, params string[] preferredTokens)
+    {
+        if (!Directory.Exists(outputDir))
+        {
+            return null;
+        }
+
+        var videos = Directory.GetFiles(outputDir, "*.mp4", SearchOption.AllDirectories)
+            .Where(path => path.Contains("Sports2D", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        return videos.FirstOrDefault(path => preferredTokens.Any(token => path.Contains(token, StringComparison.OrdinalIgnoreCase)))
+            ?? videos.FirstOrDefault();
     }
 
     private static void WriteRunInfo(

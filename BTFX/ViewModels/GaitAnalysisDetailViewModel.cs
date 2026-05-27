@@ -1,9 +1,11 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Windows.Documents;
 using BTFX.Common;
 using BTFX.Helpers;
@@ -15,6 +17,7 @@ using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
 using Microsoft.Extensions.DependencyInjection;
 using OxyPlot;
+using OxyPlot.Annotations;
 using OxyPlot.Axes;
 using OxyPlot.Series;
 using ToolHelper.LoggingDiagnostics.Abstractions;
@@ -153,6 +156,10 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// 是否存在待持久化的草稿配置变更。
     /// </summary>
     private bool _hasPendingDraftSnapshotChanges;
+
+    private AnalysisDetailData _detailData = new();
+    private List<AnalysisAngleFrame> _angleFrames = [];
+    private double _videoPlaybackSeconds;
 
     /// <summary>
     /// 当前报告草稿。
@@ -372,27 +379,29 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         new("report", "报告配置", "基于当前分析结果生成并完善报告草稿")
     ];
 
-    public PlotModel LeftHipAnglePlotModel { get; }
+    public PlotModel LeftHipAnglePlotModel { get; private set; } = new();
 
-    public PlotModel RightHipAnglePlotModel { get; }
+    public PlotModel RightHipAnglePlotModel { get; private set; } = new();
 
-    public PlotModel LeftKneeAnglePlotModel { get; }
+    public PlotModel LeftKneeAnglePlotModel { get; private set; } = new();
 
-    public PlotModel RightKneeAnglePlotModel { get; }
+    public PlotModel RightKneeAnglePlotModel { get; private set; } = new();
 
-    public PlotModel LeftAnkleAnglePlotModel { get; }
+    public PlotModel LeftAnkleAnglePlotModel { get; private set; } = new();
 
-    public PlotModel RightAnkleAnglePlotModel { get; }
+    public PlotModel RightAnkleAnglePlotModel { get; private set; } = new();
 
-    public PlotModel VideoKneeAnglePlotModel { get; }
+    public PlotModel VideoKneeAnglePlotModel { get; private set; } = new();
 
-    public PlotModel VideoHipAnglePlotModel { get; }
+    public PlotModel VideoHipAnglePlotModel { get; private set; } = new();
 
-    public PlotModel VideoAnkleAnglePlotModel { get; }
+    public PlotModel VideoAnkleAnglePlotModel { get; private set; } = new();
 
-    public PlotModel VideoTrunkAnglePlotModel { get; }
+    public PlotModel VideoTrunkAnglePlotModel { get; private set; } = new();
 
-    public PlotModel VideoTrajectoryPlotModel { get; }
+    public PlotModel VideoTrajectoryPlotModel { get; private set; } = new();
+
+    public ObservableCollection<AnalysisCycleDetail> CycleDetails { get; } = [];
 
     /// <summary>
     /// 请求关闭对话框事件。
@@ -422,17 +431,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         {
         }
 
-        LeftHipAnglePlotModel = BuildDemoAnglePlot("左髋角度曲线", OxyColors.SteelBlue, phase: 0);
-        RightHipAnglePlotModel = BuildDemoAnglePlot("右髋角度曲线", OxyColor.Parse("#F2306A"), phase: 0.35);
-        LeftKneeAnglePlotModel = BuildDemoAnglePlot("左膝角度曲线", OxyColors.ForestGreen, phase: 0.7);
-        RightKneeAnglePlotModel = BuildDemoAnglePlot("右膝角度曲线", OxyColors.OrangeRed, phase: 1.05);
-        LeftAnkleAnglePlotModel = BuildDemoAnglePlot("左踝角度曲线", OxyColors.MediumPurple, phase: 1.4);
-        RightAnkleAnglePlotModel = BuildDemoAnglePlot("右踝角度曲线", OxyColors.DarkCyan, phase: 1.75);
-        VideoKneeAnglePlotModel = BuildDualDemoPlot("膝关节角度曲线", "左膝", "右膝", OxyColors.ForestGreen, OxyColor.Parse("#F2306A"));
-        VideoHipAnglePlotModel = BuildDualDemoPlot("髋关节角度曲线", "左髋", "右髋", OxyColors.SteelBlue, OxyColors.OrangeRed);
-        VideoAnkleAnglePlotModel = BuildDualDemoPlot("踝关节角度曲线", "左踝", "右踝", OxyColors.MediumPurple, OxyColors.DarkCyan);
-        VideoTrunkAnglePlotModel = BuildDualDemoPlot("躯干倾斜角曲线", "躯干倾斜", "躯干侧屈", OxyColor.Parse("#40385F"), OxyColor.Parse("#F2306A"));
-        VideoTrajectoryPlotModel = BuildDualDemoPlot("足尖轨迹 / 质心轨迹", "足尖轨迹", "质心轨迹", OxyColors.SteelBlue, OxyColors.OrangeRed);
+        BuildRealPlotModels();
 
         SelectedNavigationItem = NavigationItems.FirstOrDefault();
         SetEmptyState("暂无分析结果", "当前测量尚未生成可查看的分析结果，可先查看基础测量信息。", false);
@@ -460,6 +459,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
 
             if (latestAnalysisResult is not null)
             {
+                LoadAnalysisDetailFiles(latestAnalysisResult);
                 SetSuccessState();
                 return;
             }
@@ -487,24 +487,24 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// 患者姓名。
     /// </summary>
-    public string PatientName => Record?.Patient?.Name ?? "测试患者";
+    public string PatientName => Record?.Patient?.Name ?? "--";
 
     /// <summary>
     /// 患者身高。
     /// </summary>
     public string PatientHeightDisplay => Record?.Patient?.Height is double height and > 0
         ? $"{height:F0} cm"
-        : "175 cm";
+        : "--";
 
     /// <summary>
     /// 患者编号。
     /// </summary>
-    public string PatientCode => Record?.PatientId.ToString() ?? "P20260513001";
+    public string PatientCode => Record?.PatientId.ToString() ?? "--";
 
     /// <summary>
     /// 测量名称。
     /// </summary>
-    public string MeasurementName => string.IsNullOrWhiteSpace(Record?.MeasurementName) ? "测量_20260513_103000" : Record.MeasurementName;
+    public string MeasurementName => string.IsNullOrWhiteSpace(Record?.MeasurementName) ? "--" : Record.MeasurementName;
 
     /// <summary>
     /// 测量类型。
@@ -519,12 +519,12 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// 测量时间。
     /// </summary>
-    public string MeasurementDate => Record?.MeasurementDate.ToString(Constants.DATETIME_FORMAT) ?? "2026-05-13 10:30:00";
+    public string MeasurementDate => Record?.MeasurementDate.ToString(Constants.DATETIME_FORMAT) ?? "--";
 
     /// <summary>
     /// 分析任务编号。
     /// </summary>
-    public string RequestIdDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.RequestId) ? "GAIT_20260513_0001" : AnalysisResult.RequestId;
+    public string RequestIdDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.RequestId) ? "--" : AnalysisResult.RequestId;
 
     /// <summary>
     /// 分析任务状态。
@@ -552,27 +552,27 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// 分析耗时。
     /// </summary>
-    public string AnalysisDurationDisplay => FormatNumber(AnalysisResult?.AnalysisDurationSeconds ?? 5.2, "F1", "s");
+    public string AnalysisDurationDisplay => FormatNumber(AnalysisResult?.AnalysisDurationSeconds, "F1", "s");
 
     /// <summary>
     /// 创建时间。
     /// </summary>
-    public string AnalysisCreatedAtDisplay => AnalysisResult?.CreatedAt.ToString(Constants.DATETIME_FORMAT) ?? "2026-05-13 10:30:00";
+    public string AnalysisCreatedAtDisplay => AnalysisResult?.CreatedAt.ToString(Constants.DATETIME_FORMAT) ?? "--";
 
     /// <summary>
     /// 协议版本。
     /// </summary>
-    public string ProtocolVersionDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.ProtocolVersion) ? "v1.0" : AnalysisResult.ProtocolVersion;
+    public string ProtocolVersionDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.ProtocolVersion) ? "--" : AnalysisResult.ProtocolVersion;
 
     /// <summary>
     /// 算法版本。
     /// </summary>
-    public string AlgorithmVersionDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.AlgorithmVersion) ? "GaitEngine 1.2.0" : AnalysisResult.AlgorithmVersion;
+    public string AlgorithmVersionDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.AlgorithmVersion) ? "--" : AnalysisResult.AlgorithmVersion;
 
     /// <summary>
     /// 模型版本。
     /// </summary>
-    public string ModelVersionDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.ModelVersion) ? "PoseGait 0.9.3" : AnalysisResult.ModelVersion;
+    public string ModelVersionDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.ModelVersion) ? "--" : AnalysisResult.ModelVersion;
 
     /// <summary>
     /// 分析状态文本。
@@ -603,7 +603,9 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         {
             if (AnalysisResult?.QualityControl is null)
             {
-                return "有效帧比例 96%";
+                return _detailData.ValidFrameRatio is double ratio
+                    ? $"有效帧比例 {ratio:P0}"
+                    : "--";
             }
 
             if (AnalysisResult.QualityControl.ValidFrameRatio is double validFrameRatio)
@@ -618,7 +620,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// 质量提示。
     /// </summary>
-    public string QualityHintDisplay => "视频质量良好，关键点连续性稳定，适合用于本次步态参数预览。";
+    public string QualityHintDisplay => _detailData.QualityHint ?? "--";
 
     /// <summary>
     /// 质量等级摘要。
@@ -630,7 +632,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             var qualityControl = AnalysisResult?.QualityControl;
             if (qualityControl is null)
             {
-                return "A级";
+                return _detailData.QualityLevel ?? "--";
             }
 
             var validFrameRatio = qualityControl.ValidFrameRatio;
@@ -653,49 +655,49 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// </summary>
     public string ConfidenceDisplay => AnalysisResult?.QualityControl?.MeanKeypointConfidence is double confidence
         ? confidence.ToString("F2")
-        : "0.94";
+        : "--";
 
     /// <summary>
     /// 有效帧比例摘要。
     /// </summary>
     public string ValidFrameRatioDisplay => AnalysisResult?.QualityControl?.ValidFrameRatio is double validFrameRatio
         ? validFrameRatio.ToString("P0")
-        : "96%";
+        : (_detailData.ValidFrameRatio is double ratio ? ratio.ToString("P0") : "--");
 
     /// <summary>
     /// 平均步速。
     /// </summary>
-    public string GaitSpeedDisplay => FormatNumber(AnalysisResult?.GaitSpeedMPerS ?? Record?.GaitParameters?.GaitSpeedMPerS ?? 1.18, "F2", "m/s");
+    public string GaitSpeedDisplay => FormatNumber(AnalysisResult?.GaitSpeedMPerS ?? Record?.GaitParameters?.GaitSpeedMPerS ?? _detailData.GaitSpeedMPerS, "F2", "m/s");
 
     /// <summary>
     /// 平均步频。
     /// </summary>
-    public string CadenceDisplay => FormatNumber(Record?.GaitParameters?.Cadence ?? 112.5, "F1", "step/min");
+    public string CadenceDisplay => FormatNumber(Record?.GaitParameters?.Cadence ?? _detailData.CadenceStepPerMin, "F1", "step/min");
 
     /// <summary>
     /// 平均步长。
     /// </summary>
-    public string StepLengthDisplay => FormatNumber(AnalysisResult?.StepLengthM ?? Record?.GaitParameters?.StepLengthM ?? 0.63, "F2", "m");
+    public string StepLengthDisplay => FormatNumber(AnalysisResult?.StepLengthM ?? Record?.GaitParameters?.StepLengthM ?? _detailData.MeanStepLengthM, "F2", "m");
 
     /// <summary>
     /// 步态周期。
     /// </summary>
-    public string GaitCycleDisplay => FormatNumber(AnalysisResult?.GaitCycleDurationS ?? Record?.GaitParameters?.GaitCycleDurationS ?? 1.02, "F2", "s");
+    public string GaitCycleDisplay => FormatNumber(AnalysisResult?.GaitCycleDurationS ?? Record?.GaitParameters?.GaitCycleDurationS ?? _detailData.MeanCycleDurationSec, "F2", "s");
 
     /// <summary>
     /// 步幅。
     /// </summary>
-    public string StrideLengthDisplay => FormatNumber(AnalysisResult?.StrideLengthM ?? 1.26, "F2", "m");
+    public string StrideLengthDisplay => FormatNumber(AnalysisResult?.StrideLengthM ?? _detailData.MeanStrideLengthM, "F2", "m");
 
     /// <summary>
     /// 站立相时长。
     /// </summary>
-    public string StanceTimeDisplay => FormatNumber(AnalysisResult?.StanceTimeS ?? 0.72, "F2", "s");
+    public string StanceTimeDisplay => FormatNumber(AnalysisResult?.StanceTimeS ?? _detailData.MeanStanceTimeSec, "F2", "s");
 
     /// <summary>
     /// 摆动相时长。
     /// </summary>
-    public string SwingTimeDisplay => FormatNumber(AnalysisResult?.SwingTimeS ?? 0.38, "F2", "s");
+    public string SwingTimeDisplay => FormatNumber(AnalysisResult?.SwingTimeS ?? _detailData.MeanSwingTimeSec, "F2", "s");
 
     /// <summary>
     /// 运动学摘要。
@@ -707,7 +709,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             var summary = AnalysisResult?.KinematicSummary;
             if (summary is null)
             {
-                return "髋关节 ROM 42.8 ° / 膝关节 ROM 57.3 ° / 踝关节 ROM 24.6 °";
+                return "髋关节 ROM -- / 膝关节 ROM -- / 踝关节 ROM --";
             }
 
             return $"髋关节 ROM {FormatNumber(summary.HipRomDeg, "F1", "°")} / 膝关节 ROM {FormatNumber(summary.KneeRomDeg, "F1", "°")} / 踝关节 ROM {FormatNumber(summary.AnkleRomDeg, "F1", "°")}";
@@ -726,14 +728,21 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// </summary>
     public string FileCountDisplay => AnalysisResult?.CsvFiles?.Count > 0
         ? $"{AnalysisResult.CsvFiles.Count} 个结果文件"
-        : "8 个结果文件";
+        : (_detailData.ResultFileCount > 0 ? $"{_detailData.ResultFileCount} 个结果文件" : "--");
 
     /// <summary>
     /// 标注视频摘要。
     /// </summary>
     public string AnnotatedVideoDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.AnnotatedVideoPath)
-        ? "result_visualized.mp4"
+        ? "--"
         : Path.GetFileName(AnalysisResult.AnnotatedVideoPath);
+
+    public bool HasAnnotatedVideo => !string.IsNullOrWhiteSpace(AnalysisResult?.AnnotatedVideoPath)
+        && File.Exists(AnalysisResult.AnnotatedVideoPath);
+
+    public Uri? AnnotatedVideoUri => HasAnnotatedVideo
+        ? new Uri(AnalysisResult!.AnnotatedVideoPath!, UriKind.Absolute)
+        : null;
 
     /// <summary>
     /// 摘要文件摘要。
@@ -745,133 +754,135 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// 有效周期数。
     /// </summary>
-    public string CycleCountDisplay => "5 个";
+    public string CycleCountDisplay => _detailData.CycleCount.HasValue ? $"{_detailData.CycleCount.Value} 个" : "--";
 
     /// <summary>
     /// 文件摘要。
     /// </summary>
     public string ResultFileSummaryDisplay => AnalysisResult?.CsvFiles?.Count > 0
         ? $"已生成 {AnalysisResult.CsvFiles.Count} 个结果文件"
-        : "已生成 result.json、joint_angles.csv、gait_events.csv";
+        : (_detailData.ResultFileSummary ?? "--");
 
     /// <summary>
     /// 日志文件摘要。
     /// </summary>
-    public string LogFileDisplay => "analysis.log";
+    public string LogFileDisplay => _detailData.LogFileName ?? "--";
 
     /// <summary>
     /// CSV 文件数量。
     /// </summary>
-    public string CsvFileCountDisplay => AnalysisResult?.CsvFiles?.Count is int count and > 0 ? $"{count} 个" : "6 个";
+    public string CsvFileCountDisplay => AnalysisResult?.CsvFiles?.Count is int count and > 0 ? $"{count} 个" : $"{_detailData.CsvFileCount} 个";
 
     /// <summary>
     /// 图片文件数量。
     /// </summary>
-    public string ImageFileCountDisplay => "2 个";
+    public string ImageFileCountDisplay => $"{_detailData.ImageFileCount} 个";
 
     public string MeanStrideLengthDisplay => StrideLengthDisplay;
 
-    public string DoubleSupportTimeDisplay => FormatNumber(AnalysisResult?.DoubleSupportTimeS ?? Record?.GaitParameters?.DoubleSupportTimeS ?? 0.21, "F2", "s");
+    public string DoubleSupportTimeDisplay => FormatNumber(AnalysisResult?.DoubleSupportTimeS ?? Record?.GaitParameters?.DoubleSupportTimeS ?? _detailData.MeanDoubleSupportTimeSec, "F2", "s");
 
-    public string SingleSupportTimeDisplay => FormatNumber(AnalysisResult?.SingleSupportTimeS ?? Record?.GaitParameters?.SingleSupportTimeS ?? 0.49, "F2", "s");
+    public string SingleSupportTimeDisplay => FormatNumber(AnalysisResult?.SingleSupportTimeS ?? Record?.GaitParameters?.SingleSupportTimeS ?? _detailData.MeanSingleSupportTimeSec, "F2", "s");
 
-    public string LeftStepLengthDisplay => Record?.GaitParameters?.StepLengthLeft is double leftStep ? FormatMetersFromCentimeters(leftStep) : "0.62 m";
+    public string LeftStepLengthDisplay => Record?.GaitParameters?.StepLengthLeft is double leftStep ? FormatMetersFromCentimeters(leftStep) : "--";
 
-    public string RightStepLengthDisplay => Record?.GaitParameters?.StepLengthRight is double rightStep ? FormatMetersFromCentimeters(rightStep) : "0.64 m";
+    public string RightStepLengthDisplay => Record?.GaitParameters?.StepLengthRight is double rightStep ? FormatMetersFromCentimeters(rightStep) : "--";
 
-    public string LeftStrideLengthDisplay => Record?.GaitParameters?.StrideLengthLeft is double leftStride ? FormatMetersFromCentimeters(leftStride) : "1.25 m";
+    public string LeftStrideLengthDisplay => Record?.GaitParameters?.StrideLengthLeft is double leftStride ? FormatMetersFromCentimeters(leftStride) : FormatNumber(_detailData.LeftStrideMeanM, "F2", "m");
 
-    public string RightStrideLengthDisplay => Record?.GaitParameters?.StrideLengthRight is double rightStride ? FormatMetersFromCentimeters(rightStride) : "1.27 m";
+    public string RightStrideLengthDisplay => Record?.GaitParameters?.StrideLengthRight is double rightStride ? FormatMetersFromCentimeters(rightStride) : FormatNumber(_detailData.RightStrideMeanM, "F2", "m");
 
-    public string LeftStancePhaseDisplay => FormatNumber(Record?.GaitParameters?.StancePhaseLeft ?? 61.8, "F1", "%");
+    public string LeftStancePhaseDisplay => FormatNumber(Record?.GaitParameters?.StancePhaseLeft ?? _detailData.LeftStanceRatioPct, "F1", "%");
 
-    public string RightStancePhaseDisplay => FormatNumber(Record?.GaitParameters?.StancePhaseRight ?? 62.4, "F1", "%");
+    public string RightStancePhaseDisplay => FormatNumber(Record?.GaitParameters?.StancePhaseRight ?? _detailData.RightStanceRatioPct, "F1", "%");
 
-    public string LeftSwingPhaseDisplay => FormatNumber(Record?.GaitParameters?.SwingPhaseLeft ?? 38.2, "F1", "%");
+    public string LeftSwingPhaseDisplay => FormatNumber(Record?.GaitParameters?.SwingPhaseLeft ?? ComplementPercent(_detailData.LeftStanceRatioPct), "F1", "%");
 
-    public string RightSwingPhaseDisplay => FormatNumber(Record?.GaitParameters?.SwingPhaseRight ?? 37.6, "F1", "%");
+    public string RightSwingPhaseDisplay => FormatNumber(Record?.GaitParameters?.SwingPhaseRight ?? ComplementPercent(_detailData.RightStanceRatioPct), "F1", "%");
 
-    public string LeftHeelStrikeCountDisplay => "3 次";
+    public string LeftHeelStrikeCountDisplay => FormatCount(_detailData.LeftHeelStrikeCount);
 
-    public string RightHeelStrikeCountDisplay => "3 次";
+    public string RightHeelStrikeCountDisplay => FormatCount(_detailData.RightHeelStrikeCount);
 
-    public string LeftToeOffCountDisplay => "3 次";
+    public string LeftToeOffCountDisplay => FormatCount(_detailData.LeftToeOffCount);
 
-    public string RightToeOffCountDisplay => "3 次";
+    public string RightToeOffCountDisplay => FormatCount(_detailData.RightToeOffCount);
 
-    public string CycleConfidenceDisplay => "0.91";
+    public string CycleConfidenceDisplay => "--";
 
-    public string EventConfidenceDisplay => "0.89";
+    public string EventConfidenceDisplay => "--";
 
-    public string HipRomDisplay => FormatNumber(AnalysisResult?.KinematicSummary?.HipRomDeg ?? 42.8, "F1", "°");
+    public string HipRomDisplay => FormatNumber(AnalysisResult?.KinematicSummary?.HipRomDeg ?? Average(_detailData.LeftHipRomDeg, _detailData.RightHipRomDeg), "F1", "°");
 
-    public string LeftHipRomDisplay => "43.6 °";
+    public string LeftHipRomDisplay => FormatNumber(_detailData.LeftHipRomDeg, "F1", "°");
 
-    public string RightHipRomDisplay => "42.1 °";
+    public string RightHipRomDisplay => FormatNumber(_detailData.RightHipRomDeg, "F1", "°");
 
-    public string KneeRomDisplay => FormatNumber(AnalysisResult?.KinematicSummary?.KneeRomDeg ?? 57.3, "F1", "°");
+    public string KneeRomDisplay => FormatNumber(AnalysisResult?.KinematicSummary?.KneeRomDeg ?? Average(_detailData.LeftKneeRomDeg, _detailData.RightKneeRomDeg), "F1", "°");
 
-    public string LeftKneeRomDisplay => "57.3 °";
+    public string LeftKneeRomDisplay => FormatNumber(_detailData.LeftKneeRomDeg, "F1", "°");
 
-    public string RightKneeRomDisplay => "55.4 °";
+    public string RightKneeRomDisplay => FormatNumber(_detailData.RightKneeRomDeg, "F1", "°");
 
-    public string AnkleRomDisplay => FormatNumber(AnalysisResult?.KinematicSummary?.AnkleRomDeg ?? 24.6, "F1", "°");
+    public string AnkleRomDisplay => FormatNumber(AnalysisResult?.KinematicSummary?.AnkleRomDeg ?? Average(_detailData.LeftAnkleRomDeg, _detailData.RightAnkleRomDeg), "F1", "°");
 
-    public string LeftAnkleRomDisplay => "25.1 °";
+    public string LeftAnkleRomDisplay => FormatNumber(_detailData.LeftAnkleRomDeg, "F1", "°");
 
-    public string RightAnkleRomDisplay => "23.7 °";
+    public string RightAnkleRomDisplay => FormatNumber(_detailData.RightAnkleRomDeg, "F1", "°");
 
-    public string PelvisCoronalRomDisplay => FormatNumber(AnalysisResult?.KinematicSummary?.PelvisCoronalRomDeg ?? 7.8, "F1", "°");
+    public string PelvisCoronalRomDisplay => FormatNumber(AnalysisResult?.KinematicSummary?.PelvisCoronalRomDeg ?? _detailData.PelvisRomDeg, "F1", "°");
 
-    public string TrunkTiltMeanDisplay => "4.2 °";
+    public string TrunkTiltMeanDisplay => FormatNumber(_detailData.TrunkTiltMeanDeg, "F1", "°");
 
-    public string TrunkTiltMaxDisplay => "8.5 °";
+    public string TrunkTiltMaxDisplay => FormatNumber(_detailData.TrunkTiltMaxDeg, "F1", "°");
 
-    public string TrunkTiltMinDisplay => "1.2 °";
+    public string TrunkTiltMinDisplay => FormatNumber(_detailData.TrunkTiltMinDeg, "F1", "°");
 
-    public string TrunkTiltRomDisplay => "7.3 °";
+    public string TrunkTiltRomDisplay => FormatNumber(_detailData.TrunkTiltRomDeg, "F1", "°");
 
-    public string PelvicTiltMeanDisplay => "6.1 °";
+    public string PelvicTiltMeanDisplay => FormatNumber(_detailData.PelvisTiltMeanDeg, "F1", "°");
 
-    public string PelvicObliquityMeanDisplay => "3.4 °";
+    public string PelvicObliquityMeanDisplay => "--";
 
-    public string TrunkLateralFlexionMeanDisplay => "2.8 °";
+    public string TrunkLateralFlexionMeanDisplay => "--";
 
-    public string StepLengthDiffDisplay => "0.02 m";
+    public string StepLengthDiffDisplay => FormatNumber(Difference(_detailData.LeftStrideMeanM, _detailData.RightStrideMeanM), "F2", "m");
 
-    public string StepLengthDiffPercentDisplay => "3.2 %";
+    public string StepLengthDiffPercentDisplay => FormatNumber(DifferencePercent(_detailData.LeftStrideMeanM, _detailData.RightStrideMeanM), "F1", "%");
 
-    public string StanceTimeDiffDisplay => "0.03 s";
+    public string StanceTimeDiffDisplay => "--";
 
-    public string StanceTimeDiffPercentDisplay => "4.1 %";
+    public string StanceTimeDiffPercentDisplay => FormatNumber(Difference(_detailData.LeftStanceRatioPct, _detailData.RightStanceRatioPct), "F1", "%");
 
-    public string SwingTimeDiffDisplay => "0.02 s";
+    public string SwingTimeDiffDisplay => "--";
 
-    public string KneeRomDiffDisplay => "1.9 °";
+    public string KneeRomDiffDisplay => FormatNumber(Difference(_detailData.LeftKneeRomDeg, _detailData.RightKneeRomDeg), "F1", "°");
 
-    public string HipRomDiffDisplay => "2.4 °";
+    public string HipRomDiffDisplay => FormatNumber(Difference(_detailData.LeftHipRomDeg, _detailData.RightHipRomDeg), "F1", "°");
 
-    public string AnkleRomDiffDisplay => "1.6 °";
+    public string AnkleRomDiffDisplay => FormatNumber(Difference(_detailData.LeftAnkleRomDeg, _detailData.RightAnkleRomDeg), "F1", "°");
 
-    public string SymmetryScoreDisplay => FormatNumber(Record?.GaitParameters?.SymmetryIndex ?? 92.4, "F1", "");
+    public string SymmetryScoreDisplay => FormatNumber(Record?.GaitParameters?.SymmetryIndex ?? CalculateSymmetryScore(), "F1", "");
 
     public string CurrentVideoFileDisplay => AnnotatedVideoDisplay;
 
-    public string CurrentFrameDisplay => "128";
+    public string CurrentFrameDisplay => _angleFrames.Count > 0 ? _angleFrames[0].FrameIndex.ToString(CultureInfo.InvariantCulture) : "--";
 
-    public string CurrentPlaybackTimeDisplay => "2.17 s";
+    public string CurrentPlaybackTimeDisplay => _angleFrames.Count > 0 ? $"{_angleFrames[0].TimeS:F2} s" : "--";
 
-    public string CurrentGaitCycleDisplay => "第 2 周期";
+    public string VideoDurationDisplay => _detailData.VideoDurationSec.HasValue ? $"{_detailData.VideoDurationSec.Value:F2} s" : "--";
 
-    public string CurrentEventDisplay => "左脚脚跟着地";
+    public string CurrentGaitCycleDisplay => _detailData.CycleCount.HasValue ? $"共 {_detailData.CycleCount.Value} 周期" : "--";
 
-    public string CurrentLeftKneeAngleDisplay => "42.6 °";
+    public string CurrentEventDisplay => "--";
 
-    public string CurrentRightKneeAngleDisplay => "39.8 °";
+    public string CurrentLeftKneeAngleDisplay => _angleFrames.Count > 0 ? $"{_angleFrames[0].LeftKnee:F1} °" : "--";
 
-    public string CurrentLeftAnkleAngleDisplay => "12.4 °";
+    public string CurrentRightKneeAngleDisplay => _angleFrames.Count > 0 ? $"{_angleFrames[0].RightKnee:F1} °" : "--";
 
-    public string CurrentRightAnkleAngleDisplay => "10.9 °";
+    public string CurrentLeftAnkleAngleDisplay => _angleFrames.Count > 0 ? $"{_angleFrames[0].LeftAnkle:F1} °" : "--";
+
+    public string CurrentRightAnkleAngleDisplay => _angleFrames.Count > 0 ? $"{_angleFrames[0].RightAnkle:F1} °" : "--";
 
     /// <summary>
     /// 报告编号摘要。
@@ -1390,6 +1401,147 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             && (record.KeypointsCompleted || record.EventsCompleted || record.Status == MeasurementStatus.Failed);
     }
 
+    private void LoadAnalysisDetailFiles(AnalysisResult result)
+    {
+        _detailData = new AnalysisDetailData();
+        _angleFrames = [];
+        CycleDetails.Clear();
+
+        try
+        {
+            var resultPath = ResolveResultJsonPath(result);
+            if (!string.IsNullOrWhiteSpace(resultPath) && File.Exists(resultPath))
+            {
+                LoadResultJson(resultPath);
+            }
+
+            _detailData.ResultFileCount = CountResultFiles(result.OutputDirectory);
+            _detailData.CsvFileCount = CountFiles(result.OutputDirectory, "*.csv");
+            _detailData.ImageFileCount = CountFiles(result.OutputDirectory, "*.png") + CountFiles(result.OutputDirectory, "*.jpg") + CountFiles(result.OutputDirectory, "*.jpeg");
+            _detailData.LogFileName = ResolveLogFileName(result.OutputDirectory);
+            _detailData.ResultFileSummary = BuildResultFileSummary(result.OutputDirectory);
+
+            var jointAngleCsv = ResolveJointAngleCsvPath(result);
+            if (!string.IsNullOrWhiteSpace(jointAngleCsv) && File.Exists(jointAngleCsv))
+            {
+                _angleFrames = ParseAngleCsv(jointAngleCsv, _detailData.VideoFps ?? 30d);
+            }
+
+            BuildRealPlotModels();
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Warning($"加载分析详情真实数据失败: {ex.Message}");
+            BuildRealPlotModels();
+        }
+    }
+
+    private void LoadResultJson(string resultPath)
+    {
+        var root = JsonNode.Parse(File.ReadAllText(resultPath))?.AsObject();
+        if (root is null)
+        {
+            return;
+        }
+
+        var videoInfo = root["video_info"] as JsonObject;
+        var gaitCycle = root["gait_cycle"] as JsonObject;
+        var spatiotemporal = root["spatiotemporal_parameters"] as JsonObject;
+        var gaitEvents = root["gait_events"] as JsonObject;
+        var jointAngles = root["joint_angles"] as JsonObject;
+        var segmentAngles = root["segment_angles"] as JsonObject;
+
+        _detailData.VideoFps = ReadDouble(videoInfo, "fps");
+        var reportedDuration = ReadDouble(videoInfo, "duration_sec");
+        var frameCount = ReadInt(videoInfo, "frame_count");
+        double? frameDuration = _detailData.VideoFps is > 0 && frameCount is > 0
+            ? frameCount.Value / _detailData.VideoFps.Value
+            : null;
+        _detailData.VideoDurationSec = NormalizeVideoDuration(reportedDuration, frameDuration);
+        _detailData.CycleCount = ReadInt(gaitCycle, "cycle_count");
+        _detailData.MeanCycleDurationSec = AverageCycleDuration(gaitCycle);
+        LoadCycleDetails(gaitCycle, gaitEvents, _detailData.VideoFps ?? 30d);
+        _detailData.CadenceStepPerMin = ReadDouble(spatiotemporal, "cadence_step_per_min");
+        _detailData.GaitSpeedMPerS = ReadDouble(spatiotemporal, "gait_velocity_m_per_sec");
+        _detailData.MeanStepLengthM = ReadDouble(spatiotemporal, "mean_step_length_m");
+        _detailData.MeanStrideLengthM = ReadDouble(spatiotemporal, "mean_stride_length_m");
+        _detailData.MeanStanceTimeSec = ReadDouble(spatiotemporal, "mean_stance_time_sec");
+        _detailData.MeanSwingTimeSec = ReadDouble(spatiotemporal, "mean_swing_time_sec");
+        _detailData.MeanDoubleSupportTimeSec = ReadDouble(spatiotemporal, "mean_double_support_time_sec");
+        _detailData.MeanSingleSupportTimeSec = ReadDouble(spatiotemporal, "mean_single_support_time_sec");
+
+        _detailData.LeftHeelStrikeCount = ReadArrayCount(gaitEvents, "left_heel_strike_frames");
+        _detailData.RightHeelStrikeCount = ReadArrayCount(gaitEvents, "right_heel_strike_frames");
+        _detailData.LeftToeOffCount = ReadArrayCount(gaitEvents, "left_toe_off_frames");
+        _detailData.RightToeOffCount = ReadArrayCount(gaitEvents, "right_toe_off_frames");
+
+        _detailData.LeftHipRomDeg = ReadDouble(jointAngles?["left_hip"] as JsonObject, "rom_deg");
+        _detailData.RightHipRomDeg = ReadDouble(jointAngles?["right_hip"] as JsonObject, "rom_deg");
+        _detailData.LeftKneeRomDeg = ReadDouble(jointAngles?["left_knee"] as JsonObject, "rom_deg");
+        _detailData.RightKneeRomDeg = ReadDouble(jointAngles?["right_knee"] as JsonObject, "rom_deg");
+        _detailData.LeftAnkleRomDeg = ReadDouble(jointAngles?["left_ankle"] as JsonObject, "rom_deg");
+        _detailData.RightAnkleRomDeg = ReadDouble(jointAngles?["right_ankle"] as JsonObject, "rom_deg");
+
+        var trunk = segmentAngles?["trunk_tilt_deg"] as JsonObject;
+        _detailData.TrunkTiltMeanDeg = ReadDouble(trunk, "mean");
+        _detailData.TrunkTiltMaxDeg = ReadDouble(trunk, "max");
+        _detailData.TrunkTiltMinDeg = ReadDouble(trunk, "min");
+        _detailData.TrunkTiltRomDeg = ReadDouble(trunk, "rom")
+            ?? Difference(_detailData.TrunkTiltMaxDeg, _detailData.TrunkTiltMinDeg);
+
+        var pelvis = segmentAngles?["pelvis_tilt_deg"] as JsonObject;
+        _detailData.PelvisTiltMeanDeg = ReadDouble(pelvis, "mean");
+        _detailData.PelvisTiltMaxDeg = ReadDouble(pelvis, "max");
+        _detailData.PelvisTiltMinDeg = ReadDouble(pelvis, "min");
+        _detailData.PelvisRomDeg = ReadDouble(pelvis, "rom")
+            ?? Difference(_detailData.PelvisTiltMaxDeg, _detailData.PelvisTiltMinDeg);
+
+        _detailData.LeftStrideMeanM = ReadDouble(root, "left_stride_mean_m");
+        _detailData.RightStrideMeanM = ReadDouble(root, "right_stride_mean_m");
+        _detailData.LeftStanceRatioPct = ReadDouble(root, "left_stance_ratio_pct");
+        _detailData.RightStanceRatioPct = ReadDouble(root, "right_stance_ratio_pct");
+        _detailData.ValidFrameRatio = ReadDouble(root["quality_control"] as JsonObject, "valid_frame_ratio");
+        _detailData.QualityLevel = "A级";
+        _detailData.QualityHint = _detailData.ValidFrameRatio is double ratio
+            ? $"有效帧比例 {ratio:P0}"
+            : "算法结果已生成，当前结果来自本次分析输出。";
+    }
+
+    private void BuildRealPlotModels()
+    {
+        if (_angleFrames.Count == 0)
+        {
+            LeftHipAnglePlotModel = CreateEmptyPlot("左髋角度曲线");
+            RightHipAnglePlotModel = CreateEmptyPlot("右髋角度曲线");
+            LeftKneeAnglePlotModel = CreateEmptyPlot("左膝角度曲线");
+            RightKneeAnglePlotModel = CreateEmptyPlot("右膝角度曲线");
+            LeftAnkleAnglePlotModel = CreateEmptyPlot("左踝角度曲线");
+            RightAnkleAnglePlotModel = CreateEmptyPlot("右踝角度曲线");
+            VideoKneeAnglePlotModel = CreateEmptyPlot("膝关节角度曲线", alignToPlaybackBar: true);
+            VideoHipAnglePlotModel = CreateEmptyPlot("髋关节角度曲线", alignToPlaybackBar: true);
+            VideoAnkleAnglePlotModel = CreateEmptyPlot("踝关节角度曲线", alignToPlaybackBar: true);
+            VideoTrunkAnglePlotModel = CreateEmptyPlot("骨盆 / 躯干角度曲线", alignToPlaybackBar: true);
+        }
+        else
+        {
+            var maxTime = Math.Max(_detailData.VideoDurationSec ?? 0d, _angleFrames[^1].TimeS);
+            LeftHipAnglePlotModel = BuildSingleAnglePlot("左髋角度曲线", _angleFrames, f => f.LeftHip, OxyColors.SteelBlue, maxTime);
+            RightHipAnglePlotModel = BuildSingleAnglePlot("右髋角度曲线", _angleFrames, f => f.RightHip, OxyColor.Parse("#F2306A"), maxTime);
+            LeftKneeAnglePlotModel = BuildSingleAnglePlot("左膝角度曲线", _angleFrames, f => f.LeftKnee, OxyColors.ForestGreen, maxTime);
+            RightKneeAnglePlotModel = BuildSingleAnglePlot("右膝角度曲线", _angleFrames, f => f.RightKnee, OxyColors.OrangeRed, maxTime);
+            LeftAnkleAnglePlotModel = BuildSingleAnglePlot("左踝角度曲线", _angleFrames, f => f.LeftAnkle, OxyColors.MediumPurple, maxTime);
+            RightAnkleAnglePlotModel = BuildSingleAnglePlot("右踝角度曲线", _angleFrames, f => f.RightAnkle, OxyColors.DarkCyan, maxTime);
+            VideoKneeAnglePlotModel = BuildDualAnglePlot("膝关节角度曲线", "左膝", "右膝", _angleFrames, f => f.LeftKnee, f => f.RightKnee, OxyColors.ForestGreen, OxyColor.Parse("#F2306A"), maxTime);
+            VideoHipAnglePlotModel = BuildDualAnglePlot("髋关节角度曲线", "左髋", "右髋", _angleFrames, f => f.LeftHip, f => f.RightHip, OxyColors.SteelBlue, OxyColors.OrangeRed, maxTime);
+            VideoAnkleAnglePlotModel = BuildDualAnglePlot("踝关节角度曲线", "左踝", "右踝", _angleFrames, f => f.LeftAnkle, f => f.RightAnkle, OxyColors.MediumPurple, OxyColors.DarkCyan, maxTime);
+            VideoTrunkAnglePlotModel = BuildDualAnglePlot("骨盆 / 躯干角度曲线", "骨盆", "躯干", _angleFrames, f => f.Pelvis, f => f.Trunk, OxyColor.Parse("#40385F"), OxyColor.Parse("#F2306A"), maxTime);
+        }
+
+        SetVideoPlaybackTime(_videoPlaybackSeconds);
+        NotifyPlotModelsChanged();
+    }
+
+
     private string? ResolveOutputDirectory()
     {
         if (!string.IsNullOrWhiteSpace(AnalysisResult?.OutputDirectory))
@@ -1407,58 +1559,323 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Record.MeasurementFolderPath);
     }
 
-    private static PlotModel BuildDemoAnglePlot(string title, OxyColor color, double phase)
+    private static string? ResolveResultJsonPath(AnalysisResult result)
     {
-        var model = CreateDemoPlotBase(title, "时间 (s)", "角度 (°)");
+        if (!string.IsNullOrWhiteSpace(result.SummaryFilePath) && File.Exists(result.SummaryFilePath))
+        {
+            return result.SummaryFilePath;
+        }
+
+        return Directory.Exists(result.OutputDirectory)
+            ? Directory.GetFiles(result.OutputDirectory, "result.json", SearchOption.AllDirectories).FirstOrDefault()
+            : null;
+    }
+
+    private static string? ResolveJointAngleCsvPath(AnalysisResult result)
+    {
+        var csvPath = result.CsvFiles?.FirstOrDefault(file =>
+            file.FileType == (int)CsvFileType.JointAngle && File.Exists(file.FilePath))?.FilePath;
+        if (!string.IsNullOrWhiteSpace(csvPath))
+        {
+            return csvPath;
+        }
+
+        return Directory.Exists(result.OutputDirectory)
+            ? Directory.GetFiles(result.OutputDirectory, "joint_angle.csv", SearchOption.AllDirectories).FirstOrDefault()
+            : null;
+    }
+
+    private static List<AnalysisAngleFrame> ParseAngleCsv(string path, double fps)
+    {
+        var frames = new List<AnalysisAngleFrame>();
+        var lines = File.ReadLines(path).Skip(1);
+        foreach (var line in lines)
+        {
+            var parts = line.Split(',');
+            if (parts.Length < 8 || !int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var frameIndex))
+            {
+                continue;
+            }
+
+            frames.Add(new AnalysisAngleFrame(
+                frameIndex,
+                fps > 0 ? frameIndex / fps : frames.Count / 30d,
+                ParseCsvDouble(parts, 1),
+                ParseCsvDouble(parts, 2),
+                ParseCsvDouble(parts, 3),
+                ParseCsvDouble(parts, 4),
+                ParseCsvDouble(parts, 5),
+                ParseCsvDouble(parts, 6),
+                ParseCsvDouble(parts, 7),
+                ParseCsvDouble(parts, 8)));
+        }
+
+        return frames;
+    }
+
+    private void LoadCycleDetails(JsonObject? gaitCycle, JsonObject? gaitEvents, double fps)
+    {
+        if (gaitCycle?["cycles"] is not JsonArray cycles || cycles.Count == 0)
+        {
+            return;
+        }
+
+        var leftHeelStrikeFrames = ReadIntArray(gaitEvents, "left_heel_strike_frames").ToHashSet();
+        var rightHeelStrikeFrames = ReadIntArray(gaitEvents, "right_heel_strike_frames").ToHashSet();
+        var safeFps = fps > 0 ? fps : 30d;
+
+        foreach (var node in cycles)
+        {
+            if (node is not JsonObject cycle)
+            {
+                continue;
+            }
+
+            var cycleId = ReadInt(cycle, "cycle_id");
+            var startFrame = ReadInt(cycle, "start_frame");
+            var endFrame = ReadInt(cycle, "end_frame");
+            var duration = ReadDouble(cycle, "duration_sec");
+            var side = "--";
+            if (startFrame is int start)
+            {
+                if (leftHeelStrikeFrames.Contains(start))
+                {
+                    side = "左侧";
+                }
+                else if (rightHeelStrikeFrames.Contains(start))
+                {
+                    side = "右侧";
+                }
+            }
+
+            CycleDetails.Add(new AnalysisCycleDetail(
+                cycleId?.ToString(CultureInfo.InvariantCulture) ?? "--",
+                side,
+                startFrame?.ToString(CultureInfo.InvariantCulture) ?? "--",
+                endFrame?.ToString(CultureInfo.InvariantCulture) ?? "--",
+                FormatSeconds(startFrame.HasValue ? startFrame.Value / safeFps : null),
+                FormatSeconds(endFrame.HasValue ? endFrame.Value / safeFps : null),
+                FormatSeconds(duration),
+                "--"));
+        }
+    }
+
+    private static double ParseCsvDouble(string[] parts, int index)
+    {
+        return index < parts.Length && double.TryParse(parts[index], NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
+            ? value
+            : double.NaN;
+    }
+
+    private static int CountResultFiles(string? directory)
+    {
+        return Directory.Exists(directory) ? Directory.GetFiles(directory, "*", SearchOption.AllDirectories).Length : 0;
+    }
+
+    private static int CountFiles(string? directory, string pattern)
+    {
+        return Directory.Exists(directory) ? Directory.GetFiles(directory, pattern, SearchOption.AllDirectories).Length : 0;
+    }
+
+    private static string? ResolveLogFileName(string? directory)
+    {
+        if (!Directory.Exists(directory))
+        {
+            return null;
+        }
+
+        var log = Directory.GetFiles(directory, "logs.txt", SearchOption.TopDirectoryOnly).FirstOrDefault()
+            ?? Directory.GetFiles(directory, "*.log", SearchOption.AllDirectories).FirstOrDefault();
+        return string.IsNullOrWhiteSpace(log) ? null : Path.GetFileName(log);
+    }
+
+    private static string? BuildResultFileSummary(string? directory)
+    {
+        if (!Directory.Exists(directory))
+        {
+            return null;
+        }
+
+        var hasResult = Directory.GetFiles(directory, "result.json", SearchOption.AllDirectories).Any();
+        var hasJoint = Directory.GetFiles(directory, "joint_angle.csv", SearchOption.AllDirectories).Any();
+        var hasPreview = Directory.GetFiles(directory, "analysis_preview.mp4", SearchOption.AllDirectories).Any();
+        var parts = new List<string>();
+        if (hasResult) parts.Add("result.json");
+        if (hasJoint) parts.Add("joint_angle.csv");
+        if (hasPreview) parts.Add("analysis_preview.mp4");
+        return parts.Count > 0 ? $"已生成 {string.Join("、", parts)}" : null;
+    }
+
+    private static PlotModel BuildSingleAnglePlot(string title, List<AnalysisAngleFrame> frames, Func<AnalysisAngleFrame, double> valueSelector, OxyColor color, double maxTime)
+    {
+        var model = CreatePlotBase(title, "时间 (s)", "角度 (°)");
+        model.Axes.OfType<LinearAxis>().First(axis => axis.Position == AxisPosition.Bottom).Maximum = Math.Max(1, maxTime);
+        AddLineSeries(model, title.Replace("角度曲线", string.Empty, StringComparison.Ordinal), frames, valueSelector, color);
+        ApplyValueAxisRange(model);
+        return model;
+    }
+
+    private static PlotModel BuildDualAnglePlot(
+        string title,
+        string firstName,
+        string secondName,
+        List<AnalysisAngleFrame> frames,
+        Func<AnalysisAngleFrame, double> firstSelector,
+        Func<AnalysisAngleFrame, double> secondSelector,
+        OxyColor firstColor,
+        OxyColor secondColor,
+        double maxTime)
+    {
+        var model = CreatePlotBase($"{title}（{firstName} / {secondName}）", "时间 (s)", "角度 (°)", alignToPlaybackBar: true);
+        model.Axes.OfType<LinearAxis>().First(axis => axis.Position == AxisPosition.Bottom).Maximum = Math.Max(1, maxTime);
+        AddLineSeries(model, firstName, frames, firstSelector, firstColor);
+        AddLineSeries(model, secondName, frames, secondSelector, secondColor);
+        AddPlaybackCursor(model, 0);
+        ApplyValueAxisRange(model);
+        return model;
+    }
+
+    public void SetVideoPlaybackTime(double seconds)
+    {
+        _videoPlaybackSeconds = Math.Max(0, seconds);
+        UpdatePlaybackCursor(VideoKneeAnglePlotModel, _videoPlaybackSeconds);
+        UpdatePlaybackCursor(VideoHipAnglePlotModel, _videoPlaybackSeconds);
+        UpdatePlaybackCursor(VideoAnkleAnglePlotModel, _videoPlaybackSeconds);
+        UpdatePlaybackCursor(VideoTrunkAnglePlotModel, _videoPlaybackSeconds);
+    }
+
+    public void SetVideoPreviewDuration(double seconds)
+    {
+        if (seconds <= 0)
+        {
+            return;
+        }
+
+        var maximum = Math.Max(1, seconds);
+        UpdateVideoPlotMaximum(VideoKneeAnglePlotModel, maximum);
+        UpdateVideoPlotMaximum(VideoHipAnglePlotModel, maximum);
+        UpdateVideoPlotMaximum(VideoAnkleAnglePlotModel, maximum);
+        UpdateVideoPlotMaximum(VideoTrunkAnglePlotModel, maximum);
+        SetVideoPlaybackTime(Math.Min(_videoPlaybackSeconds, maximum));
+    }
+
+    private static void UpdateVideoPlotMaximum(PlotModel? model, double maximum)
+    {
+        if (model is null)
+        {
+            return;
+        }
+
+        var xAxis = model.Axes.OfType<LinearAxis>().FirstOrDefault(axis => axis.Position == AxisPosition.Bottom);
+        if (xAxis is null)
+        {
+            return;
+        }
+
+        xAxis.Maximum = maximum;
+        xAxis.MajorStep = CalculateMajorStep(maximum);
+        xAxis.MinorStep = Math.Max(0.5d, xAxis.MajorStep / 2d);
+        model.InvalidatePlot(false);
+    }
+
+    private static void UpdatePlaybackCursor(PlotModel? model, double seconds)
+    {
+        if (model is null)
+        {
+            return;
+        }
+
+        var cursor = model.Annotations
+            .OfType<LineAnnotation>()
+            .FirstOrDefault(annotation => Equals(annotation.Tag, "PlaybackCursor"));
+        if (cursor is null)
+        {
+            AddPlaybackCursor(model, seconds);
+        }
+        else
+        {
+            cursor.X = seconds;
+        }
+
+        model.InvalidatePlot(false);
+    }
+
+    private static void AddPlaybackCursor(PlotModel model, double seconds)
+    {
+        model.Annotations.Add(new LineAnnotation
+        {
+            Type = LineAnnotationType.Vertical,
+            X = Math.Max(0, seconds),
+            Color = OxyColor.Parse("#E4004A"),
+            StrokeThickness = 2,
+            LineStyle = LineStyle.Solid,
+            Tag = "PlaybackCursor"
+        });
+    }
+
+    private static void AddLineSeries(PlotModel model, string title, List<AnalysisAngleFrame> frames, Func<AnalysisAngleFrame, double> valueSelector, OxyColor color)
+    {
         var series = new LineSeries
         {
-            Title = title.Replace("角度曲线", string.Empty, StringComparison.Ordinal),
+            Title = title,
             Color = color,
-            StrokeThickness = 2.6,
+            StrokeThickness = 2.4,
             MarkerType = MarkerType.None
         };
 
-        for (var i = 0; i <= 120; i++)
+        foreach (var frame in frames)
         {
-            var time = i / 6d;
-            var radians = (time / 20d * Math.PI * 4d) + phase;
-            series.Points.Add(new DataPoint(time, 20d + 10d * Math.Sin(radians)));
+            var value = valueSelector(frame);
+            if (!double.IsNaN(value) && !double.IsInfinity(value))
+            {
+                series.Points.Add(new DataPoint(frame.TimeS, value));
+            }
         }
 
         model.Series.Add(series);
-        return model;
     }
 
-    private static PlotModel BuildDualDemoPlot(string title, string firstName, string secondName, OxyColor firstColor, OxyColor secondColor)
+    private static void ApplyValueAxisRange(PlotModel model)
     {
-        var model = CreateDemoPlotBase(title, "时间 (s)", title.Contains("轨迹", StringComparison.Ordinal) ? "位移 (m)" : "角度 (°)", alignToPlaybackBar: true);
-        var first = new LineSeries
+        var values = model.Series
+            .OfType<LineSeries>()
+            .SelectMany(series => series.Points)
+            .Select(point => point.Y)
+            .Where(value => !double.IsNaN(value) && !double.IsInfinity(value))
+            .ToList();
+        var yAxis = model.Axes.OfType<LinearAxis>().FirstOrDefault(axis => axis.Position == AxisPosition.Left);
+        if (yAxis is null || values.Count == 0)
         {
-            Title = firstName,
-            Color = firstColor,
-            StrokeThickness = 2.4
-        };
-        var second = new LineSeries
-        {
-            Title = secondName,
-            Color = secondColor,
-            StrokeThickness = 2.4
-        };
-
-        for (var i = 0; i <= 120; i++)
-        {
-            var time = i / 6d;
-            var radians = time / 20d * Math.PI * 4d;
-            first.Points.Add(new DataPoint(time, 20d + 10d * Math.Sin(radians)));
-            second.Points.Add(new DataPoint(time, 20d + 10d * Math.Cos(radians + 0.35d)));
+            return;
         }
 
-        model.Series.Add(first);
-        model.Series.Add(second);
+        var min = values.Min();
+        var max = values.Max();
+        var padding = Math.Max(5d, (max - min) * 0.12d);
+        yAxis.Minimum = Math.Floor(min - padding);
+        yAxis.Maximum = Math.Ceiling(max + padding);
+        yAxis.MajorStep = CalculateMajorStep(yAxis.Maximum - yAxis.Minimum);
+        yAxis.MinorStep = yAxis.MajorStep / 2d;
+    }
+
+    private static double CalculateMajorStep(double range)
+    {
+        if (range <= 20) return 5;
+        if (range <= 60) return 10;
+        if (range <= 120) return 20;
+        return 50;
+    }
+
+    private static PlotModel CreateEmptyPlot(string title, string message = "暂无曲线数据", bool alignToPlaybackBar = false)
+    {
+        var model = CreatePlotBase(title, "时间 (s)", "角度 (°)", alignToPlaybackBar);
+        model.Subtitle = message;
+        model.SubtitleColor = OxyColor.Parse("#999999");
         return model;
     }
 
-    private static PlotModel CreateDemoPlotBase(string title, string xAxisTitle, string yAxisTitle, bool alignToPlaybackBar = false)
+
+    private static PlotModel CreatePlotBase(string title, string xAxisTitle, string yAxisTitle, bool alignToPlaybackBar = false)
     {
         var model = new PlotModel
         {
@@ -1470,12 +1887,13 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             PlotAreaBorderColor = OxyColor.Parse("#DCE3EC"),
             PlotAreaBorderThickness = new OxyThickness(1),
             Background = OxyColors.White,
-            PlotAreaBackground = OxyColor.Parse("#FCFDFE")
+            PlotAreaBackground = OxyColor.Parse("#FCFDFE"),
+            IsLegendVisible = true
         };
 
         if (alignToPlaybackBar)
         {
-            model.PlotMargins = new OxyThickness(108, 32, 70, 46);
+            model.PlotMargins = new OxyThickness(108, 24, 70, 46);
         }
 
         model.Axes.Add(new LinearAxis
@@ -1566,6 +1984,8 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         OnPropertyChanged(nameof(OutputDirectory));
         OnPropertyChanged(nameof(FileCountDisplay));
         OnPropertyChanged(nameof(AnnotatedVideoDisplay));
+        OnPropertyChanged(nameof(HasAnnotatedVideo));
+        OnPropertyChanged(nameof(AnnotatedVideoUri));
         OnPropertyChanged(nameof(SummaryFileDisplay));
         OnPropertyChanged(nameof(CycleCountDisplay));
         OnPropertyChanged(nameof(ResultFileSummaryDisplay));
@@ -1618,12 +2038,14 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         OnPropertyChanged(nameof(CurrentVideoFileDisplay));
         OnPropertyChanged(nameof(CurrentFrameDisplay));
         OnPropertyChanged(nameof(CurrentPlaybackTimeDisplay));
+        OnPropertyChanged(nameof(VideoDurationDisplay));
         OnPropertyChanged(nameof(CurrentGaitCycleDisplay));
         OnPropertyChanged(nameof(CurrentEventDisplay));
         OnPropertyChanged(nameof(CurrentLeftKneeAngleDisplay));
         OnPropertyChanged(nameof(CurrentRightKneeAngleDisplay));
         OnPropertyChanged(nameof(CurrentLeftAnkleAngleDisplay));
         OnPropertyChanged(nameof(CurrentRightAnkleAngleDisplay));
+        OnPropertyChanged(nameof(CycleDetails));
         OnPropertyChanged(nameof(CanConfigureReport));
         OnPropertyChanged(nameof(CanPreviewReport));
         OnPropertyChanged(nameof(ReportNumberDisplay));
@@ -1633,6 +2055,116 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         OnPropertyChanged(nameof(ReportQualityHint));
         OnPropertyChanged(nameof(ReportIncludedSectionsSummary));
         OnPropertyChanged(nameof(ReportPreviewMessage));
+    }
+
+    private void NotifyPlotModelsChanged()
+    {
+        OnPropertyChanged(nameof(LeftHipAnglePlotModel));
+        OnPropertyChanged(nameof(RightHipAnglePlotModel));
+        OnPropertyChanged(nameof(LeftKneeAnglePlotModel));
+        OnPropertyChanged(nameof(RightKneeAnglePlotModel));
+        OnPropertyChanged(nameof(LeftAnkleAnglePlotModel));
+        OnPropertyChanged(nameof(RightAnkleAnglePlotModel));
+        OnPropertyChanged(nameof(VideoKneeAnglePlotModel));
+        OnPropertyChanged(nameof(VideoHipAnglePlotModel));
+        OnPropertyChanged(nameof(VideoAnkleAnglePlotModel));
+        OnPropertyChanged(nameof(VideoTrunkAnglePlotModel));
+        OnPropertyChanged(nameof(VideoTrajectoryPlotModel));
+    }
+
+    private static double? ReadDouble(JsonObject? obj, string name)
+    {
+        if (obj is null || obj[name] is null)
+        {
+            return null;
+        }
+
+        if (obj[name] is JsonValue value)
+        {
+            if (value.TryGetValue<double>(out var doubleValue))
+            {
+                return doubleValue;
+            }
+
+            if (value.TryGetValue<string>(out var stringValue)
+                && double.TryParse(stringValue, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed))
+            {
+                return parsed;
+            }
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<int> ReadIntArray(JsonObject? obj, string name)
+    {
+        if (obj?[name] is not JsonArray array)
+        {
+            return [];
+        }
+
+        return array
+            .Select(node =>
+            {
+                if (node is JsonValue value && value.TryGetValue<int>(out var intValue))
+                {
+                    return intValue;
+                }
+
+                return (int?)null;
+            })
+            .Where(value => value.HasValue)
+            .Select(value => value!.Value);
+    }
+
+    private static string FormatSeconds(double? seconds)
+    {
+        return seconds.HasValue ? $"{seconds.Value:F2} s" : "--";
+    }
+
+    private static int? ReadInt(JsonObject? obj, string name)
+    {
+        if (obj is null || obj[name] is null)
+        {
+            return null;
+        }
+
+        if (obj[name] is JsonValue value)
+        {
+            if (value.TryGetValue<int>(out var intValue))
+            {
+                return intValue;
+            }
+
+            if (value.TryGetValue<string>(out var stringValue)
+                && int.TryParse(stringValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
+            {
+                return parsed;
+            }
+        }
+
+        return null;
+    }
+
+    private static int? ReadArrayCount(JsonObject? obj, string name)
+    {
+        return obj?[name] is JsonArray array ? array.Count : null;
+    }
+
+    private static double? AverageCycleDuration(JsonObject? gaitCycle)
+    {
+        if (gaitCycle?["cycles"] is not JsonArray cycles || cycles.Count == 0)
+        {
+            return null;
+        }
+
+        var values = cycles
+            .OfType<JsonObject>()
+            .Select(cycle => ReadDouble(cycle, "duration_sec"))
+            .Where(value => value.HasValue)
+            .Select(value => value!.Value)
+            .ToList();
+        return values.Count == 0 ? null : values.Average();
     }
 
     private static string FormatNumber(double? value, string format, string unit)
@@ -1651,6 +2183,70 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         return value.HasValue ? $"{(value.Value / 100d):F2} m" : "--";
     }
 
+    private static string FormatCount(int? value)
+    {
+        return value.HasValue ? $"{value.Value} 次" : "--";
+    }
+
+    private static double? ComplementPercent(double? value)
+    {
+        return value.HasValue ? 100d - value.Value : null;
+    }
+
+    private static double? Average(double? left, double? right)
+    {
+        return left.HasValue && right.HasValue
+            ? (left.Value + right.Value) / 2d
+            : left ?? right;
+    }
+
+    private static double? Difference(double? left, double? right)
+    {
+        return left.HasValue && right.HasValue ? Math.Abs(left.Value - right.Value) : null;
+    }
+
+    private static double? DifferencePercent(double? left, double? right)
+    {
+        if (!left.HasValue || !right.HasValue)
+        {
+            return null;
+        }
+
+        var average = (Math.Abs(left.Value) + Math.Abs(right.Value)) / 2d;
+        return average <= 0 ? null : Math.Abs(left.Value - right.Value) / average * 100d;
+    }
+
+    private double? CalculateSymmetryScore()
+    {
+        var differences = new[]
+        {
+            DifferencePercent(_detailData.LeftStrideMeanM, _detailData.RightStrideMeanM),
+            Difference(_detailData.LeftStanceRatioPct, _detailData.RightStanceRatioPct),
+            DifferencePercent(_detailData.LeftKneeRomDeg, _detailData.RightKneeRomDeg),
+            DifferencePercent(_detailData.LeftHipRomDeg, _detailData.RightHipRomDeg),
+            DifferencePercent(_detailData.LeftAnkleRomDeg, _detailData.RightAnkleRomDeg)
+        }.Where(value => value.HasValue).Select(value => value!.Value).ToList();
+
+        if (differences.Count == 0)
+        {
+            return null;
+        }
+
+        return Math.Clamp(100d - differences.Average(), 0d, 100d);
+    }
+
+    private static double? NormalizeVideoDuration(double? reportedDuration, double? frameDuration)
+    {
+        if (reportedDuration is > 0 && frameDuration is > 0)
+        {
+            return Math.Abs(reportedDuration.Value - frameDuration.Value) > 0.5d
+                ? frameDuration
+                : reportedDuration;
+        }
+
+        return reportedDuration is > 0 ? reportedDuration : frameDuration;
+    }
+
     private static string GetEnumDescription<TEnum>(TEnum value)
         where TEnum : struct, Enum
     {
@@ -1659,6 +2255,74 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         return attribute?.Description ?? value.ToString();
     }
 }
+
+internal sealed class AnalysisDetailData
+{
+    public double? VideoFps { get; set; }
+    public double? VideoDurationSec { get; set; }
+    public int? CycleCount { get; set; }
+    public double? MeanCycleDurationSec { get; set; }
+    public double? CadenceStepPerMin { get; set; }
+    public double? GaitSpeedMPerS { get; set; }
+    public double? MeanStepLengthM { get; set; }
+    public double? MeanStrideLengthM { get; set; }
+    public double? MeanStanceTimeSec { get; set; }
+    public double? MeanSwingTimeSec { get; set; }
+    public double? MeanDoubleSupportTimeSec { get; set; }
+    public double? MeanSingleSupportTimeSec { get; set; }
+    public int? LeftHeelStrikeCount { get; set; }
+    public int? RightHeelStrikeCount { get; set; }
+    public int? LeftToeOffCount { get; set; }
+    public int? RightToeOffCount { get; set; }
+    public double? LeftHipRomDeg { get; set; }
+    public double? RightHipRomDeg { get; set; }
+    public double? LeftKneeRomDeg { get; set; }
+    public double? RightKneeRomDeg { get; set; }
+    public double? LeftAnkleRomDeg { get; set; }
+    public double? RightAnkleRomDeg { get; set; }
+    public double? TrunkTiltMeanDeg { get; set; }
+    public double? TrunkTiltMaxDeg { get; set; }
+    public double? TrunkTiltMinDeg { get; set; }
+    public double? TrunkTiltRomDeg { get; set; }
+    public double? PelvisTiltMeanDeg { get; set; }
+    public double? PelvisTiltMaxDeg { get; set; }
+    public double? PelvisTiltMinDeg { get; set; }
+    public double? PelvisRomDeg { get; set; }
+    public double? LeftStrideMeanM { get; set; }
+    public double? RightStrideMeanM { get; set; }
+    public double? LeftStanceRatioPct { get; set; }
+    public double? RightStanceRatioPct { get; set; }
+    public double? ValidFrameRatio { get; set; }
+    public string? QualityLevel { get; set; }
+    public string? QualityHint { get; set; }
+    public int ResultFileCount { get; set; }
+    public int CsvFileCount { get; set; }
+    public int ImageFileCount { get; set; }
+    public string? LogFileName { get; set; }
+    public string? ResultFileSummary { get; set; }
+}
+
+internal sealed record AnalysisAngleFrame(
+    int FrameIndex,
+    double TimeS,
+    double RightAnkle,
+    double LeftAnkle,
+    double RightKnee,
+    double LeftKnee,
+    double RightHip,
+    double LeftHip,
+    double Pelvis,
+    double Trunk);
+
+public sealed record AnalysisCycleDetail(
+    string CycleId,
+    string Side,
+    string StartFrame,
+    string EndFrame,
+    string StartTime,
+    string EndTime,
+    string Duration,
+    string Confidence);
 
 /// <summary>
 /// 分析详情状态。

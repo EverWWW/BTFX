@@ -267,6 +267,13 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
             return null;
         }
 
+        var previewVideo = Directory.GetFiles(outputDirectory, "analysis_preview.mp4", SearchOption.AllDirectories)
+            .FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(previewVideo))
+        {
+            return ToOutputRelativePath(outputDirectory, previewVideo);
+        }
+
         var videos = Directory.GetFiles(outputDirectory, "*.mp4", SearchOption.AllDirectories)
             .Where(path => Path.GetFileName(path).Contains("Sports2D", StringComparison.OrdinalIgnoreCase)
                            || Path.GetFileName(path).Contains("annotated", StringComparison.OrdinalIgnoreCase)

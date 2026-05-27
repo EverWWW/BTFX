@@ -24,6 +24,25 @@
         <SolidColorBrush x:Key="ExportBlueBrush" Color="#409EFF" />
         <Style BasedOn="{StaticResource DialogLightScrollBarStyle}" TargetType="ScrollBar" />
 
+        <ControlTemplate x:Key="AnalysisPlotTrackerTemplate">
+            <Border
+                Padding="8,5"
+                Background="#FFFFFF"
+                BorderBrush="#DCE3EC"
+                BorderThickness="1"
+                CornerRadius="4">
+                <TextBlock
+                    FontFamily="{StaticResource AppFont}"
+                    FontSize="12"
+                    Foreground="#222222"
+                    Text="{Binding Text}" />
+            </Border>
+        </ControlTemplate>
+
+        <Style TargetType="{x:Type oxy:PlotView}">
+            <Setter Property="DefaultTrackerTemplate" Value="{StaticResource AnalysisPlotTrackerTemplate}" />
+        </Style>
+
         <Style x:Key="TitleTextStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
             <Setter Property="FontSize" Value="20" />
@@ -1078,102 +1097,54 @@
                                             <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="步态周期明细" />
                                         </StackPanel>
                                         <Border Style="{StaticResource SectionCardStyle}">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="*" />
-                                                </Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
-                                                    <RowDefinition Height="42" />
-                                                </Grid.RowDefinitions>
-                                                <TextBlock
-                                                    Grid.Column="0"
-                                                    Style="{StaticResource InfoLabelTextStyle}"
-                                                    Text="周期编号" />
-                                                <TextBlock
-                                                    Grid.Column="1"
-                                                    Style="{StaticResource InfoLabelTextStyle}"
-                                                    Text="侧别" />
-                                                <TextBlock
-                                                    Grid.Column="2"
-                                                    Style="{StaticResource InfoLabelTextStyle}"
-                                                    Text="起始帧" />
-                                                <TextBlock
-                                                    Grid.Column="3"
-                                                    Style="{StaticResource InfoLabelTextStyle}"
-                                                    Text="结束帧" />
-                                                <TextBlock
-                                                    Grid.Column="4"
-                                                    Style="{StaticResource InfoLabelTextStyle}"
-                                                    Text="起始时间" />
-                                                <TextBlock
-                                                    Grid.Column="5"
-                                                    Style="{StaticResource InfoLabelTextStyle}"
-                                                    Text="结束时间" />
-                                                <TextBlock
-                                                    Grid.Column="6"
-                                                    Style="{StaticResource InfoLabelTextStyle}"
-                                                    Text="周期时长" />
-                                                <TextBlock
-                                                    Grid.Column="7"
-                                                    Style="{StaticResource InfoLabelTextStyle}"
-                                                    Text="置信度" />
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="0"
-                                                    VerticalAlignment="Center"
-                                                    Style="{StaticResource InfoValueTextStyle}"
-                                                    Text="1" />
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="1"
-                                                    VerticalAlignment="Center"
-                                                    Style="{StaticResource InfoValueTextStyle}"
-                                                    Text="左侧" />
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="2"
-                                                    VerticalAlignment="Center"
-                                                    Style="{StaticResource InfoValueTextStyle}"
-                                                    Text="32" />
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="3"
-                                                    VerticalAlignment="Center"
-                                                    Style="{StaticResource InfoValueTextStyle}"
-                                                    Text="91" />
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="4"
-                                                    VerticalAlignment="Center"
-                                                    Style="{StaticResource InfoValueTextStyle}"
-                                                    Text="0.54 s" />
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="5"
-                                                    VerticalAlignment="Center"
-                                                    Style="{StaticResource InfoValueTextStyle}"
-                                                    Text="1.56 s" />
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="6"
-                                                    VerticalAlignment="Center"
-                                                    Style="{StaticResource InfoValueTextStyle}"
-                                                    Text="1.02 s" />
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="7"
-                                                    VerticalAlignment="Center"
-                                                    Style="{StaticResource InfoValueTextStyle}"
-                                                    Text="0.92" />
-                                            </Grid>
+                                            <StackPanel>
+                                                <Grid Margin="0,0,0,10">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Style="{StaticResource InfoLabelTextStyle}" Text="周期编号" />
+                                                    <TextBlock Grid.Column="1" Style="{StaticResource InfoLabelTextStyle}" Text="侧别" />
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource InfoLabelTextStyle}" Text="起始帧" />
+                                                    <TextBlock Grid.Column="3" Style="{StaticResource InfoLabelTextStyle}" Text="结束帧" />
+                                                    <TextBlock Grid.Column="4" Style="{StaticResource InfoLabelTextStyle}" Text="起始时间" />
+                                                    <TextBlock Grid.Column="5" Style="{StaticResource InfoLabelTextStyle}" Text="结束时间" />
+                                                    <TextBlock Grid.Column="6" Style="{StaticResource InfoLabelTextStyle}" Text="周期时长" />
+                                                    <TextBlock Grid.Column="7" Style="{StaticResource InfoLabelTextStyle}" Text="置信度" />
+                                                </Grid>
+                                                <ItemsControl ItemsSource="{Binding CycleDetails}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Grid MinHeight="38">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBlock Grid.Column="0" VerticalAlignment="Center" Style="{StaticResource InfoValueTextStyle}" Text="{Binding CycleId}" />
+                                                                <TextBlock Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource InfoValueTextStyle}" Text="{Binding Side}" />
+                                                                <TextBlock Grid.Column="2" VerticalAlignment="Center" Style="{StaticResource InfoValueTextStyle}" Text="{Binding StartFrame}" />
+                                                                <TextBlock Grid.Column="3" VerticalAlignment="Center" Style="{StaticResource InfoValueTextStyle}" Text="{Binding EndFrame}" />
+                                                                <TextBlock Grid.Column="4" VerticalAlignment="Center" Style="{StaticResource InfoValueTextStyle}" Text="{Binding StartTime}" />
+                                                                <TextBlock Grid.Column="5" VerticalAlignment="Center" Style="{StaticResource InfoValueTextStyle}" Text="{Binding EndTime}" />
+                                                                <TextBlock Grid.Column="6" VerticalAlignment="Center" Style="{StaticResource InfoValueTextStyle}" Text="{Binding Duration}" />
+                                                                <TextBlock Grid.Column="7" VerticalAlignment="Center" Style="{StaticResource InfoValueTextStyle}" Text="{Binding Confidence}" />
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
                                         </Border>
                                     </StackPanel>
 
@@ -1280,29 +1251,42 @@
                                                 Grid.Row="2"
                                                 Background="#101820"
                                                 CornerRadius="8">
-                                                <StackPanel VerticalAlignment="Center">
-                                                    <materialDesign:PackIcon
-                                                        Width="70"
-                                                        Height="70"
-                                                        HorizontalAlignment="Center"
-                                                        Foreground="#9AB0C7"
-                                                        Kind="PlayCircleOutline" />
-                                                    <TextBlock
-                                                        Margin="0,14,0,0"
-                                                        HorizontalAlignment="Center"
-                                                        FontFamily="{StaticResource AppFont}"
-                                                        FontSize="20"
-                                                        FontWeight="SemiBold"
-                                                        Foreground="White"
-                                                        Text="{Binding AnnotatedVideoDisplay, TargetNullValue=result_visualized.mp4}" />
-                                                    <TextBlock
-                                                        Margin="0,8,0,0"
-                                                        HorizontalAlignment="Center"
-                                                        FontFamily="{StaticResource AppFont}"
-                                                        FontSize="14"
-                                                        Foreground="#D2DDE8"
-                                                        Text="单视频或双视频拼接结果将在此区域完整显示" />
-                                                </StackPanel>
+                                                <Grid ClipToBounds="True">
+                                                    <MediaElement
+                                                        x:Name="AnalysisPreviewMediaElement"
+                                                        LoadedBehavior="Manual"
+                                                        MediaEnded="AnalysisPreviewMediaElement_OnMediaEnded"
+                                                        MediaOpened="AnalysisPreviewMediaElement_OnMediaOpened"
+                                                        Source="{Binding AnnotatedVideoUri}"
+                                                        Stretch="Uniform"
+                                                        UnloadedBehavior="Stop"
+                                                        Visibility="{Binding HasAnnotatedVideo, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                                    <StackPanel
+                                                        VerticalAlignment="Center"
+                                                        Visibility="{Binding HasAnnotatedVideo, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                                        <materialDesign:PackIcon
+                                                            Width="70"
+                                                            Height="70"
+                                                            HorizontalAlignment="Center"
+                                                            Foreground="#9AB0C7"
+                                                            Kind="PlayCircleOutline" />
+                                                        <TextBlock
+                                                            Margin="0,14,0,0"
+                                                            HorizontalAlignment="Center"
+                                                            FontFamily="{StaticResource AppFont}"
+                                                            FontSize="20"
+                                                            FontWeight="SemiBold"
+                                                            Foreground="White"
+                                                            Text="{Binding AnnotatedVideoDisplay, TargetNullValue=--}" />
+                                                        <TextBlock
+                                                            Margin="0,8,0,0"
+                                                            HorizontalAlignment="Center"
+                                                            FontFamily="{StaticResource AppFont}"
+                                                            FontSize="14"
+                                                            Foreground="#D2DDE8"
+                                                            Text="暂无可播放的分析标注视频" />
+                                                    </StackPanel>
+                                                </Grid>
                                             </Border>
                                         </Grid>
                                     </Border>
@@ -1323,23 +1307,32 @@
                                                 Height="40"
                                                 Background="#646464"
                                                 CornerRadius="8" />
-                                            <Border
+                                            <Button
                                                 Grid.Column="0"
                                                 Width="28"
                                                 Height="28"
                                                 Margin="10,0,0,0"
                                                 HorizontalAlignment="Left"
                                                 VerticalAlignment="Center"
-                                                Background="Transparent">
+                                                Background="Transparent"
+                                                BorderBrush="Transparent"
+                                                BorderThickness="0"
+                                                Click="AnalysisPreviewPlayButton_OnClick"
+                                                Cursor="Hand"
+                                                Foreground="White"
+                                                Padding="0"
+                                                Style="{StaticResource MaterialDesignIconButton}">
                                                 <materialDesign:PackIcon
+                                                    x:Name="AnalysisPreviewPlayIcon"
                                                     Width="20"
                                                     Height="20"
                                                     HorizontalAlignment="Center"
                                                     VerticalAlignment="Center"
                                                     Foreground="White"
                                                     Kind="Play" />
-                                            </Border>
+                                            </Button>
                                             <TextBlock
+                                                x:Name="AnalysisPreviewCurrentTimeText"
                                                 Grid.Column="1"
                                                 Width="70"
                                                 VerticalAlignment="Center"
@@ -1349,40 +1342,41 @@
                                                 Text="0:00"
                                                 TextAlignment="Center" />
                                             <Slider
+                                                x:Name="AnalysisPreviewProgressSlider"
                                                 Grid.Column="2"
                                                 Margin="0,0,0,0"
                                                 VerticalAlignment="Center"
-                                                IsHitTestVisible="False"
-                                                Maximum="100"
+                                                PreviewMouseDown="AnalysisPreviewProgressSlider_OnPreviewMouseDown"
+                                                PreviewMouseUp="AnalysisPreviewProgressSlider_OnPreviewMouseUp"
+                                                ValueChanged="AnalysisPreviewProgressSlider_OnValueChanged"
+                                                Maximum="1"
                                                 Minimum="0"
-                                                Value="32" />
+                                                Value="0" />
                                             <TextBlock
+                                                x:Name="AnalysisPreviewDurationText"
                                                 Grid.Column="3"
                                                 Width="70"
                                                 VerticalAlignment="Center"
                                                 FontFamily="{StaticResource AppFont}"
                                                 FontSize="12"
                                                 Foreground="White"
-                                                Text="6.02s"
+                                                Text="{Binding VideoDurationDisplay}"
                                                 TextAlignment="Center" />
                                         </Grid>
                                     </Border>
 
                                     <StackPanel DockPanel.Dock="Top">
                                         <Border Margin="0,0,0,14" Style="{StaticResource SectionCardStyle}">
-                                            <oxy:PlotView Height="190" Model="{Binding VideoKneeAnglePlotModel}" />
+                                            <oxy:PlotView Height="220" Model="{Binding VideoKneeAnglePlotModel}" />
                                         </Border>
                                         <Border Margin="0,0,0,14" Style="{StaticResource SectionCardStyle}">
-                                            <oxy:PlotView Height="170" Model="{Binding VideoHipAnglePlotModel}" />
+                                            <oxy:PlotView Height="210" Model="{Binding VideoHipAnglePlotModel}" />
                                         </Border>
                                         <Border Margin="0,0,0,14" Style="{StaticResource SectionCardStyle}">
-                                            <oxy:PlotView Height="170" Model="{Binding VideoAnkleAnglePlotModel}" />
+                                            <oxy:PlotView Height="210" Model="{Binding VideoAnkleAnglePlotModel}" />
                                         </Border>
                                         <Border Margin="0,0,0,14" Style="{StaticResource SectionCardStyle}">
-                                            <oxy:PlotView Height="170" Model="{Binding VideoTrunkAnglePlotModel}" />
-                                        </Border>
-                                        <Border Style="{StaticResource SectionCardStyle}">
-                                            <oxy:PlotView Height="170" Model="{Binding VideoTrajectoryPlotModel}" />
+                                            <oxy:PlotView Height="210" Model="{Binding VideoTrunkAnglePlotModel}" />
                                         </Border>
                                     </StackPanel>
                                 </DockPanel>
