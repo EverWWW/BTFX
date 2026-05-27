@@ -491,12 +491,10 @@ public class ReportPdfExporter
             {
                 table.ColumnsDefinition(columns =>
                 {
-                    for (int i = 0; i < 4; i++)
+                    for (int i = 0; i < 3; i++)
                         columns.RelativeColumn();
                 });
 
-                table.Cell().Element(c => CreateParameterCell(c, "平均置信度", 
-                    qc.MeanKeypointConfidence.HasValue ? qc.MeanKeypointConfidence * 100 : null, "%"));
                 table.Cell().Element(c => CreateParameterCell(c, "有效帧比例",
                     qc.ValidFrameRatio.HasValue ? qc.ValidFrameRatio * 100 : null, "%"));
                 table.Cell().Element(c => CreateQualityStatusCell(c, "遮挡预警", qc.OcclusionWarning));

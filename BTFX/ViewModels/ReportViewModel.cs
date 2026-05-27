@@ -1759,7 +1759,6 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             {
                 var qc = fullReport.QualityControl;
                 sb.AppendLine("【质量控制信息】");
-                sb.AppendLine($"平均置信度：{(qc.MeanKeypointConfidence.HasValue ? $"{qc.MeanKeypointConfidence * 100:F1}%" : "--")}");
                 sb.AppendLine($"有效帧比例：{(qc.ValidFrameRatio.HasValue ? $"{qc.ValidFrameRatio * 100:F1}%" : "--")}");
                 sb.AppendLine($"遮挡预警：{(qc.OcclusionWarning ? "⚠ 是" : "✓ 否")}");
                 sb.AppendLine($"丢点预警：{(qc.MissingPointWarning ? "⚠ 是" : "✓ 否")}");
@@ -1830,6 +1829,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         var gait = record?.GaitParameters;
         var analysis = report.AnalysisResult;
         var quality = report.QualityControl ?? analysis?.QualityControl;
+        var data = ReportAnalysisSnapshot.From(report);
 
         var title = string.IsNullOrWhiteSpace(report.Title) ? "步态分析报告" : report.Title;
         var measurementType = record is null ? "--" : GetMeasurementTypeText(record.MeasurementType);
@@ -1851,12 +1851,11 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
         PreviewMetrics = new ObservableCollection<ReportSummaryMetric>
         {
-            new("步态周期", FormatNumber(analysis?.GaitCycleDurationS ?? gait?.GaitCycleDurationS, "F2"), "s"),
-            new("平均步长", FormatNumber(analysis?.StepLengthM ?? gait?.StepLengthM, "F2"), "m"),
-            new("平均步频", FormatNumber(gait?.Cadence, "F1"), "step/min"),
-            new("平均步速", FormatNumber(analysis?.GaitSpeedMPerS ?? gait?.GaitSpeedMPerS ?? gait?.Velocity, "F2"), "m/s"),
-            new("质量等级", BuildQualityLevel(quality), string.Empty),
-            new("有效帧比例", FormatPercent(quality?.ValidFrameRatio), string.Empty)
+            new("步态周期", FormatNumber(data.MeanCycleDurationSec ?? analysis?.GaitCycleDurationS ?? gait?.GaitCycleDurationS, "F2"), "s"),
+            new("平均步长", FormatNumber(data.MeanStepLengthM ?? analysis?.StepLengthM ?? gait?.StepLengthM, "F2"), "m"),
+            new("平均步频", FormatNumber(data.CadenceStepPerMin ?? gait?.Cadence, "F1"), "step/min"),
+            new("平均步速", FormatNumber(data.GaitSpeedMPerS ?? analysis?.GaitSpeedMPerS ?? gait?.GaitSpeedMPerS ?? gait?.Velocity, "F2"), "m/s"),
+            new("有效帧比例", FormatPercent(data.ValidFrameRatio ?? quality?.ValidFrameRatio), string.Empty)
         };
 
         PreviewSectionTags = new ObservableCollection<string>(BuildReportSectionTags(report));

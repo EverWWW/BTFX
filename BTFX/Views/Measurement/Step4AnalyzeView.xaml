@@ -365,8 +365,8 @@
                             Margin="0"
                             Style="{StaticResource SummaryTileStyle}">
                             <StackPanel>
-                                <TextBlock Style="{StaticResource MetricLabelStyle}" Text="数据质量" />
-                                <TextBlock Style="{StaticResource MetricValueStyle}" Text="{Binding QualityResult.GradeDisplay, Mode=OneWay, FallbackValue=--, TargetNullValue=--}" />
+                                <TextBlock Style="{StaticResource MetricLabelStyle}" Text="有效帧比例" />
+                                <TextBlock Style="{StaticResource MetricValueStyle}" Text="{Binding QualityResult.ValidFrameRatioDisplay, Mode=OneWay, FallbackValue=--, TargetNullValue=--}" />
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -447,22 +447,20 @@
                                     Background="#F7F6FB"
                                     CornerRadius="8">
                                     <StackPanel>
-                                        <TextBlock Style="{StaticResource MetricLabelStyle}" Text="质量提示" />
+                                        <TextBlock Style="{StaticResource MetricLabelStyle}" Text="结果完整性" />
                                         <TextBlock
                                             Margin="0,8,0,0"
                                             FontFamily="{StaticResource AppFont}"
                                             FontSize="14"
                                             Foreground="#666666"
-                                            Text="{Binding QualityResult.GradeDescription, FallbackValue=暂无质量提示, TargetNullValue=暂无质量提示}"
+                                            Text="当前仅显示软件可计算的结果完整性信息。"
                                             TextWrapping="Wrap" />
                                         <TextBlock
                                             Margin="0,8,0,0"
                                             FontFamily="{StaticResource AppFont}"
                                             FontSize="13"
                                             Foreground="#8A8798">
-                                            <Run Text="关键点置信度 " />
-                                            <Run Text="{Binding QualityResult.ConfidenceDisplay, FallbackValue=--, TargetNullValue=--}" />
-                                            <Run Text="，有效帧比例 " />
+                                            <Run Text="有效帧比例 " />
                                             <Run Text="{Binding QualityResult.ValidFrameRatioDisplay, FallbackValue=--, TargetNullValue=--}" />
                                         </TextBlock>
                                     </StackPanel>

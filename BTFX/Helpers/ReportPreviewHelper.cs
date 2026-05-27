@@ -235,7 +235,7 @@ public static class ReportPreviewHelper
         };
 
         // 定义列
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 3; i++)
         {
             table.Columns.Add(new TableColumn { Width = new GridLength(1, GridUnitType.Star) });
         }
@@ -361,7 +361,6 @@ public static class ReportPreviewHelper
         table.RowGroups.Add(new TableRowGroup());
 
         var row = new TableRow();
-        row.Cells.Add(CreateParameterCell("平均置信度", qc.MeanKeypointConfidence.HasValue ? qc.MeanKeypointConfidence * 100 : null, "%"));
         row.Cells.Add(CreateParameterCell("有效帧比例", qc.ValidFrameRatio.HasValue ? qc.ValidFrameRatio * 100 : null, "%"));
         row.Cells.Add(CreateQualityStatusCell("遮挡预警", qc.OcclusionWarning));
         row.Cells.Add(CreateQualityStatusCell("丢点预警", qc.MissingPointWarning));

@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
+using System.Text.Json.Nodes;
 using System.Windows.Threading;
 using BTFX.Common;
 using BTFX.Models;
@@ -1310,6 +1311,8 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     /// </summary>
     private void PopulateResultDisplayData(AnalysisResult result)
     {
+        EnrichResultFromResultJson(result);
+
         if (result.GaitCycleDurationS.HasValue)
         {
             GaitEventResult = new GaitEventParametersDisplay
@@ -1337,59 +1340,162 @@ public partial class Step4AnalyzeViewModel : ObservableObject
             };
         }
 
-        if (result.QualityControl != null)
+        var validFrameRatio = result.QualityControl?.ValidFrameRatio ?? EstimateValidFrameRatio(result);
+        QualityResult = new QualityControlDisplay
         {
-            var qc = result.QualityControl;
+            ValidFrameRatio = validFrameRatio ?? 0,
+            ValidFrameRatioDisplay = validFrameRatio.HasValue ? $"{validFrameRatio.Value * 100:F0}%" : "--"
+        };
+        OnPropertyChanged(nameof(ResultCadenceDisplay));
+    }
 
-            // 按设计文档阈值计算各项等级
-            var confidenceGrade = qc.MeanKeypointConfidence switch
+    private double? EstimateValidFrameRatio(AnalysisResult result)
+    {
+        try
+        {
+            var csvPath = result.CsvFiles?
+                .FirstOrDefault(file => file.FileType == CsvFileType.JointAngle && File.Exists(file.FilePath))
+                ?.FilePath;
+
+            if (string.IsNullOrWhiteSpace(csvPath))
             {
-                >= 0.85 => QualityGrade.Excellent,
-                >= 0.70 => QualityGrade.Good,
-                _ => QualityGrade.Poor
-            };
+                return null;
+            }
 
-            var frameRatioGrade = qc.ValidFrameRatio switch
+            var validFrameCount = File.ReadLines(csvPath)
+                .Skip(1)
+                .Count(line => !string.IsNullOrWhiteSpace(line));
+            if (validFrameCount <= 0)
             {
-                >= 0.95 => QualityGrade.Excellent,
-                >= 0.80 => QualityGrade.Good,
-                _ => QualityGrade.Poor
-            };
+                return null;
+            }
 
-            // 遮挡和丢点：有则为差，无则为优秀
-            var occlusionGrade = qc.OcclusionWarning ? QualityGrade.Poor : QualityGrade.Excellent;
-            var missingGrade = qc.MissingPointWarning ? QualityGrade.Poor : QualityGrade.Excellent;
-
-            // 综合等级判定
-            var worstGrade = (QualityGrade)Math.Max(
-                Math.Max((int)confidenceGrade, (int)frameRatioGrade),
-                Math.Max((int)occlusionGrade, (int)missingGrade));
-
-            var (gradeDisplay, gradeColor, gradeDesc) = worstGrade switch
-            {
-                QualityGrade.Excellent => ("A", "#4CAF50", _localizationService.GetString("MA.Step4.Quality.GradeExcellent")),
-                QualityGrade.Good => ("B", "#FF9800", _localizationService.GetString("MA.Step4.Quality.GradeGood")),
-                _ => ("C", "#F44336", _localizationService.GetString("MA.Step4.Quality.GradePoor"))
-            };
-
-            QualityResult = new QualityControlDisplay
-            {
-                Confidence = qc.MeanKeypointConfidence ?? 0,
-                ConfidenceDisplay = qc.MeanKeypointConfidence?.ToString("F2") ?? "--",
-                ConfidenceOk = confidenceGrade != QualityGrade.Poor,
-                ConfidenceGrade = confidenceGrade,
-                ValidFrameRatio = qc.ValidFrameRatio ?? 0,
-                ValidFrameRatioDisplay = qc.ValidFrameRatio.HasValue ? $"{qc.ValidFrameRatio.Value * 100:F0}%" : "--",
-                ValidFrameRatioOk = frameRatioGrade != QualityGrade.Poor,
-                ValidFrameRatioGrade = frameRatioGrade,
-                HasOcclusion = qc.OcclusionWarning,
-                HasMissingPoints = qc.MissingPointWarning,
-                OverallGrade = worstGrade,
-                GradeDisplay = gradeDisplay,
-                GradeColor = gradeColor,
-                GradeDescription = gradeDesc
-            };
+            var totalFrameCount = TryReadTotalFrameCount(result);
+            return totalFrameCount is > 0
+                ? Math.Clamp(validFrameCount / totalFrameCount.Value, 0d, 1d)
+                : null;
         }
+        catch (Exception ex)
+        {
+            _logHelper?.Warning($"估算有效帧比例失败：{ex.Message}");
+            return null;
+        }
+    }
+
+    private static void EnrichResultFromResultJson(AnalysisResult result)
+    {
+        var resultJsonPath = ResolveResultJsonPath(result);
+        if (string.IsNullOrWhiteSpace(resultJsonPath))
+        {
+            return;
+        }
+
+        var root = JsonNode.Parse(File.ReadAllText(resultJsonPath))?.AsObject();
+        if (root is null)
+        {
+            return;
+        }
+
+        var gaitCycle = root["gait_cycle"] as JsonObject;
+        var sp = root["spatiotemporal_parameters"] as JsonObject;
+        result.GaitCycleDurationS ??= ReadDouble(gaitCycle, "mean_cycle_duration_sec")
+            ?? ReadDouble(gaitCycle, "cycle_time_sec")
+            ?? AverageCycleDuration(gaitCycle);
+        result.StanceTimeS ??= ReadDouble(sp, "mean_stance_time_sec");
+        result.SwingTimeS ??= ReadDouble(sp, "mean_swing_time_sec");
+        result.DoubleSupportTimeS ??= ReadDouble(sp, "mean_double_support_time_sec");
+        result.SingleSupportTimeS ??= ReadDouble(sp, "mean_single_support_time_sec");
+        result.StepLengthM ??= ReadDouble(sp, "mean_step_length_m");
+        result.StrideLengthM ??= ReadDouble(sp, "mean_stride_length_m");
+        result.GaitSpeedMPerS ??= ReadDouble(sp, "gait_velocity_m_per_sec") ?? ReadDouble(sp, "gait_speed_m_per_s");
+
+        var jointAngles = root["joint_angles"] as JsonObject;
+        var segmentAngles = root["segment_angles"] as JsonObject;
+        result.KinematicSummary ??= new KinematicSummary();
+        result.KinematicSummary.HipRomDeg ??= Average(
+            ReadDouble(jointAngles?["left_hip"] as JsonObject, "rom_deg"),
+            ReadDouble(jointAngles?["right_hip"] as JsonObject, "rom_deg"));
+        result.KinematicSummary.KneeRomDeg ??= Average(
+            ReadDouble(jointAngles?["left_knee"] as JsonObject, "rom_deg"),
+            ReadDouble(jointAngles?["right_knee"] as JsonObject, "rom_deg"));
+        result.KinematicSummary.AnkleRomDeg ??= Average(
+            ReadDouble(jointAngles?["left_ankle"] as JsonObject, "rom_deg"),
+            ReadDouble(jointAngles?["right_ankle"] as JsonObject, "rom_deg"));
+        result.KinematicSummary.PelvisCoronalRomDeg ??= Difference(
+            ReadDouble(segmentAngles?["pelvis_tilt_deg"] as JsonObject, "max"),
+            ReadDouble(segmentAngles?["pelvis_tilt_deg"] as JsonObject, "min"));
+    }
+
+    private static string? ResolveResultJsonPath(AnalysisResult result)
+    {
+        if (!string.IsNullOrWhiteSpace(result.SummaryFilePath) && File.Exists(result.SummaryFilePath))
+        {
+            return result.SummaryFilePath;
+        }
+
+        return Directory.Exists(result.OutputDirectory)
+            ? Directory.GetFiles(result.OutputDirectory, "result.json", SearchOption.AllDirectories).FirstOrDefault()
+            : null;
+    }
+
+    private static double? AverageCycleDuration(JsonObject? gaitCycle)
+    {
+        if (gaitCycle?["cycles"] is not JsonArray cycles)
+        {
+            return null;
+        }
+
+        var durations = cycles
+            .OfType<JsonObject>()
+            .Select(cycle => ReadDouble(cycle, "duration_sec"))
+            .Where(value => value.HasValue)
+            .Select(value => value!.Value)
+            .ToArray();
+        return durations.Length == 0 ? null : durations.Average();
+    }
+
+    private static double? Average(double? left, double? right)
+        => left.HasValue && right.HasValue ? (left.Value + right.Value) / 2d : left ?? right;
+
+    private static double? Difference(double? left, double? right)
+        => left.HasValue && right.HasValue ? Math.Abs(left.Value - right.Value) : null;
+
+    private static double? TryReadTotalFrameCount(AnalysisResult result)
+    {
+        var resultJsonPath = ResolveResultJsonPath(result);
+
+        if (string.IsNullOrWhiteSpace(resultJsonPath))
+        {
+            return null;
+        }
+
+        var root = JsonNode.Parse(File.ReadAllText(resultJsonPath))?.AsObject();
+        var videoInfo = root?["video_info"] as JsonObject;
+        var frameCount = ReadDouble(videoInfo, "frame_count");
+        if (frameCount is > 0)
+        {
+            return frameCount;
+        }
+
+        var fps = ReadDouble(videoInfo, "fps");
+        var durationSec = ReadDouble(videoInfo, "duration_sec");
+        return fps is > 0 && durationSec is > 0 ? fps.Value * durationSec.Value : null;
+    }
+
+    private static double? ReadDouble(JsonObject? obj, string key)
+    {
+        if (obj is null || obj[key] is null)
+        {
+            return null;
+        }
+
+        return double.TryParse(
+            obj[key]!.ToString(),
+            System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out var value)
+            ? value
+            : null;
     }
 
     /// <summary>

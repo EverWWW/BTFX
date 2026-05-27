@@ -1116,7 +1116,7 @@ public partial class MeasurementRecordItem : ObservableObject
     {
         MeasurementStatus.Pending => "继续处理",
         MeasurementStatus.InProgress => "查看进度",
-        MeasurementStatus.Completed => "查看详情",
+        MeasurementStatus.Completed => "查看结果",
         MeasurementStatus.Failed => "重新分析",
         _ => "继续处理"
     };

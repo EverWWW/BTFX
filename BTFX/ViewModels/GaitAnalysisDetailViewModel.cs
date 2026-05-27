@@ -618,46 +618,6 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 质量提示。
-    /// </summary>
-    public string QualityHintDisplay => _detailData.QualityHint ?? "--";
-
-    /// <summary>
-    /// 质量等级摘要。
-    /// </summary>
-    public string QualityGradeDisplay
-    {
-        get
-        {
-            var qualityControl = AnalysisResult?.QualityControl;
-            if (qualityControl is null)
-            {
-                return _detailData.QualityLevel ?? "--";
-            }
-
-            var validFrameRatio = qualityControl.ValidFrameRatio;
-            if (validFrameRatio is >= 0.95)
-            {
-                return "A级";
-            }
-
-            if (validFrameRatio is >= 0.80)
-            {
-                return "B级";
-            }
-
-            return "C级";
-        }
-    }
-
-    /// <summary>
-    /// 置信度摘要。
-    /// </summary>
-    public string ConfidenceDisplay => AnalysisResult?.QualityControl?.MeanKeypointConfidence is double confidence
-        ? confidence.ToString("F2")
-        : "--";
-
-    /// <summary>
     /// 有效帧比例摘要。
     /// </summary>
     public string ValidFrameRatioDisplay => AnalysisResult?.QualityControl?.ValidFrameRatio is double validFrameRatio
@@ -784,13 +744,13 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
 
     public string SingleSupportTimeDisplay => FormatNumber(AnalysisResult?.SingleSupportTimeS ?? Record?.GaitParameters?.SingleSupportTimeS ?? _detailData.MeanSingleSupportTimeSec, "F2", "s");
 
-    public string LeftStepLengthDisplay => Record?.GaitParameters?.StepLengthLeft is double leftStep ? FormatMetersFromCentimeters(leftStep) : "--";
-
-    public string RightStepLengthDisplay => Record?.GaitParameters?.StepLengthRight is double rightStep ? FormatMetersFromCentimeters(rightStep) : "--";
-
     public string LeftStrideLengthDisplay => Record?.GaitParameters?.StrideLengthLeft is double leftStride ? FormatMetersFromCentimeters(leftStride) : FormatNumber(_detailData.LeftStrideMeanM, "F2", "m");
 
     public string RightStrideLengthDisplay => Record?.GaitParameters?.StrideLengthRight is double rightStride ? FormatMetersFromCentimeters(rightStride) : FormatNumber(_detailData.RightStrideMeanM, "F2", "m");
+
+    public string StrideLengthDiffDisplay => FormatNumber(Difference(_detailData.LeftStrideMeanM, _detailData.RightStrideMeanM), "F2", "m");
+
+    public string StrideLengthDiffPercentDisplay => FormatNumber(DifferencePercent(_detailData.LeftStrideMeanM, _detailData.RightStrideMeanM), "F1", "%");
 
     public string LeftStancePhaseDisplay => FormatNumber(Record?.GaitParameters?.StancePhaseLeft ?? _detailData.LeftStanceRatioPct, "F1", "%");
 
@@ -807,10 +767,6 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     public string LeftToeOffCountDisplay => FormatCount(_detailData.LeftToeOffCount);
 
     public string RightToeOffCountDisplay => FormatCount(_detailData.RightToeOffCount);
-
-    public string CycleConfidenceDisplay => "--";
-
-    public string EventConfidenceDisplay => "--";
 
     public string HipRomDisplay => FormatNumber(AnalysisResult?.KinematicSummary?.HipRomDeg ?? Average(_detailData.LeftHipRomDeg, _detailData.RightHipRomDeg), "F1", "°");
 
@@ -920,13 +876,9 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
                 return "当前没有可用于配置报告的分析结果。";
             }
 
-            var qualityGrade = QualityGradeDisplay;
-            return qualityGrade switch
-            {
-                "A级" => "当前分析质量较高，可继续配置报告内容。",
-                "B级" => "当前分析质量可用于生成报告，建议在预览阶段重点复核质量说明。",
-                _ => "当前分析质量偏低，后续生成正式报告前应补充人工复核。"
-            };
+            return ValidFrameRatioDisplay == "--"
+                ? "当前分析结果已生成，暂未计算有效帧比例。"
+                : $"当前分析结果已生成，有效帧比例 {ValidFrameRatioDisplay}，可继续配置报告内容。";
         }
     }
 
@@ -1425,6 +1377,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             if (!string.IsNullOrWhiteSpace(jointAngleCsv) && File.Exists(jointAngleCsv))
             {
                 _angleFrames = ParseAngleCsv(jointAngleCsv, _detailData.VideoFps ?? 30d);
+                _detailData.ValidFrameRatio ??= EstimateValidFrameRatio(_angleFrames, _detailData.VideoFps, _detailData.VideoDurationSec);
             }
 
             BuildRealPlotModels();
@@ -1501,10 +1454,6 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         _detailData.LeftStanceRatioPct = ReadDouble(root, "left_stance_ratio_pct");
         _detailData.RightStanceRatioPct = ReadDouble(root, "right_stance_ratio_pct");
         _detailData.ValidFrameRatio = ReadDouble(root["quality_control"] as JsonObject, "valid_frame_ratio");
-        _detailData.QualityLevel = "A级";
-        _detailData.QualityHint = _detailData.ValidFrameRatio is double ratio
-            ? $"有效帧比例 {ratio:P0}"
-            : "算法结果已生成，当前结果来自本次分析输出。";
     }
 
     private void BuildRealPlotModels()
@@ -1655,9 +1604,24 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
                 endFrame?.ToString(CultureInfo.InvariantCulture) ?? "--",
                 FormatSeconds(startFrame.HasValue ? startFrame.Value / safeFps : null),
                 FormatSeconds(endFrame.HasValue ? endFrame.Value / safeFps : null),
-                FormatSeconds(duration),
-                "--"));
+                FormatSeconds(duration)));
         }
+    }
+
+    private static double? EstimateValidFrameRatio(IReadOnlyCollection<AnalysisAngleFrame> angleFrames, double? fps, double? durationSec)
+    {
+        if (angleFrames.Count == 0 || fps is not > 0 || durationSec is not > 0)
+        {
+            return null;
+        }
+
+        var totalFrames = fps.Value * durationSec.Value;
+        if (totalFrames <= 0)
+        {
+            return null;
+        }
+
+        return Math.Clamp(angleFrames.Count / totalFrames, 0d, 1d);
     }
 
     private static double ParseCsvDouble(string[] parts, int index)
@@ -1969,9 +1933,6 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         OnPropertyChanged(nameof(AnalysisStatusText));
         OnPropertyChanged(nameof(AnalysisStatusColor));
         OnPropertyChanged(nameof(QualitySummary));
-        OnPropertyChanged(nameof(QualityHintDisplay));
-        OnPropertyChanged(nameof(QualityGradeDisplay));
-        OnPropertyChanged(nameof(ConfidenceDisplay));
         OnPropertyChanged(nameof(ValidFrameRatioDisplay));
         OnPropertyChanged(nameof(GaitSpeedDisplay));
         OnPropertyChanged(nameof(CadenceDisplay));
@@ -1995,10 +1956,10 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         OnPropertyChanged(nameof(MeanStrideLengthDisplay));
         OnPropertyChanged(nameof(DoubleSupportTimeDisplay));
         OnPropertyChanged(nameof(SingleSupportTimeDisplay));
-        OnPropertyChanged(nameof(LeftStepLengthDisplay));
-        OnPropertyChanged(nameof(RightStepLengthDisplay));
         OnPropertyChanged(nameof(LeftStrideLengthDisplay));
         OnPropertyChanged(nameof(RightStrideLengthDisplay));
+        OnPropertyChanged(nameof(StrideLengthDiffDisplay));
+        OnPropertyChanged(nameof(StrideLengthDiffPercentDisplay));
         OnPropertyChanged(nameof(LeftStancePhaseDisplay));
         OnPropertyChanged(nameof(RightStancePhaseDisplay));
         OnPropertyChanged(nameof(LeftSwingPhaseDisplay));
@@ -2007,8 +1968,6 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         OnPropertyChanged(nameof(RightHeelStrikeCountDisplay));
         OnPropertyChanged(nameof(LeftToeOffCountDisplay));
         OnPropertyChanged(nameof(RightToeOffCountDisplay));
-        OnPropertyChanged(nameof(CycleConfidenceDisplay));
-        OnPropertyChanged(nameof(EventConfidenceDisplay));
         OnPropertyChanged(nameof(HipRomDisplay));
         OnPropertyChanged(nameof(LeftHipRomDisplay));
         OnPropertyChanged(nameof(RightHipRomDisplay));
@@ -2321,8 +2280,7 @@ public sealed record AnalysisCycleDetail(
     string EndFrame,
     string StartTime,
     string EndTime,
-    string Duration,
-    string Confidence);
+    string Duration);
 
 /// <summary>
 /// 分析详情状态。

@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -329,10 +330,118 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
 
     private void RebuildPreviewDocument()
     {
-        var document = Report is null ? null : BuildSelectedSectionsDocument(Report);
+        var document = Report is null ? null : BuildRealSelectedSectionsDocument(Report);
         PreviewDocument = document;
         PrintCommand.NotifyCanExecuteChanged();
         ExportReportCommand.NotifyCanExecuteChanged();
+    }
+
+    private FlowDocument BuildRealSelectedSectionsDocument(Report report)
+    {
+        var data = ReportAnalysisSnapshot.From(report);
+        var document = new FlowDocument
+        {
+            PageWidth = PrintHelper.A4WidthInPixels,
+            PageHeight = PrintHelper.A4HeightInPixels,
+            PagePadding = new Thickness(48, 44, 48, 44),
+            FontFamily = new FontFamily("Microsoft YaHei UI"),
+            FontSize = 12,
+            Background = Brushes.White,
+            ColumnWidth = PrintHelper.A4WidthInPixels
+        };
+
+        AddHeader(document, report);
+        AddBasicInfo(document, report);
+        AddComputedClinicalSummary(document, data);
+
+        if (IncludeSpatiotemporalParameters)
+        {
+            AddClinicalParameterSection(document, "步态时空参数", "反映整体步行效率、节律稳定性和支撑相分配，是评估步态功能的基础参数。",
+            [
+                ("步态周期", FormatSeconds(data.MeanCycleDurationSec), "s", "参考 0.9-1.2"),
+                ("平均步长", FormatMeters(data.MeanStepLengthM), "m", "参考 0.55-0.75"),
+                ("平均步幅", FormatMeters(data.MeanStrideLengthM), "m", "参考 1.10-1.50"),
+                ("平均步频", FormatNumber(data.CadenceStepPerMin, "F1"), "step/min", "参考 100-120"),
+                ("平均步速", FormatNumber(data.GaitSpeedMPerS, "F2"), "m/s", "参考 1.0-1.4"),
+                ("站立相时间", FormatNumber(data.MeanStanceTimeSec, "F2"), "s", "参考 0.60-0.80"),
+                ("摆动相时间", FormatNumber(data.MeanSwingTimeSec, "F2"), "s", "参考 0.30-0.45"),
+                ("双支撑时间", FormatNumber(data.MeanDoubleSupportTimeSec, "F2"), "s", "参考 0.15-0.25"),
+                ("单支撑时间", FormatNumber(data.MeanSingleSupportTimeSec, "F2"), "s", "参考 0.40-0.55")
+            ]);
+        }
+
+        if (IncludeKinematicParameters)
+        {
+            AddClinicalParameterSection(document, "运动学参数", "展示下肢主要关节活动范围，用于识别关节活动受限、代偿和左右活动差异。",
+            [
+                ("左髋 ROM", FormatNumber(data.LeftHipRomDeg, "F1"), "°", "--"),
+                ("右髋 ROM", FormatNumber(data.RightHipRomDeg, "F1"), "°", "--"),
+                ("左膝 ROM", FormatNumber(data.LeftKneeRomDeg, "F1"), "°", "--"),
+                ("右膝 ROM", FormatNumber(data.RightKneeRomDeg, "F1"), "°", "--"),
+                ("左踝 ROM", FormatNumber(data.LeftAnkleRomDeg, "F1"), "°", "--"),
+                ("右踝 ROM", FormatNumber(data.RightAnkleRomDeg, "F1"), "°", "--"),
+                ("髋关节平均 ROM", FormatNumber(data.HipRomDeg, "F1"), "°", "--"),
+                ("膝关节平均 ROM", FormatNumber(data.KneeRomDeg, "F1"), "°", "--"),
+                ("踝关节平均 ROM", FormatNumber(data.AnkleRomDeg, "F1"), "°", "--"),
+                ("骨盆冠状面角度", FormatNumber(data.PelvisCoronalRomDeg, "F1"), "°", "--")
+            ]);
+        }
+
+        if (IncludeTrunkPelvisParameters)
+        {
+            AddClinicalParameterSection(document, "躯干和骨盆参数", "用于观察躯干稳定性、骨盆控制能力和步行过程中的姿态代偿情况。",
+            [
+                ("躯干倾斜平均角度", FormatNumber(data.TrunkTiltMeanDeg, "F1"), "°", "--"),
+                ("躯干倾斜最大角度", FormatNumber(data.TrunkTiltMaxDeg, "F1"), "°", "--"),
+                ("躯干倾斜最小角度", FormatNumber(data.TrunkTiltMinDeg, "F1"), "°", "--"),
+                ("躯干倾斜活动范围", FormatNumber(data.TrunkTiltRomDeg, "F1"), "°", "--"),
+                ("骨盆倾斜平均角度", FormatNumber(data.PelvisTiltMeanDeg, "F1"), "°", "--"),
+                ("骨盆倾斜最大角度", FormatNumber(data.PelvisTiltMaxDeg, "F1"), "°", "--"),
+                ("骨盆活动范围", FormatNumber(data.PelvisRomDeg, "F1"), "°", "--")
+            ]);
+        }
+
+        if (IncludeSymmetryAnalysis)
+        {
+            AddClinicalParameterSection(document, "对称性分析", "对比左右侧关键时空和运动学指标，辅助判断双侧负重、支撑和摆动是否协调。",
+            [
+                ("左右步幅差", FormatNumber(AbsDiff(data.LeftStrideMeanM, data.RightStrideMeanM), "F2"), "m", "--"),
+                ("左右步幅差百分比", FormatNumber(DiffPercent(data.LeftStrideMeanM, data.RightStrideMeanM), "F1"), "%", "--"),
+                ("左右站立相差", FormatNumber(AbsDiff(data.LeftStanceRatioPct, data.RightStanceRatioPct), "F1"), "%", "--"),
+                ("左右站立相差百分比", FormatNumber(DiffPercent(data.LeftStanceRatioPct, data.RightStanceRatioPct), "F1"), "%", "--"),
+                ("左右膝关节 ROM 差", FormatNumber(AbsDiff(data.LeftKneeRomDeg, data.RightKneeRomDeg), "F1"), "°", "--"),
+                ("左右髋关节 ROM 差", FormatNumber(AbsDiff(data.LeftHipRomDeg, data.RightHipRomDeg), "F1"), "°", "--"),
+                ("左右踝关节 ROM 差", FormatNumber(AbsDiff(data.LeftAnkleRomDeg, data.RightAnkleRomDeg), "F1"), "°", "--"),
+                ("综合对称性评分", FormatNumber(data.SymmetryScore, "F1"), "分", "--")
+            ]);
+        }
+
+        if (IncludeLeftRightParameters)
+        {
+            AddClinicalParameterSection(document, "左右侧参数", "列出左右侧步幅和时相占比，用于复核单侧步态表现。",
+            [
+                ("左侧步幅", FormatMeters(data.LeftStrideMeanM), "m", "--"),
+                ("右侧步幅", FormatMeters(data.RightStrideMeanM), "m", "--"),
+                ("左侧站立相占比", FormatNumber(data.LeftStanceRatioPct, "F1"), "%", "--"),
+                ("右侧站立相占比", FormatNumber(data.RightStanceRatioPct, "F1"), "%", "--"),
+                ("左侧摆动相占比", FormatNumber(ComplementPercent(data.LeftStanceRatioPct), "F1"), "%", "--"),
+                ("右侧摆动相占比", FormatNumber(ComplementPercent(data.RightStanceRatioPct), "F1"), "%", "--")
+            ]);
+        }
+
+        if (IncludeCurveCharts)
+        {
+            AddRealCurveSection(document, data);
+        }
+
+        if (!BuildIncludedSections().Any())
+        {
+            AddSectionTitle(document, "报告内容");
+            AddNoteBox(document, "未选择报告内容，请在左侧勾选需要预览、打印或导出的参数模块。");
+        }
+
+        AddFooter(document, report);
+        return document;
     }
 
     private FlowDocument BuildSelectedSectionsDocument(Report report)
@@ -350,7 +459,7 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
 
         AddHeader(document, report);
         AddBasicInfo(document, report);
-        AddClinicalSummary(document, report);
+        AddComputedClinicalSummary(document, ReportAnalysisSnapshot.From(report));
 
         if (IncludeSpatiotemporalParameters)
         {
@@ -556,13 +665,12 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         });
     }
 
-    private void AddClinicalSummary(FlowDocument document, Report report)
+    private void AddComputedClinicalSummary(FlowDocument document, ReportAnalysisSnapshot data)
     {
         AddSectionTitle(document, "评估摘要");
-        var quality = report.QualityControl?.ValidFrameRatio is double ratio
-            ? $"有效帧比例 {ratio:P0}"
-            : "有效帧比例 96%";
-        AddNoteBox(document, $"本报告展示本次步态分析的核心指标、左右侧对比和运动学曲线。当前结果状态：{ReportStatusDisplay}；质量提示：{quality}。");
+        var validFrameRatio = data.ValidFrameRatio is double ratio ? $"有效帧比例 {ratio:P0}" : "有效帧比例 --";
+        var cycleCount = data.CycleCount.HasValue ? $"{data.CycleCount.Value} 个有效周期" : "有效周期数 --";
+        AddNoteBox(document, $"本报告展示本次步态分析的核心指标、左右侧对比和运动学曲线。当前结果状态：{ReportStatusDisplay}；{validFrameRatio}；{cycleCount}。");
     }
 
     private static void AddClinicalParameterSection(
@@ -738,6 +846,44 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         });
     }
 
+    private static void AddRealCurveSection(FlowDocument document, ReportAnalysisSnapshot data)
+    {
+        AddSectionTitle(document, "曲线图");
+        if (data.AngleFrames.Count == 0)
+        {
+            AddNoteBox(document, "当前分析结果未找到 joint_angle.csv，暂无法生成真实关节角度曲线。");
+            return;
+        }
+
+        AddNoteBox(document, "以下曲线来自本次分析输出的 joint_angle.csv，用于展示关节角度随视频时间变化的趋势。");
+        var curveDefinitions = new (string Title, Func<ReportAngleFrame, double> First, Func<ReportAngleFrame, double> Second, string FirstName, string SecondName)[]
+        {
+            ("髋关节角度曲线", f => f.LeftHip, f => f.RightHip, "左髋", "右髋"),
+            ("膝关节角度曲线", f => f.LeftKnee, f => f.RightKnee, "左膝", "右膝"),
+            ("踝关节角度曲线", f => f.LeftAnkle, f => f.RightAnkle, "左踝", "右踝"),
+            ("骨盆 / 躯干角度曲线", f => f.Pelvis, f => f.Trunk, "骨盆", "躯干")
+        };
+
+        foreach (var curve in curveDefinitions)
+        {
+            document.Blocks.Add(new BlockUIContainer(new Border
+            {
+                Padding = new Thickness(10),
+                Margin = new Thickness(0, 0, 0, 10),
+                Background = Brushes.White,
+                BorderBrush = new SolidColorBrush(Color.FromRgb(160, 160, 160)),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(6),
+                Child = new Image
+                {
+                    Source = CreateRealCurveImage(curve.Title, data.AngleFrames, curve.First, curve.Second, curve.FirstName, curve.SecondName, data.VideoDurationSec),
+                    Stretch = Stretch.Uniform,
+                    MaxWidth = 620
+                }
+            }));
+        }
+    }
+
     private static void AddCurveSection(FlowDocument document)
     {
         AddSectionTitle(document, "曲线图");
@@ -771,6 +917,124 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
                 }
             }));
         }
+    }
+
+    private static ImageSource CreateRealCurveImage(
+        string title,
+        IReadOnlyList<ReportAngleFrame> frames,
+        Func<ReportAngleFrame, double> firstSelector,
+        Func<ReportAngleFrame, double> secondSelector,
+        string firstName,
+        string secondName,
+        double? videoDurationSec)
+    {
+        const int width = 700;
+        const int height = 240;
+        const int left = 58;
+        const int right = 24;
+        const int top = 44;
+        const int bottom = 36;
+
+        var values = frames
+            .SelectMany(frame => new[] { firstSelector(frame), secondSelector(frame) })
+            .Where(value => !double.IsNaN(value) && !double.IsInfinity(value))
+            .ToArray();
+        var maxTime = Math.Max(1d, videoDurationSec ?? frames.Max(frame => frame.TimeS));
+        var minValue = values.Length == 0 ? 0d : values.Min();
+        var maxValue = values.Length == 0 ? 40d : values.Max();
+        var padding = Math.Max(5d, (maxValue - minValue) * 0.12d);
+        minValue = Math.Floor(minValue - padding);
+        maxValue = Math.Ceiling(maxValue + padding);
+        if (Math.Abs(maxValue - minValue) < 0.01)
+        {
+            maxValue = minValue + 1;
+        }
+
+        var visual = new DrawingVisual();
+        using (var dc = visual.RenderOpen())
+        {
+            dc.DrawRectangle(Brushes.White, null, new Rect(0, 0, width, height));
+            var axisPen = new Pen(new SolidColorBrush(Color.FromRgb(210, 218, 228)), 1);
+            var gridPen = new Pen(new SolidColorBrush(Color.FromRgb(205, 205, 205)), 1);
+            var leftPen = new Pen(new SolidColorBrush(Color.FromRgb(32, 32, 32)), 2.2);
+            var rightPen = new Pen(new SolidColorBrush(Color.FromRgb(228, 0, 74)), 2.2);
+            var textBrush = Brushes.Black;
+            var subTextBrush = new SolidColorBrush(Color.FromRgb(32, 32, 32));
+
+            DrawText(dc, $"{title}（{firstName} / {secondName}）", 15, FontWeights.SemiBold, textBrush, new Point(left, 8));
+            DrawLegend(dc, firstName, leftPen.Brush, new Point(width - 170, 12));
+            DrawLegend(dc, secondName, rightPen.Brush, new Point(width - 95, 12));
+
+            var plotWidth = width - left - right;
+            var plotHeight = height - top - bottom;
+            for (var i = 0; i <= 5; i++)
+            {
+                var x = left + plotWidth * i / 5.0;
+                dc.DrawLine(gridPen, new Point(x, top), new Point(x, top + plotHeight));
+                DrawText(dc, $"{maxTime * i / 5.0:F1}s", 10, FontWeights.Normal, subTextBrush, new Point(x - 12, height - bottom + 10));
+            }
+
+            for (var i = 0; i <= 4; i++)
+            {
+                var y = top + plotHeight * i / 4.0;
+                var label = maxValue - (maxValue - minValue) * i / 4.0;
+                dc.DrawLine(gridPen, new Point(left, y), new Point(left + plotWidth, y));
+                DrawText(dc, $"{label:F0}°", 10, FontWeights.Normal, subTextBrush, new Point(12, y - 8));
+            }
+
+            dc.DrawLine(axisPen, new Point(left, top), new Point(left, top + plotHeight));
+            dc.DrawLine(axisPen, new Point(left, top + plotHeight), new Point(left + plotWidth, top + plotHeight));
+            DrawCurve(dc, frames, firstSelector, leftPen, left, top, plotWidth, plotHeight, maxTime, minValue, maxValue);
+            DrawCurve(dc, frames, secondSelector, rightPen, left, top, plotWidth, plotHeight, maxTime, minValue, maxValue);
+            dc.DrawRectangle(null, axisPen, new Rect(left, top, plotWidth, plotHeight));
+        }
+
+        var bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
+        bitmap.Render(visual);
+        bitmap.Freeze();
+        return bitmap;
+    }
+
+    private static void DrawCurve(
+        DrawingContext dc,
+        IReadOnlyList<ReportAngleFrame> frames,
+        Func<ReportAngleFrame, double> selector,
+        Pen pen,
+        int left,
+        int top,
+        double plotWidth,
+        double plotHeight,
+        double maxTime,
+        double minValue,
+        double maxValue)
+    {
+        Point? previous = null;
+        foreach (var frame in frames)
+        {
+            var value = selector(frame);
+            if (double.IsNaN(value) || double.IsInfinity(value))
+            {
+                previous = null;
+                continue;
+            }
+
+            var x = left + Math.Clamp(frame.TimeS / maxTime, 0d, 1d) * plotWidth;
+            var y = top + (maxValue - value) / (maxValue - minValue) * plotHeight;
+            var current = new Point(x, y);
+            if (previous is Point last)
+            {
+                dc.DrawLine(pen, last, current);
+            }
+
+            previous = current;
+        }
+    }
+
+    private static void DrawLegend(DrawingContext dc, string text, Brush brush, Point origin)
+    {
+        var pen = new Pen(brush, 2.2);
+        dc.DrawLine(pen, origin, new Point(origin.X + 22, origin.Y));
+        DrawText(dc, text, 10, FontWeights.Normal, Brushes.Black, new Point(origin.X + 28, origin.Y - 7));
     }
 
     private static ImageSource CreateDemoCurveImage(string title, double phase, Color lineColor)
@@ -876,14 +1140,40 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
     private static string FormatNumber(double? value, double fallback, string format)
         => (value ?? fallback).ToString(format, CultureInfo.CurrentCulture);
 
+    private static string FormatNumber(double? value, string format)
+        => value.HasValue ? value.Value.ToString(format, CultureInfo.CurrentCulture) : "--";
+
     private static string FormatSeconds(double? value, double fallback)
         => FormatNumber(value, fallback, "F2");
+
+    private static string FormatSeconds(double? value)
+        => FormatNumber(value, "F2");
 
     private static string FormatMeters(double? value, double fallback)
         => FormatNumber(value, fallback, "F2");
 
+    private static string FormatMeters(double? value)
+        => FormatNumber(value, "F2");
+
     private static string FormatMetersFromCentimeters(double? centimeters, double fallbackMeters)
         => centimeters is double value ? (value / 100.0).ToString("F2", CultureInfo.CurrentCulture) : fallbackMeters.ToString("F2", CultureInfo.CurrentCulture);
+
+    private static double? AbsDiff(double? left, double? right)
+        => left.HasValue && right.HasValue ? Math.Abs(left.Value - right.Value) : null;
+
+    private static double? DiffPercent(double? left, double? right)
+    {
+        if (!left.HasValue || !right.HasValue)
+        {
+            return null;
+        }
+
+        var denominator = (Math.Abs(left.Value) + Math.Abs(right.Value)) / 2d;
+        return denominator <= 0.000001d ? null : Math.Abs(left.Value - right.Value) / denominator * 100d;
+    }
+
+    private static double? ComplementPercent(double? value)
+        => value.HasValue ? Math.Clamp(100d - value.Value, 0d, 100d) : null;
 
     private void SyncReportOptionsJson()
     {
@@ -1017,6 +1307,312 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
     }
 
 }
+
+internal sealed class ReportAnalysisSnapshot
+{
+    public double? VideoFps { get; private set; }
+    public double? VideoDurationSec { get; private set; }
+    public int? VideoFrameCount { get; private set; }
+    public int? CycleCount { get; private set; }
+    public double? MeanCycleDurationSec { get; private set; }
+    public double? CadenceStepPerMin { get; private set; }
+    public double? GaitSpeedMPerS { get; private set; }
+    public double? MeanStepLengthM { get; private set; }
+    public double? MeanStrideLengthM { get; private set; }
+    public double? MeanStanceTimeSec { get; private set; }
+    public double? MeanSwingTimeSec { get; private set; }
+    public double? MeanDoubleSupportTimeSec { get; private set; }
+    public double? MeanSingleSupportTimeSec { get; private set; }
+    public double? LeftHipRomDeg { get; private set; }
+    public double? RightHipRomDeg { get; private set; }
+    public double? LeftKneeRomDeg { get; private set; }
+    public double? RightKneeRomDeg { get; private set; }
+    public double? LeftAnkleRomDeg { get; private set; }
+    public double? RightAnkleRomDeg { get; private set; }
+    public double? HipRomDeg => Average(LeftHipRomDeg, RightHipRomDeg);
+    public double? KneeRomDeg => Average(LeftKneeRomDeg, RightKneeRomDeg);
+    public double? AnkleRomDeg => Average(LeftAnkleRomDeg, RightAnkleRomDeg);
+    public double? TrunkTiltMeanDeg { get; private set; }
+    public double? TrunkTiltMaxDeg { get; private set; }
+    public double? TrunkTiltMinDeg { get; private set; }
+    public double? TrunkTiltRomDeg => Diff(TrunkTiltMinDeg, TrunkTiltMaxDeg);
+    public double? PelvisTiltMeanDeg { get; private set; }
+    public double? PelvisTiltMaxDeg { get; private set; }
+    public double? PelvisTiltMinDeg { get; private set; }
+    public double? PelvisRomDeg => Diff(PelvisTiltMinDeg, PelvisTiltMaxDeg);
+    public double? PelvisCoronalRomDeg => PelvisRomDeg ?? PelvisTiltMaxDeg;
+    public double? LeftStrideMeanM { get; private set; }
+    public double? RightStrideMeanM { get; private set; }
+    public double? LeftStanceRatioPct { get; private set; }
+    public double? RightStanceRatioPct { get; private set; }
+    public double? ValidFrameRatio { get; private set; }
+    public double? SymmetryScore { get; private set; }
+    public List<ReportAngleFrame> AngleFrames { get; } = [];
+
+    public static ReportAnalysisSnapshot From(Report report)
+    {
+        var snapshot = new ReportAnalysisSnapshot();
+        snapshot.LoadFromReportNavigation(report);
+        var resultPath = ResolveResultJsonPath(report.AnalysisResult);
+        if (!string.IsNullOrWhiteSpace(resultPath) && File.Exists(resultPath))
+        {
+            snapshot.LoadResultJson(resultPath);
+        }
+
+        var csvPath = ResolveJointAngleCsvPath(report.AnalysisResult);
+        if (!string.IsNullOrWhiteSpace(csvPath) && File.Exists(csvPath))
+        {
+            snapshot.AngleFrames.AddRange(ParseAngleCsv(csvPath, snapshot.VideoFps ?? 30d));
+        }
+
+        snapshot.ValidFrameRatio ??= EstimateValidFrameRatio(snapshot.AngleFrames.Count, snapshot.VideoFrameCount, snapshot.VideoFps, snapshot.VideoDurationSec);
+        snapshot.SymmetryScore = CalculateSymmetryScore(snapshot);
+        return snapshot;
+    }
+
+    private void LoadFromReportNavigation(Report report)
+    {
+        var analysis = report.AnalysisResult;
+        var gait = report.MeasurementRecord?.GaitParameters;
+        MeanCycleDurationSec = analysis?.GaitCycleDurationS ?? gait?.GaitCycleDurationS;
+        MeanStanceTimeSec = analysis?.StanceTimeS ?? gait?.StanceTimeS;
+        MeanSwingTimeSec = analysis?.SwingTimeS ?? gait?.SwingTimeS;
+        MeanDoubleSupportTimeSec = analysis?.DoubleSupportTimeS ?? gait?.DoubleSupportTimeS;
+        MeanSingleSupportTimeSec = analysis?.SingleSupportTimeS;
+        MeanStepLengthM = analysis?.StepLengthM ?? gait?.StepLengthM;
+        MeanStrideLengthM = analysis?.StrideLengthM ?? gait?.StrideLengthM;
+        GaitSpeedMPerS = analysis?.GaitSpeedMPerS ?? gait?.GaitSpeedMPerS ?? gait?.Velocity;
+        CadenceStepPerMin = gait?.Cadence;
+        LeftStrideMeanM = MetersFromCentimeters(gait?.StrideLengthLeft);
+        RightStrideMeanM = MetersFromCentimeters(gait?.StrideLengthRight);
+        LeftStanceRatioPct = gait?.StancePhaseLeft;
+        RightStanceRatioPct = gait?.StancePhaseRight;
+        ValidFrameRatio = report.QualityControl?.ValidFrameRatio ?? analysis?.QualityControl?.ValidFrameRatio;
+
+        LeftHipRomDeg = report.KinematicSummary?.HipRomDeg ?? analysis?.KinematicSummary?.HipRomDeg;
+        RightHipRomDeg = report.KinematicSummary?.HipRomDeg ?? analysis?.KinematicSummary?.HipRomDeg;
+        LeftKneeRomDeg = report.KinematicSummary?.KneeRomDeg ?? analysis?.KinematicSummary?.KneeRomDeg;
+        RightKneeRomDeg = report.KinematicSummary?.KneeRomDeg ?? analysis?.KinematicSummary?.KneeRomDeg;
+        LeftAnkleRomDeg = report.KinematicSummary?.AnkleRomDeg ?? analysis?.KinematicSummary?.AnkleRomDeg;
+        RightAnkleRomDeg = report.KinematicSummary?.AnkleRomDeg ?? analysis?.KinematicSummary?.AnkleRomDeg;
+    }
+
+    private void LoadResultJson(string path)
+    {
+        var root = JsonNode.Parse(File.ReadAllText(path))?.AsObject();
+        if (root is null)
+        {
+            return;
+        }
+
+        var videoInfo = root["video_info"] as JsonObject;
+        VideoFps = ReadDouble(videoInfo, "fps") ?? VideoFps;
+        var frameCount = ReadInt(videoInfo, "frame_count");
+        VideoFrameCount = frameCount ?? VideoFrameCount;
+        VideoDurationSec = VideoFps is > 0 && frameCount is > 0
+            ? frameCount.Value / VideoFps.Value
+            : ReadDouble(videoInfo, "duration_sec") ?? VideoDurationSec;
+
+        var gaitCycle = root["gait_cycle"] as JsonObject;
+        CycleCount = ReadInt(gaitCycle, "cycle_count") ?? CycleCount;
+        MeanCycleDurationSec = AverageCycleDuration(gaitCycle) ?? MeanCycleDurationSec;
+
+        var sp = root["spatiotemporal_parameters"] as JsonObject;
+        CadenceStepPerMin = ReadDouble(sp, "cadence_step_per_min") ?? CadenceStepPerMin;
+        GaitSpeedMPerS = ReadDouble(sp, "gait_velocity_m_per_sec") ?? GaitSpeedMPerS;
+        MeanStepLengthM = ReadDouble(sp, "mean_step_length_m") ?? MeanStepLengthM;
+        MeanStrideLengthM = ReadDouble(sp, "mean_stride_length_m") ?? MeanStrideLengthM;
+        MeanStanceTimeSec = ReadDouble(sp, "mean_stance_time_sec") ?? MeanStanceTimeSec;
+        MeanSwingTimeSec = ReadDouble(sp, "mean_swing_time_sec") ?? MeanSwingTimeSec;
+        MeanDoubleSupportTimeSec = ReadDouble(sp, "mean_double_support_time_sec") ?? MeanDoubleSupportTimeSec;
+        MeanSingleSupportTimeSec = ReadDouble(sp, "mean_single_support_time_sec") ?? MeanSingleSupportTimeSec;
+
+        var joint = root["joint_angles"] as JsonObject;
+        LeftHipRomDeg = ReadDouble(joint?["left_hip"] as JsonObject, "rom_deg") ?? LeftHipRomDeg;
+        RightHipRomDeg = ReadDouble(joint?["right_hip"] as JsonObject, "rom_deg") ?? RightHipRomDeg;
+        LeftKneeRomDeg = ReadDouble(joint?["left_knee"] as JsonObject, "rom_deg") ?? LeftKneeRomDeg;
+        RightKneeRomDeg = ReadDouble(joint?["right_knee"] as JsonObject, "rom_deg") ?? RightKneeRomDeg;
+        LeftAnkleRomDeg = ReadDouble(joint?["left_ankle"] as JsonObject, "rom_deg") ?? LeftAnkleRomDeg;
+        RightAnkleRomDeg = ReadDouble(joint?["right_ankle"] as JsonObject, "rom_deg") ?? RightAnkleRomDeg;
+
+        var segment = root["segment_angles"] as JsonObject;
+        var trunk = segment?["trunk_tilt_deg"] as JsonObject;
+        TrunkTiltMeanDeg = ReadDouble(trunk, "mean") ?? TrunkTiltMeanDeg;
+        TrunkTiltMaxDeg = ReadDouble(trunk, "max") ?? TrunkTiltMaxDeg;
+        TrunkTiltMinDeg = ReadDouble(trunk, "min") ?? TrunkTiltMinDeg;
+        var pelvis = segment?["pelvis_tilt_deg"] as JsonObject;
+        PelvisTiltMeanDeg = ReadDouble(pelvis, "mean") ?? PelvisTiltMeanDeg;
+        PelvisTiltMaxDeg = ReadDouble(pelvis, "max") ?? PelvisTiltMaxDeg;
+        PelvisTiltMinDeg = ReadDouble(pelvis, "min") ?? PelvisTiltMinDeg;
+
+        LeftStrideMeanM = ReadDouble(root, "left_stride_mean_m") ?? LeftStrideMeanM;
+        RightStrideMeanM = ReadDouble(root, "right_stride_mean_m") ?? RightStrideMeanM;
+        LeftStanceRatioPct = ReadDouble(root, "left_stance_ratio_pct") ?? LeftStanceRatioPct;
+        RightStanceRatioPct = ReadDouble(root, "right_stance_ratio_pct") ?? RightStanceRatioPct;
+        ValidFrameRatio = ReadDouble(root["quality_control"] as JsonObject, "valid_frame_ratio") ?? ValidFrameRatio;
+    }
+
+    private static string? ResolveResultJsonPath(BTFX.Models.Analysis.AnalysisResult? result)
+    {
+        if (result is null)
+        {
+            return null;
+        }
+
+        if (!string.IsNullOrWhiteSpace(result.SummaryFilePath) && File.Exists(result.SummaryFilePath))
+        {
+            return result.SummaryFilePath;
+        }
+
+        return Directory.Exists(result.OutputDirectory)
+            ? Directory.GetFiles(result.OutputDirectory, "result.json", SearchOption.AllDirectories).FirstOrDefault()
+            : null;
+    }
+
+    private static string? ResolveJointAngleCsvPath(BTFX.Models.Analysis.AnalysisResult? result)
+    {
+        if (result is null)
+        {
+            return null;
+        }
+
+        var csvPath = result.CsvFiles?.FirstOrDefault(file => file.FileType == CsvFileType.JointAngle && File.Exists(file.FilePath))?.FilePath;
+        if (!string.IsNullOrWhiteSpace(csvPath))
+        {
+            return csvPath;
+        }
+
+        return Directory.Exists(result.OutputDirectory)
+            ? Directory.GetFiles(result.OutputDirectory, "joint_angle.csv", SearchOption.AllDirectories).FirstOrDefault()
+            : null;
+    }
+
+    private static List<ReportAngleFrame> ParseAngleCsv(string path, double fps)
+    {
+        var frames = new List<ReportAngleFrame>();
+        var safeFps = fps > 0 ? fps : 30d;
+        foreach (var line in File.ReadLines(path).Skip(1))
+        {
+            var parts = line.Split(',');
+            if (parts.Length < 8 || !int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var frameIndex))
+            {
+                continue;
+            }
+
+            frames.Add(new ReportAngleFrame(
+                frameIndex / safeFps,
+                ReadCsvDouble(parts, 1),
+                ReadCsvDouble(parts, 2),
+                ReadCsvDouble(parts, 3),
+                ReadCsvDouble(parts, 4),
+                ReadCsvDouble(parts, 5),
+                ReadCsvDouble(parts, 6),
+                ReadCsvDouble(parts, 7),
+                parts.Length > 8 ? ReadCsvDouble(parts, 8) : double.NaN));
+        }
+
+        return frames;
+    }
+
+    private static double ReadCsvDouble(string[] parts, int index)
+        => index < parts.Length && double.TryParse(parts[index], NumberStyles.Float, CultureInfo.InvariantCulture, out var value) ? value : double.NaN;
+
+    private static double? ReadDouble(JsonObject? obj, string name)
+    {
+        if (obj?[name] is JsonValue value && value.TryGetValue<double>(out var doubleValue))
+        {
+            return doubleValue;
+        }
+
+        return null;
+    }
+
+    private static int? ReadInt(JsonObject? obj, string name)
+    {
+        if (obj?[name] is JsonValue value && value.TryGetValue<int>(out var intValue))
+        {
+            return intValue;
+        }
+
+        return null;
+    }
+
+    private static double? AverageCycleDuration(JsonObject? gaitCycle)
+    {
+        if (gaitCycle?["cycles"] is not JsonArray cycles || cycles.Count == 0)
+        {
+            return null;
+        }
+
+        var values = cycles
+            .OfType<JsonObject>()
+            .Select(cycle => ReadDouble(cycle, "duration_sec"))
+            .Where(value => value.HasValue)
+            .Select(value => value!.Value)
+            .ToArray();
+        return values.Length == 0 ? null : values.Average();
+    }
+
+    private static double? CalculateSymmetryScore(ReportAnalysisSnapshot snapshot)
+    {
+        var differences = new[]
+        {
+            DiffPercent(snapshot.LeftStrideMeanM, snapshot.RightStrideMeanM),
+            DiffPercent(snapshot.LeftStanceRatioPct, snapshot.RightStanceRatioPct),
+            DiffPercent(snapshot.LeftKneeRomDeg, snapshot.RightKneeRomDeg),
+            DiffPercent(snapshot.LeftHipRomDeg, snapshot.RightHipRomDeg),
+            DiffPercent(snapshot.LeftAnkleRomDeg, snapshot.RightAnkleRomDeg)
+        }.Where(value => value.HasValue).Select(value => value!.Value).ToArray();
+        return differences.Length == 0 ? null : Math.Clamp(100d - differences.Average(), 0d, 100d);
+    }
+
+    private static double? EstimateValidFrameRatio(int angleFrameCount, int? videoFrameCount, double? fps, double? durationSec)
+    {
+        if (angleFrameCount <= 0)
+        {
+            return null;
+        }
+
+        var totalFrames = videoFrameCount is > 0
+            ? videoFrameCount.Value
+            : fps is > 0 && durationSec is > 0
+                ? fps.Value * durationSec.Value
+                : 0d;
+
+        return totalFrames <= 0 ? null : Math.Clamp(angleFrameCount / totalFrames, 0d, 1d);
+    }
+
+    private static double? Average(double? left, double? right)
+        => left.HasValue && right.HasValue ? (left.Value + right.Value) / 2d : left ?? right;
+
+    private static double? Diff(double? min, double? max)
+        => min.HasValue && max.HasValue ? Math.Abs(max.Value - min.Value) : null;
+
+    private static double? MetersFromCentimeters(double? centimeters)
+        => centimeters.HasValue ? centimeters.Value / 100d : null;
+
+    private static double? DiffPercent(double? left, double? right)
+    {
+        if (!left.HasValue || !right.HasValue)
+        {
+            return null;
+        }
+
+        var denominator = (Math.Abs(left.Value) + Math.Abs(right.Value)) / 2d;
+        return denominator <= 0.000001d ? null : Math.Abs(left.Value - right.Value) / denominator * 100d;
+    }
+}
+
+internal sealed record ReportAngleFrame(
+    double TimeS,
+    double RightAnkle,
+    double LeftAnkle,
+    double RightKnee,
+    double LeftKnee,
+    double RightHip,
+    double LeftHip,
+    double Pelvis,
+    double Trunk);
 
 /// <summary>
 /// 报告预览对话框关闭结果。
