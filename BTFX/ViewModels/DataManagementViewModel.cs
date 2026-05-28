@@ -646,31 +646,41 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             {
                 var dialog = new Microsoft.Win32.SaveFileDialog
                 {
-                    Title = "导出测量数据",
-                    Filter = "Excel文件 (*.xlsx)|*.xlsx|CSV文件 (*.csv)|*.csv",
-                    FileName = $"测量数据_{item.Record.Patient?.Name}_{item.Record.MeasurementDate:yyyyMMdd}"
+                    Title = "导出测量结果包",
+                    Filter = "BTFX测量结果包 (*.btfxpkg)|*.btfxpkg",
+                    FileName = $"测量结果包_{item.Record.Patient?.Name}_{item.Record.MeasurementDate:yyyyMMdd_HHmmss}.btfxpkg"
                 };
 
                 if (dialog.ShowDialog() == true)
                 {
-                    var format = dialog.FilterIndex == 1 ? ExportFormat.Excel : ExportFormat.CSV;
-                    var success = await _exportImportService.ExportMeasurementsAsync(
-                        new List<MeasurementRecord> { item.Record }, format, dialog.FileName);
+                    var result = await RunWithProgressDialogAsync(
+                        "导出测量结果包",
+                        "正在导出",
+                        "正在准备测量结果包...",
+                        (progress, token) => _exportImportService.ExportMeasurementArchiveAsync(
+                            new List<MeasurementRecord> { item.Record },
+                            dialog.FileName,
+                            progress,
+                            token));
 
-                    if (success)
+                    if (result.Success)
                     {
-                        System.Windows.MessageBox.Show("导出成功！", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-                        _logHelper?.Information($"导出测量数据：ID={item.Record.Id}, 文件={dialog.FileName}");
+                        System.Windows.MessageBox.Show(result.Message, "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                        _logHelper?.Information($"导出测量结果包：ID={item.Record.Id}, 文件={dialog.FileName}");
                     }
                     else
                     {
-                        System.Windows.MessageBox.Show("导出失败，请重试", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                        System.Windows.MessageBox.Show(result.Message, "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                     }
                 }
             }
+            catch (OperationCanceledException)
+            {
+                System.Windows.MessageBox.Show("导出已取消。", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            }
             catch (Exception ex)
             {
-                _logHelper?.Error($"导出测量数据失败：ID={item.Record.Id}", ex);
+                _logHelper?.Error($"导出测量结果包失败：ID={item.Record.Id}", ex);
                 System.Windows.MessageBox.Show($"导出失败：{ex.Message}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
@@ -820,9 +830,9 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
         {
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
-                Title = "批量导出测量数据",
-                Filter = "Excel文件 (*.xlsx)|*.xlsx|CSV文件 (*.csv)|*.csv",
-                FileName = $"测量数据_批量导出_{DateTime.Now:yyyyMMdd_HHmmss}"
+                Title = "批量导出测量结果包",
+                Filter = "BTFX测量结果包 (*.btfxpkg)|*.btfxpkg|ZIP结果包 (*.zip)|*.zip",
+                FileName = $"测量结果包_批量导出_{DateTime.Now:yyyyMMdd_HHmmss}.btfxpkg"
             };
 
             if (dialog.ShowDialog() == true)
@@ -830,19 +840,30 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
                 // 获取所有选中的记录（包括其他页面的）
                 var allRecords = await _measurementService.GetMeasurementsByIdsAsync(_globalSelectedIds.ToList());
 
-                var format = dialog.FilterIndex == 1 ? ExportFormat.Excel : ExportFormat.CSV;
-                var success = await _exportImportService.ExportMeasurementsAsync(allRecords, format, dialog.FileName);
+                var result = await RunWithProgressDialogAsync(
+                    "批量导出结果包",
+                    "正在导出",
+                    "正在准备批量测量结果包...",
+                    (progress, token) => _exportImportService.ExportMeasurementArchiveAsync(
+                        allRecords,
+                        dialog.FileName,
+                        progress,
+                        token));
 
-                if (success)
+                if (result.Success)
                 {
-                    System.Windows.MessageBox.Show($"成功导出 {_globalSelectedIds.Count} 条记录！", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-                    _logHelper?.Information($"批量导出测量数据：{_globalSelectedIds.Count}条, 文件={dialog.FileName}");
+                    System.Windows.MessageBox.Show(result.Message, "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    _logHelper?.Information($"批量导出测量结果包：{_globalSelectedIds.Count}条, 文件={dialog.FileName}");
                 }
                 else
                 {
-                    System.Windows.MessageBox.Show("导出失败，请重试", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show(result.Message, "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
             }
+        }
+        catch (OperationCanceledException)
+        {
+            System.Windows.MessageBox.Show("批量导出已取消。", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
@@ -850,6 +871,108 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             System.Windows.MessageBox.Show($"批量导出失败：{ex.Message}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
         }
+
+    /// <summary>
+    /// 导入测量结果包
+    /// </summary>
+    [RelayCommand]
+    private async Task ImportMeasurementArchiveAsync()
+    {
+        if (!CanExport) return;
+
+        try
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "导入测量结果包",
+                Filter = "BTFX测量结果包 (*.btfxpkg;*.zip)|*.btfxpkg;*.zip"
+            };
+
+            if (dialog.ShowDialog() != true)
+            {
+                return;
+            }
+
+            var result = await RunWithProgressDialogAsync(
+                "导入测量结果包",
+                "正在导入",
+                "正在读取测量结果包...",
+                (progress, token) => _exportImportService.ImportMeasurementArchiveAsync(
+                    dialog.FileName,
+                    progress,
+                    token));
+
+            if (result.Success)
+            {
+                _globalSelectedIds.Clear();
+                SelectedCount = 0;
+                await LoadDataAsync();
+                System.Windows.MessageBox.Show(result.Message, "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                _logHelper?.Information($"导入测量结果包成功：{dialog.FileName}, Count={result.ImportedCount}");
+            }
+            else
+            {
+                System.Windows.MessageBox.Show(result.Message, "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            System.Windows.MessageBox.Show("导入已取消。", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("导入测量结果包失败", ex);
+            System.Windows.MessageBox.Show($"导入失败：{ex.Message}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        }
+    }
+
+    private static async Task<T> RunWithProgressDialogAsync<T>(
+        string title,
+        string stage,
+        string message,
+        Func<IProgress<OperationProgressInfo>, CancellationToken, Task<T>> operation)
+    {
+        using var operationCts = new CancellationTokenSource();
+        var progressViewModel = new OperationProgressDialogViewModel(
+            title,
+            stage,
+            message,
+            operationCts,
+            canCancel: true);
+
+        var progress = new Progress<OperationProgressInfo>(progressViewModel.Update);
+        var dialog = new Views.Dialogs.OperationProgressDialog
+        {
+            DataContext = progressViewModel
+        };
+
+        var dialogTask = DialogHost.Show(dialog, "RootDialog");
+        try
+        {
+            var result = await Task.Run(() => operation(progress, operationCts.Token), operationCts.Token);
+            progressViewModel.MarkCompleted("操作已完成。");
+            await Task.Delay(650);
+            DialogHost.Close("RootDialog");
+            await dialogTask;
+            return result;
+        }
+        catch (OperationCanceledException)
+        {
+            progressViewModel.MarkFailed("操作已取消。");
+            await Task.Delay(350);
+            DialogHost.Close("RootDialog");
+            await dialogTask;
+            throw;
+        }
+        catch
+        {
+            progressViewModel.MarkFailed("操作执行失败。");
+            await Task.Delay(350);
+            DialogHost.Close("RootDialog");
+            await dialogTask;
+            throw;
+        }
+    }
 
         /// <summary>
     /// 批量删除命令

@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json.Nodes;
+using System.Windows;
 using System.Windows.Threading;
 using BTFX.Common;
 using BTFX.Models;
@@ -47,6 +48,11 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     /// 请求生成报告。
     /// </summary>
     public event Action? GenerateReportRequested;
+
+    /// <summary>
+    /// 请求回到新建测量并重新选择视频。用于已完成结果的重新分析入口。
+    /// </summary>
+    public event Action? ReanalysisSetupRequested;
 
     #region 状态管理
 
@@ -917,6 +923,24 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanRerunAnalysis))]
     private async Task RerunAnalysisAsync()
     {
+        if (IsPreviewing || CurrentMeasurement?.Status == MeasurementStatus.Completed)
+        {
+            var result = MessageBox.Show(
+                "重新分析需要重新上传或重新采集视频，当前已完成结果会保留为历史记录。\n是否返回新建测量页面重新选择视频？",
+                "重新分析",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.OK)
+            {
+                return;
+            }
+
+            ResetToReady();
+            ReanalysisSetupRequested?.Invoke();
+            return;
+        }
+
         ResetToReady();
         RefreshPrerequisites();
         await StartAnalyzeAsync();

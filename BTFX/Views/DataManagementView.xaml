@@ -967,6 +967,35 @@
                             Height="48"
                             Margin="22,0,0,0"
                             Background="#FFFFFF"
+                            BorderBrush="#403B5B"
+                            BorderThickness="1"
+                            Command="{Binding ImportMeasurementArchiveCommand}"
+                            Cursor="Hand"
+                            Tag="24"
+                            Template="{StaticResource RoundedButtonTemplate}"
+                            Visibility="{Binding CanExport, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                <Image
+                                    Width="22"
+                                    Height="22"
+                                    RenderOptions.BitmapScalingMode="HighQuality"
+                                    Source="/Resources/Images/login/out.png" />
+                                <TextBlock
+                                    Margin="8,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="18"
+                                    FontWeight="Medium"
+                                    Foreground="#403B5B"
+                                    Text="导入包" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button
+                            Width="160"
+                            Height="48"
+                            Margin="22,0,0,0"
+                            Background="#FFFFFF"
                             BorderBrush="#FF0000"
                             BorderThickness="1"
                             Command="{Binding BatchDeleteCommand}"

@@ -371,6 +371,7 @@ public partial class MeasurementViewModel : ObservableObject
         AnalyzeViewModel.NavigateToStepRequested += step => GoToStep(step);
         AnalyzeViewModel.ViewReportRequested += OnViewReportRequested;
         AnalyzeViewModel.GenerateReportRequested += OnGenerateReportRequested;
+        AnalyzeViewModel.ReanalysisSetupRequested += PrepareNewMeasurementForReanalysis;
 
         // 初始化测量名称为当前日期时间
         ResetMeasurementFields();
@@ -567,6 +568,28 @@ public partial class MeasurementViewModel : ObservableObject
         FrontVideoInfo.Clear();
         SideVideoInfo.Clear();
         ResetMeasurementFields();
+    }
+
+    /// <summary>
+    /// 从已完成分析结果重新分析时，保留当前患者，创建一个新的测量草稿并要求重新选择视频。
+    /// </summary>
+    private void PrepareNewMeasurementForReanalysis()
+    {
+        var patient = CurrentPatient;
+        CurrentStep = 1;
+        HasMeasurementRecord = false;
+        HasFrontVideo = false;
+        HasSideVideo = false;
+        CurrentMeasurement = null;
+        FrontVideoPath = null;
+        SideVideoPath = null;
+        FrontVideoInfo.Clear();
+        SideVideoInfo.Clear();
+        ResetMeasurementFields();
+        AnalyzeViewModel.CurrentMeasurement = null;
+        AnalyzeViewModel.CurrentPatient = patient;
+        AnalyzeViewModel.RefreshPrerequisites();
+        _logHelper?.Information("重新分析已切换到新建测量步骤，等待重新导入或采集视频。");
     }
 
     partial void OnSelectedAnalysisModeChanged(AnalysisVideoMode value)
