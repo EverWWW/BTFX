@@ -888,7 +888,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
                 Filter = "BTFX测量结果包 (*.btfxpkg;*.zip)|*.btfxpkg;*.zip"
             };
 
-            if (dialog.ShowDialog() != true)
+            if (dialog.ShowDialog(Application.Current.MainWindow) != true)
             {
                 return;
             }
@@ -924,6 +924,10 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             _logHelper?.Error("导入测量结果包失败", ex);
             System.Windows.MessageBox.Show($"导入失败：{ex.Message}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
+        finally
+        {
+            RestoreMainWindowIfMinimized();
+        }
     }
 
     private static async Task<T> RunWithProgressDialogAsync<T>(
@@ -954,6 +958,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             await Task.Delay(650);
             DialogHost.Close("RootDialog");
             await dialogTask;
+            RestoreMainWindowIfMinimized();
             return result;
         }
         catch (OperationCanceledException)
@@ -962,6 +967,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             await Task.Delay(350);
             DialogHost.Close("RootDialog");
             await dialogTask;
+            RestoreMainWindowIfMinimized();
             throw;
         }
         catch
@@ -970,7 +976,45 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             await Task.Delay(350);
             DialogHost.Close("RootDialog");
             await dialogTask;
+            RestoreMainWindowIfMinimized();
             throw;
+        }
+    }
+
+    private static void RestoreMainWindowIfMinimized()
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null)
+        {
+            return;
+        }
+
+        dispatcher.BeginInvoke(new Action(async () =>
+        {
+            RestoreMainWindowNow();
+            await Task.Delay(300);
+            RestoreMainWindowNow();
+            await Task.Delay(900);
+            RestoreMainWindowNow();
+        }));
+    }
+
+    private static void RestoreMainWindowNow()
+    {
+        var window = Application.Current?.MainWindow;
+        if (window is null)
+        {
+            return;
+        }
+
+        if (window.WindowState == WindowState.Minimized)
+        {
+            window.WindowState = WindowState.Normal;
+        }
+
+        if (!window.IsActive)
+        {
+            window.Activate();
         }
     }
 

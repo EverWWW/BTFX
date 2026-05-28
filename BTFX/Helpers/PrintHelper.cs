@@ -1,9 +1,14 @@
 ﻿using System.Printing;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Xps;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 
 namespace BTFX.Helpers;
 
@@ -74,6 +79,52 @@ public static class PrintHelper
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"打印失败: {ex.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 将 FlowDocument 按 A4 分页导出为 PDF，导出内容与预览/打印使用同一份文档。
+    /// </summary>
+    public static bool ExportDocumentToPdf(FlowDocument document, string filePath)
+    {
+        if (document == null)
+            throw new ArgumentNullException(nameof(document));
+
+        try
+        {
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            var directory = Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrWhiteSpace(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            var pages = RenderDocumentPages(document);
+            if (pages.Count == 0)
+            {
+                return false;
+            }
+
+            Document.Create(container =>
+            {
+                foreach (var pageImage in pages)
+                {
+                    container.Page(page =>
+                    {
+                        page.Size(PageSizes.A4);
+                        page.Margin(0);
+                        page.Content().Image(pageImage).FitArea();
+                    });
+                }
+            }).GeneratePdf(filePath);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"导出PDF失败: {ex.Message}");
             return false;
         }
     }
@@ -407,6 +458,74 @@ public static class PrintHelper
 
     #region 私有辅助方法
 
+    private static List<byte[]> RenderDocumentPages(FlowDocument document)
+    {
+        const double scale = 2.0;
+        var pages = new List<byte[]>();
+
+        using var paginatorContext = CreateFixedA4Paginator(document);
+        var paginator = paginatorContext.Paginator;
+        paginator.ComputePageCount();
+
+        for (var pageIndex = 0; pageIndex < paginator.PageCount; pageIndex++)
+        {
+            var page = paginator.GetPage(pageIndex);
+            try
+            {
+                var drawingVisual = new DrawingVisual();
+                using (var context = drawingVisual.RenderOpen())
+                {
+                    context.DrawRectangle(Brushes.White, null, new Rect(0, 0, A4WidthInPixels, A4HeightInPixels));
+                    context.DrawRectangle(new VisualBrush(page.Visual), null, new Rect(0, 0, A4WidthInPixels, A4HeightInPixels));
+                }
+
+                var bitmap = new RenderTargetBitmap(
+                    (int)Math.Ceiling(A4WidthInPixels * scale),
+                    (int)Math.Ceiling(A4HeightInPixels * scale),
+                    96 * scale,
+                    96 * scale,
+                    PixelFormats.Pbgra32);
+                bitmap.Render(drawingVisual);
+
+                var encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(bitmap));
+
+                using var stream = new MemoryStream();
+                encoder.Save(stream);
+                pages.Add(stream.ToArray());
+            }
+            finally
+            {
+                page.Dispose();
+            }
+        }
+
+        return pages;
+    }
+
+    private static PaginatorContext CreateFixedA4Paginator(FlowDocument document)
+    {
+        var originalPageWidth = document.PageWidth;
+        var originalPageHeight = document.PageHeight;
+        var originalColumnWidth = document.ColumnWidth;
+
+        Action restore = () =>
+        {
+            document.PageWidth = originalPageWidth;
+            document.PageHeight = originalPageHeight;
+            document.ColumnWidth = originalColumnWidth;
+        };
+
+        document.PageWidth = A4WidthInPixels;
+        document.PageHeight = A4HeightInPixels;
+        document.ColumnWidth = double.PositiveInfinity;
+
+        var paginator = ((IDocumentPaginatorSource)document).DocumentPaginator;
+        paginator.PageSize = new System.Windows.Size(A4WidthInPixels, A4HeightInPixels);
+
+        return new PaginatorContext(document, paginator, restore);
+    }
+
     /// <summary>
     /// 配置打印对话框为A4纵向
     /// </summary>
@@ -452,7 +571,7 @@ public static class PrintHelper
 
         // 获取分页器
         var paginator = ((IDocumentPaginatorSource)printDocument).DocumentPaginator;
-        paginator.PageSize = new Size(printDialog.PrintableAreaWidth, printDialog.PrintableAreaHeight);
+        paginator.PageSize = new System.Windows.Size(printDialog.PrintableAreaWidth, printDialog.PrintableAreaHeight);
 
         return new PaginatorContext(printDocument, paginator, restore);
     }

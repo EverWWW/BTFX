@@ -161,9 +161,9 @@
         <TabControl SelectedIndex="{Binding SelectedTabIndex}" Style="{StaticResource SettingsTopTabControlStyle}">
             <TabItem>
                 <TabItem.Header>
-                    <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource GeneralSettingsTab}" />
+                    <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource SystemInfoTab}" />
                 </TabItem.Header>
-                <settings:GeneralSettingsView DataContext="{Binding GeneralSettingsViewModel}" />
+                <settings:SystemInfoView DataContext="{Binding SystemInfoViewModel}" />
             </TabItem>
 
             <TabItem Visibility="{Binding ShowDeviceConfigTab, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -203,9 +203,9 @@
 
             <TabItem>
                 <TabItem.Header>
-                    <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource SystemInfoTab}" />
+                    <TextBlock Style="{StaticResource SettingsTopTabHeaderTextStyle}" Text="{DynamicResource GeneralSettingsTab}" />
                 </TabItem.Header>
-                <settings:SystemInfoView DataContext="{Binding SystemInfoViewModel}" />
+                <settings:GeneralSettingsView DataContext="{Binding GeneralSettingsViewModel}" />
             </TabItem>
         </TabControl>
     </Grid>

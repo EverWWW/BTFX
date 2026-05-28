@@ -30,7 +30,10 @@ public class DepartmentService : IDepartmentService
         try
         {
             using var db = DatabaseFactory.CreateSqliteSugarHelper();
-            return await db.GetListAsync<Department>(d => true);
+            var departments = await db.GetListAsync<Department>(d => true);
+            return departments
+                .Where(d => !string.IsNullOrWhiteSpace(d.Name))
+                .ToList();
         }
         catch (Exception ex)
         {
@@ -59,6 +62,16 @@ public class DepartmentService : IDepartmentService
     {
         try
         {
+            department.Name = department.Name?.Trim() ?? string.Empty;
+            department.Code = string.IsNullOrWhiteSpace(department.Code) ? null : department.Code.Trim();
+            department.Description = string.IsNullOrWhiteSpace(department.Description) ? null : department.Description.Trim();
+            department.Phone = string.IsNullOrWhiteSpace(department.Phone) ? null : department.Phone.Trim();
+            if (string.IsNullOrWhiteSpace(department.Name))
+            {
+                _logHelper?.Warning("添加科室失败：科室名称为空");
+                return 0;
+            }
+
             using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
             var now = DateTime.Now;
@@ -82,6 +95,16 @@ public class DepartmentService : IDepartmentService
     {
         try
         {
+            department.Name = department.Name?.Trim() ?? string.Empty;
+            department.Code = string.IsNullOrWhiteSpace(department.Code) ? null : department.Code.Trim();
+            department.Description = string.IsNullOrWhiteSpace(department.Description) ? null : department.Description.Trim();
+            department.Phone = string.IsNullOrWhiteSpace(department.Phone) ? null : department.Phone.Trim();
+            if (string.IsNullOrWhiteSpace(department.Name))
+            {
+                _logHelper?.Warning($"更新科室失败：科室名称为空，Id={department.Id}");
+                return false;
+            }
+
             using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
             department.UpdatedAt = DateTime.Now;
@@ -151,6 +174,7 @@ public class DepartmentService : IDepartmentService
     {
         try
         {
+            name = name.Trim();
             using var db = DatabaseFactory.CreateSqliteSugarHelper();
 
             if (excludeId.HasValue)

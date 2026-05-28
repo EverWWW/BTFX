@@ -238,30 +238,20 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
             FileName = $"报告_{SanitizeFileName(ReportNumber)}.pdf"
         };
 
-        if (dialog.ShowDialog() != true)
+        if (dialog.ShowDialog(Application.Current.MainWindow) != true)
         {
             return;
         }
 
         try
         {
+            await Task.Yield();
             SyncReportOptionsJson();
-            var settingsService = App.Services?.GetService(typeof(ISettingsService)) as ISettingsService;
-            if (settingsService is null)
-            {
-                MessageBox.Show("未找到系统设置服务，无法导出报告。", "导出失败", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
             var report = Report;
             var filePath = dialog.FileName;
             var originalStatus = report.Status;
             report.Status = ReportStatus.Completed;
-            var success = await Task.Run(() =>
-            {
-                var exporter = new ReportPdfExporter(settingsService);
-                return exporter.ExportToPdf(report, filePath);
-            });
+            var success = PrintHelper.ExportDocumentToPdf(PreviewDocument, filePath);
 
             if (success)
             {

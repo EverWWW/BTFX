@@ -2,6 +2,7 @@
 using BTFX.Models;
 using BTFX.Models.Analysis;
 using BTFX.Services.Interfaces;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using QuestPDF.Fluent;
@@ -165,6 +166,8 @@ public class ReportPdfExporter
     /// </summary>
     private void ComposeContent(IContainer container, Report report)
     {
+        var options = ReportPdfOptions.FromJson(report.ReportOptionsJson);
+
         container.Column(column =>
         {
             // 患者信息
@@ -177,35 +180,40 @@ public class ReportPdfExporter
 
             column.Item().PaddingVertical(8);
 
-            // 步态参数
-            column.Item().Element(c => ComposeGaitParameters(c, report));
-
-            column.Item().PaddingVertical(8);
-
-            // 运动学参数汇总
-            if (report.KinematicSummary != null)
+            if (options.IncludeSpatiotemporalParameters)
             {
-                column.Item().Element(c => ComposeKinematicSummary(c, report.KinematicSummary));
+                // 步态参数
+                column.Item().Element(c => ComposeGaitParameters(c, report));
                 column.Item().PaddingVertical(8);
             }
 
-            // 关节角度曲线图
-            if (report.AnalysisResult?.CsvFiles != null)
+            if (options.IncludeKinematicSummary)
             {
-                column.Item().Element(c => ComposeJointAngleCharts(c, report.AnalysisResult));
-                column.Item().PaddingVertical(8);
+                // 运动学参数汇总
+                if (report.KinematicSummary != null)
+                {
+                    column.Item().Element(c => ComposeKinematicSummary(c, report.KinematicSummary));
+                    column.Item().PaddingVertical(8);
+                }
+
+                // 关节角度曲线图
+                if (report.AnalysisResult?.CsvFiles != null)
+                {
+                    column.Item().Element(c => ComposeJointAngleCharts(c, report.AnalysisResult));
+                    column.Item().PaddingVertical(8);
+                }
             }
 
-            // 质量控制信息
-            if (report.QualityControl != null)
+            if (options.IncludeQualityControl && report.QualityControl != null)
             {
+                // 质量控制信息
                 column.Item().Element(c => ComposeQualityControl(c, report.QualityControl));
                 column.Item().PaddingVertical(8);
             }
 
-            // 分析信息
-            if (report.AnalysisResult != null)
+            if (options.IncludeResultFiles && report.AnalysisResult != null)
             {
+                // 分析信息
                 column.Item().Element(c => ComposeAnalysisInfo(c, report.AnalysisResult));
                 column.Item().PaddingVertical(8);
             }
@@ -634,4 +642,43 @@ public class ReportPdfExporter
     }
 
     #endregion
+}
+
+internal sealed record ReportPdfOptions(
+    bool IncludeSpatiotemporalParameters,
+    bool IncludeKinematicSummary,
+    bool IncludeQualityControl,
+    bool IncludeResultFiles)
+{
+    public static ReportPdfOptions FromJson(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return Default;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            var root = document.RootElement;
+            return new ReportPdfOptions(
+                ReadBool(root, nameof(IncludeSpatiotemporalParameters), true),
+                ReadBool(root, nameof(IncludeKinematicSummary), true),
+                ReadBool(root, nameof(IncludeQualityControl), true),
+                ReadBool(root, nameof(IncludeResultFiles), false));
+        }
+        catch
+        {
+            return Default;
+        }
+    }
+
+    private static ReportPdfOptions Default => new(true, true, true, false);
+
+    private static bool ReadBool(JsonElement root, string propertyName, bool defaultValue)
+    {
+        return root.TryGetProperty(propertyName, out var value) && value.ValueKind is JsonValueKind.True or JsonValueKind.False
+            ? value.GetBoolean()
+            : defaultValue;
+    }
 }

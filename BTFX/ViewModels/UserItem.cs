@@ -39,6 +39,9 @@ public partial class UserItem : ObservableObject
                              User.Username == BtfxConstants.USER_USERNAME ||
                              User.Username == BtfxConstants.GUEST_USERNAME;
 
+    public bool IsDefaultAdmin => User.Username.Equals(BtfxConstants.ADMIN_USERNAME, StringComparison.OrdinalIgnoreCase)
+                                  && User.IsBuiltIn;
+
     public UserItem(User user, int rowNumber, string? departmentName = null)
     {
         User = user;

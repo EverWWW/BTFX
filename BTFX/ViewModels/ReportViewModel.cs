@@ -1,5 +1,7 @@
 ﻿using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
+using System.Windows.Documents;
 using BTFX.Common;
 using BTFX.Helpers;
 using BTFX.Models;
@@ -937,68 +939,36 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                 FileName = $"报告_{fullReport!.ReportNumber}"
             };
 
-            if (dialog.ShowDialog() == true)
+            if (dialog.ShowDialog(Application.Current.MainWindow) == true)
             {
                 TryInvokeOnUI(() => IsLoading = true);
+                var fileName = dialog.FileName;
+                var success = await ExportReportPdfToFileAsync(reportId, fileName);
 
-                // 获取设置服务
-                var settingsService = App.Services?.GetService(typeof(ISettingsService)) as ISettingsService;
-                if (settingsService != null)
+                if (_disposed || App.IsShuttingDown) return;
+
+                if (success)
                 {
-                    // 异步导出在后台线程防止阻塞UI
-                    var report = fullReport;
-                    var fileName = dialog.FileName;
-                    var originalStatus = report.Status;
-                    report.Status = ReportStatus.Completed;
+                    await LoadReportsAsync();
+                    System.Windows.MessageBox.Show($"报告已导出至：\n{fileName}", "导出成功",
+                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    _logHelper?.Information($"导出报告PDF成功：ID={reportId}, 文件={fileName}");
 
-                    var success = await Task.Run(() =>
+                    var openResult = System.Windows.MessageBox.Show("是否打开导出的文件？", "提示",
+                        System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
+                    if (openResult == System.Windows.MessageBoxResult.Yes)
                     {
-                        if (App.IsShuttingDown) return false;
-                        var exporter = new Helpers.ReportPdfExporter(settingsService);
-                        return exporter.ExportToPdf(report, fileName);
-                    });
-
-                    if (_disposed || App.IsShuttingDown) return;
-
-                    if (success)
-                    {
-                        report.PdfFilePath = fileName;
-                        await _reportService.UpdateReportAsync(report);
-                        await LoadReportsAsync();
-                    }
-                    else
-                    {
-                        report.Status = originalStatus;
-                    }
-
-                    TryInvokeOnUI(() =>
-                    {
-                        if (_disposed || App.IsShuttingDown) return;
-
-                        if (success)
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
                         {
-                            System.Windows.MessageBox.Show($"报告已导出至：\n{fileName}", "导出成功",
-                                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-                            _logHelper?.Information($"导出报告PDF成功：ID={report.Id}, 文件={fileName}");
-
-                            // 询问是否打开文件
-                            var openResult = System.Windows.MessageBox.Show("是否打开导出的文件？", "提示",
-                                System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
-                            if (openResult == System.Windows.MessageBoxResult.Yes)
-                            {
-                                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                                {
-                                    FileName = fileName,
-                                    UseShellExecute = true
-                                });
-                            }
-                        }
-                        else
-                        {
-                            System.Windows.MessageBox.Show("PDF导出失败", "错误",
-                                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                        }
-                    });
+                            FileName = fileName,
+                            UseShellExecute = true
+                        });
+                    }
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show("PDF导出失败，请确认报告数据完整且输出目录可写。", "错误",
+                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
             }
         }
@@ -1015,6 +985,175 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         {
             TryInvokeOnUI(() => IsLoading = false);
         }
+    }
+
+    private async Task<bool> ExportReportPdfToFileAsync(
+        int reportId,
+        string fileName,
+        IProgress<OperationProgressInfo>? progress = null,
+        int index = 0,
+        int total = 1)
+    {
+        progress?.Report(new OperationProgressInfo(
+            CalculateBatchProgress(index, total, 0.05),
+            "读取报告数据",
+            $"正在读取报告 {Path.GetFileNameWithoutExtension(fileName)}..."));
+
+        var report = await _reportService.GetReportWithAnalysisDataAsync(reportId);
+        if (!HasUsableReportDataSource(report))
+        {
+            _logHelper?.Warning($"导出报告失败：报告关联的测量或分析结果不可用，ReportId={reportId}");
+            return false;
+        }
+
+        progress?.Report(new OperationProgressInfo(
+            CalculateBatchProgress(index, total, 0.35),
+            "生成报告预览",
+            $"正在生成 {Path.GetFileName(fileName)} 的预览文档..."));
+
+        var originalStatus = report!.Status;
+        report.Status = ReportStatus.Completed;
+        var previewDocument = await BuildExportPreviewDocumentAsync(report);
+        if (previewDocument is null)
+        {
+            report.Status = originalStatus;
+            return false;
+        }
+
+        progress?.Report(new OperationProgressInfo(
+            CalculateBatchProgress(index, total, 0.55),
+            "导出PDF",
+            $"正在写入 {Path.GetFileName(fileName)}..."));
+
+        var success = PrintHelper.ExportDocumentToPdf(previewDocument, fileName);
+
+        if (!success)
+        {
+            report.Status = originalStatus;
+            return false;
+        }
+
+        progress?.Report(new OperationProgressInfo(
+            CalculateBatchProgress(index, total, 0.82),
+            "保存导出记录",
+            $"正在更新报告导出路径 {Path.GetFileName(fileName)}..."));
+
+        report.PdfFilePath = fileName;
+        report.Status = ReportStatus.Completed;
+        return await _reportService.UpdateReportAsync(report);
+    }
+
+    private static async Task<FlowDocument?> BuildExportPreviewDocumentAsync(Report report)
+    {
+        var previewViewModel = App.Services?.GetService(typeof(ReportPreviewDialogViewModel)) as ReportPreviewDialogViewModel;
+        var settingsService = App.Services?.GetService(typeof(ISettingsService)) as ISettingsService;
+        if (previewViewModel is null || settingsService is null)
+        {
+            return null;
+        }
+
+        var unitName = settingsService.CurrentSettings?.Unit?.Name ?? Constants.APP_DISPLAY_NAME;
+        var logoPath = settingsService.CurrentSettings?.Unit?.LogoPath;
+        var baseDocument = ReportPreviewHelper.GenerateReportDocument(report, unitName, logoPath);
+        await previewViewModel.InitializeAsync(report, baseDocument);
+        return previewViewModel.PreviewDocument;
+    }
+
+    private static async Task<T> RunWithProgressDialogAsync<T>(
+        string title,
+        string stage,
+        string message,
+        Func<IProgress<OperationProgressInfo>, CancellationToken, Task<T>> operation)
+    {
+        using var operationCts = new CancellationTokenSource();
+        var progressViewModel = new OperationProgressDialogViewModel(
+            title,
+            stage,
+            message,
+            operationCts,
+            canCancel: true);
+
+        var progress = new Progress<OperationProgressInfo>(progressViewModel.Update);
+        var dialog = new Views.Dialogs.OperationProgressDialog
+        {
+            DataContext = progressViewModel
+        };
+
+        var dialogTask = DialogHost.Show(dialog, "RootDialog");
+        try
+        {
+            var result = await operation(progress, operationCts.Token);
+            progressViewModel.MarkCompleted("操作已完成。");
+            await Task.Delay(650);
+            DialogHost.Close("RootDialog");
+            await dialogTask;
+            return result;
+        }
+        catch (OperationCanceledException)
+        {
+            progressViewModel.MarkFailed("操作已取消。");
+            await Task.Delay(350);
+            DialogHost.Close("RootDialog");
+            await dialogTask;
+            throw;
+        }
+        catch
+        {
+            progressViewModel.MarkFailed("操作执行失败。");
+            await Task.Delay(350);
+            DialogHost.Close("RootDialog");
+            await dialogTask;
+            throw;
+        }
+    }
+
+    private static double CalculateBatchProgress(int index, int total, double innerRatio)
+    {
+        if (total <= 0)
+        {
+            return 0;
+        }
+
+        var start = Math.Clamp(index / (double)total, 0, 1);
+        var end = Math.Clamp((index + 1d) / total, 0, 1);
+        return Math.Clamp((start + (end - start) * Math.Clamp(innerRatio, 0, 1)) * 100, 0, 100);
+    }
+
+    private static string BuildReportPdfFileName(Report report)
+    {
+        var patientName = report.Patient?.Name ?? report.MeasurementRecord?.Patient?.Name ?? "未知患者";
+        var dateText = report.ReportDate == default ? DateTime.Now.ToString("yyyyMMdd_HHmmss") : report.ReportDate.ToString("yyyyMMdd_HHmmss");
+        return MakeSafeFileName($"报告_{report.ReportNumber}_{patientName}_{dateText}.pdf");
+    }
+
+    private static string GetAvailableFilePath(string filePath)
+    {
+        if (!File.Exists(filePath))
+        {
+            return filePath;
+        }
+
+        var directory = Path.GetDirectoryName(filePath) ?? string.Empty;
+        var name = Path.GetFileNameWithoutExtension(filePath);
+        var extension = Path.GetExtension(filePath);
+
+        for (var i = 1; i < 1000; i++)
+        {
+            var candidate = Path.Combine(directory, $"{name}_{i}{extension}");
+            if (!File.Exists(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        return Path.Combine(directory, $"{name}_{DateTime.Now:yyyyMMdd_HHmmssfff}{extension}");
+    }
+
+    private static string MakeSafeFileName(string fileName)
+    {
+        var invalidChars = Path.GetInvalidFileNameChars();
+        var safeChars = fileName.Select(ch => invalidChars.Contains(ch) ? '_' : ch).ToArray();
+        return new string(safeChars);
     }
 
     private async Task PrintReportByIdAsync(int reportId, bool refreshPreview = false)
@@ -1125,15 +1264,116 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     /// 全部导出选中的报告命令。
     /// </summary>
     [RelayCommand]
-    private void ExportSelectedReports()
+    private async Task ExportSelectedReportsAsync()
     {
         if (SelectedReportTotalCount <= 0 || _disposed || App.IsShuttingDown)
         {
             return;
         }
 
-        System.Windows.MessageBox.Show("全部导出功能暂未实现。", "提示",
-            System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+        if (!CanExportReport)
+        {
+            await ShowNoticeDialogAsync("提示", "当前账号没有导出报告权限。");
+            return;
+        }
+
+        var dialog = new Microsoft.Win32.OpenFolderDialog
+        {
+            Title = "选择报告导出目录",
+            Multiselect = false
+        };
+
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        var selectedIds = _selectedReportIds.ToList();
+        var selectedReports = _filteredReports
+            .Where(r => selectedIds.Contains(r.Id))
+            .OrderByDescending(r => r.ReportDate)
+            .ToList();
+
+        if (selectedReports.Count == 0)
+        {
+            await ShowNoticeDialogAsync("提示", "没有找到可导出的选中报告。");
+            return;
+        }
+
+        try
+        {
+            var result = await RunWithProgressDialogAsync(
+                "批量导出报告",
+                "准备导出",
+                "正在准备报告导出任务...",
+                async (progress, token) =>
+                {
+                    var successCount = 0;
+                    var failedReports = new List<string>();
+
+                    for (var i = 0; i < selectedReports.Count; i++)
+                    {
+                        token.ThrowIfCancellationRequested();
+
+                        var report = selectedReports[i];
+                        var fileName = BuildReportPdfFileName(report);
+                        var filePath = GetAvailableFilePath(Path.Combine(dialog.FolderName, fileName));
+
+                        progress.Report(new OperationProgressInfo(
+                            CalculateBatchProgress(i, selectedReports.Count, 0),
+                            "导出报告",
+                            $"正在导出 {report.ReportNumber}..."));
+
+                        var success = await ExportReportPdfToFileAsync(report.Id, filePath, progress, i, selectedReports.Count);
+                        if (success)
+                        {
+                            successCount++;
+                            _logHelper?.Information($"批量导出报告成功：ID={report.Id}, 文件={filePath}");
+                        }
+                        else
+                        {
+                            failedReports.Add(report.ReportNumber);
+                        }
+
+                        progress.Report(new OperationProgressInfo(
+                            CalculateBatchProgress(i, selectedReports.Count, 1),
+                            "导出报告",
+                            $"已完成 {i + 1}/{selectedReports.Count} 个报告。"));
+                    }
+
+                    return new BatchReportExportResult(successCount, failedReports.Count, failedReports, dialog.FolderName);
+                });
+
+            await LoadReportsAsync();
+
+            if (result.FailedCount == 0)
+            {
+                System.Windows.MessageBox.Show(
+                    $"成功导出 {result.SuccessCount} 个报告。\n目录：{result.OutputDirectory}",
+                    "导出完成",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Information);
+            }
+            else
+            {
+                System.Windows.MessageBox.Show(
+                    $"成功导出 {result.SuccessCount} 个报告，失败 {result.FailedCount} 个。\n失败报告：{string.Join("、", result.FailedReports.Take(5))}",
+                    "导出完成",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Warning);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            System.Windows.MessageBox.Show("批量导出已取消。", "提示",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("批量导出报告失败", ex);
+            System.Windows.MessageBox.Show($"批量导出失败：{ex.Message}", "错误",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        }
     }
 
     /// <summary>
@@ -2000,6 +2240,15 @@ public sealed record ReportSummaryField(string Label, string Value);
 /// 报告摘要指标。
 /// </summary>
 public sealed record ReportSummaryMetric(string Name, string Value, string Unit);
+
+/// <summary>
+/// 批量导出报告结果。
+/// </summary>
+public sealed record BatchReportExportResult(
+    int SuccessCount,
+    int FailedCount,
+    IReadOnlyList<string> FailedReports,
+    string OutputDirectory);
 
 /// <summary>
 /// 报告列表项

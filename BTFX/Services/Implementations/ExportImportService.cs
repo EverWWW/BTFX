@@ -322,12 +322,7 @@ public class ExportImportService : IExportImportService
                 var oldToNewAnalysisIds = new Dictionary<int, int>();
                 var oldToNewFilePath = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-                patient.Id = 0;
-                patient.CreatedAt = DateTime.Now;
-                patient.UpdatedAt = DateTime.Now;
-                patient.Status = PatientStatus.Active;
-                patient.CreatedBy = currentUserId;
-                var newPatientId = (int)await db.InsertReturnIdentityAsync(patient);
+                var newPatientId = await ResolveImportedPatientIdAsync(db, patient, currentUserId);
 
                 measurement.Id = 0;
                 measurement.PatientId = newPatientId;
@@ -907,6 +902,66 @@ public class ExportImportService : IExportImportService
             return 0;
         }
     }
+
+    private async Task<int> ResolveImportedPatientIdAsync(SqliteSugarHelper db, Patient importedPatient, int currentUserId)
+    {
+        var existingPatients = await db.Queryable<Patient>()
+            .Where(p => p.Status == PatientStatus.Active)
+            .ToListAsync();
+
+        var match = existingPatients.FirstOrDefault(p =>
+            HasSameNonEmptyValue(p.IdNumber, importedPatient.IdNumber)
+            || HasSameNonEmptyValue(p.Phone, importedPatient.Phone)
+            || HasSameNonEmptyValue(p.HospitalNumber, importedPatient.HospitalNumber))
+            ?? existingPatients.FirstOrDefault(p =>
+                string.Equals(NormalizePatientText(p.Name), NormalizePatientText(importedPatient.Name), StringComparison.OrdinalIgnoreCase)
+                && p.Gender == importedPatient.Gender
+                && Nullable.Equals(p.BirthDate?.Date, importedPatient.BirthDate?.Date));
+
+        if (match is null)
+        {
+            importedPatient.Id = 0;
+            importedPatient.CreatedAt = DateTime.Now;
+            importedPatient.UpdatedAt = DateTime.Now;
+            importedPatient.Status = PatientStatus.Active;
+            importedPatient.CreatedBy = currentUserId;
+            return (int)await db.InsertReturnIdentityAsync(importedPatient);
+        }
+
+        MergeImportedPatientFields(match, importedPatient);
+        match.UpdatedAt = DateTime.Now;
+        await db.UpdateAsync(match);
+        _logHelper?.Information($"导入测量包复用已有患者：ExistingPatientId={match.Id}, Name={match.Name}");
+        return match.Id;
+    }
+
+    private static void MergeImportedPatientFields(Patient target, Patient source)
+    {
+        target.Phone = UseExistingOrImported(target.Phone, source.Phone);
+        target.IdNumber = UseExistingOrImported(target.IdNumber, source.IdNumber);
+        target.HospitalNumber = UseExistingOrImported(target.HospitalNumber, source.HospitalNumber);
+        target.Address = UseExistingOrImported(target.Address, source.Address);
+        target.MedicalHistory = UseExistingOrImported(target.MedicalHistory, source.MedicalHistory);
+        target.Remark = UseExistingOrImported(target.Remark, source.Remark);
+        target.BirthDate ??= source.BirthDate;
+        target.Height ??= source.Height;
+        target.Weight ??= source.Weight;
+    }
+
+    private static string UseExistingOrImported(string? currentValue, string? importedValue)
+    {
+        return string.IsNullOrWhiteSpace(currentValue) ? importedValue ?? string.Empty : currentValue;
+    }
+
+    private static bool HasSameNonEmptyValue(string? left, string? right)
+    {
+        var normalizedLeft = NormalizePatientText(left);
+        var normalizedRight = NormalizePatientText(right);
+        return !string.IsNullOrWhiteSpace(normalizedLeft)
+               && string.Equals(normalizedLeft, normalizedRight, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string NormalizePatientText(string? value) => (value ?? string.Empty).Trim();
 
     private static bool ShouldSkipArchiveFile(string path, HashSet<string> rawVideoPaths)
     {

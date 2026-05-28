@@ -436,8 +436,16 @@
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         Command="{Binding DataContext.ResetPasswordCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                        CommandParameter="{Binding}"
-                                        Style="{StaticResource ResetPasswordButtonStyle}">
+                                        CommandParameter="{Binding}">
+                                        <Button.Style>
+                                            <Style BasedOn="{StaticResource ResetPasswordButtonStyle}" TargetType="Button">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsDefaultAdmin}" Value="True">
+                                                        <Setter Property="IsEnabled" Value="False" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
                                         <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                                             <Image
                                                 Width="18"
@@ -460,8 +468,17 @@
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         Command="{Binding DataContext.EditUserCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                        CommandParameter="{Binding}"
-                                        Style="{StaticResource ActionIconButtonStyle}">
+                                        CommandParameter="{Binding}">
+                                        <Button.Style>
+                                            <Style BasedOn="{StaticResource ActionIconButtonStyle}" TargetType="Button">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsDefaultAdmin}" Value="True">
+                                                        <Setter Property="IsEnabled" Value="False" />
+                                                        <Setter Property="Opacity" Value="0.45" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
                                         <Image
                                             Width="28"
                                             Height="28"

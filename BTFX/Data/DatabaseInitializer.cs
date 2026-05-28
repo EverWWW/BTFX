@@ -284,26 +284,16 @@ public class DatabaseInitializer
     {
         var now = DateTime.Now;
 
-        // Step 1：创建默认科室
+        // Step 1：清理历史无效科室
         try
         {
-            _logHelper?.Information("Step 1：创建默认科室...");
-
-            if (!db.Any<Department>(d => d.Name == ""))
-            {
-                await db.InsertAsync(new Department
-                {
-                    Name = "",
-                    Phone = "",
-                    CreatedAt = now,
-                    UpdatedAt = now
-                });
-            }
-            _logHelper?.Information("Step 1：默认科室创建完成。");
+            _logHelper?.Information("Step 1：清理历史无效科室...");
+            CleanupInvalidDepartments(db);
+            _logHelper?.Information("Step 1：历史无效科室清理完成。");
         }
         catch (Exception ex)
         {
-            throw new Exception($"创建默认科室失败：{ex.Message}", ex);
+            throw new Exception($"清理历史无效科室失败：{ex.Message}", ex);
         }
 
         var adminSalt = PasswordHelper.GenerateSalt();
@@ -323,9 +313,10 @@ public class DatabaseInitializer
                     Username = Constants.ADMIN_USERNAME,
                     PasswordHash = adminHash,
                     PasswordSalt = adminSalt,
-                    Name = "",
+                    Name = "管理员",
                     Phone = "",
                     Role = UserRole.Administrator,
+                    DepartmentId = null,
                     IsEnabled = true,
                     IsBuiltIn = true,
                     CreatedAt = now,
@@ -411,7 +402,57 @@ public class DatabaseInitializer
     private async Task EnsureSeedDataAsync(SqliteSugarHelper db)
     {
         await SeedDataAsync(db);
+        await NormalizeDefaultAdminAsync(db);
         await UpgradeLegacyDefaultAdminPasswordAsync(db);
+    }
+
+    /// <summary>
+    /// 清理早期版本写入的空科室记录，避免设置页重启后反复出现空名称、空代码的科室行。
+    /// </summary>
+    private void CleanupInvalidDepartments(SqliteSugarHelper db)
+    {
+        db.ExecuteSql("""
+            UPDATE Users
+            SET DepartmentId = NULL
+            WHERE DepartmentId IN (
+                SELECT Id FROM Departments
+                WHERE Name IS NULL OR TRIM(Name) = ''
+            );
+            """);
+
+        db.ExecuteSql("""
+            DELETE FROM Departments
+            WHERE Name IS NULL OR TRIM(Name) = '';
+            """);
+    }
+
+    /// <summary>
+    /// 规范内置管理员基础信息。该账号是系统默认入口，不允许在界面编辑资料或重置密码。
+    /// </summary>
+    private async Task NormalizeDefaultAdminAsync(SqliteSugarHelper db)
+    {
+        var admin = await db.GetFirstAsync<User>(u => u.Username == Constants.ADMIN_USERNAME);
+        if (admin is null)
+        {
+            return;
+        }
+
+        var count = await db.UpdateAsync<User>(
+            u => new User
+            {
+                Name = "管理员",
+                Role = UserRole.Administrator,
+                DepartmentId = null,
+                IsEnabled = true,
+                IsBuiltIn = true,
+                UpdatedAt = DateTime.Now
+            },
+            u => u.Id == admin.Id);
+
+        if (count > 0)
+        {
+            _logHelper?.Information("已规范内置管理员基础信息。");
+        }
     }
 
     /// <summary>

@@ -172,6 +172,12 @@ public partial class UserManagementViewModel : ObservableObject
             return;
         }
 
+        if (item.IsDefaultAdmin)
+        {
+            await ShowNoticeDialogAsync("默认管理员账户不可编辑", _localizationService.GetString("Warning"));
+            return;
+        }
+
         try
         {
             var vm = new UserEditViewModel(_userService, _departmentService, item.User);
@@ -195,6 +201,12 @@ public partial class UserManagementViewModel : ObservableObject
     {
         if (item == null)
         {
+            return;
+        }
+
+        if (item.IsDefaultAdmin)
+        {
+            await ShowNoticeDialogAsync("默认管理员账户不可重置密码", _localizationService.GetString("Warning"));
             return;
         }
 

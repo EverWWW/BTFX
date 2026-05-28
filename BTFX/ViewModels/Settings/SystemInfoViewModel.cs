@@ -93,7 +93,8 @@ public partial class SystemInfoViewModel : ObservableObject
             }
 
             // 使用正确的日志目录路径：BaseDirectory/Data/Logs
-            LogDirectory = System.IO.Path.Combine(baseDir, BtfxConstants.LOG_DIRECTORY);
+            LogDirectory = NormalizeDirectoryPath(System.IO.Path.Combine(baseDir, BtfxConstants.LOG_DIRECTORY));
+            System.IO.Directory.CreateDirectory(LogDirectory);
 
             _logHelper?.Information($"日志目录设置为: {LogDirectory}, 存在={System.IO.Directory.Exists(LogDirectory)}");
         }
@@ -138,7 +139,11 @@ public partial class SystemInfoViewModel : ObservableObject
         {
             if (System.IO.Directory.Exists(LogDirectory))
             {
-                System.Diagnostics.Process.Start("explorer.exe", LogDirectory);
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = LogDirectory,
+                    UseShellExecute = true
+                });
             }
             else
             {
@@ -150,6 +155,12 @@ public partial class SystemInfoViewModel : ObservableObject
         {
             _logHelper?.Error("打开日志目录失败", ex);
         }
+    }
+
+    private static string NormalizeDirectoryPath(string path)
+    {
+        return System.IO.Path.GetFullPath(path)
+            .TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
     }
 
     [RelayCommand]
