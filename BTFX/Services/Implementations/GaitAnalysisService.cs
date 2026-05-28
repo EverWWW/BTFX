@@ -1095,9 +1095,7 @@ public class GaitAnalysisService : IGaitAnalysisService
                 ? "processing"
                 : message.EffectiveStatus;
             var progress = Math.Clamp(message.EffectiveProgress, 0, 100);
-            var text = !string.IsNullOrWhiteSpace(message.Message)
-                ? message.Message
-                : (!string.IsNullOrWhiteSpace(message.CurrentStage) ? message.CurrentStage : status);
+            var text = GetDisplayStatusMessage(message, status);
             var errorCode = message.ErrorCode ?? (string.IsNullOrWhiteSpace(message.Error) ? null : (int?)AnalysisErrorCode.Unknown);
 
             CaptureStdoutStatus(message, status);
@@ -1135,6 +1133,45 @@ public class GaitAnalysisService : IGaitAnalysisService
                 _stdoutFailureStatus = message;
             }
         }
+    }
+
+    private static string GetDisplayStatusMessage(TaskStatusMessage message, string status)
+    {
+        if (!string.IsNullOrWhiteSpace(message.CurrentStage)
+            && TryGetChineseStageMessage(message.CurrentStage, out var stageText))
+        {
+            return stageText;
+        }
+
+        return !string.IsNullOrWhiteSpace(message.Message)
+            ? message.Message
+            : (!string.IsNullOrWhiteSpace(message.CurrentStage) ? message.CurrentStage : status);
+    }
+
+    private static bool TryGetChineseStageMessage(string stage, out string text)
+    {
+        text = stage.Trim().ToLowerInvariant() switch
+        {
+            "pending" => "任务已接收",
+            "processing" => "正在分析",
+            "pose_estimation_side" => "正在进行侧面人体关键点识别",
+            "pose_estimation_side_ok" => "侧面人体关键点识别完成",
+            "pose_estimation_front" => "正在进行正面人体关键点识别",
+            "pose_estimation_front_ok" => "正面人体关键点识别完成",
+            "gait_event_detection" => "正在检测步态事件",
+            "gait_event_detection_ok" => "步态事件检测完成",
+            "spatiotemporal_parameters" => "正在计算时空参数",
+            "spatiotemporal_parameters_ok" => "时空参数计算完成",
+            "joint_angle_analysis" => "正在计算关节角度",
+            "joint_angle_analysis_ok" => "关节角度计算完成",
+            "result_generation" => "正在生成分析结果",
+            "result_generation_ok" => "分析结果生成完成",
+            "completed" => "分析完成",
+            "failed" => "分析失败",
+            _ => string.Empty
+        };
+
+        return !string.IsNullOrEmpty(text);
     }
 
     private TaskStatusMessage? GetStdoutFailureStatus()

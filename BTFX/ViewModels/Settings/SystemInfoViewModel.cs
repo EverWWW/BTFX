@@ -41,6 +41,24 @@ public partial class SystemInfoViewModel : ObservableObject
     private string _logStatistics = "正在加载...";
 
     [ObservableProperty]
+    private string _logRangeCount = "--";
+
+    [ObservableProperty]
+    private string _logInformationCount = "--";
+
+    [ObservableProperty]
+    private string _logWarningCount = "--";
+
+    [ObservableProperty]
+    private string _logErrorCount = "--";
+
+    [ObservableProperty]
+    private string _logFileCount = "--";
+
+    [ObservableProperty]
+    private string _logTotalSize = "--";
+
+    [ObservableProperty]
     private int _logCleanupDays = 30;
 
     [ObservableProperty]
@@ -305,5 +323,33 @@ public partial class SystemInfoViewModel : ObservableObject
     private async Task RefreshLogStatisticsAsync()
     {
         await LoadLogStatisticsAsync();
+    }
+
+    partial void OnLogStatisticsChanged(string value)
+    {
+        var matches = System.Text.RegularExpressions.Regex.Matches(value ?? string.Empty, @"\d+(?:\.\d+)?");
+        if (matches.Count < 5)
+        {
+            ResetLogStatisticDisplays();
+            return;
+        }
+
+        var offset = matches.Count >= 7 ? 1 : 0;
+        LogRangeCount = $"{matches[offset].Value} 条";
+        LogInformationCount = $"{matches[offset + 1].Value} 条";
+        LogWarningCount = $"{matches[offset + 2].Value} 条";
+        LogErrorCount = $"{matches[offset + 3].Value} 条";
+        LogFileCount = $"{matches[offset + 4].Value} 个";
+        LogTotalSize = matches.Count > offset + 5 ? $"{matches[offset + 5].Value} KB" : "--";
+    }
+
+    private void ResetLogStatisticDisplays()
+    {
+        LogRangeCount = "--";
+        LogInformationCount = "--";
+        LogWarningCount = "--";
+        LogErrorCount = "--";
+        LogFileCount = "--";
+        LogTotalSize = "--";
     }
 }

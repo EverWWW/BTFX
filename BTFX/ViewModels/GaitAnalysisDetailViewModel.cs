@@ -800,17 +800,11 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
 
     public string PelvicObliquityMeanDisplay => "--";
 
-    public string TrunkLateralFlexionMeanDisplay => "--";
-
     public string StepLengthDiffDisplay => FormatNumber(Difference(_detailData.LeftStrideMeanM, _detailData.RightStrideMeanM), "F2", "m");
 
     public string StepLengthDiffPercentDisplay => FormatNumber(DifferencePercent(_detailData.LeftStrideMeanM, _detailData.RightStrideMeanM), "F1", "%");
 
-    public string StanceTimeDiffDisplay => "--";
-
     public string StanceTimeDiffPercentDisplay => FormatNumber(Difference(_detailData.LeftStanceRatioPct, _detailData.RightStanceRatioPct), "F1", "%");
-
-    public string SwingTimeDiffDisplay => "--";
 
     public string KneeRomDiffDisplay => FormatNumber(Difference(_detailData.LeftKneeRomDeg, _detailData.RightKneeRomDeg), "F1", "°");
 
@@ -1984,12 +1978,9 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         OnPropertyChanged(nameof(TrunkTiltRomDisplay));
         OnPropertyChanged(nameof(PelvicTiltMeanDisplay));
         OnPropertyChanged(nameof(PelvicObliquityMeanDisplay));
-        OnPropertyChanged(nameof(TrunkLateralFlexionMeanDisplay));
         OnPropertyChanged(nameof(StepLengthDiffDisplay));
         OnPropertyChanged(nameof(StepLengthDiffPercentDisplay));
-        OnPropertyChanged(nameof(StanceTimeDiffDisplay));
         OnPropertyChanged(nameof(StanceTimeDiffPercentDisplay));
-        OnPropertyChanged(nameof(SwingTimeDiffDisplay));
         OnPropertyChanged(nameof(KneeRomDiffDisplay));
         OnPropertyChanged(nameof(HipRomDiffDisplay));
         OnPropertyChanged(nameof(AnkleRomDiffDisplay));

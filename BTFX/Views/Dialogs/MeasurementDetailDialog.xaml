@@ -899,13 +899,6 @@
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding PelvicTiltMeanDisplay}" />
                                                     </StackPanel>
-                                                    <StackPanel>
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="躯干侧屈角" />
-                                                        <TextBlock
-                                                            Margin="0,6,0,0"
-                                                            Style="{StaticResource InfoValueTextStyle}"
-                                                            Text="{Binding TrunkLateralFlexionMeanDisplay}" />
-                                                    </StackPanel>
                                                 </UniformGrid>
                                             </Border>
                                         </StackPanel>
@@ -935,20 +928,6 @@
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding StepLengthDiffPercentDisplay}" />
-                                                    </StackPanel>
-                                                    <StackPanel Margin="0,0,24,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="站立相差" />
-                                                        <TextBlock
-                                                            Margin="0,6,0,0"
-                                                            Style="{StaticResource InfoValueTextStyle}"
-                                                            Text="{Binding StanceTimeDiffDisplay}" />
-                                                    </StackPanel>
-                                                    <StackPanel Margin="0,0,0,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="摆动相差" />
-                                                        <TextBlock
-                                                            Margin="0,6,0,0"
-                                                            Style="{StaticResource InfoValueTextStyle}"
-                                                            Text="{Binding SwingTimeDiffDisplay}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,24,14">
                                                         <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="膝关节 ROM 差" />

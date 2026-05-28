@@ -1,23 +1,17 @@
-#可修改
 [base]
-video_input = ['side.mp4']  #相对路径绝对路径都可以 eg.: C:\Users\Lenovo\OneDrive\Desktop\gait\001_side.mp4
-first_person_height = 1.75  #测试人身高
-video_dir = ''
-time_range = []  #可自行选择分析视频开始和结束的秒数
-cut_off_frequency = 6
+video_input = ['test_video/1C.mp4']  #相对路径绝对路径都可以
+first_person_height = 1.8  #测试人身高
+
+time_range = [0,5]  #可自行选择分析视频开始和结束的秒数
 show_realtime_results = false  #是否实时显示分析结果
 save_vid = true  #是否保存分析后的带标记点的视频
 save_img = false  #是否保存逐帧图片；true的话运行时间会加长
-save_graphs =false  #是否保存关节角度图片
-result_dir = ''   #视频分析结果保存路径；如果为空，则在当前目录下
-joint_angles = ['Right ankle', 'Left ankle', 'Right knee', 'Left knee', 'Right hip', 'Left hip']# ['Right ankle', 'Left ankle', 'Right knee', 'Left knee', 'Right hip', 'Left hip', 'Right shoulder', 'Left shoulder', 'Right elbow', 'Left elbow', 'Right wrist', 'Left wrist']
-segment_angles = []# ['Right foot', 'Left foot', 'Right shank', 'Left shank', 'Right thigh', 'Left thigh', 'Pelvis', 'Trunk', 'Shoulders', 'Head', 'Right arm', 'Left arm', 'Right forearm', 'Left forearm']
+result_dir = '001'   #视频分析结果保存路径；如果为空，则在当前目录下
 
 
 
-#不可修改
 nb_persons_to_detect = '1'
-person_ordering_method =  'greatest_displacement'
+person_ordering_method = 'greatest_displacement'  #默认选择移动最大的那个人做分析；若分析失败可尝试改为on_click，会有弹窗出来，鼠标选择要分析的人
 load_trc_px = ''
 compare = false
 visible_side = ['left']
@@ -27,8 +21,9 @@ save_angles = true
 input_size = [1280, 720]
 [pose]
 slowmo_factor = 1
+video_dir = ''
 pose_model = 'Body_with_feet'
-mode = 'balanced' 
+mode = 'balanced'
 det_frequency = 16
 device = 'CPU'
 backend = 'onnxruntime'
@@ -49,10 +44,12 @@ perspective_unit = 'distance_m'
 distortions = [0.0, 0.0, 0.0, 0.0, 0.0]
 calib_file = ''
 [angles]
-display_angle_values_on = ['body']
+joint_angles = ['Right ankle', 'Left ankle', 'Right knee', 'Left knee', 'Right hip', 'Left hip']
+segment_angles = []
 fontSize = 1
 correct_segment_angles_with_floor_angle = true
 [post-processing]
+save_graphs =false  #是否保存关节角度图片
 interpolate = true
 interp_gap_smaller_than = 100
 fill_large_gaps_with = 'last_value'
@@ -63,6 +60,7 @@ filter = true
 show_graphs = false
 filter_type = 'butterworth'
    [post-processing.butterworth]
+   cut_off_frequency = 6
    order = 4
    [post-processing.kalman]
    trust_ratio = 500
