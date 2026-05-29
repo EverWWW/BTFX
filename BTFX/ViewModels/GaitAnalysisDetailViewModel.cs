@@ -1009,9 +1009,9 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         {
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
-                Title = "导出测量数据",
-                Filter = "Excel文件 (*.xlsx)|*.xlsx|CSV文件 (*.csv)|*.csv",
-                FileName = $"分析详情_{Record.Patient?.Name}_{Record.MeasurementDate:yyyyMMdd}"
+                Title = "导出测量结果包",
+                Filter = "BTFX测量结果包 (*.btfxpkg)|*.btfxpkg",
+                FileName = $"测量结果包_{Record.Patient?.Name}_{Record.MeasurementDate:yyyyMMdd_HHmmss}.btfxpkg"
             };
 
             if (dialog.ShowDialog() != true)
@@ -1019,20 +1019,25 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
                 return;
             }
 
-            var format = dialog.FilterIndex == 1 ? ExportFormat.Excel : ExportFormat.CSV;
-            var success = await _exportImportService.ExportMeasurementsAsync([Record], format, dialog.FileName);
+            var exportRecord = Record;
+            var result = await Task.Run(() => _exportImportService.ExportMeasurementArchiveAsync(
+                [exportRecord],
+                dialog.FileName,
+                progress: null,
+                cancellationToken: CancellationToken.None)).ConfigureAwait(true);
 
-            if (success)
+            if (result.Success)
             {
-                System.Windows.MessageBox.Show("导出成功！", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                System.Windows.MessageBox.Show(result.Message, "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                _logHelper?.Information($"导出测量结果包：MeasurementId={Record.Id}, 文件={dialog.FileName}");
                 return;
             }
 
-            System.Windows.MessageBox.Show("导出失败，请重试", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            System.Windows.MessageBox.Show(result.Message, "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
         catch (Exception ex)
         {
-            _logHelper?.Error($"导出分析详情失败：MeasurementId={Record.Id}", ex);
+            _logHelper?.Error($"导出测量结果包失败：MeasurementId={Record.Id}", ex);
             System.Windows.MessageBox.Show($"导出失败：{ex.Message}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
     }
@@ -1242,6 +1247,9 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
 
             var previewViewModel = App.Services.GetRequiredService<ReportPreviewDialogViewModel>();
             await previewViewModel.InitializeAsync(CurrentReportDraft, BuildReportPreviewDocument(CurrentReportDraft));
+
+            CloseRequested?.Invoke();
+            await Task.Delay(180);
 
             var previewResult = await DialogHost.Show(
                 new Views.Dialogs.ReportPreviewDialog
