@@ -269,7 +269,7 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
 
         var previewVideo = Directory.GetFiles(outputDirectory, "analysis_preview.mp4", SearchOption.AllDirectories)
             .FirstOrDefault();
-        if (!string.IsNullOrWhiteSpace(previewVideo))
+        if (!IsSingleViewOutput(outputDirectory) && !string.IsNullOrWhiteSpace(previewVideo))
         {
             return ToOutputRelativePath(outputDirectory, previewVideo);
         }
@@ -282,6 +282,26 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
         var preferred = videos.FirstOrDefault(path => path.Contains("side", StringComparison.OrdinalIgnoreCase) || path.Contains("侧面", StringComparison.OrdinalIgnoreCase))
             ?? videos.FirstOrDefault();
         return preferred is null ? null : ToOutputRelativePath(outputDirectory, preferred);
+    }
+
+    private static bool IsSingleViewOutput(string outputDirectory)
+    {
+        var taskConfigPath = Directory.GetFiles(outputDirectory, "task_config.json", SearchOption.AllDirectories)
+            .FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(taskConfigPath))
+        {
+            return false;
+        }
+
+        try
+        {
+            var root = JsonNode.Parse(File.ReadAllText(taskConfigPath))?.AsObject();
+            return root is not null && root.TryGetPropertyValue("front_video", out var node) && node is null;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static bool IsAnalysisDataFile(string path)

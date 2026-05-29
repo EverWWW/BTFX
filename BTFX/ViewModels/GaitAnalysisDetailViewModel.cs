@@ -391,11 +391,17 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
 
     public PlotModel RightAnkleAnglePlotModel { get; private set; } = new();
 
+    public PlotModel PelvisAnglePlotModel { get; private set; } = new();
+
+    public PlotModel TrunkAnglePlotModel { get; private set; } = new();
+
     public PlotModel VideoKneeAnglePlotModel { get; private set; } = new();
 
     public PlotModel VideoHipAnglePlotModel { get; private set; } = new();
 
     public PlotModel VideoAnkleAnglePlotModel { get; private set; } = new();
+
+    public PlotModel VideoPelvisAnglePlotModel { get; private set; } = new();
 
     public PlotModel VideoTrunkAnglePlotModel { get; private set; } = new();
 
@@ -515,6 +521,10 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// 测量视频模式。
     /// </summary>
     public string MeasurementVideoModeDisplay => Record?.HasDualVideo == true ? "双视频模式" : "单视频模式";
+
+    public bool IsDualVideoMode => Record?.HasDualVideo == true;
+
+    public bool IsSingleVideoMode => !IsDualVideoMode;
 
     /// <summary>
     /// 测量时间。
@@ -693,15 +703,15 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// 标注视频摘要。
     /// </summary>
-    public string AnnotatedVideoDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.AnnotatedVideoPath)
+    public string AnnotatedVideoDisplay => string.IsNullOrWhiteSpace(ResolveAnnotatedVideoPath())
         ? "--"
-        : Path.GetFileName(AnalysisResult.AnnotatedVideoPath);
+        : Path.GetFileName(ResolveAnnotatedVideoPath()) ?? "--";
 
-    public bool HasAnnotatedVideo => !string.IsNullOrWhiteSpace(AnalysisResult?.AnnotatedVideoPath)
-        && File.Exists(AnalysisResult.AnnotatedVideoPath);
+    public bool HasAnnotatedVideo => !string.IsNullOrWhiteSpace(ResolveAnnotatedVideoPath())
+        && File.Exists(ResolveAnnotatedVideoPath());
 
     public Uri? AnnotatedVideoUri => HasAnnotatedVideo
-        ? new Uri(AnalysisResult!.AnnotatedVideoPath!, UriKind.Absolute)
+        ? new Uri(ResolveAnnotatedVideoPath()!, UriKind.Absolute)
         : null;
 
     /// <summary>
@@ -1361,6 +1371,8 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
                 LoadResultJson(resultPath);
             }
 
+            ApplyAnnotatedVideoDuration();
+
             _detailData.ResultFileCount = CountResultFiles(result.OutputDirectory);
             _detailData.CsvFileCount = CountFiles(result.OutputDirectory, "*.csv");
             _detailData.ImageFileCount = CountFiles(result.OutputDirectory, "*.png") + CountFiles(result.OutputDirectory, "*.jpg") + CountFiles(result.OutputDirectory, "*.jpeg");
@@ -1460,10 +1472,13 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             RightKneeAnglePlotModel = CreateEmptyPlot("右膝角度曲线");
             LeftAnkleAnglePlotModel = CreateEmptyPlot("左踝角度曲线");
             RightAnkleAnglePlotModel = CreateEmptyPlot("右踝角度曲线");
+            PelvisAnglePlotModel = CreateEmptyPlot("骨盆角度曲线");
+            TrunkAnglePlotModel = CreateEmptyPlot("躯干角度曲线");
             VideoKneeAnglePlotModel = CreateEmptyPlot("膝关节角度曲线", alignToPlaybackBar: true);
             VideoHipAnglePlotModel = CreateEmptyPlot("髋关节角度曲线", alignToPlaybackBar: true);
             VideoAnkleAnglePlotModel = CreateEmptyPlot("踝关节角度曲线", alignToPlaybackBar: true);
-            VideoTrunkAnglePlotModel = CreateEmptyPlot("骨盆 / 躯干角度曲线", alignToPlaybackBar: true);
+            VideoPelvisAnglePlotModel = CreateEmptyPlot("骨盆角度曲线", alignToPlaybackBar: true);
+            VideoTrunkAnglePlotModel = CreateEmptyPlot("躯干角度曲线", alignToPlaybackBar: true);
         }
         else
         {
@@ -1474,10 +1489,13 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             RightKneeAnglePlotModel = BuildSingleAnglePlot("右膝角度曲线", _angleFrames, f => f.RightKnee, OxyColors.OrangeRed, maxTime);
             LeftAnkleAnglePlotModel = BuildSingleAnglePlot("左踝角度曲线", _angleFrames, f => f.LeftAnkle, OxyColors.MediumPurple, maxTime);
             RightAnkleAnglePlotModel = BuildSingleAnglePlot("右踝角度曲线", _angleFrames, f => f.RightAnkle, OxyColors.DarkCyan, maxTime);
+            PelvisAnglePlotModel = BuildSingleAnglePlot("骨盆角度曲线", _angleFrames, f => f.Pelvis, OxyColor.Parse("#40385F"), maxTime);
+            TrunkAnglePlotModel = BuildSingleAnglePlot("躯干角度曲线", _angleFrames, f => f.Trunk, OxyColor.Parse("#F2306A"), maxTime);
             VideoKneeAnglePlotModel = BuildDualAnglePlot("膝关节角度曲线", "左膝", "右膝", _angleFrames, f => f.LeftKnee, f => f.RightKnee, OxyColors.ForestGreen, OxyColor.Parse("#F2306A"), maxTime);
             VideoHipAnglePlotModel = BuildDualAnglePlot("髋关节角度曲线", "左髋", "右髋", _angleFrames, f => f.LeftHip, f => f.RightHip, OxyColors.SteelBlue, OxyColors.OrangeRed, maxTime);
             VideoAnkleAnglePlotModel = BuildDualAnglePlot("踝关节角度曲线", "左踝", "右踝", _angleFrames, f => f.LeftAnkle, f => f.RightAnkle, OxyColors.MediumPurple, OxyColors.DarkCyan, maxTime);
-            VideoTrunkAnglePlotModel = BuildDualAnglePlot("骨盆 / 躯干角度曲线", "骨盆", "躯干", _angleFrames, f => f.Pelvis, f => f.Trunk, OxyColor.Parse("#40385F"), OxyColor.Parse("#F2306A"), maxTime);
+            VideoPelvisAnglePlotModel = BuildSinglePlaybackAnglePlot("骨盆角度曲线", "骨盆", _angleFrames, f => f.Pelvis, OxyColor.Parse("#40385F"), maxTime);
+            VideoTrunkAnglePlotModel = BuildSinglePlaybackAnglePlot("躯干角度曲线", "躯干", _angleFrames, f => f.Trunk, OxyColor.Parse("#F2306A"), maxTime);
         }
 
         SetVideoPlaybackTime(_videoPlaybackSeconds);
@@ -1500,6 +1518,54 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         return Path.IsPathRooted(Record.MeasurementFolderPath)
             ? Record.MeasurementFolderPath
             : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Record.MeasurementFolderPath);
+    }
+
+    private string? ResolveAnnotatedVideoPath()
+    {
+        var path = AnalysisResult?.AnnotatedVideoPath;
+        if (!string.IsNullOrWhiteSpace(path)
+            && File.Exists(path)
+            && !(IsSingleViewOutput(AnalysisResult?.OutputDirectory) && Path.GetFileName(path).Equals("analysis_preview.mp4", StringComparison.OrdinalIgnoreCase)))
+        {
+            return path;
+        }
+
+        var outputDirectory = AnalysisResult?.OutputDirectory;
+        if (!IsSingleViewOutput(outputDirectory) || !Directory.Exists(outputDirectory))
+        {
+            return path;
+        }
+
+        return Directory.GetFiles(outputDirectory, "*.mp4", SearchOption.AllDirectories)
+            .Where(file => Path.GetFileName(file).Contains("Sports2D", StringComparison.OrdinalIgnoreCase))
+            .FirstOrDefault(file => file.Contains("side", StringComparison.OrdinalIgnoreCase) || file.Contains("侧面", StringComparison.OrdinalIgnoreCase))
+            ?? Directory.GetFiles(outputDirectory, "*.mp4", SearchOption.AllDirectories)
+                .FirstOrDefault(file => Path.GetFileName(file).Contains("Sports2D", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool IsSingleViewOutput(string? outputDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(outputDirectory) || !Directory.Exists(outputDirectory))
+        {
+            return false;
+        }
+
+        var taskConfigPath = Directory.GetFiles(outputDirectory, "task_config.json", SearchOption.AllDirectories)
+            .FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(taskConfigPath))
+        {
+            return false;
+        }
+
+        try
+        {
+            var root = JsonNode.Parse(File.ReadAllText(taskConfigPath))?.AsObject();
+            return root is not null && root.TryGetPropertyValue("front_video", out var node) && node is null;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static string? ResolveResultJsonPath(AnalysisResult result)
@@ -1535,7 +1601,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         foreach (var line in lines)
         {
             var parts = line.Split(',');
-            if (parts.Length < 8 || !int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var frameIndex))
+            if (parts.Length < 7 || !int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var frameIndex))
             {
                 continue;
             }
@@ -1554,6 +1620,97 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         }
 
         return frames;
+    }
+
+    private void ApplyAnnotatedVideoDuration()
+    {
+        var videoPath = ResolveAnnotatedVideoPath();
+        if (string.IsNullOrWhiteSpace(videoPath) || !File.Exists(videoPath))
+        {
+            return;
+        }
+
+        var duration = TryReadVideoDuration(videoPath);
+        if (duration is not > 0)
+        {
+            return;
+        }
+
+        var durationValue = duration.Value;
+        if (_detailData.VideoDurationSec is not > 0
+            || Math.Abs(_detailData.VideoDurationSec.Value - durationValue) > 0.5d)
+        {
+            _detailData.VideoDurationSec = durationValue;
+        }
+    }
+
+    private static double? TryReadVideoDuration(string videoPath)
+    {
+        var ffprobePath = ResolveFfprobePath();
+        if (string.IsNullOrWhiteSpace(ffprobePath))
+        {
+            return null;
+        }
+
+        try
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = ffprobePath,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+            startInfo.ArgumentList.Add("-v");
+            startInfo.ArgumentList.Add("error");
+            startInfo.ArgumentList.Add("-show_entries");
+            startInfo.ArgumentList.Add("format=duration");
+            startInfo.ArgumentList.Add("-of");
+            startInfo.ArgumentList.Add("default=noprint_wrappers=1:nokey=1");
+            startInfo.ArgumentList.Add(videoPath);
+
+            using var process = Process.Start(startInfo);
+            if (process is null)
+            {
+                return null;
+            }
+
+            var output = process.StandardOutput.ReadToEnd();
+            if (!process.WaitForExit(3000))
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch
+                {
+                    // ffprobe 超时只影响时长修正，不阻断详情页加载。
+                }
+
+                return null;
+            }
+
+            return process.ExitCode == 0 && double.TryParse(output.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
+                ? value
+                : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string? ResolveFfprobePath()
+    {
+        var candidates = new[]
+        {
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffmpeg", "ffprobe.exe"),
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffprobe.exe"),
+            "ffprobe.exe"
+        };
+
+        return candidates.FirstOrDefault(File.Exists);
     }
 
     private void LoadCycleDetails(JsonObject? gaitCycle, JsonObject? gaitEvents, double fps)
@@ -1693,12 +1850,29 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         return model;
     }
 
+    private static PlotModel BuildSinglePlaybackAnglePlot(
+        string title,
+        string seriesName,
+        List<AnalysisAngleFrame> frames,
+        Func<AnalysisAngleFrame, double> valueSelector,
+        OxyColor color,
+        double maxTime)
+    {
+        var model = CreatePlotBase(title, "时间 (s)", "角度 (°)", alignToPlaybackBar: true);
+        model.Axes.OfType<LinearAxis>().First(axis => axis.Position == AxisPosition.Bottom).Maximum = Math.Max(1, maxTime);
+        AddLineSeries(model, seriesName, frames, valueSelector, color);
+        AddPlaybackCursor(model, 0);
+        ApplyValueAxisRange(model);
+        return model;
+    }
+
     public void SetVideoPlaybackTime(double seconds)
     {
         _videoPlaybackSeconds = Math.Max(0, seconds);
         UpdatePlaybackCursor(VideoKneeAnglePlotModel, _videoPlaybackSeconds);
         UpdatePlaybackCursor(VideoHipAnglePlotModel, _videoPlaybackSeconds);
         UpdatePlaybackCursor(VideoAnkleAnglePlotModel, _videoPlaybackSeconds);
+        UpdatePlaybackCursor(VideoPelvisAnglePlotModel, _videoPlaybackSeconds);
         UpdatePlaybackCursor(VideoTrunkAnglePlotModel, _videoPlaybackSeconds);
     }
 
@@ -1713,6 +1887,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         UpdateVideoPlotMaximum(VideoKneeAnglePlotModel, maximum);
         UpdateVideoPlotMaximum(VideoHipAnglePlotModel, maximum);
         UpdateVideoPlotMaximum(VideoAnkleAnglePlotModel, maximum);
+        UpdateVideoPlotMaximum(VideoPelvisAnglePlotModel, maximum);
         UpdateVideoPlotMaximum(VideoTrunkAnglePlotModel, maximum);
         SetVideoPlaybackTime(Math.Min(_videoPlaybackSeconds, maximum));
     }
@@ -1916,6 +2091,8 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         OnPropertyChanged(nameof(MeasurementName));
         OnPropertyChanged(nameof(MeasurementTypeDisplay));
         OnPropertyChanged(nameof(MeasurementVideoModeDisplay));
+        OnPropertyChanged(nameof(IsDualVideoMode));
+        OnPropertyChanged(nameof(IsSingleVideoMode));
         OnPropertyChanged(nameof(MeasurementDate));
         OnPropertyChanged(nameof(RequestIdDisplay));
         OnPropertyChanged(nameof(TaskStatusDisplay));
@@ -2015,9 +2192,12 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         OnPropertyChanged(nameof(RightKneeAnglePlotModel));
         OnPropertyChanged(nameof(LeftAnkleAnglePlotModel));
         OnPropertyChanged(nameof(RightAnkleAnglePlotModel));
+        OnPropertyChanged(nameof(PelvisAnglePlotModel));
+        OnPropertyChanged(nameof(TrunkAnglePlotModel));
         OnPropertyChanged(nameof(VideoKneeAnglePlotModel));
         OnPropertyChanged(nameof(VideoHipAnglePlotModel));
         OnPropertyChanged(nameof(VideoAnkleAnglePlotModel));
+        OnPropertyChanged(nameof(VideoPelvisAnglePlotModel));
         OnPropertyChanged(nameof(VideoTrunkAnglePlotModel));
         OnPropertyChanged(nameof(VideoTrajectoryPlotModel));
     }

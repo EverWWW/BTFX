@@ -82,7 +82,7 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
 
     public bool IncludeTrunkPelvisParameters
     {
-        get => _includeTrunkPelvisParameters;
+        get => _includeTrunkPelvisParameters && CanIncludeTrunkPelvisParameters;
         set => SetSectionProperty(ref _includeTrunkPelvisParameters, value);
     }
 
@@ -137,6 +137,10 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
             return record.HasDualVideo ? "双视频模式" : record.HasSideVideo || record.HasFrontVideo ? "单视频模式" : "--";
         }
     }
+
+    public bool IsDualVideoMode => Report?.MeasurementRecord?.HasDualVideo == true;
+
+    public bool CanIncludeTrunkPelvisParameters => IsDualVideoMode;
 
     public string ReportStatusDisplay => Report is null ? "--" : GetEnumDescription(Report.Status);
 
@@ -362,8 +366,8 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
 
         if (IncludeKinematicParameters)
         {
-            AddClinicalParameterSection(document, "运动学参数", "展示下肢主要关节活动范围，用于识别关节活动受限、代偿和左右活动差异。",
-            [
+            var kinematicItems = new List<(string Name, string Value, string Unit, string Reference)>
+            {
                 ("左髋 ROM", FormatNumber(data.LeftHipRomDeg, "F1"), "°", "--"),
                 ("右髋 ROM", FormatNumber(data.RightHipRomDeg, "F1"), "°", "--"),
                 ("左膝 ROM", FormatNumber(data.LeftKneeRomDeg, "F1"), "°", "--"),
@@ -372,12 +376,19 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
                 ("右踝 ROM", FormatNumber(data.RightAnkleRomDeg, "F1"), "°", "--"),
                 ("髋关节平均 ROM", FormatNumber(data.HipRomDeg, "F1"), "°", "--"),
                 ("膝关节平均 ROM", FormatNumber(data.KneeRomDeg, "F1"), "°", "--"),
-                ("踝关节平均 ROM", FormatNumber(data.AnkleRomDeg, "F1"), "°", "--"),
-                ("骨盆冠状面角度", FormatNumber(data.PelvisCoronalRomDeg, "F1"), "°", "--")
-            ]);
+                ("踝关节平均 ROM", FormatNumber(data.AnkleRomDeg, "F1"), "°", "--")
+            };
+
+            if (data.IsDualVideoMode)
+            {
+                kinematicItems.Add(("骨盆冠状面角度", FormatNumber(data.PelvisCoronalRomDeg, "F1"), "°", "--"));
+            }
+
+            AddClinicalParameterSection(document, "运动学参数", "展示下肢主要关节活动范围，用于识别关节活动受限、代偿和左右活动差异。",
+                kinematicItems);
         }
 
-        if (IncludeTrunkPelvisParameters)
+        if (IncludeTrunkPelvisParameters && data.IsDualVideoMode)
         {
             AddClinicalParameterSection(document, "躯干和骨盆参数", "用于观察躯干稳定性、骨盆控制能力和步行过程中的姿态代偿情况。",
             [
@@ -846,13 +857,18 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         }
 
         AddNoteBox(document, "以下曲线来自本次分析输出的 joint_angle.csv，用于展示关节角度随视频时间变化的趋势。");
-        var curveDefinitions = new (string Title, Func<ReportAngleFrame, double> First, Func<ReportAngleFrame, double> Second, string FirstName, string SecondName)[]
+        var curveDefinitions = new List<(string Title, Func<ReportAngleFrame, double> First, Func<ReportAngleFrame, double>? Second, string FirstName, string? SecondName)>
         {
             ("髋关节角度曲线", f => f.LeftHip, f => f.RightHip, "左髋", "右髋"),
             ("膝关节角度曲线", f => f.LeftKnee, f => f.RightKnee, "左膝", "右膝"),
-            ("踝关节角度曲线", f => f.LeftAnkle, f => f.RightAnkle, "左踝", "右踝"),
-            ("骨盆 / 躯干角度曲线", f => f.Pelvis, f => f.Trunk, "骨盆", "躯干")
+            ("踝关节角度曲线", f => f.LeftAnkle, f => f.RightAnkle, "左踝", "右踝")
         };
+
+        if (data.IsDualVideoMode)
+        {
+            curveDefinitions.Add(("骨盆角度曲线", f => f.Pelvis, null, "骨盆", null));
+            curveDefinitions.Add(("躯干角度曲线", f => f.Trunk, null, "躯干", null));
+        }
 
         foreach (var curve in curveDefinitions)
         {
@@ -913,9 +929,9 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         string title,
         IReadOnlyList<ReportAngleFrame> frames,
         Func<ReportAngleFrame, double> firstSelector,
-        Func<ReportAngleFrame, double> secondSelector,
+        Func<ReportAngleFrame, double>? secondSelector,
         string firstName,
-        string secondName,
+        string? secondName,
         double? videoDurationSec)
     {
         const int width = 700;
@@ -926,7 +942,9 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         const int bottom = 36;
 
         var values = frames
-            .SelectMany(frame => new[] { firstSelector(frame), secondSelector(frame) })
+            .SelectMany(frame => secondSelector is null
+                ? new[] { firstSelector(frame) }
+                : new[] { firstSelector(frame), secondSelector(frame) })
             .Where(value => !double.IsNaN(value) && !double.IsInfinity(value))
             .ToArray();
         var maxTime = Math.Max(1d, videoDurationSec ?? frames.Max(frame => frame.TimeS));
@@ -951,9 +969,15 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
             var textBrush = Brushes.Black;
             var subTextBrush = new SolidColorBrush(Color.FromRgb(32, 32, 32));
 
-            DrawText(dc, $"{title}（{firstName} / {secondName}）", 15, FontWeights.SemiBold, textBrush, new Point(left, 8));
+            var titleText = string.IsNullOrWhiteSpace(secondName)
+                ? $"{title}（{firstName}）"
+                : $"{title}（{firstName} / {secondName}）";
+            DrawText(dc, titleText, 15, FontWeights.SemiBold, textBrush, new Point(left, 8));
             DrawLegend(dc, firstName, leftPen.Brush, new Point(width - 170, 12));
-            DrawLegend(dc, secondName, rightPen.Brush, new Point(width - 95, 12));
+            if (!string.IsNullOrWhiteSpace(secondName))
+            {
+                DrawLegend(dc, secondName, rightPen.Brush, new Point(width - 95, 12));
+            }
 
             var plotWidth = width - left - right;
             var plotHeight = height - top - bottom;
@@ -975,7 +999,10 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
             dc.DrawLine(axisPen, new Point(left, top), new Point(left, top + plotHeight));
             dc.DrawLine(axisPen, new Point(left, top + plotHeight), new Point(left + plotWidth, top + plotHeight));
             DrawCurve(dc, frames, firstSelector, leftPen, left, top, plotWidth, plotHeight, maxTime, minValue, maxValue);
-            DrawCurve(dc, frames, secondSelector, rightPen, left, top, plotWidth, plotHeight, maxTime, minValue, maxValue);
+            if (secondSelector is not null)
+            {
+                DrawCurve(dc, frames, secondSelector, rightPen, left, top, plotWidth, plotHeight, maxTime, minValue, maxValue);
+            }
             dc.DrawRectangle(null, axisPen, new Rect(left, top, plotWidth, plotHeight));
         }
 
@@ -1256,6 +1283,8 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         OnPropertyChanged(nameof(PatientNameDisplay));
         OnPropertyChanged(nameof(MeasurementTypeDisplay));
         OnPropertyChanged(nameof(VideoModeDisplay));
+        OnPropertyChanged(nameof(IsDualVideoMode));
+        OnPropertyChanged(nameof(CanIncludeTrunkPelvisParameters));
         OnPropertyChanged(nameof(MeasurementDateDisplay));
         OnPropertyChanged(nameof(ReportStatusDisplay));
         OnPropertyChanged(nameof(ExportFormatDisplay));
@@ -1338,10 +1367,12 @@ internal sealed class ReportAnalysisSnapshot
     public double? ValidFrameRatio { get; private set; }
     public double? SymmetryScore { get; private set; }
     public List<ReportAngleFrame> AngleFrames { get; } = [];
+    public bool IsDualVideoMode { get; private set; }
 
     public static ReportAnalysisSnapshot From(Report report)
     {
         var snapshot = new ReportAnalysisSnapshot();
+        snapshot.IsDualVideoMode = report.MeasurementRecord?.HasDualVideo == true;
         snapshot.LoadFromReportNavigation(report);
         var resultPath = ResolveResultJsonPath(report.AnalysisResult);
         if (!string.IsNullOrWhiteSpace(resultPath) && File.Exists(resultPath))
@@ -1484,7 +1515,7 @@ internal sealed class ReportAnalysisSnapshot
         foreach (var line in File.ReadLines(path).Skip(1))
         {
             var parts = line.Split(',');
-            if (parts.Length < 8 || !int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var frameIndex))
+            if (parts.Length < 7 || !int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var frameIndex))
             {
                 continue;
             }

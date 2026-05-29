@@ -603,9 +603,9 @@ public class GaitAnalysisService : IGaitAnalysisService
         var frontConfigTemplatePath = Path.Combine(algorithmDirectory, FrontConfigFileName);
         var sideConfigPath = Path.Combine(outputDir, SideConfigFileName);
         var frontConfigPath = Path.Combine(outputDir, FrontConfigFileName);
+        var hasFrontVideo = preparedInput.FrontVideoPath is not null;
 
         File.Copy(sideConfigTemplatePath, sideConfigPath, overwrite: true);
-        File.Copy(frontConfigTemplatePath, frontConfigPath, overwrite: true);
 
         WriteAlgorithmToml(
             sideConfigPath,
@@ -616,18 +616,27 @@ public class GaitAnalysisService : IGaitAnalysisService
             cameraDistance,
             isSideConfig: true);
 
-        WriteAlgorithmToml(
-            frontConfigPath,
-            preparedInput.FrontVideoPath is null ? "[]" : $"['{FrontInputFileName}']",
-            inputDir,
-            outputDir,
-            heightM,
-            cameraDistance,
-            isSideConfig: false);
+        if (hasFrontVideo)
+        {
+            File.Copy(frontConfigTemplatePath, frontConfigPath, overwrite: true);
+            WriteAlgorithmToml(
+                frontConfigPath,
+                $"['{FrontInputFileName}']",
+                inputDir,
+                outputDir,
+                heightM,
+                cameraDistance,
+                isSideConfig: false);
+        }
 
         Directory.CreateDirectory(configSnapshotDir);
         File.Copy(sideConfigPath, Path.Combine(configSnapshotDir, SideConfigFileName), overwrite: true);
-        File.Copy(frontConfigPath, Path.Combine(configSnapshotDir, FrontConfigFileName), overwrite: true);
+        string? frontConfigSnapshotPath = null;
+        if (hasFrontVideo)
+        {
+            frontConfigSnapshotPath = Path.Combine(configSnapshotDir, FrontConfigFileName);
+            File.Copy(frontConfigPath, frontConfigSnapshotPath, overwrite: true);
+        }
 
         var manifestPath = Path.Combine(configSnapshotDir, Constants.TASK_CONFIG_FILENAME);
         var manifest = new
@@ -638,9 +647,9 @@ public class GaitAnalysisService : IGaitAnalysisService
             input_dir = inputDir,
             result_dir = outputDir,
             side_config = sideConfigPath,
-            front_config = frontConfigPath,
+            front_config = hasFrontVideo ? frontConfigPath : null,
             side_config_snapshot = Path.Combine(configSnapshotDir, SideConfigFileName),
-            front_config_snapshot = Path.Combine(configSnapshotDir, FrontConfigFileName),
+            front_config_snapshot = frontConfigSnapshotPath,
             height_m = heightM,
             perspective_value = cameraDistance,
             generated_at = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
@@ -756,11 +765,17 @@ public class GaitAnalysisService : IGaitAnalysisService
                 return null;
             }
 
-            var sideVideo = FindSports2DVideo(outputDir, "side", "侧面", "渚ч潰");
-            var frontVideo = FindSports2DVideo(outputDir, "front", "正面", "姝ｉ潰");
+            var sideVideo = FindSports2DVideo(outputDir, allowFallback: true, "side", "侧面", "渚ч潰");
+            var frontVideo = FindSports2DVideo(outputDir, allowFallback: false, "front", "正面", "姝ｉ潰");
             if (string.IsNullOrWhiteSpace(sideVideo) || string.IsNullOrWhiteSpace(frontVideo))
             {
                 RaiseLog("未同时找到侧面和正面标注视频，跳过双视频拼接预览生成。");
+                return null;
+            }
+
+            if (string.Equals(sideVideo, frontVideo, StringComparison.OrdinalIgnoreCase))
+            {
+                RaiseLog("侧面和正面标注视频指向同一文件，跳过双视频拼接预览生成。");
                 return null;
             }
 
@@ -843,7 +858,7 @@ public class GaitAnalysisService : IGaitAnalysisService
         }
     }
 
-    private static string? FindSports2DVideo(string outputDir, params string[] preferredTokens)
+    private static string? FindSports2DVideo(string outputDir, bool allowFallback, params string[] preferredTokens)
     {
         if (!Directory.Exists(outputDir))
         {
@@ -853,8 +868,8 @@ public class GaitAnalysisService : IGaitAnalysisService
         var videos = Directory.GetFiles(outputDir, "*.mp4", SearchOption.AllDirectories)
             .Where(path => path.Contains("Sports2D", StringComparison.OrdinalIgnoreCase))
             .ToList();
-        return videos.FirstOrDefault(path => preferredTokens.Any(token => path.Contains(token, StringComparison.OrdinalIgnoreCase)))
-            ?? videos.FirstOrDefault();
+        var matched = videos.FirstOrDefault(path => preferredTokens.Any(token => path.Contains(token, StringComparison.OrdinalIgnoreCase)));
+        return matched ?? (allowFallback ? videos.FirstOrDefault() : null);
     }
 
     private static void WriteRunInfo(

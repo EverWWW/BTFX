@@ -439,6 +439,7 @@
                                                 Style="{StaticResource ReportCheckBoxStyle}" />
                                             <CheckBox
                                                 Content="躯干和骨盆参数"
+                                                IsEnabled="{Binding CanIncludeTrunkPelvisParameters}"
                                                 IsChecked="{Binding IncludeTrunkPelvisParameters, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Style="{StaticResource ReportCheckBoxStyle}" />
                                             <CheckBox

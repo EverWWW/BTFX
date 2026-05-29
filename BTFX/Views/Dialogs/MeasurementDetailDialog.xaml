@@ -833,7 +833,7 @@
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding RightAnkleRomDisplay}" />
                                                     </StackPanel>
-                                                    <StackPanel Margin="0,0,24,0">
+                                                    <StackPanel Margin="0,0,24,0" Visibility="{Binding IsDualVideoMode, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                         <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="骨盆冠状面角度" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
@@ -852,7 +852,7 @@
                                             <ColumnDefinition Width="1.05*" />
                                         </Grid.ColumnDefinitions>
 
-                                        <StackPanel Grid.Column="0">
+                                        <StackPanel Grid.Column="0" Visibility="{Binding IsDualVideoMode, Converter={StaticResource BooleanToVisibilityConverter}}">
                                             <StackPanel Margin="0,0,0,14" Orientation="Horizontal">
                                                 <Border
                                                     Width="4"
@@ -1150,12 +1150,32 @@
                                                     <oxy:PlotView Height="190" Model="{Binding LeftAnkleAnglePlotModel}" />
                                                 </Border>
                                                 <Border
+                                                    Margin="0,0,0,12"
                                                     Padding="14"
                                                     Background="#FFFFFF"
                                                     BorderBrush="{StaticResource CardBorderBrush}"
                                                     BorderThickness="1"
                                                     CornerRadius="8">
                                                     <oxy:PlotView Height="190" Model="{Binding RightAnkleAnglePlotModel}" />
+                                                </Border>
+                                                <Border
+                                                    Margin="0,0,0,12"
+                                                    Padding="14"
+                                                    Background="#FFFFFF"
+                                                    BorderBrush="{StaticResource CardBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8"
+                                                    Visibility="{Binding IsDualVideoMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                    <oxy:PlotView Height="190" Model="{Binding PelvisAnglePlotModel}" />
+                                                </Border>
+                                                <Border
+                                                    Padding="14"
+                                                    Background="#FFFFFF"
+                                                    BorderBrush="{StaticResource CardBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8"
+                                                    Visibility="{Binding IsDualVideoMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                    <oxy:PlotView Height="190" Model="{Binding TrunkAnglePlotModel}" />
                                                 </Border>
                                             </StackPanel>
                                         </Border>
@@ -1343,11 +1363,18 @@
                                                 <oxy:PlotView Height="210" Model="{Binding VideoAnkleAnglePlotModel}" />
                                             </StackPanel>
                                         </Border>
-                                        <Border Margin="0,0,0,14" Style="{StaticResource SectionCardStyle}">
+                                        <Border Margin="0,0,0,14" Style="{StaticResource SectionCardStyle}" Visibility="{Binding IsDualVideoMode, Converter={StaticResource BooleanToVisibilityConverter}}">
                                             <StackPanel>
                                                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                                                     <Border Width="26" Height="4" Margin="0,0,6,0" VerticalAlignment="Center" Background="#40385F" CornerRadius="2" />
                                                     <TextBlock Margin="0,0,18,0" VerticalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="13" Foreground="#666666" Text="骨盆" />
+                                                </StackPanel>
+                                                <oxy:PlotView Height="210" Model="{Binding VideoPelvisAnglePlotModel}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Margin="0,0,0,14" Style="{StaticResource SectionCardStyle}" Visibility="{Binding IsDualVideoMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <StackPanel>
+                                                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                                                     <Border Width="26" Height="4" Margin="0,0,6,0" VerticalAlignment="Center" Background="#F2306A" CornerRadius="2" />
                                                     <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="13" Foreground="#666666" Text="躯干" />
                                                 </StackPanel>

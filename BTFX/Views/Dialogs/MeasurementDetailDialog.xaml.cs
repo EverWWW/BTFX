@@ -172,6 +172,7 @@ public partial class MeasurementDetailDialog
 
     private void AnalysisPreviewMediaElement_OnMediaOpened(object sender, RoutedEventArgs e)
     {
+        AnalysisPreviewMediaElement.SpeedRatio = 1.0;
         var duration = AnalysisPreviewMediaElement.NaturalDuration.HasTimeSpan
             ? AnalysisPreviewMediaElement.NaturalDuration.TimeSpan
             : TimeSpan.Zero;
@@ -225,6 +226,7 @@ public partial class MeasurementDetailDialog
                 SeekAnalysisPreview(0);
             }
 
+            AnalysisPreviewMediaElement.SpeedRatio = 1.0;
             AnalysisPreviewMediaElement.Play();
             SetAnalysisPreviewPlaying(true);
         }
