@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Threading;
 using BTFX.Common;
@@ -197,6 +198,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(ResultAnalysisDurationDisplay))]
     [NotifyPropertyChangedFor(nameof(ResultCadenceDisplay))]
     [NotifyPropertyChangedFor(nameof(ResultStatusDisplay))]
+    [NotifyPropertyChangedFor(nameof(ResultAnalysisModeDisplay))]
     private AnalysisResult? _analysisResult;
 
     /// <summary>
@@ -226,6 +228,24 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     public string ResultTaskIdDisplay => string.IsNullOrWhiteSpace(AnalysisResult?.RequestId)
         ? "--"
         : AnalysisResult.RequestId;
+
+    public string ResultAnalysisModeDisplay
+    {
+        get
+        {
+            if (CurrentMeasurement?.HasDualVideo == true)
+            {
+                return "双视角模式";
+            }
+
+            if (CurrentMeasurement?.HasSideVideo == true || CurrentMeasurement?.HasFrontVideo == true)
+            {
+                return "单视角模式";
+            }
+
+            return "--";
+        }
+    }
 
     public string ResultStatusDisplay
     {
@@ -610,6 +630,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         AllPrerequisitesMet = items.Where(i => i.IsRequired).All(i => i.IsMet);
         OnPropertyChanged(nameof(PatientHeightDisplay));
         OnPropertyChanged(nameof(PatientWeightDisplay));
+        OnPropertyChanged(nameof(ResultAnalysisModeDisplay));
     }
 
     public async Task RestoreExistingMeasurementAsync(
@@ -1208,12 +1229,48 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     /// </summary>
     private async Task OnAnalysisFailedAsync(int? errorCode, string? errorMessage)
     {
+        var friendlyMessage = ToUserFriendlyAnalysisError(errorMessage);
         ErrorCode = errorCode;
-        ErrorDescription = errorMessage ?? "未知错误";
-        ErrorSuggestion = GetErrorSuggestion(errorCode);
+        ErrorDescription = friendlyMessage.Description;
+        ErrorSuggestion = friendlyMessage.Suggestion ?? GetErrorSuggestion(errorCode);
         AnalysisState = AnalysisState.Failed;
         await UpdateCurrentMeasurementStatusAsync(MeasurementStatus.Failed, "测量状态已更新为分析失败");
-        AddLog($"分析失败: [{errorCode}] {errorMessage}");
+        AddLog($"分析失败: [{errorCode}] {friendlyMessage.Description}");
+    }
+
+    private static (string Description, string? Suggestion) ToUserFriendlyAnalysisError(string? rawMessage)
+    {
+        var message = NormalizeWhitespace(rawMessage);
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return ("分析失败", "请检查视频文件和算法日志后重新分析。");
+        }
+
+        var lower = message.ToLowerInvariant();
+        if (lower.Contains("未检测到完整人体关键点", StringComparison.Ordinal)
+            || lower.Contains("at least one of the following markers is missing", StringComparison.Ordinal)
+            || lower.Contains("marker is missing", StringComparison.Ordinal)
+            || lower.Contains("markers is missing", StringComparison.Ordinal)
+            || lower.Contains("person is entirely visible", StringComparison.Ordinal)
+            || lower.Contains("person is entirely wisible", StringComparison.Ordinal))
+        {
+            return ("未检测到完整人体关键点", "请确认被采集人完整入镜、光线充足、无遮挡，并使用有效的人体步态视频重新分析。");
+        }
+
+        var logIndex = message.IndexOf("详细日志:", StringComparison.Ordinal);
+        if (logIndex >= 0)
+        {
+            message = message[..logIndex].TrimEnd('。', '，', ' ');
+        }
+
+        return (message, null);
+    }
+
+    private static string NormalizeWhitespace(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? string.Empty
+            : Regex.Replace(value.Trim(), @"\s+", " ");
     }
 
     private async Task UpdateCurrentMeasurementStatusAsync(MeasurementStatus status, string logMessage)

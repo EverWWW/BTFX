@@ -368,14 +368,14 @@
                             Grid.Column="2"
                             VerticalAlignment="Center"
                             Style="{StaticResource ReportLabelTextStyle}"
-                            Text="视频模式" />
+                            Text="分析模式" />
                         <TextBlock
                             Grid.Row="2"
                             Grid.Column="3"
                             Margin="0,0,24,0"
                             VerticalAlignment="Center"
                             Style="{StaticResource ReportValueTextStyle}"
-                            Text="{Binding VideoModeDisplay, Mode=OneWay, TargetNullValue=--}" />
+                            Text="{Binding AnalysisModeDisplay, Mode=OneWay, TargetNullValue=--}" />
                         <TextBlock
                             Grid.Row="2"
                             Grid.Column="4"
@@ -572,6 +572,7 @@
                                         Grid.Column="1"
                                         Margin="24,0,0,0"
                                         VerticalAlignment="Center"
+                                        Visibility="Collapsed"
                                         Style="{StaticResource ReportHintTextStyle}"
                                         Text="1 / 1" />
                                     <StackPanel

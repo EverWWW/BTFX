@@ -217,7 +217,6 @@ public partial class LoginViewModel : ObservableObject
             });
 
             // 导航到患者选择界面
-            // 注意：游客模式将在游客登录命令中直接导航到主界面
             _navigationService.NavigateTo("PatientSelectionViewModel");
         }
         catch (Exception ex)
@@ -235,39 +234,9 @@ public partial class LoginViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 游客登录命令
+    /// 验证输入
     /// </summary>
-    [RelayCommand]
-    private async Task GuestLoginAsync()
-    {
-        try
-        {
-            ErrorMessage = string.Empty;
-            IsLoggingIn = true;
-
-            var guestUser = await _authenticationService.GuestLoginAsync();
-            _sessionService.SetCurrentUser(guestUser);
-
-            _logHelper?.Information("游客登录成功");
-
-            // 游客直接进入主界面，跳过患者选择
-            _navigationService.NavigateTo("MainContainerViewModel");
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = "游客登录失败，请稍后重试";
-            _logHelper?.Error("游客登录异常", ex);
-            }
-            finally
-            {
-                IsLoggingIn = false;
-            }
-        }
-
-        /// <summary>
-        /// 验证输入
-        /// </summary>
-        private bool ValidateInput()
+    private bool ValidateInput()
     {
         var username = Username.Trim();
         var password = Password.Trim();

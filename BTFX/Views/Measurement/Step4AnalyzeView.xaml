@@ -319,6 +319,7 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
                         <Border Grid.Column="0" Style="{StaticResource SummaryTileStyle}">
@@ -351,6 +352,13 @@
 
                         <Border Grid.Column="2" Style="{StaticResource SummaryTileStyle}">
                             <StackPanel>
+                                <TextBlock Style="{StaticResource MetricLabelStyle}" Text="分析模式" />
+                                <TextBlock Style="{StaticResource MetricValueStyle}" Text="{Binding ResultAnalysisModeDisplay, Mode=OneWay, FallbackValue=--, TargetNullValue=--}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="3" Style="{StaticResource SummaryTileStyle}">
+                            <StackPanel>
                                 <TextBlock Style="{StaticResource MetricLabelStyle}" Text="任务编号" />
                                 <TextBlock
                                     FontSize="17"
@@ -361,7 +369,7 @@
                         </Border>
 
                         <Border
-                            Grid.Column="3"
+                            Grid.Column="4"
                             Margin="0"
                             Style="{StaticResource SummaryTileStyle}">
                             <StackPanel>

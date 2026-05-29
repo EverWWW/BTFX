@@ -345,33 +345,12 @@
                             </Button>
                         </Grid>
 
-                        <!-- 游客登录 + 记住密码 -->
+                        <!-- 记住密码 -->
                         <Grid Margin="20,20,20,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-
-                            <!-- 游客登录 -->
-                            <Button
-                                Grid.Column="0"
-                                Padding="0"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Command="{Binding GuestLoginCommand}"
-                                Cursor="Hand"
-                                FontSize="18"
-                                Foreground="#403B5B">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <TextBlock
-                                            Cursor="Hand"
-                                            FontSize="18"
-                                            Foreground="#403B5B"
-                                            Text="{DynamicResource GuestLogin}" />
-                                    </ControlTemplate>
-                                </Button.Template>
-                            </Button>
 
                             <!-- 记住密码 -->
                             <StackPanel

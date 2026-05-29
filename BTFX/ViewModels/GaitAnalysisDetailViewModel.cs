@@ -518,9 +518,9 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     public string MeasurementTypeDisplay => Record is null ? "自然步行" : GetEnumDescription(Record.MeasurementType);
 
     /// <summary>
-    /// 测量视频模式。
+    /// 分析模式。
     /// </summary>
-    public string MeasurementVideoModeDisplay => Record?.HasDualVideo == true ? "双视频模式" : "单视频模式";
+    public string MeasurementVideoModeDisplay => Record?.HasDualVideo == true ? "双视角模式" : "单视角模式";
 
     public bool IsDualVideoMode => Record?.HasDualVideo == true;
 

@@ -829,6 +829,7 @@
                                             Grid.Column="8"
                                             Command="{Binding DataContext.ViewDetailCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                             CommandParameter="{Binding}"
+                                            IsEnabled="{Binding CanViewDetail}"
                                             Style="{StaticResource ActionIconButtonStyle}">
                                             <Image
                                                 Width="28"
@@ -841,6 +842,7 @@
                                             Grid.Column="9"
                                             Command="{Binding DataContext.ExportSingleCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                             CommandParameter="{Binding}"
+                                            IsEnabled="{Binding CanExportResult}"
                                             Style="{StaticResource ActionIconButtonStyle}"
                                             Visibility="{Binding DataContext.CanExport, RelativeSource={RelativeSource AncestorType=ItemsControl}, Converter={StaticResource BooleanToVisibilityConverter}}">
                                             <Image
@@ -854,8 +856,8 @@
                                             Grid.Column="10"
                                             Command="{Binding DataContext.DeleteSingleCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                             CommandParameter="{Binding}"
-                                            Style="{StaticResource ActionIconButtonStyle}"
-                                            Visibility="{Binding DataContext.CanDelete, RelativeSource={RelativeSource AncestorType=ItemsControl}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            IsEnabled="{Binding DataContext.CanDelete, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            Style="{StaticResource ActionIconButtonStyle}">
                                             <Image
                                                 Width="28"
                                                 Height="28"

@@ -142,7 +142,6 @@ public class UserEditViewModel : ObservableObject
     {
         RoleOptions.Add(new RoleOption { Value = UserRole.Administrator, Display = "管理员" });
         RoleOptions.Add(new RoleOption { Value = UserRole.Operator, Display = "操作员" });
-        RoleOptions.Add(new RoleOption { Value = UserRole.Guest, Display = "访客" });
     }
 
     private void LoadData()
@@ -168,7 +167,8 @@ public class UserEditViewModel : ObservableObject
                         Phone = _originalUser.Phone;
                         IsEnabled = _originalUser.IsEnabled;
 
-                        SelectedRole = RoleOptions.FirstOrDefault(r => r.Value == _originalUser.Role);
+                        SelectedRole = RoleOptions.FirstOrDefault(r => r.Value == _originalUser.Role)
+                            ?? RoleOptions.FirstOrDefault(r => r.Value == UserRole.Operator);
                         SelectedDepartment = Departments.FirstOrDefault(d => d.Id == _originalUser.DepartmentId);
                     }
                     else

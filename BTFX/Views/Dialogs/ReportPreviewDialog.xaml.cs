@@ -115,7 +115,7 @@ public partial class ReportPreviewDialog : UserControl
 
     private void UpdatePageIndicator()
     {
-        PageIndicatorTextBlock.Text = "连续预览";
+        PageIndicatorTextBlock.Text = string.Empty;
     }
 
     private void FitWidthAndUpdatePageIndicator()

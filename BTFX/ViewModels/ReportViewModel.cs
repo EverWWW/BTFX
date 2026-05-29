@@ -2073,9 +2073,9 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
         var title = string.IsNullOrWhiteSpace(report.Title) ? "步态分析报告" : report.Title;
         var measurementType = record is null ? "--" : GetMeasurementTypeText(record.MeasurementType);
-        var videoMode = record is null
+        var analysisMode = record is null
             ? "--"
-            : record.HasDualVideo ? "双视频模式" : record.HasSideVideo || record.HasFrontVideo ? "单视频模式" : "--";
+            : record.HasDualVideo ? "双视角模式" : record.HasSideVideo || record.HasFrontVideo ? "单视角模式" : "--";
 
         PreviewBasicFields = new ObservableCollection<ReportSummaryField>
         {
@@ -2083,7 +2083,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             new("报告编号", EmptyToDash(report.ReportNumber)),
             new("患者姓名", EmptyToDash(patient?.Name)),
             new("测量类型", measurementType),
-            new("视频模式", videoMode),
+            new("分析模式", analysisMode),
             new("测量时间", record?.MeasurementDate.ToString(Constants.DATETIME_FORMAT) ?? "--"),
             new("生成时间", report.CreatedAt.ToString(Constants.DATETIME_FORMAT)),
             new("报告状态", GetStatusText(report.Status))

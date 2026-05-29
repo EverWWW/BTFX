@@ -1,10 +1,13 @@
 ﻿using System.Collections.ObjectModel;
+using System.IO;
+using System.Windows;
 using BTFX.Common;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
+using Microsoft.Win32;
 using ToolHelper.LoggingDiagnostics.Abstractions;
 using Constants = BTFX.Common.Constants;
 
@@ -22,6 +25,7 @@ public partial class PatientSelectionViewModel : ObservableObject
     private readonly INavigationService _navigationService;
     private readonly ISessionService _sessionService;
     private readonly ILocalizationService _localizationService;
+    private readonly IExportImportService _exportImportService;
     private readonly ILogHelper? _logHelper;
     private const double PatientRowHeight = 60;
     private const double PatientRowTopMargin = 7;
@@ -64,6 +68,8 @@ public partial class PatientSelectionViewModel : ObservableObject
     private bool _canAddPatient;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanExportPatients))]
+    [NotifyCanExecuteChangedFor(nameof(ExportCommand))]
     private bool _canImportExport;
 
     /// <summary>
@@ -95,12 +101,14 @@ public partial class PatientSelectionViewModel : ObservableObject
         IPatientService patientService,
         INavigationService navigationService,
         ISessionService sessionService,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IExportImportService exportImportService)
     {
         _patientService = patientService;
         _navigationService = navigationService;
         _sessionService = sessionService;
         _localizationService = localizationService;
+        _exportImportService = exportImportService;
 
         // Try to get log service
         try
@@ -200,6 +208,7 @@ public partial class PatientSelectionViewModel : ObservableObject
         SelectedPatient = PatientRows.FirstOrDefault(r => r.IsChecked)?.Patient;
         OnPropertyChanged(nameof(SelectedCount));
         OnPropertyChanged(nameof(SelectAllState));
+        OnSelectionStateChanged();
 
         // 更新分页导航状态
         CanGoPrevious = CurrentPage > 1;
@@ -447,11 +456,7 @@ public partial class PatientSelectionViewModel : ObservableObject
         // Administrator can delete any patient
         if (currentUser.Role == UserRole.Administrator) return true;
 
-        // Operator can only delete own patients
-        if (currentUser.Role == UserRole.Operator)
-            return patient.CreatedBy == currentUser.Id;
-
-        return false;
+        return currentUser.Role == UserRole.Operator;
     }
 
     /// <summary>
@@ -460,18 +465,312 @@ public partial class PatientSelectionViewModel : ObservableObject
     [RelayCommand]
     private async Task ImportAsync()
     {
-        // TODO: Implement import functionality in Phase 4
-        _logHelper?.Information("Import button clicked");
+        var dialog = new OpenFileDialog
+        {
+            Title = "导入患者基础资料",
+            Filter = "患者资料文件 (*.xlsx;*.xls;*.csv)|*.xlsx;*.xls;*.csv|Excel 文件 (*.xlsx;*.xls)|*.xlsx;*.xls|CSV 文件 (*.csv)|*.csv",
+            Multiselect = false
+        };
+
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        try
+        {
+            var result = await RunWithProgressDialogAsync(
+                "导入患者基础资料",
+                "正在导入",
+                "正在读取患者资料文件...",
+                (progress, token) => ImportPatientsFromFileAsync(dialog.FileName, progress, token));
+
+            await LoadPatientsAsync();
+            await ShowNoticeDialogAsync(
+                $"导入完成：新增 {result.AddedCount} 条，更新 {result.UpdatedCount} 条，跳过 {result.SkippedCount} 条。",
+                "提示");
+            _logHelper?.Information($"患者资料导入完成：新增={result.AddedCount}, 更新={result.UpdatedCount}, 跳过={result.SkippedCount}");
+        }
+        catch (OperationCanceledException)
+        {
+            await ShowNoticeDialogAsync("导入已取消。", "提示");
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("患者资料导入失败", ex);
+            await ShowNoticeDialogAsync($"导入失败：{ex.Message}", "错误");
+        }
     }
+
+    public bool CanExportPatients => CanImportExport && SelectedCount > 0;
 
     /// <summary>
     /// Export command
     /// </summary>
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanExportPatients))]
     private async Task ExportAsync()
     {
-        // TODO: Implement export functionality in Phase 4
-        _logHelper?.Information("Export button clicked");
+        var exportPatients = GetPatientsForExport();
+        if (exportPatients.Count == 0)
+        {
+            await ShowNoticeDialogAsync("请先选择要导出的患者。", "提示");
+            return;
+        }
+
+        var dialog = new SaveFileDialog
+        {
+            Title = "导出患者基础资料",
+            Filter = "Excel 文件 (*.xlsx)|*.xlsx|CSV 文件 (*.csv)|*.csv",
+            FileName = $"患者基础资料_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            AddExtension = true,
+            DefaultExt = ".xlsx"
+        };
+
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        try
+        {
+            var format = dialog.FilterIndex == 2 ? ExportFormat.CSV : ExportFormat.Excel;
+            var filePath = EnsureExportExtension(dialog.FileName, format);
+            var success = await RunWithProgressDialogAsync(
+                "导出患者基础资料",
+                "正在导出",
+                $"正在导出 {exportPatients.Count} 条患者资料...",
+                async (progress, token) =>
+                {
+                    progress.Report(new OperationProgressInfo(20, "准备数据", "正在整理患者基础资料..."));
+                    token.ThrowIfCancellationRequested();
+                    await Task.Delay(120, token);
+                    progress.Report(new OperationProgressInfo(55, "写入文件", $"正在写入 {Path.GetFileName(filePath)}..."));
+                    var exported = await _exportImportService.ExportPatientsAsync(exportPatients, format, filePath);
+                    progress.Report(new OperationProgressInfo(92, "完成校验", "正在确认导出文件..."));
+                    token.ThrowIfCancellationRequested();
+                    return exported;
+                });
+
+            await ShowNoticeDialogAsync(success ? $"导出成功：{filePath}" : "导出失败，请检查文件是否被占用。", success ? "提示" : "错误");
+            _logHelper?.Information($"患者资料导出：Count={exportPatients.Count}, File={filePath}, Success={success}");
+        }
+        catch (OperationCanceledException)
+        {
+            await ShowNoticeDialogAsync("导出已取消。", "提示");
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("患者资料导出失败", ex);
+            await ShowNoticeDialogAsync($"导出失败：{ex.Message}", "错误");
+        }
+    }
+
+    private List<Patient> GetPatientsForExport()
+    {
+        return _allPatients
+            .Where(patient => _selectedPatientIds.Contains(patient.Id))
+            .OrderByDescending(patient => patient.CreatedAt)
+            .ToList();
+    }
+
+    private static string EnsureExportExtension(string filePath, ExportFormat format)
+    {
+        var expectedExtension = format == ExportFormat.CSV ? ".csv" : ".xlsx";
+        return Path.GetExtension(filePath).Equals(expectedExtension, StringComparison.OrdinalIgnoreCase)
+            ? filePath
+            : Path.ChangeExtension(filePath, expectedExtension);
+    }
+
+    private IEnumerable<Patient> GetFilteredPatients()
+    {
+        IEnumerable<Patient> filtered = _allPatients;
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            var searchLower = SearchText.Trim().ToLower();
+            filtered = filtered.Where(p =>
+                p.Name.ToLower().Contains(searchLower) ||
+                (!string.IsNullOrWhiteSpace(p.Phone) && p.Phone.Contains(searchLower)) ||
+                (!string.IsNullOrWhiteSpace(p.IdNumber) && p.IdNumber.ToLower().Contains(searchLower)));
+        }
+
+        return filtered.OrderByDescending(patient => patient.CreatedAt);
+    }
+
+    private async Task<PatientImportResult> ImportPatientsFromFileAsync(
+        string filePath,
+        IProgress<OperationProgressInfo> progress,
+        CancellationToken cancellationToken)
+    {
+        progress.Report(new OperationProgressInfo(10, "读取文件", "正在解析患者资料文件..."));
+        var importedPatients = await _exportImportService.ImportPatientsAsync(filePath);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        progress.Report(new OperationProgressInfo(35, "校验数据", $"已读取 {importedPatients.Count} 条患者资料，正在校验..."));
+        var existingPatients = await _patientService.GetAllPatientsAsync();
+        var added = 0;
+        var updated = 0;
+        var skipped = 0;
+
+        for (var index = 0; index < importedPatients.Count; index++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var imported = importedPatients[index];
+            var percent = 35 + 55.0 * (index + 1) / Math.Max(importedPatients.Count, 1);
+            progress.Report(new OperationProgressInfo(percent, "写入数据", $"正在处理 {index + 1}/{importedPatients.Count}：{imported.Name}"));
+
+            if (string.IsNullOrWhiteSpace(imported.Name) || imported.Height is not > 0)
+            {
+                skipped++;
+                continue;
+            }
+
+            var existing = FindExistingPatient(existingPatients, imported);
+            if (existing is null)
+            {
+                imported.CreatedBy = _sessionService.CurrentUser?.Id ?? 0;
+                var id = await _patientService.AddPatientAsync(imported);
+                if (id > 0)
+                {
+                    imported.Id = id;
+                    existingPatients.Add(imported);
+                    added++;
+                }
+                else
+                {
+                    skipped++;
+                }
+            }
+            else
+            {
+                MergePatientForImport(existing, imported);
+                if (await _patientService.UpdatePatientAsync(existing))
+                {
+                    updated++;
+                }
+                else
+                {
+                    skipped++;
+                }
+            }
+        }
+
+        progress.Report(new OperationProgressInfo(95, "刷新列表", "正在刷新患者列表..."));
+        return new PatientImportResult(added, updated, skipped);
+    }
+
+    private static Patient? FindExistingPatient(IEnumerable<Patient> existingPatients, Patient imported)
+    {
+        if (!string.IsNullOrWhiteSpace(imported.IdNumber))
+        {
+            var byIdNumber = existingPatients.FirstOrDefault(patient =>
+                !string.IsNullOrWhiteSpace(patient.IdNumber) &&
+                string.Equals(patient.IdNumber.Trim(), imported.IdNumber.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (byIdNumber is not null)
+            {
+                return byIdNumber;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(imported.Phone))
+        {
+            return existingPatients.FirstOrDefault(patient =>
+                string.Equals(patient.Name.Trim(), imported.Name.Trim(), StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(patient.Phone.Trim(), imported.Phone.Trim(), StringComparison.OrdinalIgnoreCase));
+        }
+
+        return null;
+    }
+
+    private static void MergePatientForImport(Patient target, Patient source)
+    {
+        target.Name = source.Name;
+        target.Gender = source.Gender;
+        target.BirthDate = source.BirthDate ?? target.BirthDate;
+        target.Phone = string.IsNullOrWhiteSpace(source.Phone) ? target.Phone : source.Phone;
+        target.IdNumber = string.IsNullOrWhiteSpace(source.IdNumber) ? target.IdNumber : source.IdNumber;
+        target.HospitalNumber = string.IsNullOrWhiteSpace(source.HospitalNumber) ? target.HospitalNumber : source.HospitalNumber;
+        target.Height = source.Height ?? target.Height;
+        target.Weight = source.Weight ?? target.Weight;
+        target.Address = string.IsNullOrWhiteSpace(source.Address) ? target.Address : source.Address;
+        target.MedicalHistory = string.IsNullOrWhiteSpace(source.MedicalHistory) ? target.MedicalHistory : source.MedicalHistory;
+        target.Remark = string.IsNullOrWhiteSpace(source.Remark) ? target.Remark : source.Remark;
+        target.Status = PatientStatus.Active;
+    }
+
+    private static async Task<T> RunWithProgressDialogAsync<T>(
+        string title,
+        string stage,
+        string message,
+        Func<IProgress<OperationProgressInfo>, CancellationToken, Task<T>> operation)
+    {
+        using var operationCts = new CancellationTokenSource();
+        var progressViewModel = new OperationProgressDialogViewModel(
+            title,
+            stage,
+            message,
+            operationCts,
+            canCancel: true);
+
+        var progress = new Progress<OperationProgressInfo>(progressViewModel.Update);
+        var dialog = new Views.Dialogs.OperationProgressDialog
+        {
+            DataContext = progressViewModel
+        };
+
+        var dialogTask = DialogHost.Show(dialog, "RootDialog");
+        try
+        {
+            var result = await Task.Run(() => operation(progress, operationCts.Token), operationCts.Token);
+            progressViewModel.MarkCompleted("操作已完成。");
+            await Task.Delay(650);
+            DialogHost.Close("RootDialog");
+            await dialogTask;
+            RestoreMainWindowIfMinimized();
+            return result;
+        }
+        catch (OperationCanceledException)
+        {
+            progressViewModel.MarkFailed("操作已取消。");
+            await Task.Delay(350);
+            DialogHost.Close("RootDialog");
+            await dialogTask;
+            RestoreMainWindowIfMinimized();
+            throw;
+        }
+        catch
+        {
+            progressViewModel.MarkFailed("操作执行失败。");
+            await Task.Delay(350);
+            DialogHost.Close("RootDialog");
+            await dialogTask;
+            RestoreMainWindowIfMinimized();
+            throw;
+        }
+    }
+
+    private static void RestoreMainWindowIfMinimized()
+    {
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null)
+        {
+            return;
+        }
+
+        dispatcher.Invoke(() =>
+        {
+            var window = Application.Current?.MainWindow;
+            if (window is null)
+            {
+                return;
+            }
+
+            if (window.WindowState == WindowState.Minimized)
+            {
+                window.WindowState = WindowState.Normal;
+            }
+
+            window.Activate();
+        });
     }
 
     /// <summary>
@@ -566,6 +865,7 @@ public partial class PatientSelectionViewModel : ObservableObject
             SelectedPatient = row.Patient;
             OnPropertyChanged(nameof(SelectedCount));
             OnPropertyChanged(nameof(SelectAllState));
+            OnSelectionStateChanged();
             ConfirmSelect();
             return;
         }
@@ -585,6 +885,7 @@ public partial class PatientSelectionViewModel : ObservableObject
         SelectedPatient = PatientRows.FirstOrDefault(r => r.IsChecked)?.Patient;
         OnPropertyChanged(nameof(SelectedCount));
         OnPropertyChanged(nameof(SelectAllState));
+        OnSelectionStateChanged();
     }
 
     /// <summary>
@@ -624,6 +925,7 @@ public partial class PatientSelectionViewModel : ObservableObject
         SelectedPatient = allSelected ? null : PatientRows.FirstOrDefault()?.Patient;
         OnPropertyChanged(nameof(SelectedCount));
         OnPropertyChanged(nameof(SelectAllState));
+        OnSelectionStateChanged();
     }
 
     /// <summary>
@@ -636,6 +938,12 @@ public partial class PatientSelectionViewModel : ObservableObject
         CurrentPage = 1;
         _selectedPatientIds.Clear();
         ApplySearchFilter();
+    }
+
+    private void OnSelectionStateChanged()
+    {
+        OnPropertyChanged(nameof(CanExportPatients));
+        ExportCommand.NotifyCanExecuteChanged();
     }
 
     /// <summary>
@@ -663,3 +971,5 @@ public partial class PatientSelectionViewModel : ObservableObject
         };
     }
 }
+
+public sealed record PatientImportResult(int AddedCount, int UpdatedCount, int SkippedCount);

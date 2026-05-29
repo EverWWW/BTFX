@@ -541,7 +541,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task ViewDetailAsync(MeasurementRecordItem? item)
     {
-        if (item == null) return;
+        if (item == null || !item.CanViewDetail) return;
 
         try
         {
@@ -640,7 +640,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
         [RelayCommand]
         private async Task ExportSingleAsync(MeasurementRecordItem? item)
         {
-            if (item == null || !CanExport) return;
+            if (item == null || !CanExport || !item.CanExportResult) return;
 
             try
             {
@@ -1287,6 +1287,12 @@ public partial class MeasurementRecordItem : ObservableObject
         MeasurementStatus.Failed => "重新分析",
         _ => "继续处理"
     };
+
+    public bool HasCompletedAnalysis => Record.Status == MeasurementStatus.Completed;
+
+    public bool CanViewDetail => HasCompletedAnalysis;
+
+    public bool CanExportResult => HasCompletedAnalysis;
 
     /// <summary>
     /// 构造函数

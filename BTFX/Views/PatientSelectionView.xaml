@@ -104,6 +104,36 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+
+            <Style x:Key="ActionIconButtonStyle" TargetType="Button">
+                <Setter Property="Width" Value="38" />
+                <Setter Property="Height" Value="38" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Cursor" Value="Hand" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border
+                                x:Name="ActionBorder"
+                                Width="38"
+                                Height="38"
+                                Background="Transparent"
+                                CornerRadius="19">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ActionBorder" Property="Background" Value="#EEF3F8" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.35" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -371,6 +401,7 @@
                             BorderThickness="0"
                             Command="{Binding ExportCommand}"
                             Cursor="Hand"
+                            IsEnabled="{Binding CanExportPatients}"
                             Template="{StaticResource PlainButtonTemplate}">
                             <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                                 <Image
@@ -652,30 +683,14 @@
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
                                             Command="{Binding DataContext.EditPatientCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                            CommandParameter="{Binding Patient}">
-                                            <Button.Template>
-                                                <ControlTemplate TargetType="Button">
-                                                    <Border
-                                                        x:Name="bd"
-                                                        Width="38"
-                                                        Height="38"
-                                                        Padding="4"
-                                                        Background="Transparent"
-                                                        CornerRadius="6">
-                                                        <Image
-                                                            Width="28"
-                                                            Height="28"
-                                                            RenderOptions.BitmapScalingMode="HighQuality"
-                                                            Source="/Resources/Images/PatientSelectionView/bianji.png"
-                                                            Stretch="Uniform" />
-                                                    </Border>
-                                                    <ControlTemplate.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter TargetName="bd" Property="Background" Value="#E8F5E9" />
-                                                        </Trigger>
-                                                    </ControlTemplate.Triggers>
-                                                </ControlTemplate>
-                                            </Button.Template>
+                                            CommandParameter="{Binding Patient}"
+                                            Style="{StaticResource ActionIconButtonStyle}">
+                                            <Image
+                                                Width="28"
+                                                Height="28"
+                                                RenderOptions.BitmapScalingMode="HighQuality"
+                                                Source="/Resources/Images/PatientSelectionView/bianji.png"
+                                                Stretch="Uniform" />
                                         </Button>
 
                                         <!--  删除按钮  -->
@@ -684,30 +699,14 @@
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
                                             Command="{Binding DataContext.DeletePatientCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                            CommandParameter="{Binding Patient}">
-                                            <Button.Template>
-                                                <ControlTemplate TargetType="Button">
-                                                    <Border
-                                                        x:Name="bd"
-                                                        Width="38"
-                                                        Height="38"
-                                                        Padding="4"
-                                                        Background="Transparent"
-                                                        CornerRadius="6">
-                                                        <Image
-                                                            Width="28"
-                                                            Height="28"
-                                                            RenderOptions.BitmapScalingMode="HighQuality"
-                                                            Source="/Resources/Images/PatientSelectionView/shanchu.png"
-                                                            Stretch="Uniform" />
-                                                    </Border>
-                                                    <ControlTemplate.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter TargetName="bd" Property="Background" Value="#FFEBEE" />
-                                                        </Trigger>
-                                                    </ControlTemplate.Triggers>
-                                                </ControlTemplate>
-                                            </Button.Template>
+                                            CommandParameter="{Binding Patient}"
+                                            Style="{StaticResource ActionIconButtonStyle}">
+                                            <Image
+                                                Width="28"
+                                                Height="28"
+                                                RenderOptions.BitmapScalingMode="HighQuality"
+                                                Source="/Resources/Images/PatientSelectionView/shanchu.png"
+                                                Stretch="Uniform" />
                                         </Button>
                                     </Grid>
                                 </Border>

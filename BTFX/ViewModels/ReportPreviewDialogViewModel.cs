@@ -134,9 +134,11 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
                 return "--";
             }
 
-            return record.HasDualVideo ? "双视频模式" : record.HasSideVideo || record.HasFrontVideo ? "单视频模式" : "--";
+            return record.HasDualVideo ? "双视角模式" : record.HasSideVideo || record.HasFrontVideo ? "单视角模式" : "--";
         }
     }
+
+    public string AnalysisModeDisplay => VideoModeDisplay;
 
     public bool IsDualVideoMode => Report?.MeasurementRecord?.HasDualVideo == true;
 
@@ -660,9 +662,8 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
             ("年龄", patient?.Age is int age ? $"{age} 岁" : "--"),
             ("身高", patient?.Height is double height ? $"{height:F0} cm" : "--"),
             ("测量类型", MeasurementTypeDisplay),
-            ("视频模式", VideoModeDisplay),
-            ("测量时间", MeasurementDateDisplay),
-            ("关联分析", PreviewSource)
+            ("分析模式", AnalysisModeDisplay),
+            ("测量时间", MeasurementDateDisplay)
         });
     }
 
@@ -856,7 +857,7 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
             return;
         }
 
-        AddNoteBox(document, "以下曲线来自本次分析输出的 joint_angle.csv，用于展示关节角度随视频时间变化的趋势。");
+        AddNoteBox(document, "以下曲线用于展示关节角度随视频时间变化的趋势。");
         var curveDefinitions = new List<(string Title, Func<ReportAngleFrame, double> First, Func<ReportAngleFrame, double>? Second, string FirstName, string? SecondName)>
         {
             ("髋关节角度曲线", f => f.LeftHip, f => f.RightHip, "左髋", "右髋"),
@@ -1283,6 +1284,7 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         OnPropertyChanged(nameof(PatientNameDisplay));
         OnPropertyChanged(nameof(MeasurementTypeDisplay));
         OnPropertyChanged(nameof(VideoModeDisplay));
+        OnPropertyChanged(nameof(AnalysisModeDisplay));
         OnPropertyChanged(nameof(IsDualVideoMode));
         OnPropertyChanged(nameof(CanIncludeTrunkPelvisParameters));
         OnPropertyChanged(nameof(MeasurementDateDisplay));

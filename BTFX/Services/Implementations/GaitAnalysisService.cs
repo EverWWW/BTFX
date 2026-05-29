@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using BTFX.Common;
 using BTFX.Data;
 using BTFX.Models;
@@ -1207,11 +1208,59 @@ public class GaitAnalysisService : IGaitAnalysisService
 
     private static string BuildStdoutFailureMessage(TaskStatusMessage status, string logDir)
     {
-        var message = !string.IsNullOrWhiteSpace(status.Error)
+        var rawMessage = !string.IsNullOrWhiteSpace(status.Error)
             ? status.Error
             : (!string.IsNullOrWhiteSpace(status.Message) ? status.Message : "算法返回失败状态。");
-        var stage = string.IsNullOrWhiteSpace(status.CurrentStage) ? string.Empty : $"阶段: {status.CurrentStage}，";
-        return $"算法执行失败，{stage}原因: {message}，日志目录: {logDir}";
+        var message = ToUserFriendlyAnalysisError(rawMessage);
+        var stage = GetStageDisplayName(status.CurrentStage);
+        var stageText = string.IsNullOrWhiteSpace(stage) ? string.Empty : $"阶段: {stage}，";
+        return $"分析失败，{stageText}原因: {message}。详细日志: {logDir}";
+    }
+
+    private static string GetStageDisplayName(string? stage)
+    {
+        if (string.IsNullOrWhiteSpace(stage))
+        {
+            return string.Empty;
+        }
+
+        return TryGetChineseStageMessage(stage, out var text)
+            ? text
+            : NormalizeWhitespace(stage);
+    }
+
+    private static string ToUserFriendlyAnalysisError(string? rawMessage)
+    {
+        var message = NormalizeWhitespace(rawMessage);
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return "算法返回失败状态。";
+        }
+
+        var lower = message.ToLowerInvariant();
+        if (lower.Contains("at least one of the following markers is missing", StringComparison.Ordinal)
+            || lower.Contains("marker is missing", StringComparison.Ordinal)
+            || lower.Contains("markers is missing", StringComparison.Ordinal)
+            || lower.Contains("person is entirely visible", StringComparison.Ordinal)
+            || lower.Contains("person is entirely wisible", StringComparison.Ordinal))
+        {
+            return "未检测到完整人体关键点。请确认被采集人完整入镜、光线充足且无遮挡后重新分析。";
+        }
+
+        if (lower.Contains("could not open", StringComparison.Ordinal)
+            && lower.Contains("check that the file exists", StringComparison.Ordinal))
+        {
+            return "输入视频文件无法打开。请确认视频文件仍存在且未被占用后重新分析。";
+        }
+
+        return message;
+    }
+
+    private static string NormalizeWhitespace(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? string.Empty
+            : Regex.Replace(value.Trim(), @"\s+", " ");
     }
 
     private static void AppendProcessLog(string path, string line)

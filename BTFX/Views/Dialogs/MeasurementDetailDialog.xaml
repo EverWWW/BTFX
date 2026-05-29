@@ -422,7 +422,7 @@
                                 Margin="8,0,52,0"
                                 Style="{StaticResource InfoValueTextStyle}"
                                 Text="{Binding MeasurementTypeDisplay, Mode=OneWay, TargetNullValue=--}" />
-                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="测量模式" />
+                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="分析模式" />
                             <TextBlock
                                 Margin="8,0,52,0"
                                 Style="{StaticResource InfoValueTextStyle}"

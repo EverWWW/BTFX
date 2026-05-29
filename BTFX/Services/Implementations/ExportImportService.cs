@@ -8,6 +8,9 @@ using BTFX.Data;
 using BTFX.Models;
 using BTFX.Models.Analysis;
 using BTFX.Services.Interfaces;
+using NPOI.HSSF.UserModel;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
 using ToolHelper.Database.Sqlite;
 using ToolHelper.LoggingDiagnostics.Abstractions;
 
@@ -44,11 +47,16 @@ public class ExportImportService : IExportImportService
             {
                 姓名 = p.Name,
                 性别 = p.Gender == Gender.Male ? "男" : "女",
+                出生日期 = p.BirthDate?.ToString("yyyy-MM-dd") ?? "",
                 年龄 = p.Age?.ToString() ?? "",
                 电话 = p.Phone,
                 证件号 = p.IdNumber ?? "",
+                住院号 = p.HospitalNumber ?? "",
                 身高cm = p.Height?.ToString("F1") ?? "",
                 体重kg = p.Weight?.ToString("F1") ?? "",
+                地址 = p.Address ?? "",
+                病史 = p.MedicalHistory ?? "",
+                备注 = p.Remark ?? "",
                 创建时间 = p.CreatedAt.ToString(Constants.DATETIME_FORMAT)
             }).ToList();
 
@@ -500,8 +508,7 @@ public class ExportImportService : IExportImportService
             }
             else if (extension == ".xlsx" || extension == ".xls")
             {
-                // Excel 导入需要第三方库，暂时提示不支持
-                _logHelper?.Warning("暂不支持 Excel 格式导入，请使用 CSV 格式");
+                patients = await ImportPatientsFromExcelAsync(filePath);
             }
             else
             {
@@ -551,65 +558,12 @@ public class ExportImportService : IExportImportService
                 try
                 {
                     var values = ParseCsvLine(line);
-                    var patient = new Patient();
-
-                    // 姓名（必填）
-                    if (headerMap.TryGetValue("姓名", out var nameIndex) && nameIndex < values.Length)
-                    {
-                        patient.Name = values[nameIndex].Trim();
-                    }
+                    var patient = BuildPatientFromFields(name => GetField(headerMap, values, name));
                     if (string.IsNullOrEmpty(patient.Name))
                     {
                         _logHelper?.Warning($"第 {lineIndex + 1} 行缺少姓名，跳过");
                         continue;
                     }
-
-                    // 性别
-                    if (headerMap.TryGetValue("性别", out var genderIndex) && genderIndex < values.Length)
-                    {
-                        var genderText = values[genderIndex].Trim();
-                        patient.Gender = genderText == "女" ? Gender.Female : Gender.Male;
-                    }
-
-                    // 电话（必填）
-                    if (headerMap.TryGetValue("电话", out var phoneIndex) && phoneIndex < values.Length)
-                    {
-                        patient.Phone = values[phoneIndex].Trim();
-                    }
-                    if (string.IsNullOrEmpty(patient.Phone))
-                    {
-                        _logHelper?.Warning($"第 {lineIndex + 1} 行缺少电话，跳过");
-                        continue;
-                    }
-
-                    // 证件号
-                    if (headerMap.TryGetValue("证件号", out var idIndex) && idIndex < values.Length)
-                    {
-                        patient.IdNumber = values[idIndex].Trim();
-                    }
-
-                    // 身高
-                    if (headerMap.TryGetValue("身高cm", out var heightIndex) && heightIndex < values.Length)
-                    {
-                        if (double.TryParse(values[heightIndex].Trim(), out var height))
-                        {
-                            patient.Height = height;
-                        }
-                    }
-
-                    // 体重
-                    if (headerMap.TryGetValue("体重kg", out var weightIndex) && weightIndex < values.Length)
-                    {
-                        if (double.TryParse(values[weightIndex].Trim(), out var weight))
-                        {
-                            patient.Weight = weight;
-                        }
-                    }
-
-                    // 设置默认值
-                    patient.Status = PatientStatus.Active;
-                    patient.CreatedAt = DateTime.Now;
-                    patient.UpdatedAt = DateTime.Now;
 
                     patients.Add(patient);
                 }
@@ -625,6 +579,144 @@ public class ExportImportService : IExportImportService
         }
 
         return patients;
+    }
+
+    private async Task<List<Patient>> ImportPatientsFromExcelAsync(string filePath)
+    {
+        var patients = new List<Patient>();
+
+        try
+        {
+            await Task.Yield();
+            using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            var workbook = WorkbookFactory.Create(stream);
+            var sheet = workbook.NumberOfSheets > 0 ? workbook.GetSheetAt(0) : null;
+            if (sheet is null || sheet.LastRowNum < 1)
+            {
+                _logHelper?.Warning("Excel 文件为空或只有表头");
+                return patients;
+            }
+
+            var headerRow = sheet.GetRow(0);
+            if (headerRow is null)
+            {
+                return patients;
+            }
+
+            var headerMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            for (var i = 0; i < headerRow.LastCellNum; i++)
+            {
+                var header = GetCellText(headerRow.GetCell(i)).Trim();
+                if (!string.IsNullOrWhiteSpace(header))
+                {
+                    headerMap[header] = i;
+                }
+            }
+
+            for (var rowIndex = 1; rowIndex <= sheet.LastRowNum; rowIndex++)
+            {
+                var row = sheet.GetRow(rowIndex);
+                if (row is null)
+                {
+                    continue;
+                }
+
+                var patient = BuildPatientFromFields(name => GetField(headerMap, row, name));
+                if (string.IsNullOrWhiteSpace(patient.Name))
+                {
+                    _logHelper?.Warning($"第 {rowIndex + 1} 行缺少姓名，跳过");
+                    continue;
+                }
+
+                patients.Add(patient);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("解析 Excel 文件失败", ex);
+        }
+
+        return patients;
+    }
+
+    private static Patient BuildPatientFromFields(Func<string, string> getField)
+    {
+        var now = DateTime.Now;
+        return new Patient
+        {
+            Name = getField("姓名").Trim(),
+            Gender = ParseGender(getField("性别")),
+            BirthDate = ParseDate(getField("出生日期")),
+            Phone = Truncate(getField("电话"), 12),
+            IdNumber = EmptyToNull(Truncate(getField("证件号"), 20)),
+            HospitalNumber = EmptyToNull(Truncate(getField("住院号"), 20)),
+            Height = ParseDouble(getField("身高cm")),
+            Weight = ParseDouble(getField("体重kg")),
+            Address = EmptyToNull(getField("地址")),
+            MedicalHistory = EmptyToNull(getField("病史")),
+            Remark = EmptyToNull(getField("备注")),
+            Status = PatientStatus.Active,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+    }
+
+    private static string GetField(Dictionary<string, int> headerMap, string[] values, string name)
+    {
+        return headerMap.TryGetValue(name, out var index) && index >= 0 && index < values.Length
+            ? values[index].Trim()
+            : string.Empty;
+    }
+
+    private static string GetField(Dictionary<string, int> headerMap, IRow row, string name)
+    {
+        return headerMap.TryGetValue(name, out var index)
+            ? GetCellText(row.GetCell(index)).Trim()
+            : string.Empty;
+    }
+
+    private static string GetCellText(ICell? cell)
+    {
+        if (cell is null)
+        {
+            return string.Empty;
+        }
+
+        return cell.CellType switch
+        {
+            CellType.String => cell.StringCellValue,
+            CellType.Numeric when DateUtil.IsCellDateFormatted(cell) => cell.DateCellValue?.ToString("yyyy-MM-dd") ?? string.Empty,
+            CellType.Numeric => cell.NumericCellValue.ToString("0.########"),
+            CellType.Boolean => cell.BooleanCellValue ? "是" : "否",
+            CellType.Formula => cell.ToString() ?? string.Empty,
+            _ => cell.ToString() ?? string.Empty
+        };
+    }
+
+    private static Gender ParseGender(string value)
+    {
+        return value.Trim() == "女" ? Gender.Female : Gender.Male;
+    }
+
+    private static DateTime? ParseDate(string value)
+    {
+        return DateTime.TryParse(value.Trim(), out var date) ? date.Date : null;
+    }
+
+    private static double? ParseDouble(string value)
+    {
+        return double.TryParse(value.Trim(), out var result) ? result : null;
+    }
+
+    private static string? EmptyToNull(string value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
+    private static string Truncate(string value, int maxLength)
+    {
+        var text = value.Trim();
+        return text.Length <= maxLength ? text : text[..maxLength];
     }
 
     /// <summary>
@@ -1129,13 +1221,12 @@ public class ExportImportService : IExportImportService
     #region 私有方法
 
     /// <summary>
-    /// 导出到Excel（使用HTML table格式，Excel可以正确打开）
+    /// 导出到Excel
     /// </summary>
     private async Task<bool> ExportToExcelAsync<T>(List<T> data, string filePath) where T : class, new()
     {
         try
         {
-            // 确保目录存在
             var directory = Path.GetDirectoryName(filePath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
@@ -1143,45 +1234,40 @@ public class ExportImportService : IExportImportService
             }
 
             var properties = typeof(T).GetProperties();
-            var sb = new StringBuilder();
+            IWorkbook workbook = Path.GetExtension(filePath).Equals(".xls", StringComparison.OrdinalIgnoreCase)
+                ? new HSSFWorkbook()
+                : new XSSFWorkbook();
+            var sheet = workbook.CreateSheet("数据");
+            var headerStyle = workbook.CreateCellStyle();
+            var headerFont = workbook.CreateFont();
+            headerFont.IsBold = true;
+            headerStyle.SetFont(headerFont);
 
-            // HTML 表格格式（Excel 可以正确识别）
-            sb.AppendLine("<?xml version=\"1.0\"?>");
-            sb.AppendLine("<?mso-application progid=\"Excel.Sheet\"?>");
-            sb.AppendLine("<Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\"");
-            sb.AppendLine(" xmlns:o=\"urn:schemas-microsoft-com:office:office\"");
-            sb.AppendLine(" xmlns:x=\"urn:schemas-microsoft-com:office:excel\"");
-            sb.AppendLine(" xmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\"");
-            sb.AppendLine(" xmlns:html=\"http://www.w3.org/TR/REC-html40\">");
-            sb.AppendLine("<Worksheet ss:Name=\"数据\">");
-            sb.AppendLine("<Table>");
-
-            // 写入表头
-            sb.AppendLine("<Row>");
-            foreach (var prop in properties)
+            var headerRow = sheet.CreateRow(0);
+            for (var i = 0; i < properties.Length; i++)
             {
-                sb.AppendLine($"<Cell><Data ss:Type=\"String\">{EscapeXml(prop.Name)}</Data></Cell>");
+                var cell = headerRow.CreateCell(i);
+                cell.SetCellValue(properties[i].Name);
+                cell.CellStyle = headerStyle;
             }
-            sb.AppendLine("</Row>");
 
-            // 写入数据
-            foreach (var item in data)
+            for (var rowIndex = 0; rowIndex < data.Count; rowIndex++)
             {
-                sb.AppendLine("<Row>");
-                foreach (var prop in properties)
+                var row = sheet.CreateRow(rowIndex + 1);
+                var item = data[rowIndex];
+                for (var columnIndex = 0; columnIndex < properties.Length; columnIndex++)
                 {
-                    var value = prop.GetValue(item)?.ToString() ?? "";
-                    sb.AppendLine($"<Cell><Data ss:Type=\"String\">{EscapeXml(value)}</Data></Cell>");
+                    row.CreateCell(columnIndex).SetCellValue(properties[columnIndex].GetValue(item)?.ToString() ?? string.Empty);
                 }
-                sb.AppendLine("</Row>");
             }
 
-            sb.AppendLine("</Table>");
-            sb.AppendLine("</Worksheet>");
-            sb.AppendLine("</Workbook>");
+            for (var i = 0; i < properties.Length; i++)
+            {
+                sheet.AutoSizeColumn(i);
+            }
 
-            // 写入文件（使用UTF-8 with BOM）
-            await File.WriteAllTextAsync(filePath, sb.ToString(), new UTF8Encoding(true));
+            await using var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
+            workbook.Write(stream, leaveOpen: false);
 
             _logHelper?.Information($"Excel导出成功：{filePath}");
             return true;
@@ -1330,11 +1416,16 @@ public class PatientExportModel
 {
     public string 姓名 { get; set; } = "";
     public string 性别 { get; set; } = "";
+    public string 出生日期 { get; set; } = "";
     public string 年龄 { get; set; } = "";
     public string 电话 { get; set; } = "";
     public string 证件号 { get; set; } = "";
+    public string 住院号 { get; set; } = "";
     public string 身高cm { get; set; } = "";
     public string 体重kg { get; set; } = "";
+    public string 地址 { get; set; } = "";
+    public string 病史 { get; set; } = "";
+    public string 备注 { get; set; } = "";
     public string 创建时间 { get; set; } = "";
 }
 
