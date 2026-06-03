@@ -372,6 +372,7 @@ public partial class MeasurementViewModel : ObservableObject
         AnalyzeViewModel.ViewReportRequested += OnViewReportRequested;
         AnalyzeViewModel.GenerateReportRequested += OnGenerateReportRequested;
         AnalyzeViewModel.ReanalysisSetupRequested += PrepareNewMeasurementForReanalysis;
+        AnalyzeViewModel.AnalysisCanceledRequested += OnAnalysisCanceledRequested;
 
         // 初始化测量名称为当前日期时间
         ResetMeasurementFields();
@@ -417,6 +418,15 @@ public partial class MeasurementViewModel : ObservableObject
         {
             _logHelper?.Error($"从测量分析步骤打开分析详情失败：MeasurementId={CurrentMeasurement.Id}", ex);
             MessageBox.Show($"打开分析详情失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void OnAnalysisCanceledRequested()
+    {
+        if (CanGoToStep2)
+        {
+            CurrentStep = 2;
+            _logHelper?.Information("分析已停止，返回回放检查");
         }
     }
 

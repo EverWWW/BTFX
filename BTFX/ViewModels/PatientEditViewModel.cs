@@ -169,13 +169,7 @@ public partial class PatientEditViewModel : ObservableObject
                 return _localizationService.GetString("NameLengthError");
             }
 
-            // Check Phone
-            if (string.IsNullOrWhiteSpace(Phone))
-            {
-                return _localizationService.GetString("PhoneRequired");
-            }
-
-        if (Phone.Length < 8 || Phone.Length > 20)
+        if (!string.IsNullOrWhiteSpace(Phone) && (Phone.Length < 8 || Phone.Length > 20))
         {
             return _localizationService.GetString("PhoneLengthError");
         }
@@ -285,13 +279,7 @@ public partial class PatientEditViewModel : ObservableObject
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(Phone))
-        {
-            ErrorMessage = _localizationService.GetString("PhoneRequired");
-            return false;
-        }
-
-        if (Phone.Length < 8 || Phone.Length > 20)
+        if (!string.IsNullOrWhiteSpace(Phone) && (Phone.Length < 8 || Phone.Length > 20))
         {
             ErrorMessage = _localizationService.GetString("PhoneLengthError");
             return false;

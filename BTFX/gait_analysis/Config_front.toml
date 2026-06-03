@@ -2,11 +2,11 @@
 video_input = ['test_video/1Z.mp4']  #相对路径绝对路径都可以
 first_person_height = 1.8  #测试人身高
 
-time_range = [0,5]  #可自行选择分析视频开始和结束的秒数
+time_range = []  #可自行选择分析视频开始和结束的秒数
 show_realtime_results = false  #是否实时显示分析结果
-save_vid = false  #是否保存分析后的带标记点的视频
+save_vid = true  #是否保存分析后的带标记点的视频
 save_img = false  #是否保存逐帧图片；true的话运行时间会加长
-result_dir = '001'   #视频分析结果保存路径；如果为空，则在当前目录下
+result_dir = '01'   #视频分析结果保存路径；如果为空，则在当前目录下
 
 
 

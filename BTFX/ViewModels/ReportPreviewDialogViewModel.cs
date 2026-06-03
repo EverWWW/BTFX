@@ -1382,10 +1382,12 @@ internal sealed class ReportAnalysisSnapshot
             snapshot.LoadResultJson(resultPath);
         }
 
+        snapshot.ApplyPreferredVideoMetadata(report);
+
         var csvPath = ResolveJointAngleCsvPath(report.AnalysisResult);
         if (!string.IsNullOrWhiteSpace(csvPath) && File.Exists(csvPath))
         {
-            snapshot.AngleFrames.AddRange(ParseAngleCsv(csvPath, snapshot.VideoFps ?? 30d));
+            snapshot.AngleFrames.AddRange(ParseAngleCsv(csvPath, snapshot.VideoFps ?? 30d, snapshot.VideoDurationSec));
         }
 
         snapshot.ValidFrameRatio ??= EstimateValidFrameRatio(snapshot.AngleFrames.Count, snapshot.VideoFrameCount, snapshot.VideoFps, snapshot.VideoDurationSec);
@@ -1475,6 +1477,49 @@ internal sealed class ReportAnalysisSnapshot
         ValidFrameRatio = ReadDouble(root["quality_control"] as JsonObject, "valid_frame_ratio") ?? ValidFrameRatio;
     }
 
+    private void ApplyPreferredVideoMetadata(Report report)
+    {
+        var metadata = ResolveInputVideoMetadata(report.MeasurementRecord)
+            ?? VideoMetadataProbe.TryRead(report.AnalysisResult?.AnnotatedVideoPath);
+        if (metadata is null)
+        {
+            return;
+        }
+
+        if (metadata.FrameRate is > 0
+            && (VideoFps is not > 0 || Math.Abs(VideoFps.Value - metadata.FrameRate.Value) > 0.5d))
+        {
+            VideoFps = metadata.FrameRate;
+        }
+
+        if (metadata.DurationSeconds is > 0
+            && (VideoDurationSec is not > 0 || Math.Abs(VideoDurationSec.Value - metadata.DurationSeconds.Value) > 0.5d))
+        {
+            VideoDurationSec = metadata.DurationSeconds;
+        }
+    }
+
+    private static VideoProbeMetadata? ResolveInputVideoMetadata(MeasurementRecord? record)
+    {
+        var videoPaths = new[]
+        {
+            record?.SideVideoPath,
+            record?.FrontVideoPath,
+            record?.VideoFilePath
+        };
+
+        foreach (var path in videoPaths)
+        {
+            var metadata = VideoMetadataProbe.TryRead(path);
+            if (metadata is not null)
+            {
+                return metadata;
+            }
+        }
+
+        return null;
+    }
+
     private static string? ResolveResultJsonPath(BTFX.Models.Analysis.AnalysisResult? result)
     {
         if (result is null)
@@ -1510,7 +1555,7 @@ internal sealed class ReportAnalysisSnapshot
             : null;
     }
 
-    private static List<ReportAngleFrame> ParseAngleCsv(string path, double fps)
+    private static List<ReportAngleFrame> ParseAngleCsv(string path, double fps, double? videoDurationSec)
     {
         var frames = new List<ReportAngleFrame>();
         var safeFps = fps > 0 ? fps : 30d;
@@ -1522,8 +1567,15 @@ internal sealed class ReportAnalysisSnapshot
                 continue;
             }
 
+            var computedTime = frameIndex / safeFps;
+            var csvTime = ReadCsvNullableDouble(parts, 9);
+            var time = csvTime is >= 0
+                       && (videoDurationSec is not > 0 || csvTime.Value <= videoDurationSec.Value + 0.5d)
+                ? csvTime.Value
+                : computedTime;
+
             frames.Add(new ReportAngleFrame(
-                frameIndex / safeFps,
+                time,
                 ReadCsvDouble(parts, 1),
                 ReadCsvDouble(parts, 2),
                 ReadCsvDouble(parts, 3),
@@ -1536,6 +1588,9 @@ internal sealed class ReportAnalysisSnapshot
 
         return frames;
     }
+
+    private static double? ReadCsvNullableDouble(string[] parts, int index)
+        => index < parts.Length && double.TryParse(parts[index], NumberStyles.Float, CultureInfo.InvariantCulture, out var value) ? value : null;
 
     private static double ReadCsvDouble(string[] parts, int index)
         => index < parts.Length && double.TryParse(parts[index], NumberStyles.Float, CultureInfo.InvariantCulture, out var value) ? value : double.NaN;

@@ -725,7 +725,7 @@
                 <Grid
                     x:Name="DataListViewport"
                     Grid.Row="3"
-                    MaxHeight="468"
+                    MaxHeight="490"
                     VerticalAlignment="Stretch"
                     SizeChanged="DataListViewport_SizeChanged">
                     <ItemsControl ItemsSource="{Binding MeasurementRecords}">

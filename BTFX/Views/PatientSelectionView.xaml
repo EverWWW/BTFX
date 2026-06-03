@@ -138,68 +138,9 @@
     </UserControl.Resources>
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
-        <!--  ═══════════════════ 一、顶部返回区域 ═══════════════════  -->
+        <!--  ═══════════════════ 主内容卡片 ═══════════════════  -->
         <Border
-            Grid.Row="0"
-            Height="72"
-            Padding="20,18,20,0"
-            Background="#F5F5F5"
-            ClipToBounds="False">
-            <Button
-                Height="52"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Background="Transparent"
-                BorderThickness="0"
-                Command="{Binding BackCommand}"
-                Cursor="Hand">
-                <Button.Template>
-                    <ControlTemplate TargetType="Button">
-                        <Border
-                            x:Name="bd"
-                            Height="52"
-                            Padding="8,0"
-                            Background="Transparent"
-                            CornerRadius="6">
-                            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                                <Image
-                                    Width="24"
-                                    Height="24"
-                                    VerticalAlignment="Center"
-                                    RenderOptions.BitmapScalingMode="HighQuality"
-                                    Source="/Resources/Images/PatientSelectionView/tuichu.png" />
-                                <TextBlock
-                                    Margin="8,0,0,0"
-                                    Padding="0"
-                                    VerticalAlignment="Center"
-                                    FontFamily="{StaticResource AppFont}"
-                                    FontSize="26"
-                                    FontWeight="Medium"
-                                    Foreground="#555555"
-                                    LineHeight="30"
-                                    LineStackingStrategy="BlockLineHeight"
-                                    Text="退出" />
-                            </StackPanel>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="#EEEEEE" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Button.Template>
-            </Button>
-        </Border>
-
-        <!--  ═══════════════════ 二、主内容卡片 ═══════════════════  -->
-        <Border
-            Grid.Row="1"
-            Margin="20,14,20,20"
+            Margin="20"
             Padding="40,28"
             Background="#FFFFFF"
             CornerRadius="12">
@@ -482,10 +423,10 @@
                         <ColumnDefinition Width="60" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="0.6*" />
-                        <ColumnDefinition Width="0.6*" />
+                        <ColumnDefinition Width="0.8*" />
+                        <ColumnDefinition Width="0.8*" />
+                        <ColumnDefinition Width="0.8*" />
                         <ColumnDefinition Width="1.6*" />
-                        <ColumnDefinition Width="1.2*" />
                         <ColumnDefinition Width="0.7*" />
                         <ColumnDefinition Width="0.7*" />
                     </Grid.ColumnDefinitions>
@@ -535,7 +476,7 @@
                         FontFamily="{StaticResource AppFont}"
                         FontSize="22"
                         Foreground="#666666"
-                        Text="身份证号" />
+                        Text="身高(CM)" />
                     <TextBlock
                         Grid.Column="6"
                         HorizontalAlignment="Center"
@@ -543,7 +484,7 @@
                         FontFamily="{StaticResource AppFont}"
                         FontSize="22"
                         Foreground="#666666"
-                        Text="电话" />
+                        Text="身份证号" />
                     <TextBlock
                         Grid.Column="7"
                         HorizontalAlignment="Center"
@@ -600,10 +541,10 @@
                                             <ColumnDefinition Width="60" />
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="0.6*" />
-                                            <ColumnDefinition Width="0.6*" />
+                                            <ColumnDefinition Width="0.8*" />
+                                            <ColumnDefinition Width="0.8*" />
+                                            <ColumnDefinition Width="0.8*" />
                                             <ColumnDefinition Width="1.6*" />
-                                            <ColumnDefinition Width="1.2*" />
                                             <ColumnDefinition Width="0.7*" />
                                             <ColumnDefinition Width="0.7*" />
                                         </Grid.ColumnDefinitions>
@@ -667,7 +608,7 @@
                                             FontFamily="{StaticResource AppFont}"
                                             FontSize="20"
                                             Foreground="#333333"
-                                            Text="{Binding Patient.IdNumber}" />
+                                            Text="{Binding Patient.HeightDisplay}" />
                                         <TextBlock
                                             Grid.Column="6"
                                             HorizontalAlignment="Center"
@@ -675,7 +616,7 @@
                                             FontFamily="{StaticResource AppFont}"
                                             FontSize="20"
                                             Foreground="#333333"
-                                            Text="{Binding Patient.Phone}" />
+                                            Text="{Binding Patient.IdNumber}" />
 
                                         <!--  编辑按钮  -->
                                         <Button

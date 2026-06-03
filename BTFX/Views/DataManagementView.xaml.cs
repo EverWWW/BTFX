@@ -196,12 +196,13 @@ public partial class DataManagementView : UserControl
     /// <summary>
     /// 清空所有日期
     /// </summary>
-    private void DateClearButton_Click(object sender, RoutedEventArgs e)
+    private async void DateClearButton_Click(object sender, RoutedEventArgs e)
     {
         if (DataContext is DataManagementViewModel vm)
         {
             vm.FilterStartDate = null;
             vm.FilterEndDate = null;
+            await vm.SearchCommand.ExecuteAsync(null);
         }
 
         StartDateCalendar.SelectedDate = null;

@@ -55,6 +55,11 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     /// </summary>
     public event Action? ReanalysisSetupRequested;
 
+    /// <summary>
+    /// 分析取消完成后通知父级流程返回回放检查。
+    /// </summary>
+    public event Action? AnalysisCanceledRequested;
+
     #region 状态管理
 
     /// <summary>
@@ -814,6 +819,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
             await UpdateCurrentMeasurementStatusAsync(MeasurementStatus.Pending, "分析已取消，测量状态已恢复为待处理");
             AddLog("分析已取消");
             _logHelper?.Information("分析已取消");
+            AnalysisCanceledRequested?.Invoke();
         }
         catch (Exception ex)
         {
@@ -902,6 +908,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
             AnalysisState = AnalysisState.Ready;
             await UpdateCurrentMeasurementStatusAsync(MeasurementStatus.Pending, "临时分析已取消，测量状态已恢复为待处理");
             AddLog("临时分析已取消");
+            AnalysisCanceledRequested?.Invoke();
         }
         catch (Exception ex)
         {
@@ -922,6 +929,25 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanCancelAnalyze))]
     private async Task CancelAnalyzeAsync()
     {
+        var result = await MaterialDesignThemes.Wpf.DialogHost.Show(
+            new Views.Dialogs.ConfirmDialog
+            {
+                DataContext = new ConfirmDialogViewModel
+                {
+                    Title = "停止分析",
+                    Message = "当前分析任务正在运行，停止后本次分析不会生成结果。是否确认停止分析？",
+                    ConfirmText = "确定",
+                    CancelText = "取消",
+                    IsCancelVisible = true
+                }
+            },
+            "RootDialog");
+
+        if (result is not true)
+        {
+            return;
+        }
+
         _analysisCts?.Cancel();
         await _analysisService.CancelCurrentAnalysisAsync();
         AddLog("正在取消分析...");

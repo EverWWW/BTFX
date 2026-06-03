@@ -1271,7 +1271,7 @@ public enum CameraCaptureUiState
 
 public sealed record FrameRateOption(string Name, int Value)
 {
-    public override string ToString() => $"{Name} ({Value}fps)";
+    public override string ToString() => Name;
 }
 
 public sealed record DurationOption(string Name, int Value)

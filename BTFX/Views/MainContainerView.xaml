@@ -265,12 +265,11 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="32" />
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="24" />
                 </Grid.RowDefinitions>
 
                 <ListBox
                     Grid.Row="1"
+                    IsEnabled="{Binding IsShellInteractionEnabled}"
                     Margin="0,18,0,0"
                     ItemContainerStyle="{StaticResource NavigationListBoxItemStyle}"
                     ItemsSource="{Binding NavigationItems}"
@@ -295,26 +294,6 @@
                     </ListBox.ItemTemplate>
                 </ListBox>
 
-                <Button
-                    Grid.Row="2"
-                    Command="{Binding LogoutCommand}"
-                    Style="{StaticResource LogoutButtonStyle}">
-                    <StackPanel HorizontalAlignment="Center">
-                        <Image
-                            Width="32"
-                            Height="32"
-                            Source="/Resources/Images/NavigationItem/tuichu.png"
-                            Stretch="Uniform" />
-                        <TextBlock
-                            Margin="0,10,0,0"
-                            HorizontalAlignment="Center"
-                            FontFamily="{StaticResource AppFont}"
-                            FontSize="22"
-                            FontWeight="Medium"
-                            Foreground="#403B5B"
-                            Text="退出" />
-                    </StackPanel>
-                </Button>
             </Grid>
         </Border>
 
@@ -356,7 +335,10 @@
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Orientation="Horizontal">
-                        <Button Command="{Binding SwitchPatientCommand}" Style="{StaticResource SwitchPatientButtonStyle}">
+                        <Button
+                            Command="{Binding SwitchPatientCommand}"
+                            IsEnabled="{Binding IsShellInteractionEnabled}"
+                            Style="{StaticResource SwitchPatientButtonStyle}">
                             <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                                 <Image
                                     Width="20"

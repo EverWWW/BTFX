@@ -42,6 +42,7 @@
                 x:Name="AppTitleBar"
                 Grid.Row="0"
                 controls:TitleBarControl.CloseClicked="TitleBar_CloseClicked"
+                LogoutCommand="{Binding LogoutCommand}"
                 MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"
                 UserDisplayName="{Binding UserDisplayName, FallbackValue=游客}"
                 Visibility="{Binding IsLoginView, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />

@@ -126,4 +126,10 @@ public class Patient
     /// </summary>
     [SugarColumn(IsIgnore = true)]
     public string GenderDisplay => Gender == Gender.Male ? "男" : "女";
+
+    /// <summary>
+    /// 身高显示文本
+    /// </summary>
+    [SugarColumn(IsIgnore = true)]
+    public string HeightDisplay => Height.HasValue ? $"{Height.Value:F0}" : "--";
 }

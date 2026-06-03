@@ -190,12 +190,13 @@ public partial class ReportView : UserControl
         }
     }
 
-    private void ReportDateClearButton_Click(object sender, RoutedEventArgs e)
+    private async void ReportDateClearButton_Click(object sender, RoutedEventArgs e)
     {
         if (DataContext is ReportViewModel vm)
         {
             vm.ReportFilterStartDate = null;
             vm.ReportFilterEndDate = null;
+            await vm.SearchReportsCommand.ExecuteAsync(null);
         }
 
         ReportStartDateCalendar.SelectedDate = null;

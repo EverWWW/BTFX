@@ -1379,7 +1379,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
                 LoadResultJson(resultPath);
             }
 
-            ApplyAnnotatedVideoDuration();
+            ApplyPreferredVideoMetadata();
 
             _detailData.ResultFileCount = CountResultFiles(result.OutputDirectory);
             _detailData.CsvFileCount = CountFiles(result.OutputDirectory, "*.csv");
@@ -1390,7 +1390,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             var jointAngleCsv = ResolveJointAngleCsvPath(result);
             if (!string.IsNullOrWhiteSpace(jointAngleCsv) && File.Exists(jointAngleCsv))
             {
-                _angleFrames = ParseAngleCsv(jointAngleCsv, _detailData.VideoFps ?? 30d);
+                _angleFrames = ParseAngleCsv(jointAngleCsv, _detailData.VideoFps ?? 30d, _detailData.VideoDurationSec);
                 _detailData.ValidFrameRatio ??= EstimateValidFrameRatio(_angleFrames, _detailData.VideoFps, _detailData.VideoDurationSec);
             }
 
@@ -1427,6 +1427,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         _detailData.VideoDurationSec = NormalizeVideoDuration(reportedDuration, frameDuration);
         _detailData.CycleCount = ReadInt(gaitCycle, "cycle_count");
         _detailData.MeanCycleDurationSec = AverageCycleDuration(gaitCycle);
+        ApplyPreferredVideoMetadata();
         LoadCycleDetails(gaitCycle, gaitEvents, _detailData.VideoFps ?? 30d);
         _detailData.CadenceStepPerMin = ReadDouble(spatiotemporal, "cadence_step_per_min");
         _detailData.GaitSpeedMPerS = ReadDouble(spatiotemporal, "gait_velocity_m_per_sec");
@@ -1602,7 +1603,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             : null;
     }
 
-    private static List<AnalysisAngleFrame> ParseAngleCsv(string path, double fps)
+    private static List<AnalysisAngleFrame> ParseAngleCsv(string path, double fps, double? videoDurationSec)
     {
         var frames = new List<AnalysisAngleFrame>();
         var lines = File.ReadLines(path).Skip(1);
@@ -1614,9 +1615,16 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
                 continue;
             }
 
+            var computedTime = fps > 0 ? frameIndex / fps : frames.Count / 30d;
+            var csvTime = ParseCsvNullableDouble(parts, 9);
+            var time = csvTime is >= 0
+                       && (videoDurationSec is not > 0 || csvTime.Value <= videoDurationSec.Value + 0.5d)
+                ? csvTime.Value
+                : computedTime;
+
             frames.Add(new AnalysisAngleFrame(
                 frameIndex,
-                fps > 0 ? frameIndex / fps : frames.Count / 30d,
+                time,
                 ParseCsvDouble(parts, 1),
                 ParseCsvDouble(parts, 2),
                 ParseCsvDouble(parts, 3),
@@ -1630,95 +1638,53 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         return frames;
     }
 
-    private void ApplyAnnotatedVideoDuration()
+    private static double? ParseCsvNullableDouble(string[] parts, int index)
     {
-        var videoPath = ResolveAnnotatedVideoPath();
-        if (string.IsNullOrWhiteSpace(videoPath) || !File.Exists(videoPath))
+        return index < parts.Length && double.TryParse(parts[index], NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
+            ? value
+            : null;
+    }
+
+    private void ApplyPreferredVideoMetadata()
+    {
+        var metadata = ResolveInputVideoMetadata() ?? VideoMetadataProbe.TryRead(ResolveAnnotatedVideoPath());
+        if (metadata is null)
         {
             return;
         }
 
-        var duration = TryReadVideoDuration(videoPath);
-        if (duration is not > 0)
+        if (metadata.FrameRate is > 0
+            && (_detailData.VideoFps is not > 0 || Math.Abs(_detailData.VideoFps.Value - metadata.FrameRate.Value) > 0.5d))
         {
-            return;
+            _detailData.VideoFps = metadata.FrameRate;
         }
 
-        var durationValue = duration.Value;
-        if (_detailData.VideoDurationSec is not > 0
-            || Math.Abs(_detailData.VideoDurationSec.Value - durationValue) > 0.5d)
+        if (metadata.DurationSeconds is > 0
+            && (_detailData.VideoDurationSec is not > 0 || Math.Abs(_detailData.VideoDurationSec.Value - metadata.DurationSeconds.Value) > 0.5d))
         {
-            _detailData.VideoDurationSec = durationValue;
-        }
-    }
-
-    private static double? TryReadVideoDuration(string videoPath)
-    {
-        var ffprobePath = ResolveFfprobePath();
-        if (string.IsNullOrWhiteSpace(ffprobePath))
-        {
-            return null;
-        }
-
-        try
-        {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = ffprobePath,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-            startInfo.ArgumentList.Add("-v");
-            startInfo.ArgumentList.Add("error");
-            startInfo.ArgumentList.Add("-show_entries");
-            startInfo.ArgumentList.Add("format=duration");
-            startInfo.ArgumentList.Add("-of");
-            startInfo.ArgumentList.Add("default=noprint_wrappers=1:nokey=1");
-            startInfo.ArgumentList.Add(videoPath);
-
-            using var process = Process.Start(startInfo);
-            if (process is null)
-            {
-                return null;
-            }
-
-            var output = process.StandardOutput.ReadToEnd();
-            if (!process.WaitForExit(3000))
-            {
-                try
-                {
-                    process.Kill(entireProcessTree: true);
-                }
-                catch
-                {
-                    // ffprobe 超时只影响时长修正，不阻断详情页加载。
-                }
-
-                return null;
-            }
-
-            return process.ExitCode == 0 && double.TryParse(output.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
-                ? value
-                : null;
-        }
-        catch
-        {
-            return null;
+            _detailData.VideoDurationSec = metadata.DurationSeconds;
         }
     }
 
-    private static string? ResolveFfprobePath()
+    private VideoProbeMetadata? ResolveInputVideoMetadata()
     {
-        var candidates = new[]
+        var videoPaths = new[]
         {
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffmpeg", "ffprobe.exe"),
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffprobe.exe"),
-            "ffprobe.exe"
+            Record?.SideVideoPath,
+            Record?.FrontVideoPath,
+            Record?.VideoFilePath
         };
 
-        return candidates.FirstOrDefault(File.Exists);
+        foreach (var path in videoPaths)
+        {
+            var metadata = VideoMetadataProbe.TryRead(path);
+            if (metadata is not null)
+            {
+                return metadata;
+            }
+        }
+
+        return null;
     }
 
     private void LoadCycleDetails(JsonObject? gaitCycle, JsonObject? gaitEvents, double fps)

@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace BTFX.Controls;
 
@@ -29,6 +30,19 @@ public partial class TitleBarControl : UserControl
     {
         get => (string)GetValue(UserDisplayNameProperty);
         set => SetValue(UserDisplayNameProperty, value);
+    }
+
+    public static readonly DependencyProperty LogoutCommandProperty =
+        DependencyProperty.Register(
+            nameof(LogoutCommand),
+            typeof(ICommand),
+            typeof(TitleBarControl),
+            new PropertyMetadata(null));
+
+    public ICommand? LogoutCommand
+    {
+        get => (ICommand?)GetValue(LogoutCommandProperty);
+        set => SetValue(LogoutCommandProperty, value);
     }
 
     /// <summary>

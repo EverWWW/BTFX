@@ -506,7 +506,7 @@
                             <Button
                                 x:Name="ReportStartDateButton"
                                 Grid.Column="0"
-                                HorizontalContentAlignment="Left"
+                                HorizontalContentAlignment="Center"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Click="ReportStartDateButton_Click"
@@ -584,7 +584,7 @@
                             <Button
                                 x:Name="ReportEndDateButton"
                                 Grid.Column="3"
-                                HorizontalContentAlignment="Left"
+                                HorizontalContentAlignment="Center"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Click="ReportEndDateButton_Click"
@@ -1161,19 +1161,8 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="18"
                                     Foreground="#999999"
-                                    Text="选中左侧列表的一行" />
-                                <Image
-                                    Width="22"
-                                    Height="22"
-                                    Margin="10,0,8,0"
-                                    RenderOptions.BitmapScalingMode="HighQuality"
-                                    Source="/Resources/Images/DataManagement/xiangqing.png" />
-                                <TextBlock
-                                    VerticalAlignment="Center"
-                                    FontFamily="{StaticResource AppFont}"
-                                    FontSize="18"
-                                    Foreground="#999999"
-                                    Text="可预览报告摘要" />
+                                    Text="选中左侧列表的一行可预览报告摘要" />
+
                             </StackPanel>
                         </Grid>
 

@@ -20,6 +20,7 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     private readonly ISessionService _sessionService;
     private readonly ILocalizationService _localizationService;
     private readonly IMeasurementWorkflowCoordinator _measurementWorkflowCoordinator;
+    private readonly IGaitAnalysisService _analysisService;
     private readonly ILogHelper? _logHelper;
     private readonly DispatcherTimer _timeUpdateTimer;
     private bool _disposed;
@@ -109,6 +110,12 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private string _currentUsername = string.Empty;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsShellInteractionEnabled))]
+    private bool _isAnalysisInteractionLocked;
+
+    public bool IsShellInteractionEnabled => !IsAnalysisInteractionLocked;
+
     #endregion
 
     /// <summary>
@@ -118,12 +125,14 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
         INavigationService navigationService,
         ISessionService sessionService,
         ILocalizationService localizationService,
-        IMeasurementWorkflowCoordinator measurementWorkflowCoordinator)
+        IMeasurementWorkflowCoordinator measurementWorkflowCoordinator,
+        IGaitAnalysisService analysisService)
     {
         _navigationService = navigationService;
         _sessionService = sessionService;
         _localizationService = localizationService;
         _measurementWorkflowCoordinator = measurementWorkflowCoordinator;
+        _analysisService = analysisService;
 
         // 尝试获取日志服务
         try
@@ -342,6 +351,12 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     {
         if (_disposed || App.IsShuttingDown) return;
         UpdateCurrentTime();
+        UpdateAnalysisInteractionLock();
+    }
+
+    private void UpdateAnalysisInteractionLock()
+    {
+        IsAnalysisInteractionLocked = _analysisService.IsAnalysisRunning;
     }
 
     /// <summary>

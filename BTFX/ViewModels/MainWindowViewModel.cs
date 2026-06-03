@@ -2,6 +2,7 @@
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Windows.Threading;
 
 namespace BTFX.ViewModels;
 
@@ -14,6 +15,8 @@ public class MainWindowViewModel : ObservableObject
     private readonly ISettingsService _settingsService;
     private readonly ILocalizationService _localizationService;
     private readonly ISessionService _sessionService;
+    private readonly IGaitAnalysisService _analysisService;
+    private readonly DispatcherTimer _analysisStateTimer;
 
     private string _title = Constants.APP_DISPLAY_NAME;
     private object? _currentView;
@@ -69,6 +72,11 @@ public class MainWindowViewModel : ObservableObject
     public IRelayCommand ExitFullscreenCommand { get; }
 
     /// <summary>
+    /// 退出登录命令
+    /// </summary>
+    public IAsyncRelayCommand LogoutCommand { get; }
+
+    /// <summary>
     /// 当前显示的账号名，登录后自动更新
     /// </summary>
     public string UserDisplayName
@@ -90,16 +98,22 @@ public class MainWindowViewModel : ObservableObject
         INavigationService navigationService,
         ISettingsService settingsService,
         ILocalizationService localizationService,
-        ISessionService sessionService)
+        ISessionService sessionService,
+        IGaitAnalysisService analysisService)
     {
             _navigationService = navigationService;
             _settingsService = settingsService;
             _localizationService = localizationService;
             _sessionService = sessionService;
+            _analysisService = analysisService;
 
             // 初始化命令
             ToggleFullscreenCommand = new RelayCommand(ToggleFullscreen);
             ExitFullscreenCommand = new RelayCommand(ExitFullscreen);
+            LogoutCommand = new AsyncRelayCommand(LogoutAsync, () => !IsLoginView && !_analysisService.IsAnalysisRunning);
+            _analysisStateTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+            _analysisStateTimer.Tick += (_, _) => LogoutCommand.NotifyCanExecuteChanged();
+            _analysisStateTimer.Start();
 
             // 监听导航服务的视图变化
             if (_navigationService is ObservableObject observableNavigation)
@@ -113,6 +127,7 @@ public class MainWindowViewModel : ObservableObject
                     if (e.PropertyName == nameof(INavigationService.CurrentViewKey))
                     {
                         OnPropertyChanged(nameof(IsLoginView));
+                        LogoutCommand.NotifyCanExecuteChanged();
                         RefreshUserDisplayName();
                     }
                 };
@@ -142,6 +157,40 @@ public class MainWindowViewModel : ObservableObject
     private void ExitFullscreen()
     {
         IsFullscreen = false;
+    }
+
+    /// <summary>
+    /// 从全局标题栏退出当前账号。
+    /// </summary>
+    private async Task LogoutAsync()
+    {
+        var result = await MaterialDesignThemes.Wpf.DialogHost.Show(
+            new Views.Dialogs.ConfirmDialog
+            {
+                DataContext = new ConfirmDialogViewModel
+                {
+                    Title = "退出登录",
+                    Message = "退出登录前请确保当前工作已保存。是否确认退出？",
+                    ConfirmText = "确定",
+                    CancelText = "取消",
+                    IsCancelVisible = true
+                }
+            },
+            "RootDialog");
+
+        if (result is not true)
+        {
+            return;
+        }
+
+        _sessionService.ClearSession();
+        if (_navigationService is Services.Implementations.NavigationService navigationService)
+        {
+            navigationService.ClearNavigationStack();
+        }
+
+        _navigationService.NavigateTo("LoginViewModel");
+        RefreshUserDisplayName();
     }
 
     /// <summary>

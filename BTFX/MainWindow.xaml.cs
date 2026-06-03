@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Shell;
+using BTFX.Services.Interfaces;
 using BTFX.ViewModels;
 using MaterialDesignThemes.Wpf;
 using Microsoft.Extensions.DependencyInjection;
@@ -223,6 +224,33 @@ public partial class MainWindow : Window
     /// </summary>
     private async void TitleBar_CloseClicked(object sender, RoutedEventArgs e)
     {
+        var analysisService = App.Services.GetService<IGaitAnalysisService>();
+        if (analysisService?.IsAnalysisRunning == true)
+        {
+            var stopResult = await DialogHost.Show(
+                new Views.Dialogs.ConfirmDialog
+                {
+                    DataContext = new ConfirmDialogViewModel
+                    {
+                        Title = "停止分析",
+                        Message = "当前分析任务正在运行，关闭窗口会停止本次分析。是否确认停止分析并退出软件？",
+                        ConfirmText = "确定",
+                        CancelText = "取消",
+                        IsCancelVisible = true
+                    }
+                },
+                "RootDialog");
+
+            if (stopResult is true)
+            {
+                await analysisService.CancelCurrentAnalysisAsync();
+                Application.Current.Shutdown();
+            }
+
+            e.Handled = true;
+            return;
+        }
+
         var result = await DialogHost.Show(
             new Views.Dialogs.ConfirmDialog
             {

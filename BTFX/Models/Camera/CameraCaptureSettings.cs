@@ -14,6 +14,8 @@ public sealed class CameraCaptureSettings
 
     public int DurationSeconds { get; set; } = 10;
 
+    public string ExternalConfigToolPath { get; set; } = string.Empty;
+
     public CameraTransformOptions SideTransform { get; set; } = new();
 
     public CameraTransformOptions FrontTransform { get; set; } = new();
