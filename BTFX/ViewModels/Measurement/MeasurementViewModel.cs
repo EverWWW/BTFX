@@ -908,6 +908,7 @@ public partial class MeasurementViewModel : ObservableObject
             FrontVideoPath = fileName;
             HasFrontVideo = true;
             await LoadVideoInfoAsync(FrontVideoInfo, fileName);
+            ShowVideoValidationFailureIfNeeded("正面视频", FrontVideoInfo);
 
             if (CurrentMeasurement != null)
             {
@@ -930,6 +931,7 @@ public partial class MeasurementViewModel : ObservableObject
             SideVideoPath = fileName;
             HasSideVideo = true;
             await LoadVideoInfoAsync(SideVideoInfo, fileName);
+            ShowVideoValidationFailureIfNeeded("侧面视频", SideVideoInfo);
 
             if (CurrentMeasurement != null)
             {
@@ -938,6 +940,27 @@ public partial class MeasurementViewModel : ObservableObject
 
             _logHelper?.Information($"选择侧面视频: {fileName}");
         }
+    }
+
+    private void ShowVideoValidationFailureIfNeeded(string title, VideoFileInfoViewModel videoInfo)
+    {
+        RefreshVideoValidationState();
+        var message = videoInfo.Status == VideoValidationStatus.Failed
+            ? videoInfo.ValidationMessage
+            : !CanEnterReview && !string.IsNullOrWhiteSpace(EntryFailureReason)
+                ? EntryFailureReason
+                : null;
+
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return;
+        }
+
+        MessageBox.Show(
+            $"{title}未通过校验：\n\n{message}",
+            "视频校验失败",
+            MessageBoxButton.OK,
+            MessageBoxImage.Warning);
     }
 
     private string? TrySelectVideoFile()

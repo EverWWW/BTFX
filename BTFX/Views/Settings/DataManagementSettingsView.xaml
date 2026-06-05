@@ -416,18 +416,44 @@
                         IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
                         Style="{StaticResource ModernSwitchStyle}" />
 
-                    <TextBlock Grid.Column="4" VerticalAlignment="Center">
-                        <TextBlock.Style>
-                            <Style BasedOn="{StaticResource StatusTextStyle}" TargetType="TextBlock">
-                                <Setter Property="Text" Value="已关闭自动备份" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding AutoBackupEnabled}" Value="True">
-                                        <Setter Property="Text" Value="已开启自动备份" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                    <StackPanel
+                        Grid.Column="4"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style BasedOn="{StaticResource StatusTextStyle}" TargetType="TextBlock">
+                                    <Setter Property="Text" Value="已关闭自动备份" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding AutoBackupEnabled}" Value="True">
+                                            <Setter Property="Text" Value="已开启自动备份" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <Button
+                            Margin="24,0,0,0"
+                            Command="{Binding BackupNowCommand}"
+                            IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
+                            Style="{StaticResource PrimaryActionButtonStyle}">
+                            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                <Image
+                                    Width="22"
+                                    Height="22"
+                                    Margin="0,0,8,0"
+                                    RenderOptions.BitmapScalingMode="HighQuality"
+                                    Source="pack://application:,,,/Resources/Images/Settings/beifen.png" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="20"
+                                    FontWeight="Medium"
+                                    Foreground="White"
+                                    Text="立即备份" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
 
                     <StackPanel
                         Grid.Column="6"
@@ -472,19 +498,22 @@
                                 Foreground="#403B5B"
                                 Text="保存设置" />
                         </Button>
+
                     </StackPanel>
                 </Grid>
             </Border>
 
             <Border
                 Grid.Row="2"
-                Height="108"
+                Height="128"
                 Style="{StaticResource SectionCardStyle}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="40" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
                     <StackPanel
@@ -497,31 +526,70 @@
                             Margin="0,0,12,0"
                             Background="#E4004A"
                             CornerRadius="2" />
-                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="手动备份" />
+                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="视频文件管理" />
+                    </StackPanel>
 
-                        <Button
-                            Grid.Column="2"
-                            Margin="40,0,12,0"
-                            Command="{Binding BackupNowCommand}"
-                            IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
-                            Style="{StaticResource PrimaryActionButtonStyle}">
-                            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                                <Image
-                                    Width="24"
-                                    Height="24"
-                                    Margin="0,0,10,0"
-                                    RenderOptions.BitmapScalingMode="HighQuality"
-                                    Source="pack://application:,,,/Resources/Images/Settings/beifen.png" />
+                    <Border
+                        Grid.Column="2"
+                        Padding="24,14"
+                        Background="Transparent"
+                        CornerRadius="8">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource CardFieldLabelStyle}" Text="录制视频目录占用" />
+                            <StackPanel
+                                Margin="0,8,0,0"
+                                Orientation="Horizontal">
                                 <TextBlock
                                     VerticalAlignment="Center"
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="22"
                                     FontWeight="Medium"
-                                    Foreground="White"
-                                    Text="立即备份" />
+                                    Foreground="#403B5B"
+                                    Text="{Binding RecordedVideoStorageDisplay}" />
+                                <Button
+                                    Margin="16,0,0,0"
+                                    Command="{Binding OpenRecordedVideoFolderCommand}"
+                                    Style="{StaticResource SecondaryActionButtonStyle}">
+                                    <TextBlock
+                                        FontFamily="{StaticResource AppFont}"
+                                        FontSize="18"
+                                        Foreground="#403B5B"
+                                        Text="打开目录" />
+                                </Button>
                             </StackPanel>
-                        </Button>
-                    </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border
+                        Grid.Column="4"
+                        Padding="24,14"
+                        Background="Transparent"
+                        CornerRadius="8">
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource CardFieldLabelStyle}" Text="分析结果目录占用" />
+                            <StackPanel
+                                Margin="0,8,0,0"
+                                Orientation="Horizontal">
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontFamily="{StaticResource AppFont}"
+                                    FontSize="22"
+                                    FontWeight="Medium"
+                                    Foreground="#403B5B"
+                                    Text="{Binding AnalysisResultStorageDisplay}" />
+                                <Button
+                                    Margin="16,0,0,0"
+                                    Command="{Binding OpenAnalysisResultFolderCommand}"
+                                    Style="{StaticResource SecondaryActionButtonStyle}">
+                                    <TextBlock
+                                        FontFamily="{StaticResource AppFont}"
+                                        FontSize="18"
+                                        Foreground="#403B5B"
+                                        Text="打开目录" />
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </Border>
 

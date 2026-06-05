@@ -5,6 +5,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using BTFX.Helpers;
 using BTFX.Models.Camera;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -477,6 +478,11 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
 
     private async Task StartRecordingAsync()
     {
+        if (!DiskSpaceGuard.EnsureProgramDriveHasSpace("视频录制"))
+        {
+            return;
+        }
+
         StopPreview();
         _recordingCancellation?.Dispose();
         _recordingCancellation = new CancellationTokenSource();

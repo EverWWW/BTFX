@@ -403,6 +403,13 @@
                             Background="#E4004A"
                             CornerRadius="8" />
                         <TextBlock Style="{StaticResource SectionTitleStyle}" Text="视频来源" />
+                        <TextBlock
+                            Margin="18,0,0,0"
+                            VerticalAlignment="Center"
+                            FontFamily="{StaticResource AppFont}"
+                            FontSize="14"
+                            Foreground="#999999"
+                            Text="实时采集请点击右侧按钮；已有本地视频请在下方选择文件导入。" />
                     </StackPanel>
 
                     <Button

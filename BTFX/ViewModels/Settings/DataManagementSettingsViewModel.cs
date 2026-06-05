@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using BTFX.Services.Interfaces;
@@ -56,6 +57,12 @@ public partial class DataManagementSettingsViewModel : ObservableObject
     [ObservableProperty]
     private bool _isLoading;
 
+    [ObservableProperty]
+    private string _recordedVideoStorageDisplay = "--";
+
+    [ObservableProperty]
+    private string _analysisResultStorageDisplay = "--";
+
     public ObservableCollection<PageItem> PageNumbers => _pageNumbers;
 
     public int CurrentPage
@@ -100,7 +107,20 @@ public partial class DataManagementSettingsViewModel : ObservableObject
         try { _logHelper = App.Services?.GetService(typeof(ILogHelper)) as ILogHelper; } catch { }
 
         LoadBackupSettings();
+        RefreshVideoStorageInfo();
         _ = LoadBackupHistoryAsync();
+    }
+
+    [RelayCommand]
+    private void OpenRecordedVideoFolder()
+    {
+        OpenFolder(GetRecordedVideoDirectory());
+    }
+
+    [RelayCommand]
+    private void OpenAnalysisResultFolder()
+    {
+        OpenFolder(GetAnalysisResultDirectory());
     }
 
     private void LoadBackupSettings()
@@ -125,6 +145,76 @@ public partial class DataManagementSettingsViewModel : ObservableObject
         {
             _logHelper?.Error("加载自动备份设置失败", ex);
         }
+    }
+
+    private void RefreshVideoStorageInfo()
+    {
+        RecordedVideoStorageDisplay = FormatDirectorySize(GetRecordedVideoDirectory());
+        AnalysisResultStorageDisplay = FormatDirectorySize(GetAnalysisResultDirectory());
+    }
+
+    private static string GetRecordedVideoDirectory()
+    {
+        return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "video");
+    }
+
+    private static string GetAnalysisResultDirectory()
+    {
+        return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Analysis");
+    }
+
+    private static string FormatDirectorySize(string directory)
+    {
+        if (!Directory.Exists(directory))
+        {
+            return "0 B";
+        }
+
+        try
+        {
+            var totalBytes = Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
+                .Sum(path =>
+                {
+                    try
+                    {
+                        return new FileInfo(path).Length;
+                    }
+                    catch
+                    {
+                        return 0L;
+                    }
+                });
+
+            return FormatFileSize(totalBytes);
+        }
+        catch
+        {
+            return "--";
+        }
+    }
+
+    private static string FormatFileSize(long bytes)
+    {
+        string[] units = ["B", "KB", "MB", "GB", "TB"];
+        var size = (double)Math.Max(0, bytes);
+        var unitIndex = 0;
+        while (size >= 1024 && unitIndex < units.Length - 1)
+        {
+            size /= 1024;
+            unitIndex++;
+        }
+
+        return unitIndex == 0 ? $"{size:F0} {units[unitIndex]}" : $"{size:F2} {units[unitIndex]}";
+    }
+
+    private static void OpenFolder(string directory)
+    {
+        Directory.CreateDirectory(directory);
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = directory,
+            UseShellExecute = true
+        });
     }
 
     [RelayCommand]
@@ -161,6 +251,7 @@ public partial class DataManagementSettingsViewModel : ObservableObject
         try
         {
             IsLoading = true;
+            RefreshVideoStorageInfo();
             var backupFiles = await _backupService.GetBackupFilesAsync();
 
             _allBackupHistory.Clear();

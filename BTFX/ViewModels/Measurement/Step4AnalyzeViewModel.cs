@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Threading;
 using BTFX.Common;
+using BTFX.Helpers;
 using BTFX.Models;
 using BTFX.Models.Analysis;
 using BTFX.Services.Interfaces;
@@ -762,6 +763,11 @@ public partial class Step4AnalyzeViewModel : ObservableObject
 
         try
         {
+            if (!DiskSpaceGuard.EnsureProgramDriveHasSpace("步态分析"))
+            {
+                return;
+            }
+
             // 切换到运行状态
             AnalysisState = AnalysisState.Running;
             Progress = 0;
