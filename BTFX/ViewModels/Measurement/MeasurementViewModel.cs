@@ -1362,6 +1362,8 @@ public partial class MeasurementViewModel : ObservableObject
     {
         var candidates = new[]
         {
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffmpeg", "ffprobe.exe"),
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffprobe.exe"),
             @"D:\ffmpeg\bin\ffprobe.exe",
             @"C:\ffmpeg\bin\ffprobe.exe",
             "ffprobe.exe"

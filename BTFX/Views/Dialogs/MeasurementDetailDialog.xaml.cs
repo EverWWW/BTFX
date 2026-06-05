@@ -325,8 +325,7 @@ public partial class MeasurementDetailDialog
     private static string FormatDurationTime(TimeSpan time)
     {
         var roundedSeconds = Math.Max(0, (int)Math.Round(time.TotalSeconds, MidpointRounding.AwayFromZero));
-        var rounded = TimeSpan.FromSeconds(roundedSeconds);
-        return FormatPlaybackTime(rounded);
+        return FormatPlaybackTime(TimeSpan.FromSeconds(roundedSeconds));
     }
 
     private bool TryCloseDialogHost()

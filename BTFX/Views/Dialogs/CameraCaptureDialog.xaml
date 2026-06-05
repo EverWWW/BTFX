@@ -655,29 +655,41 @@
                                     Visibility="{Binding IsRecordingState, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                                         <Ellipse
-                                            Width="10"
-                                            Height="10"
-                                            Margin="0,0,8,0"
+                                            Width="14"
+                                            Height="14"
+                                            Margin="0,0,10,0"
                                             VerticalAlignment="Center"
                                             Fill="#EF4444" />
                                         <TextBlock
-                                            FontSize="20"
-                                            FontWeight="SemiBold"
+                                            FontSize="32"
+                                            FontWeight="Bold"
                                             Foreground="#F87171"
                                             Text="{Binding RecordingStageText}" />
                                     </StackPanel>
                                     <TextBlock
                                         Margin="0,12,0,0"
                                         HorizontalAlignment="Center"
-                                        FontSize="18"
+                                        FontSize="30"
+                                        FontWeight="SemiBold"
                                         Foreground="White"
                                         Text="{Binding RecordingElapsedDisplayText}"
                                         Visibility="{Binding IsRecordingCountdownVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    <ProgressBar
+                                        Width="360"
+                                        Height="10"
+                                        Margin="0,18,0,0"
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Foreground="#E4004A"
+                                        Background="#374151"
+                                        BorderBrush="{x:Null}"
+                                        Value="{Binding RecordingProgress}"
+                                        Visibility="{Binding IsTranscodingVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                     <TextBlock
                                         Width="420"
-                                        Margin="0,12,0,0"
+                                        Margin="0,14,0,0"
                                         HorizontalAlignment="Center"
-                                        FontSize="12"
+                                        FontSize="14"
                                         Foreground="#D1D5DB"
                                         Text="{Binding TranscodeLogText}"
                                         TextAlignment="Center"
@@ -849,29 +861,41 @@
                                     Visibility="{Binding IsRecordingState, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                                         <Ellipse
-                                            Width="10"
-                                            Height="10"
-                                            Margin="0,0,8,0"
+                                            Width="14"
+                                            Height="14"
+                                            Margin="0,0,10,0"
                                             VerticalAlignment="Center"
                                             Fill="#EF4444" />
                                         <TextBlock
-                                            FontSize="20"
-                                            FontWeight="SemiBold"
+                                            FontSize="32"
+                                            FontWeight="Bold"
                                             Foreground="#F87171"
                                             Text="{Binding RecordingStageText}" />
                                     </StackPanel>
                                     <TextBlock
                                         Margin="0,12,0,0"
                                         HorizontalAlignment="Center"
-                                        FontSize="18"
+                                        FontSize="30"
+                                        FontWeight="SemiBold"
                                         Foreground="White"
                                         Text="{Binding RecordingElapsedDisplayText}"
                                         Visibility="{Binding IsRecordingCountdownVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    <ProgressBar
+                                        Width="360"
+                                        Height="10"
+                                        Margin="0,18,0,0"
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Foreground="#E4004A"
+                                        Background="#374151"
+                                        BorderBrush="{x:Null}"
+                                        Value="{Binding RecordingProgress}"
+                                        Visibility="{Binding IsTranscodingVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                     <TextBlock
                                         Width="420"
-                                        Margin="0,12,0,0"
+                                        Margin="0,14,0,0"
                                         HorizontalAlignment="Center"
-                                        FontSize="12"
+                                        FontSize="14"
                                         Foreground="#D1D5DB"
                                         Text="{Binding TranscodeLogText}"
                                         TextAlignment="Center"

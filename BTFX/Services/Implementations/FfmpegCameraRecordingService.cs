@@ -110,29 +110,34 @@ public sealed class FfmpegCameraRecordingService : ICameraRecordingService
         CancellationToken cancellationToken)
     {
         options.TransformOptionsByCameraName.TryGetValue(task.CameraName, out var transformOptions);
-        var arguments = BuildTranscodeArguments(task.AviFile, task.Mp4File, transformOptions);
-        Report(logProgress, $"开始转码: {task.CameraName}");
-        Report(logProgress, $"{options.FfmpegPath} {arguments}");
+        var lastExitCode = 0;
 
-        var exitCode = await RunProcessAsync(
-            options.FfmpegPath,
-            arguments,
-            line => Report(logProgress, $"[{task.CameraName} 转码] {line}"),
-            cancellationToken);
-
-        if (exitCode != 0)
+        foreach (var profile in GetTranscodeProfiles())
         {
-            throw new InvalidOperationException($"{task.CameraName} 转码失败，FFmpeg 退出码: {exitCode}");
+            cancellationToken.ThrowIfCancellationRequested();
+            TryDeleteFile(task.Mp4File);
+
+            var arguments = BuildTranscodeArguments(task.AviFile, task.Mp4File, transformOptions, profile);
+            Report(logProgress, $"开始转码: {task.CameraName}，编码器: {profile.DisplayName}");
+            Report(logProgress, $"{options.FfmpegPath} {arguments}");
+
+            lastExitCode = await RunProcessAsync(
+                options.FfmpegPath,
+                arguments,
+                line => Report(logProgress, $"[{task.CameraName} 转码/{profile.DisplayName}] {line}"),
+                cancellationToken);
+
+            if (lastExitCode == 0 && File.Exists(task.Mp4File))
+            {
+                Report(logProgress, $"转码完成: {task.Mp4File}，编码器: {profile.DisplayName}");
+                return;
+            }
+
+            Report(logProgress, $"转码失败: {task.CameraName}，编码器: {profile.DisplayName}，退出码: {lastExitCode}");
         }
 
-        if (!File.Exists(task.Mp4File))
-        {
-            throw new FileNotFoundException($"{task.CameraName} 转码完成但未找到 MP4 文件", task.Mp4File);
-        }
-
-        Report(logProgress, $"转码完成: {task.Mp4File}");
+        throw new InvalidOperationException($"{task.CameraName} 转码失败，FFmpeg 退出码: {lastExitCode}");
     }
-
     private static async Task<int> RunProcessAsync(
         string fileName,
         string arguments,
@@ -232,7 +237,11 @@ public sealed class FfmpegCameraRecordingService : ICameraRecordingService
             Quote(aviFile));
     }
 
-    private static string BuildTranscodeArguments(string aviFile, string mp4File, CameraTransformOptions? transformOptions)
+    private static string BuildTranscodeArguments(
+        string aviFile,
+        string mp4File,
+        CameraTransformOptions? transformOptions,
+        TranscodeProfile profile)
     {
         var videoFilter = BuildVideoFilter(transformOptions);
         return string.Join(
@@ -240,11 +249,20 @@ public sealed class FfmpegCameraRecordingService : ICameraRecordingService
             "-y",
             $"-i {Quote(aviFile)}",
             $"-vf {Quote(videoFilter)}",
-            "-c:v libx264",
-            "-preset veryfast",
-            "-crf 18",
+            profile.Arguments,
             "-movflags +faststart",
             Quote(mp4File));
+    }
+
+    private static IReadOnlyList<TranscodeProfile> GetTranscodeProfiles()
+    {
+        return
+        [
+            new("NVIDIA NVENC", "-c:v h264_nvenc -preset p4 -rc vbr -cq 19 -b:v 0 -pix_fmt yuv420p"),
+            new("Intel Quick Sync", "-c:v h264_qsv -preset veryfast -global_quality 19 -pix_fmt nv12"),
+            new("AMD AMF", "-c:v h264_amf -quality speed -rc cqp -qp_i 19 -qp_p 21 -pix_fmt yuv420p"),
+            new("CPU libx264", "-c:v libx264 -preset veryfast -crf 18 -pix_fmt yuv420p")
+        ];
     }
 
     private static string BuildVideoFilter(CameraTransformOptions? transformOptions)
@@ -297,10 +315,27 @@ public sealed class FfmpegCameraRecordingService : ICameraRecordingService
         }
     }
 
+    private static void TryDeleteFile(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch
+        {
+            // Best-effort cleanup before trying the next encoder.
+        }
+    }
+
     private static void Report(IProgress<string>? progress, string message)
     {
         progress?.Report($"[{DateTime.Now:HH:mm:ss}] {message}");
     }
 
     private sealed record CameraTask(string CameraName, string AviFile, string Mp4File);
+
+    private sealed record TranscodeProfile(string DisplayName, string Arguments);
 }

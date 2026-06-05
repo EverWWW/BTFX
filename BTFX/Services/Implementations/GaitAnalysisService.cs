@@ -70,6 +70,12 @@ public class GaitAnalysisService : IGaitAnalysisService
     private volatile bool _isRunning;
 
     private sealed record PreparedAnalysisInput(string? SideVideoPath, string? FrontVideoPath);
+    private sealed record PreviewFrameRange(int? First, int? Last);
+    private sealed record PreviewFrameRangeMetadata(double? Fps, PreviewFrameRange Side, PreviewFrameRange Front)
+    {
+        public static PreviewFrameRangeMetadata Empty { get; } = new(null, new(null, null), new(null, null));
+    }
+    private sealed record PreviewVideoProbe(double? Fps, double? DurationSeconds, int? FrameCount);
 
     /// <inheritdoc/>
     public bool IsAnalysisRunning => _isRunning;
@@ -214,7 +220,10 @@ public class GaitAnalysisService : IGaitAnalysisService
                 }
             }
 
-            await TryCreateAnalysisPreviewVideoAsync(runtimeDir, logDir, _linkedCts.Token);
+            RaiseProgress(requestId, "processing", 95, "算法计算完成，正在生成分析预览");
+            await Task.Run(
+                async () => await TryCreateAnalysisPreviewVideoAsync(runtimeDir, logDir, _linkedCts.Token),
+                _linkedCts.Token);
 
             AnalysisOutputReadResult outputReadResult;
             try
@@ -243,7 +252,8 @@ public class GaitAnalysisService : IGaitAnalysisService
                     analysisDuration);
             }
 
-            ArchiveSuccessfulRuntimeDirectory(runtimeDir, archiveDir);
+            RaiseProgress(requestId, "processing", 98, "正在归档分析结果");
+            await Task.Run(() => ArchiveSuccessfulRuntimeDirectory(runtimeDir, archiveDir), _linkedCts.Token);
             var archivedConfigPath = MapPathToArchive(runtimeDir, archiveDir, configPath);
             var archivedSummaryPath = MapPathToArchive(runtimeDir, archiveDir, outputReadResult.SummaryPath);
 
@@ -768,13 +778,14 @@ public class GaitAnalysisService : IGaitAnalysisService
 
             var sideVideo = FindSports2DVideo(outputDir, allowFallback: true, "side", "侧面", "渚ч潰");
             var frontVideo = FindSports2DVideo(outputDir, allowFallback: false, "front", "正面", "姝ｉ潰");
-            if (string.IsNullOrWhiteSpace(sideVideo) || string.IsNullOrWhiteSpace(frontVideo))
+            if (string.IsNullOrWhiteSpace(sideVideo))
             {
-                RaiseLog("未同时找到侧面和正面标注视频，跳过双视频拼接预览生成。");
+                RaiseLog("未找到侧面标注视频，跳过分析详情预览生成。");
                 return null;
             }
 
-            if (string.Equals(sideVideo, frontVideo, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(frontVideo)
+                && string.Equals(sideVideo, frontVideo, StringComparison.OrdinalIgnoreCase))
             {
                 RaiseLog("侧面和正面标注视频指向同一文件，跳过双视频拼接预览生成。");
                 return null;
@@ -785,6 +796,29 @@ public class GaitAnalysisService : IGaitAnalysisService
             var previewPath = Path.Combine(previewDir, AnalysisPreviewVideoFileName);
             var previewLogPath = Path.Combine(logDir, "preview_ffmpeg.log");
             ResetProcessLog(previewLogPath);
+            var frameMetadata = ReadPreviewFrameRangeMetadata(outputDir);
+            var sidePreviewSource = await TryCreateRestoredPreviewSourceAsync(
+                ffmpegPath,
+                sideVideo,
+                Path.Combine(outputDir, InputDirectoryName, SideInputFileName),
+                frameMetadata.Side,
+                frameMetadata.Fps,
+                previewDir,
+                "side",
+                previewLogPath,
+                ct);
+            var frontPreviewSource = string.IsNullOrWhiteSpace(frontVideo)
+                ? null
+                : await TryCreateRestoredPreviewSourceAsync(
+                    ffmpegPath,
+                    frontVideo,
+                    Path.Combine(outputDir, InputDirectoryName, FrontInputFileName),
+                    frameMetadata.Front,
+                    frameMetadata.Fps,
+                    previewDir,
+                    "front",
+                    previewLogPath,
+                    ct);
 
             var startInfo = new ProcessStartInfo
             {
@@ -799,11 +833,17 @@ public class GaitAnalysisService : IGaitAnalysisService
 
             startInfo.ArgumentList.Add("-y");
             startInfo.ArgumentList.Add("-i");
-            startInfo.ArgumentList.Add(sideVideo);
-            startInfo.ArgumentList.Add("-i");
-            startInfo.ArgumentList.Add(frontVideo);
+            startInfo.ArgumentList.Add(sidePreviewSource);
+            if (!string.IsNullOrWhiteSpace(frontPreviewSource))
+            {
+                startInfo.ArgumentList.Add("-i");
+                startInfo.ArgumentList.Add(frontPreviewSource);
+            }
+
             startInfo.ArgumentList.Add("-filter_complex");
-            startInfo.ArgumentList.Add("[0:v]scale=-2:720,pad=iw+16:ih+16:8:8:black[s];[1:v]scale=-2:720,pad=iw+16:ih+16:8:8:black[f];[s][f]hstack=inputs=2,format=yuv420p[v]");
+            startInfo.ArgumentList.Add(string.IsNullOrWhiteSpace(frontPreviewSource)
+                ? "[0:v]scale=-2:720,pad=iw+16:ih+16:8:8:black,format=yuv420p[v]"
+                : "[0:v]scale=-2:720,pad=iw+16:ih+16:8:8:black[s];[1:v]scale=-2:720,pad=iw+16:ih+16:8:8:black[f];[s][f]hstack=inputs=2,format=yuv420p[v]");
             startInfo.ArgumentList.Add("-map");
             startInfo.ArgumentList.Add("[v]");
             startInfo.ArgumentList.Add("-an");
@@ -857,6 +897,314 @@ public class GaitAnalysisService : IGaitAnalysisService
             _logHelper?.Warning($"生成分析详情拼接预览异常: {ex.Message}");
             return null;
         }
+    }
+
+    private async Task<string> TryCreateRestoredPreviewSourceAsync(
+        string ffmpegPath,
+        string annotatedVideo,
+        string originalVideo,
+        PreviewFrameRange frameRange,
+        double? fps,
+        string previewDir,
+        string viewName,
+        string previewLogPath,
+        CancellationToken ct)
+    {
+        try
+        {
+            if (!File.Exists(annotatedVideo)
+                || !File.Exists(originalVideo)
+                || frameRange.First is not { } firstFrame
+                || frameRange.Last is not { } lastFrame
+                || firstFrame < 0
+                || lastFrame < firstFrame)
+            {
+                return annotatedVideo;
+            }
+
+            var originalProbe = ProbePreviewVideo(ffmpegPath, originalVideo);
+            var annotatedProbe = ProbePreviewVideo(ffmpegPath, annotatedVideo);
+            var originalFrames = originalProbe.FrameCount;
+            var annotatedFrames = annotatedProbe.FrameCount;
+            if (originalFrames is not > 0 || annotatedFrames is not > 0)
+            {
+                return annotatedVideo;
+            }
+
+            var headFrameCount = Math.Clamp(firstFrame, 0, originalFrames.Value);
+            var metadataTailStartFrame = Math.Clamp(lastFrame + 1, 0, originalFrames.Value);
+            var expectedTailFrameCount = Math.Max(0, originalFrames.Value - headFrameCount - annotatedFrames.Value);
+            var tailStartFrame = Math.Clamp(
+                expectedTailFrameCount > 0 ? originalFrames.Value - expectedTailFrameCount : metadataTailStartFrame,
+                0,
+                originalFrames.Value);
+            var hasHeadPadding = headFrameCount > 0;
+            var hasTailPadding = tailStartFrame < originalFrames.Value;
+            if (!hasHeadPadding && !hasTailPadding)
+            {
+                return annotatedVideo;
+            }
+
+            var restoredPath = Path.Combine(previewDir, $"{viewName}_restored_preview_source.mp4");
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = ffmpegPath,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8
+            };
+
+            startInfo.ArgumentList.Add("-y");
+            var filters = new List<string>();
+            var concatLabels = new List<string>();
+            var inputIndex = 0;
+
+            if (hasHeadPadding)
+            {
+                startInfo.ArgumentList.Add("-i");
+                startInfo.ArgumentList.Add(originalVideo);
+                filters.Add($"[{inputIndex}:v]trim=start_frame=0:end_frame={headFrameCount},setpts=PTS-STARTPTS,scale=-2:720,setsar=1[v{concatLabels.Count}]");
+                concatLabels.Add($"[v{concatLabels.Count}]");
+                inputIndex++;
+            }
+
+            startInfo.ArgumentList.Add("-i");
+            startInfo.ArgumentList.Add(annotatedVideo);
+            filters.Add($"[{inputIndex}:v]setpts=PTS-STARTPTS,scale=-2:720,setsar=1[v{concatLabels.Count}]");
+            concatLabels.Add($"[v{concatLabels.Count}]");
+            inputIndex++;
+
+            if (hasTailPadding)
+            {
+                startInfo.ArgumentList.Add("-i");
+                startInfo.ArgumentList.Add(originalVideo);
+                filters.Add($"[{inputIndex}:v]trim=start_frame={tailStartFrame},setpts=PTS-STARTPTS,scale=-2:720,setsar=1[v{concatLabels.Count}]");
+                concatLabels.Add($"[v{concatLabels.Count}]");
+            }
+
+            filters.Add($"{string.Concat(concatLabels)}concat=n={concatLabels.Count}:v=1:a=0,format=yuv420p[v]");
+            startInfo.ArgumentList.Add("-filter_complex");
+            startInfo.ArgumentList.Add(string.Join(";", filters));
+            startInfo.ArgumentList.Add("-map");
+            startInfo.ArgumentList.Add("[v]");
+            startInfo.ArgumentList.Add("-an");
+            startInfo.ArgumentList.Add("-c:v");
+            startInfo.ArgumentList.Add("libx264");
+            startInfo.ArgumentList.Add("-preset");
+            startInfo.ArgumentList.Add("veryfast");
+            startInfo.ArgumentList.Add("-crf");
+            startInfo.ArgumentList.Add("23");
+            startInfo.ArgumentList.Add("-movflags");
+            startInfo.ArgumentList.Add("+faststart");
+            startInfo.ArgumentList.Add(restoredPath);
+
+            using var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
+            process.OutputDataReceived += (_, e) =>
+            {
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                {
+                    AppendProcessLog(previewLogPath, e.Data);
+                }
+            };
+            process.ErrorDataReceived += (_, e) =>
+            {
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                {
+                    AppendProcessLog(previewLogPath, e.Data);
+                }
+            };
+
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            await process.WaitForExitAsync(ct);
+            if (process.ExitCode == 0 && File.Exists(restoredPath))
+            {
+                RaiseLog($"{viewName} 分析预览视频已按原始输入帧范围补齐。");
+                return restoredPath;
+            }
+
+            RaiseLog($"{viewName} 分析预览视频补齐失败，使用算法原始标注视频。日志: {previewLogPath}", isError: true);
+            return annotatedVideo;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            RaiseLog($"{viewName} 分析预览视频补齐异常，使用算法原始标注视频: {ex.Message}", isError: true);
+            return annotatedVideo;
+        }
+    }
+
+    private static PreviewFrameRangeMetadata ReadPreviewFrameRangeMetadata(string outputDir)
+    {
+        var resultPath = Directory.Exists(outputDir)
+            ? Directory.GetFiles(outputDir, "result.json", SearchOption.AllDirectories).FirstOrDefault()
+            : null;
+        if (string.IsNullOrWhiteSpace(resultPath) || !File.Exists(resultPath))
+        {
+            return PreviewFrameRangeMetadata.Empty;
+        }
+
+        try
+        {
+            var root = JsonSerializer.Deserialize<JsonElement>(File.ReadAllText(resultPath));
+            var fps = TryGetDouble(root, "video_info", "fps");
+            return new PreviewFrameRangeMetadata(
+                fps,
+                new PreviewFrameRange(
+                    TryGetInt(root, "side_data_first_valid_frame"),
+                    TryGetInt(root, "side_data_last_valid_frame")),
+                new PreviewFrameRange(
+                    TryGetInt(root, "front_data_first_valid_any_frame") ?? TryGetInt(root, "front_data_first_valid_frame"),
+                    TryGetInt(root, "front_data_last_valid_any_frame") ?? TryGetInt(root, "front_data_last_valid_frame")));
+        }
+        catch
+        {
+            return PreviewFrameRangeMetadata.Empty;
+        }
+    }
+
+    private static double? TryGetDouble(JsonElement root, string parentName, string propertyName)
+    {
+        return root.ValueKind == JsonValueKind.Object
+               && root.TryGetProperty(parentName, out var parent)
+               && parent.ValueKind == JsonValueKind.Object
+               && parent.TryGetProperty(propertyName, out var value)
+               && value.ValueKind == JsonValueKind.Number
+               && value.TryGetDouble(out var number)
+            ? number
+            : null;
+    }
+
+    private static PreviewVideoProbe ProbePreviewVideo(string ffmpegPath, string videoPath)
+    {
+        var ffprobePath = Path.Combine(Path.GetDirectoryName(ffmpegPath) ?? string.Empty, "ffprobe.exe");
+        if (!File.Exists(ffprobePath) || !File.Exists(videoPath))
+        {
+            return new PreviewVideoProbe(null, null, null);
+        }
+
+        try
+        {
+            using var process = new Process();
+            process.StartInfo = new ProcessStartInfo
+            {
+                FileName = ffprobePath,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8
+            };
+            process.StartInfo.ArgumentList.Add("-v");
+            process.StartInfo.ArgumentList.Add("error");
+            process.StartInfo.ArgumentList.Add("-count_frames");
+            process.StartInfo.ArgumentList.Add("-select_streams");
+            process.StartInfo.ArgumentList.Add("v:0");
+            process.StartInfo.ArgumentList.Add("-show_entries");
+            process.StartInfo.ArgumentList.Add("stream=avg_frame_rate,nb_read_frames,nb_frames,duration:format=duration");
+            process.StartInfo.ArgumentList.Add("-of");
+            process.StartInfo.ArgumentList.Add("json");
+            process.StartInfo.ArgumentList.Add(videoPath);
+
+            process.Start();
+            var output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit(5000);
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+                return new PreviewVideoProbe(null, null, null);
+            }
+
+            if (process.ExitCode != 0 || string.IsNullOrWhiteSpace(output))
+            {
+                return new PreviewVideoProbe(null, null, null);
+            }
+
+            var root = JsonSerializer.Deserialize<JsonElement>(output);
+            if (root.ValueKind != JsonValueKind.Object
+                || !root.TryGetProperty("streams", out var streams)
+                || streams.ValueKind != JsonValueKind.Array
+                || streams.GetArrayLength() == 0)
+            {
+                return new PreviewVideoProbe(null, null, null);
+            }
+
+            var stream = streams[0];
+            var fps = TryGetFrameRate(stream);
+            var duration = TryGetDouble(stream, "duration")
+                ?? (root.TryGetProperty("format", out var format) ? TryGetDouble(format, "duration") : null);
+            var frameCount = TryGetInt(stream, "nb_read_frames") ?? TryGetInt(stream, "nb_frames");
+            return new PreviewVideoProbe(fps, duration, frameCount);
+        }
+        catch
+        {
+            return new PreviewVideoProbe(null, null, null);
+        }
+    }
+
+    private static int? TryGetInt(JsonElement obj, string propertyName)
+    {
+        if (obj.ValueKind != JsonValueKind.Object || !obj.TryGetProperty(propertyName, out var value))
+        {
+            return null;
+        }
+
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var number))
+        {
+            return number;
+        }
+
+        return value.ValueKind == JsonValueKind.String
+               && int.TryParse(value.GetString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out number)
+            ? number
+            : null;
+    }
+
+    private static double? TryGetDouble(JsonElement obj, string propertyName)
+    {
+        if (obj.ValueKind != JsonValueKind.Object || !obj.TryGetProperty(propertyName, out var value))
+        {
+            return null;
+        }
+
+        if (value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out var number))
+        {
+            return number;
+        }
+
+        return value.ValueKind == JsonValueKind.String
+               && double.TryParse(value.GetString(), NumberStyles.Float, CultureInfo.InvariantCulture, out number)
+            ? number
+            : null;
+    }
+
+    private static double? TryGetFrameRate(JsonElement stream)
+    {
+        if (stream.ValueKind != JsonValueKind.Object
+            || !stream.TryGetProperty("avg_frame_rate", out var value)
+            || value.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        var parts = value.GetString()?.Split('/');
+        if (parts is not { Length: 2 }
+            || !double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var numerator)
+            || !double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var denominator)
+            || denominator <= 0)
+        {
+            return null;
+        }
+
+        return numerator / denominator;
     }
 
     private static string? FindSports2DVideo(string outputDir, bool allowFallback, params string[] preferredTokens)
@@ -1116,7 +1464,17 @@ public class GaitAnalysisService : IGaitAnalysisService
 
             CaptureStdoutStatus(message, status);
 
-            RaiseProgress(effectiveRequestId, status, progress, text, errorCode);
+            var displayStatus = status;
+            var displayProgress = progress;
+            var displayText = text;
+            if (string.Equals(status, "completed", StringComparison.OrdinalIgnoreCase))
+            {
+                displayStatus = "processing";
+                displayProgress = 95;
+                displayText = "算法计算完成，正在整理结果";
+            }
+
+            RaiseProgress(effectiveRequestId, displayStatus, displayProgress, displayText, errorCode);
             RaiseLog($"[{status}] {progress}% - {text}", errorCode.HasValue);
             if (!string.IsNullOrWhiteSpace(message.Error))
             {

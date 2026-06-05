@@ -1338,7 +1338,7 @@
                                                 FontFamily="{StaticResource AppFont}"
                                                 FontSize="12"
                                                 Foreground="White"
-                                                Text="{Binding VideoDurationDisplay}"
+                                                Text="{Binding VideoDurationPlaybackDisplay}"
                                                 TextAlignment="Center" />
                                         </Grid>
                                     </Border>

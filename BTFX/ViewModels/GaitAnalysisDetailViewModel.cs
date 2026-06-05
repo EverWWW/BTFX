@@ -832,6 +832,8 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
 
     public string VideoDurationDisplay => _detailData.VideoDurationSec.HasValue ? $"{_detailData.VideoDurationSec.Value:F2} s" : "--";
 
+    public string VideoDurationPlaybackDisplay => FormatPlaybackTime(_detailData.VideoDurationSec);
+
     public string CurrentGaitCycleDisplay => _detailData.CycleCount.HasValue ? $"共 {_detailData.CycleCount.Value} 周期" : "--";
 
     public string CurrentEventDisplay => "--";
@@ -2140,6 +2142,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         OnPropertyChanged(nameof(CurrentFrameDisplay));
         OnPropertyChanged(nameof(CurrentPlaybackTimeDisplay));
         OnPropertyChanged(nameof(VideoDurationDisplay));
+        OnPropertyChanged(nameof(VideoDurationPlaybackDisplay));
         OnPropertyChanged(nameof(CurrentGaitCycleDisplay));
         OnPropertyChanged(nameof(CurrentEventDisplay));
         OnPropertyChanged(nameof(CurrentLeftKneeAngleDisplay));
@@ -2224,6 +2227,19 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     private static string FormatSeconds(double? seconds)
     {
         return seconds.HasValue ? $"{seconds.Value:F2} s" : "--";
+    }
+
+    private static string FormatPlaybackTime(double? seconds)
+    {
+        if (seconds is not > 0)
+        {
+            return "0:00";
+        }
+
+        var rounded = TimeSpan.FromSeconds(Math.Max(0, (int)Math.Round(seconds.Value, MidpointRounding.AwayFromZero)));
+        return rounded.TotalHours >= 1
+            ? $"{(int)rounded.TotalHours}:{rounded.Minutes:00}:{rounded.Seconds:00}"
+            : $"{(int)rounded.TotalMinutes}:{rounded.Seconds:00}";
     }
 
     private static int? ReadInt(JsonObject? obj, string name)

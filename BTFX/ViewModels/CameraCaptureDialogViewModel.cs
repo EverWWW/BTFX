@@ -14,7 +14,10 @@ namespace BTFX.ViewModels;
 
 public partial class CameraCaptureDialogViewModel : ObservableObject
 {
-    private const int PreviewDisplayFrameRate = 8;
+    private const int PreviewDisplayFrameRate = 30;
+    private const int PreviewInputFrameRate = 30;
+    private const string PreviewInputVideoSize = "1280x720";
+    private const int PreviewOutputWidth = 480;
     private const int RecordingStartDelaySeconds = 5;
     private readonly ICameraRecordingService _cameraRecordingService;
     private readonly ICameraCaptureSettingsService _settingsService;
@@ -28,6 +31,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
     private CancellationTokenSource? _recordingCancellation;
     private CameraCaptureSettings _settings;
     private bool _isLoadingSettings;
+    private bool _hasCameraStatusSnapshot;
     private int _sidePreviewGeneration;
     private int _frontPreviewGeneration;
 
@@ -415,8 +419,15 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
             {
                 var previousSideStatus = SideCameraStatus;
                 var previousFrontStatus = FrontCameraStatus;
+                var hasStatusSnapshot = _hasCameraStatusSnapshot;
                 SideCameraStatus = newSideStatus;
                 FrontCameraStatus = newFrontStatus;
+                _hasCameraStatusSnapshot = true;
+
+                if (!hasStatusSnapshot)
+                {
+                    return;
+                }
 
                 if (CaptureState == CameraCaptureUiState.Preview
                     && !string.Equals(previousSideStatus, SideCameraStatus, StringComparison.Ordinal))
@@ -629,7 +640,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
             else
             {
                 RecordingRemainingSeconds = 0;
-                RecordingProgress = Math.Clamp(RecordingProgress + 0.6, 72, 96);
+                RecordingProgress = Math.Clamp(RecordingProgress + 0.25, 72, 98);
             }
 
             await Task.Delay(200, cancellationToken);
@@ -852,8 +863,12 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
                 " ",
                 "-hide_banner",
                 "-loglevel warning",
+                "-fflags nobuffer",
+                "-flags low_delay",
                 "-f dshow",
                 "-rtbufsize 128M",
+                $"-video_size {PreviewInputVideoSize}",
+                $"-framerate {PreviewInputFrameRate}",
                 $"-i {Quote($"video={cameraName}")}",
                 $"-vf {Quote(filter)}",
                 "-an",
@@ -1175,7 +1190,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
 
     private static string BuildPreviewFilter(CameraOrientation orientation, bool flipHorizontal)
     {
-        var filters = new List<string> { $"fps={PreviewDisplayFrameRate}", "scale=540:-2" };
+        var filters = new List<string> { $"fps={PreviewDisplayFrameRate}", $"scale={PreviewOutputWidth}:-2" };
         if (orientation == CameraOrientation.PortraitClockwise)
         {
             filters.Add("transpose=1");
