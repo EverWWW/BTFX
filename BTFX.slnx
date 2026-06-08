@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="BTFX/BTFX.csproj" />
+  <Project Path="ActivationCodeTool/ActivationCodeTool.csproj" />
   <Project Path="MockGaitAnalysis/MockGaitAnalysis.csproj" />
   <Project Path="test/test.csproj" Id="bf3a138f-bb28-43e4-a15f-558a9c73d05a" />
   <Project Path="ToolHelper.Communication/ToolHelper.Communication.csproj" />

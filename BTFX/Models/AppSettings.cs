@@ -36,6 +36,11 @@ public class AppSettings
     /// 算法配置
     /// </summary>
     public AlgorithmSettings Algorithm { get; set; } = new();
+
+    /// <summary>
+    /// 在线更新配置
+    /// </summary>
+    public UpdateSettings Update { get; set; } = new();
 }
 
 /// <summary>
@@ -57,6 +62,37 @@ public class ApplicationSettings
     /// 主题色（十六进制颜色值，如 #FF009EDB）
     /// </summary>
     public string PrimaryColor { get; set; } = "#FF009EDB";
+}
+
+/// <summary>
+/// 在线更新设置
+/// </summary>
+public class UpdateSettings
+{
+    /// <summary>
+    /// 是否启用在线更新检查
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>
+    /// 更新配置地址
+    /// </summary>
+    public string UpdateUrl { get; set; } = "http://192.168.110.201/update.xml";
+
+    /// <summary>
+    /// 检查间隔天数
+    /// </summary>
+    public int CheckIntervalDays { get; set; } = 7;
+
+    /// <summary>
+    /// 最近检查日期
+    /// </summary>
+    public string LastCheckDate { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 有更新时是否显示更新内容
+    /// </summary>
+    public bool ShowDetail { get; set; } = true;
 }
 
 /// <summary>

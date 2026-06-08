@@ -105,14 +105,23 @@ public partial class App : Application
         if (navigationService != null)
         {
             navigationService.RegisterView<LoginViewModel, Views.LoginView>();
+            navigationService.RegisterView<ActivationViewModel, Views.ActivationView>();
             navigationService.RegisterView<PatientSelectionViewModel, Views.PatientSelectionView>();
             navigationService.RegisterView<MainContainerViewModel, Views.MainContainerView>();
             navigationService.RegisterView<ViewModels.Measurement.MeasurementViewModel, Views.Measurement.MeasurementView>();
             navigationService.RegisterView<DataManagementViewModel, Views.DataManagementView>();
             // TODO: Register other sub-views (Report, Settings)
 
-            // Navigate to login view
-            navigationService.NavigateTo<LoginViewModel>();
+            var activationService = Services.GetRequiredService<IActivationService>();
+            if (activationService.IsActivated)
+            {
+                navigationService.NavigateTo<LoginViewModel>();
+                _ = Services.GetRequiredService<IAppUpdateService>().CheckForUpdatesAsync();
+            }
+            else
+            {
+                navigationService.NavigateTo<ActivationViewModel>();
+            }
         }
     }
 
@@ -481,6 +490,8 @@ public partial class App : Application
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IAuthenticationService, AuthenticationService>();
         services.AddSingleton<IBackupService, BackupService>();
+        services.AddSingleton<IActivationService, ActivationService>();
+        services.AddSingleton<IAppUpdateService, AppUpdateService>();
 
         // ========== Transient 服务 ==========
         services.AddTransient<IPatientService, PatientService>();
@@ -501,6 +512,7 @@ public partial class App : Application
 
         // ========== ViewModel 注册 ==========
         services.AddTransient<MainWindowViewModel>();
+        services.AddTransient<ActivationViewModel>();
         services.AddTransient<LoginViewModel>();
         services.AddTransient<PatientSelectionViewModel>();
         services.AddTransient<PatientEditViewModel>();
@@ -528,6 +540,7 @@ public partial class App : Application
 
         // ========== View 注册 ==========
         services.AddTransient<MainWindow>();
+        services.AddTransient<Views.ActivationView>();
         services.AddTransient<Views.LoginView>();
         services.AddTransient<Views.PatientSelectionView>();
         services.AddTransient<Views.Dialogs.PatientEditDialog>();

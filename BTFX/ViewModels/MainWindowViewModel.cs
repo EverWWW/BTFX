@@ -89,6 +89,7 @@ public class MainWindowViewModel : ObservableObject
     /// 是否正在显示登录页（登录页时隐藏标题栏）
     /// </summary>
     public bool IsLoginView => _navigationService.CurrentViewKey == "LoginViewModel"
+                               || _navigationService.CurrentViewKey == "ActivationViewModel"
                                || string.IsNullOrEmpty(_navigationService.CurrentViewKey);
 
     /// <summary>

@@ -47,6 +47,16 @@ public static class Constants
     public const string APP_DISPLAY_NAME_EN = "Gait Intelligent Analysis System";
 
     /// <summary>
+    /// 激活系统使用的软件型号
+    /// </summary>
+    public const string ACTIVATION_PRODUCT_MODEL = "XY-K-BTFX-I";
+
+    /// <summary>
+    /// 在线激活接口
+    /// </summary>
+    public const string ACTIVATION_ENDPOINT = "https://gp.xyyl.com/prod-api/business/equipsn/actireg";
+
+    /// <summary>
     /// 单实例 Mutex 名称
     /// </summary>
     public const string MUTEX_NAME = @"Global\BTFX_SingleInstance_Mutex";
