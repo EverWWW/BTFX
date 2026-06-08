@@ -17,6 +17,7 @@ public partial class SystemInfoViewModel : ObservableObject
 {
     private readonly ISessionService _sessionService;
     private readonly ILocalizationService _localizationService;
+    private readonly IAppUpdateService _appUpdateService;
     private readonly ILogHelper? _logHelper;
 
     public string AppVersion => BtfxConstants.VERSION_FULL;
@@ -73,12 +74,18 @@ public partial class SystemInfoViewModel : ObservableObject
     [ObservableProperty]
     private bool _isLoading;
 
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(CheckUpdateCommand))]
+    private bool _isCheckingUpdate;
+
     public SystemInfoViewModel(
         ISessionService sessionService,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IAppUpdateService appUpdateService)
     {
         _sessionService = sessionService;
         _localizationService = localizationService;
+        _appUpdateService = appUpdateService;
 
         try { _logHelper = App.Services?.GetService(typeof(ILogHelper)) as ILogHelper; } catch { }
 
@@ -135,6 +142,78 @@ public partial class SystemInfoViewModel : ObservableObject
             _ => "--"
         };
     }
+
+    [RelayCommand(CanExecute = nameof(CanCheckUpdate))]
+    private async Task CheckUpdateAsync()
+    {
+        try
+        {
+            IsCheckingUpdate = true;
+            var updateInfo = await _appUpdateService.CheckForUpdatesAsync(true);
+            if (updateInfo is null)
+            {
+                System.Windows.MessageBox.Show("当前已是最新版本。", "检查更新",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(updateInfo.PackageUrl))
+            {
+                System.Windows.MessageBox.Show(
+                    $"发现新版本 {updateInfo.Version}，但更新包地址为空，请联系管理员检查更新配置。",
+                    "检查更新",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Warning);
+                return;
+            }
+
+            var message = string.IsNullOrWhiteSpace(updateInfo.Detail)
+                ? $"发现新版本 {updateInfo.Version}。\n\n是否下载并安装更新？"
+                : $"发现新版本 {updateInfo.Version}。\n\n更新内容：\n{updateInfo.Detail}\n\n是否下载并安装更新？";
+            var confirm = System.Windows.MessageBox.Show(
+                message,
+                "发现新版本",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Information);
+            if (confirm != System.Windows.MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            var installerPath = await RunWithProgressDialogAsync(
+                "下载更新",
+                "准备下载",
+                "正在准备下载更新包...",
+                (progress, token) => _appUpdateService.DownloadUpdatePackageAsync(updateInfo, progress, token));
+
+            var installConfirm = System.Windows.MessageBox.Show(
+                "更新包下载完成。点击确定后将启动安装程序并关闭当前软件。",
+                "安装更新",
+                System.Windows.MessageBoxButton.OKCancel,
+                System.Windows.MessageBoxImage.Information);
+            if (installConfirm == System.Windows.MessageBoxResult.OK)
+            {
+                _appUpdateService.StartInstallerAndShutdown(installerPath);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            System.Windows.MessageBox.Show("更新下载已取消。", "检查更新",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("检查或下载更新失败", ex);
+            System.Windows.MessageBox.Show($"检查或下载更新失败：{ex.Message}", "检查更新",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        }
+        finally
+        {
+            IsCheckingUpdate = false;
+        }
+    }
+
+    private bool CanCheckUpdate() => !IsCheckingUpdate;
 
     [RelayCommand]
     private async Task ShowAboutDialogAsync()
@@ -351,5 +430,53 @@ public partial class SystemInfoViewModel : ObservableObject
         LogErrorCount = "--";
         LogFileCount = "--";
         LogTotalSize = "--";
+    }
+
+    private static async Task<T> RunWithProgressDialogAsync<T>(
+        string title,
+        string stage,
+        string message,
+        Func<IProgress<OperationProgressInfo>, CancellationToken, Task<T>> operation)
+    {
+        using var operationCts = new CancellationTokenSource();
+        var progressViewModel = new OperationProgressDialogViewModel(
+            title,
+            stage,
+            message,
+            operationCts,
+            canCancel: true);
+
+        var progress = new Progress<OperationProgressInfo>(progressViewModel.Update);
+        var dialog = new Views.Dialogs.OperationProgressDialog
+        {
+            DataContext = progressViewModel
+        };
+
+        var dialogTask = DialogHost.Show(dialog, "RootDialog");
+        try
+        {
+            var result = await operation(progress, operationCts.Token);
+            progressViewModel.MarkCompleted("操作已完成。");
+            await Task.Delay(650);
+            DialogHost.Close("RootDialog");
+            await dialogTask;
+            return result;
+        }
+        catch (OperationCanceledException)
+        {
+            progressViewModel.MarkFailed("操作已取消。");
+            await Task.Delay(350);
+            DialogHost.Close("RootDialog");
+            await dialogTask;
+            throw;
+        }
+        catch
+        {
+            progressViewModel.MarkFailed("操作执行失败。");
+            await Task.Delay(350);
+            DialogHost.Close("RootDialog");
+            await dialogTask;
+            throw;
+        }
     }
 }

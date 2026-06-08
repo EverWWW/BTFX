@@ -188,11 +188,20 @@
                             <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="{DynamicResource AppInfo}" />
                         </StackPanel>
 
-                        <Button
+                        <StackPanel
                             Grid.Column="1"
-                            Command="{Binding ShowAboutDialogCommand}"
-                            Content="{DynamicResource AboutUs}"
-                            Style="{StaticResource AboutButtonStyle}" />
+                            Orientation="Horizontal">
+                            <Button
+                                Width="132"
+                                Command="{Binding CheckUpdateCommand}"
+                                Content="检查更新"
+                                IsEnabled="{Binding IsCheckingUpdate, Converter={StaticResource InverseBooleanConverter}}"
+                                Style="{StaticResource AboutButtonStyle}" />
+                            <Button
+                                Command="{Binding ShowAboutDialogCommand}"
+                                Content="{DynamicResource AboutUs}"
+                                Style="{StaticResource AboutButtonStyle}" />
+                        </StackPanel>
                     </Grid>
 
                     <Grid Grid.Row="1" Margin="0,15,0,0">
