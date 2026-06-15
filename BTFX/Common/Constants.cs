@@ -363,12 +363,12 @@ public static class Constants
     /// <summary>
     /// 算法程序默认目录
     /// </summary>
-    public const string ALGORITHM_DIRECTORY = "gait_analysis";
+    public const string ALGORITHM_DIRECTORY = "gait_analysis_gpu";
 
     /// <summary>
     /// 算法程序默认文件名
     /// </summary>
-    public const string ALGORITHM_EXE_FILENAME = "Gait_analysis.exe";
+    public const string ALGORITHM_EXE_FILENAME = "gait_analysis_gpu.exe";
 
     /// <summary>
     /// 算法默认超时时间（分钟）

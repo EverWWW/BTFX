@@ -945,19 +945,14 @@ public partial class MeasurementViewModel : ObservableObject
     private void ShowVideoValidationFailureIfNeeded(string title, VideoFileInfoViewModel videoInfo)
     {
         RefreshVideoValidationState();
-        var message = videoInfo.Status == VideoValidationStatus.Failed
-            ? videoInfo.ValidationMessage
-            : !CanEnterReview && !string.IsNullOrWhiteSpace(EntryFailureReason)
-                ? EntryFailureReason
-                : null;
-
-        if (string.IsNullOrWhiteSpace(message))
+        if (videoInfo.Status != VideoValidationStatus.Failed
+            || string.IsNullOrWhiteSpace(videoInfo.ValidationMessage))
         {
             return;
         }
 
         MessageBox.Show(
-            $"{title}未通过校验：\n\n{message}",
+            $"{title}未通过校验：\n\n{videoInfo.ValidationMessage}",
             "视频校验失败",
             MessageBoxButton.OK,
             MessageBoxImage.Warning);

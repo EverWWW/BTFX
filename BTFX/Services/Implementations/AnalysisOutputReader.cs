@@ -109,14 +109,14 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
             KinematicSummary = new KinematicSummaryDto
             {
                 HipRomDeg = Average(
-                    ReadDouble(jointAngles?["left_hip"] as JsonObject, "rom_deg"),
-                    ReadDouble(jointAngles?["right_hip"] as JsonObject, "rom_deg")),
+                    ReadJointRom(jointAngles, "left_hip", "left hip"),
+                    ReadJointRom(jointAngles, "right_hip", "right hip")),
                 KneeRomDeg = Average(
-                    ReadDouble(jointAngles?["left_knee"] as JsonObject, "rom_deg"),
-                    ReadDouble(jointAngles?["right_knee"] as JsonObject, "rom_deg")),
+                    ReadJointRom(jointAngles, "left_knee", "left knee"),
+                    ReadJointRom(jointAngles, "right_knee", "right knee")),
                 AnkleRomDeg = Average(
-                    ReadDouble(jointAngles?["left_ankle"] as JsonObject, "rom_deg"),
-                    ReadDouble(jointAngles?["right_ankle"] as JsonObject, "rom_deg")),
+                    ReadJointRom(jointAngles, "left_ankle", "left ankle"),
+                    ReadJointRom(jointAngles, "right_ankle", "right ankle")),
                 PelvisCoronalRomDeg = ReadDouble(root["segment_angles"]?["pelvis_coronal_rom_deg"] as JsonObject, "rom")
                     ?? Difference(
                         ReadDouble(root["segment_angles"]?["pelvis_tilt_deg"] as JsonObject, "max"),
@@ -192,6 +192,32 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
         {
             return null;
         }
+    }
+
+    private static JsonObject? ReadObject(JsonObject? obj, params string[] names)
+    {
+        if (obj is null)
+        {
+            return null;
+        }
+
+        foreach (var name in names)
+        {
+            if (obj.TryGetPropertyValue(name, out var node) && node is JsonObject value)
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    private static double? ReadJointRom(JsonObject? jointAngles, params string[] names)
+    {
+        var joint = ReadObject(jointAngles, names);
+        return ReadDouble(joint, "rom_deg")
+               ?? Difference(ReadDouble(joint, "max_flexion_deg"), ReadDouble(joint, "min_flexion_deg"))
+               ?? Difference(ReadDouble(joint, "max"), ReadDouble(joint, "min"));
     }
 
     private static int? ReadInt(JsonObject? obj, string name)

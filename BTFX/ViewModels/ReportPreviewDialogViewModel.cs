@@ -1453,12 +1453,12 @@ internal sealed class ReportAnalysisSnapshot
         MeanSingleSupportTimeSec = ReadDouble(sp, "mean_single_support_time_sec") ?? MeanSingleSupportTimeSec;
 
         var joint = root["joint_angles"] as JsonObject;
-        LeftHipRomDeg = ReadDouble(joint?["left_hip"] as JsonObject, "rom_deg") ?? LeftHipRomDeg;
-        RightHipRomDeg = ReadDouble(joint?["right_hip"] as JsonObject, "rom_deg") ?? RightHipRomDeg;
-        LeftKneeRomDeg = ReadDouble(joint?["left_knee"] as JsonObject, "rom_deg") ?? LeftKneeRomDeg;
-        RightKneeRomDeg = ReadDouble(joint?["right_knee"] as JsonObject, "rom_deg") ?? RightKneeRomDeg;
-        LeftAnkleRomDeg = ReadDouble(joint?["left_ankle"] as JsonObject, "rom_deg") ?? LeftAnkleRomDeg;
-        RightAnkleRomDeg = ReadDouble(joint?["right_ankle"] as JsonObject, "rom_deg") ?? RightAnkleRomDeg;
+        LeftHipRomDeg = ReadJointRom(joint, "left_hip", "left hip") ?? LeftHipRomDeg;
+        RightHipRomDeg = ReadJointRom(joint, "right_hip", "right hip") ?? RightHipRomDeg;
+        LeftKneeRomDeg = ReadJointRom(joint, "left_knee", "left knee") ?? LeftKneeRomDeg;
+        RightKneeRomDeg = ReadJointRom(joint, "right_knee", "right knee") ?? RightKneeRomDeg;
+        LeftAnkleRomDeg = ReadJointRom(joint, "left_ankle", "left ankle") ?? LeftAnkleRomDeg;
+        RightAnkleRomDeg = ReadJointRom(joint, "right_ankle", "right ankle") ?? RightAnkleRomDeg;
 
         var segment = root["segment_angles"] as JsonObject;
         var trunk = segment?["trunk_tilt_deg"] as JsonObject;
@@ -1603,6 +1603,32 @@ internal sealed class ReportAnalysisSnapshot
         }
 
         return null;
+    }
+
+    private static JsonObject? ReadObject(JsonObject? obj, params string[] names)
+    {
+        if (obj is null)
+        {
+            return null;
+        }
+
+        foreach (var name in names)
+        {
+            if (obj[name] is JsonObject value)
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    private static double? ReadJointRom(JsonObject? jointAngles, params string[] names)
+    {
+        var joint = ReadObject(jointAngles, names);
+        return ReadDouble(joint, "rom_deg")
+               ?? Diff(ReadDouble(joint, "max_flexion_deg"), ReadDouble(joint, "min_flexion_deg"))
+               ?? Diff(ReadDouble(joint, "max"), ReadDouble(joint, "min"));
     }
 
     private static int? ReadInt(JsonObject? obj, string name)

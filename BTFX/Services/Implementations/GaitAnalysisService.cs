@@ -34,7 +34,9 @@ public class GaitAnalysisService : IGaitAnalysisService
     private const int MinimumAlgorithmTimeoutMinutes = 30;
     private const string SideInputFileName = "side.mp4";
     private const string FrontInputFileName = "front.mp4";
-    private const string PreferredAlgorithmExeFileName = "Gait_analysis.exe";
+    private const string PreferredAlgorithmExeFileName = Constants.ALGORITHM_EXE_FILENAME;
+    private const string CpuAlgorithmDirectoryName = "gait_analysis";
+    private const string CpuAlgorithmExeFileName = "Gait_analysis.exe";
     private const string LegacyAlgorithmExeFileName = "gait_analysis.exe";
     private static readonly string[] AlgorithmStatusFiles =
     [
@@ -331,7 +333,12 @@ public class GaitAnalysisService : IGaitAnalysisService
         var settings = _settingsService.CurrentSettings.Algorithm;
         var exePath = settings.ExePath;
         var oldDefaultPath = Path.Combine("Algorithm", Constants.ALGORITHM_EXE_FILENAME);
-        if (string.Equals(exePath, oldDefaultPath, StringComparison.OrdinalIgnoreCase))
+        var cpuDefaultPath = Path.Combine(CpuAlgorithmDirectoryName, CpuAlgorithmExeFileName);
+        var cpuLegacyPath = Path.Combine(CpuAlgorithmDirectoryName, LegacyAlgorithmExeFileName);
+        if (string.Equals(exePath, oldDefaultPath, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(exePath, cpuDefaultPath, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(exePath, cpuLegacyPath, StringComparison.OrdinalIgnoreCase)
+            || IsKnownCpuAlgorithmPath(exePath))
         {
             exePath = Path.Combine(Constants.ALGORITHM_DIRECTORY, Constants.ALGORITHM_EXE_FILENAME);
             settings.ExePath = exePath;
@@ -378,6 +385,27 @@ public class GaitAnalysisService : IGaitAnalysisService
         }
 
         return exePath;
+    }
+
+    private static bool IsKnownCpuAlgorithmPath(string? exePath)
+    {
+        if (string.IsNullOrWhiteSpace(exePath))
+        {
+            return false;
+        }
+
+        var fileName = Path.GetFileName(exePath);
+        if (!string.Equals(fileName, CpuAlgorithmExeFileName, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(fileName, LegacyAlgorithmExeFileName, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var directoryName = Path.GetFileName(Path.GetDirectoryName(exePath)?.TrimEnd(
+            Path.DirectorySeparatorChar,
+            Path.AltDirectorySeparatorChar));
+        return string.Equals(directoryName, CpuAlgorithmDirectoryName, StringComparison.OrdinalIgnoreCase)
+               || string.Equals(directoryName, "Algorithm", StringComparison.OrdinalIgnoreCase);
     }
 
     private string EnsureAlgorithmRuntimeReady()
@@ -480,12 +508,41 @@ public class GaitAnalysisService : IGaitAnalysisService
         Directory.CreateDirectory(runtimeRoot);
 
         var archiveName = Path.GetFileName(Path.TrimEndingDirectorySeparator(Path.GetFullPath(archiveDir)));
+        archiveName = ToAsciiSafeDirectoryName(archiveName);
         if (string.IsNullOrWhiteSpace(archiveName))
         {
             archiveName = $"analysis_{DateTime.Now:yyyyMMdd_HHmmss}";
         }
 
         return EnsureUniqueDirectoryPath(Path.Combine(runtimeRoot, archiveName));
+    }
+
+    private static string ToAsciiSafeDirectoryName(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var builder = new StringBuilder(value.Length);
+        var lastWasSeparator = false;
+        foreach (var ch in value)
+        {
+            var isAsciiLetter = ch is >= 'a' and <= 'z' or >= 'A' and <= 'Z';
+            var isAsciiDigit = ch is >= '0' and <= '9';
+            if (isAsciiLetter || isAsciiDigit || ch is '-' or '_')
+            {
+                builder.Append(ch);
+                lastWasSeparator = false;
+            }
+            else if (!lastWasSeparator)
+            {
+                builder.Append('_');
+                lastWasSeparator = true;
+            }
+        }
+
+        return builder.ToString().Trim('_');
     }
 
     private static string ArchiveFailedRuntimeDirectory(string runtimeDir, string requestedArchiveDir)
@@ -1058,11 +1115,17 @@ public class GaitAnalysisService : IGaitAnalysisService
             return new PreviewFrameRangeMetadata(
                 fps,
                 new PreviewFrameRange(
-                    TryGetInt(root, "side_data_first_valid_frame"),
-                    TryGetInt(root, "side_data_last_valid_frame")),
+                    TryGetInt(root, "side_data_first_valid_frame") ?? TryGetInt(root, "side_trc_first_valid_frame"),
+                    TryGetInt(root, "side_data_last_valid_frame") ?? TryGetInt(root, "side_trc_last_valid_frame")),
                 new PreviewFrameRange(
-                    TryGetInt(root, "front_data_first_valid_any_frame") ?? TryGetInt(root, "front_data_first_valid_frame"),
-                    TryGetInt(root, "front_data_last_valid_any_frame") ?? TryGetInt(root, "front_data_last_valid_frame")));
+                    TryGetInt(root, "front_data_first_valid_any_frame")
+                    ?? TryGetInt(root, "front_data_first_valid_frame")
+                    ?? TryGetInt(root, "front_trc_first_valid_any_frame")
+                    ?? TryGetInt(root, "front_trc_first_valid_frame"),
+                    TryGetInt(root, "front_data_last_valid_any_frame")
+                    ?? TryGetInt(root, "front_data_last_valid_frame")
+                    ?? TryGetInt(root, "front_trc_last_valid_any_frame")
+                    ?? TryGetInt(root, "front_trc_last_valid_frame")));
         }
         catch
         {

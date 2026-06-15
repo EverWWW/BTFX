@@ -742,9 +742,37 @@ public partial class Step4AnalyzeViewModel : ObservableObject
             exePath = Path.Combine(Constants.ALGORITHM_DIRECTORY, Constants.ALGORITHM_EXE_FILENAME);
         }
 
+        if (string.Equals(exePath, Path.Combine("gait_analysis", "Gait_analysis.exe"), StringComparison.OrdinalIgnoreCase)
+            || string.Equals(exePath, Path.Combine("gait_analysis", "gait_analysis.exe"), StringComparison.OrdinalIgnoreCase)
+            || IsKnownCpuAlgorithmPath(exePath))
+        {
+            exePath = Path.Combine(Constants.ALGORITHM_DIRECTORY, Constants.ALGORITHM_EXE_FILENAME);
+        }
+
         return Path.IsPathRooted(exePath)
             ? exePath
             : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exePath);
+    }
+
+    private static bool IsKnownCpuAlgorithmPath(string? exePath)
+    {
+        if (string.IsNullOrWhiteSpace(exePath))
+        {
+            return false;
+        }
+
+        var fileName = Path.GetFileName(exePath);
+        if (!string.Equals(fileName, "Gait_analysis.exe", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(fileName, "gait_analysis.exe", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var directoryName = Path.GetFileName(Path.GetDirectoryName(exePath)?.TrimEnd(
+            Path.DirectorySeparatorChar,
+            Path.AltDirectorySeparatorChar));
+        return string.Equals(directoryName, "gait_analysis", StringComparison.OrdinalIgnoreCase)
+               || string.Equals(directoryName, "Algorithm", StringComparison.OrdinalIgnoreCase);
     }
 
     #region 命令

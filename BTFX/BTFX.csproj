@@ -139,6 +139,7 @@
     <Folder Include="Data\Temp\" />
     <Folder Include="Data\Config\" />
     <Folder Include="Installer\Output\" />
+    <Folder Include="gait_analysis_gpu\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ToolHelper.Communication\ToolHelper.Communication.csproj" />
@@ -237,6 +238,18 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="gait_analysis\_internal.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Update="gait_analysis_gpu\Config_front.toml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Update="gait_analysis_gpu\Config_side.toml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+    <None Update="gait_analysis_gpu\gait_analysis_gpu.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>

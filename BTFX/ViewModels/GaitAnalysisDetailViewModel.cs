@@ -1445,12 +1445,12 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         _detailData.LeftToeOffCount = ReadArrayCount(gaitEvents, "left_toe_off_frames");
         _detailData.RightToeOffCount = ReadArrayCount(gaitEvents, "right_toe_off_frames");
 
-        _detailData.LeftHipRomDeg = ReadDouble(jointAngles?["left_hip"] as JsonObject, "rom_deg");
-        _detailData.RightHipRomDeg = ReadDouble(jointAngles?["right_hip"] as JsonObject, "rom_deg");
-        _detailData.LeftKneeRomDeg = ReadDouble(jointAngles?["left_knee"] as JsonObject, "rom_deg");
-        _detailData.RightKneeRomDeg = ReadDouble(jointAngles?["right_knee"] as JsonObject, "rom_deg");
-        _detailData.LeftAnkleRomDeg = ReadDouble(jointAngles?["left_ankle"] as JsonObject, "rom_deg");
-        _detailData.RightAnkleRomDeg = ReadDouble(jointAngles?["right_ankle"] as JsonObject, "rom_deg");
+        _detailData.LeftHipRomDeg = ReadJointRom(jointAngles, "left_hip", "left hip");
+        _detailData.RightHipRomDeg = ReadJointRom(jointAngles, "right_hip", "right hip");
+        _detailData.LeftKneeRomDeg = ReadJointRom(jointAngles, "left_knee", "left knee");
+        _detailData.RightKneeRomDeg = ReadJointRom(jointAngles, "right_knee", "right knee");
+        _detailData.LeftAnkleRomDeg = ReadJointRom(jointAngles, "left_ankle", "left ankle");
+        _detailData.RightAnkleRomDeg = ReadJointRom(jointAngles, "right_ankle", "right ankle");
 
         var trunk = segmentAngles?["trunk_tilt_deg"] as JsonObject;
         _detailData.TrunkTiltMeanDeg = ReadDouble(trunk, "mean");
@@ -2201,6 +2201,32 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         }
 
         return null;
+    }
+
+    private static JsonObject? ReadObject(JsonObject? obj, params string[] names)
+    {
+        if (obj is null)
+        {
+            return null;
+        }
+
+        foreach (var name in names)
+        {
+            if (obj[name] is JsonObject value)
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    private static double? ReadJointRom(JsonObject? jointAngles, params string[] names)
+    {
+        var joint = ReadObject(jointAngles, names);
+        return ReadDouble(joint, "rom_deg")
+               ?? Difference(ReadDouble(joint, "max_flexion_deg"), ReadDouble(joint, "min_flexion_deg"))
+               ?? Difference(ReadDouble(joint, "max"), ReadDouble(joint, "min"));
     }
 
     private static IEnumerable<int> ReadIntArray(JsonObject? obj, string name)
