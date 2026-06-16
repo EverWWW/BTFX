@@ -342,7 +342,7 @@
 
                 <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource DialogFormLabelStyle}">
                     <Run Foreground="#F23030" Text="* " />
-                    <Run Text="登录账号" />
+                    <Run Text="{DynamicResource LoginAccount}" />
                 </TextBlock>
                 <TextBox
                     Grid.Row="0"
@@ -354,7 +354,7 @@
 
                 <TextBlock Grid.Row="0" Grid.Column="3" Style="{StaticResource DialogFormLabelStyle}">
                     <Run Foreground="#F23030" Text="* " />
-                    <Run Text="角色" />
+                    <Run Text="{DynamicResource Role}" />
                 </TextBlock>
                 <ComboBox
                     Grid.Row="0"
@@ -366,7 +366,7 @@
 
                 <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource DialogFormLabelStyle}">
                     <Run Foreground="#F23030" Text="* " />
-                    <Run Text="用户姓名" />
+                    <Run Text="{DynamicResource UserDisplayName}" />
                 </TextBlock>
                 <TextBox
                     Grid.Row="1"
@@ -375,7 +375,7 @@
                     Style="{StaticResource DialogInputTextBoxStyle}"
                     Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
 
-                <TextBlock Grid.Row="1" Grid.Column="3" Style="{StaticResource DialogFormLabelStyle}" Text="科室" />
+                <TextBlock Grid.Row="1" Grid.Column="3" Style="{StaticResource DialogFormLabelStyle}" Text="{DynamicResource Department}" />
                 <ComboBox
                     Grid.Row="1"
                     Grid.Column="4"
@@ -384,7 +384,7 @@
                     SelectedItem="{Binding SelectedDepartment}"
                     Style="{StaticResource DialogComboBoxStyle}" />
 
-                <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource DialogFormLabelStyle}" Text="电话" />
+                <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource DialogFormLabelStyle}" Text="{DynamicResource Phone}" />
                 <TextBox
                     Grid.Row="2"
                     Grid.Column="1"
@@ -411,7 +411,7 @@
                         VerticalAlignment="Center"
                         FontSize="22"
                         Foreground="#666666"
-                        Text="启用账号" />
+                        Text="{DynamicResource EnableAccount}" />
                 </StackPanel>
 
                 <TextBlock
@@ -420,7 +420,7 @@
                     Style="{StaticResource DialogFormLabelStyle}"
                     Visibility="{Binding IsNewUser, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Run Foreground="#F23030" Text="* " />
-                    <Run Text="登录密码" />
+                    <Run Text="{DynamicResource LoginPassword}" />
                 </TextBlock>
                 <PasswordBox
                     x:Name="PasswordBox"
@@ -437,7 +437,7 @@
                     Style="{StaticResource DialogFormLabelStyle}"
                     Visibility="{Binding IsNewUser, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Run Foreground="#F23030" Text="* " />
-                    <Run Text="确认密码" />
+                    <Run Text="{DynamicResource ConfirmPassword}" />
                 </TextBlock>
                 <PasswordBox
                     x:Name="ConfirmPasswordBox"
@@ -456,7 +456,7 @@
                     FontSize="18"
                     Foreground="#999999"
                     LineHeight="30"
-                    Text="密码由纯数字组成，登录密码需与确认密码一致。"
+                    Text="{DynamicResource PasswordNumericHint}"
                     TextWrapping="Wrap"
                     Visibility="{Binding IsNewUser, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
@@ -481,11 +481,11 @@
                 <Button
                     Margin="0,0,80,0"
                     Command="{Binding CancelCommand}"
-                    Content="取消"
+                    Content="{DynamicResource Cancel}"
                     Style="{StaticResource DialogSecondaryButtonStyle}" />
                 <Button
                     Command="{Binding SaveCommand}"
-                    Content="确认"
+                    Content="{DynamicResource Confirm}"
                     IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
                     Style="{StaticResource DialogPrimaryButtonStyle}" />
             </StackPanel>

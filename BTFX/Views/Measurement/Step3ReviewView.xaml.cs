@@ -52,7 +52,7 @@ public partial class Step3ReviewView : UserControl
 
         InitializeComponent();
         SetPlaybackControlsEnabled(false);
-        SetPlaybackStatus("正在准备预览...");
+        SetPlaybackStatusResource("MA.Step3.Status.PreparingPreview");
 
         Loaded += Step3ReviewView_OnLoaded;
         Unloaded += Step3ReviewView_OnUnloaded;
@@ -87,7 +87,7 @@ public partial class Step3ReviewView : UserControl
         _isPlaybackReady = false;
         _pendingPlayAfterPrepare = false;
         SetPlaybackControlsEnabled(false);
-        SetPlaybackStatus("正在准备预览...");
+        SetPlaybackStatusResource("MA.Step3.Status.PreparingPreview");
         StopPlayback();
         DisposeCaptures();
         ClearImages();
@@ -104,7 +104,7 @@ public partial class Step3ReviewView : UserControl
         {
             WriteLog("ReloadPlayersAsync aborted: DataContext is not MeasurementViewModel.");
             _isPreparingPreview = false;
-            SetPlaybackStatus("未检测到视频");
+            SetPlaybackStatusResource("MA.Step3.Status.NoVideo");
             return;
         }
 
@@ -131,7 +131,7 @@ public partial class Step3ReviewView : UserControl
             _clockBaseSeconds = 0;
             SetSliderValue(0);
             UpdateTimeText(0);
-            SetPlaybackStatus("正在加载预览...");
+            SetPlaybackStatusResource("MA.Step3.Status.LoadingPreview");
             SetPlaybackControlsEnabled(_isPlaybackReady);
 
         }
@@ -157,7 +157,7 @@ public partial class Step3ReviewView : UserControl
             WriteLog($"SetPreviewMediaSource failed: path missing. Path='{path}'");
             _isPreparingPreview = false;
             _isPlaybackReady = false;
-            SetPlaybackStatus("预览加载失败");
+            SetPlaybackStatusResource("MA.Step3.Status.PreviewLoadFailed");
             return;
         }
 
@@ -243,7 +243,7 @@ public partial class Step3ReviewView : UserControl
         _isPreparingPreview = false;
         _isPlaybackReady = false;
         SetPlaybackControlsEnabled(false);
-        SetPlaybackStatus("预览加载失败");
+        SetPlaybackStatusResource("MA.Step3.Status.PreviewLoadFailed");
         WriteLog($"Preview media failed: {e.ErrorException}");
     }
 
@@ -1140,6 +1140,12 @@ public partial class Step3ReviewView : UserControl
         PlaybackStatusTextBlock.Visibility = string.IsNullOrWhiteSpace(status)
             ? Visibility.Collapsed
             : Visibility.Visible;
+    }
+
+    private void SetPlaybackStatusResource(string resourceKey)
+    {
+        var status = Application.Current.TryFindResource(resourceKey)?.ToString() ?? resourceKey;
+        SetPlaybackStatus(status);
     }
 
     private void UpdatePlayIcon()

@@ -241,12 +241,12 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         {
             if (CurrentMeasurement?.HasDualVideo == true)
             {
-                return "双视角模式";
+                return L("MA.Step4.Mode.Dual");
             }
 
             if (CurrentMeasurement?.HasSideVideo == true || CurrentMeasurement?.HasFrontVideo == true)
             {
-                return "单视角模式";
+                return L("MA.Step4.Mode.Single");
             }
 
             return "--";
@@ -259,20 +259,22 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         {
             if (IsRunning)
             {
-                return "分析中";
+                return L("MA.Step4.Status.Running");
             }
 
             if (IsFailed)
             {
-                return "分析失败";
+                return L("MA.Step4.Status.Failed");
             }
 
             if (IsPreviewing)
             {
-                return AnalysisResult?.Success == true ? "分析成功" : "分析完成";
+                return AnalysisResult?.Success == true
+                    ? L("MA.Step4.Status.Success")
+                    : L("MA.Step4.Status.Completed");
             }
 
-            return "等待分析";
+            return L("MA.Step4.Status.Waiting");
         }
     }
 
@@ -548,8 +550,21 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         // 订阅分析服务事件
         _analysisService.ProgressChanged += OnAnalysisProgressChanged;
         _analysisService.LogReceived += OnAnalysisLogReceived;
+        _localizationService.LanguageChanged += OnLanguageChanged;
 
         _logHelper?.Information("Step4AnalyzeViewModel 初始化完成");
+    }
+
+    private string L(string key) => _localizationService.GetString(key);
+
+    private string L(string key, params object[] args) => _localizationService.GetString(key, args);
+
+    private void OnLanguageChanged(object? sender, AppLanguage e)
+    {
+        OnPropertyChanged(nameof(ResultAnalysisModeDisplay));
+        OnPropertyChanged(nameof(ResultStatusDisplay));
+        RefreshPrerequisites();
+        RebuildJointAnglePlots();
     }
 
     /// <summary>
@@ -565,7 +580,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
                             && File.Exists(CurrentMeasurement?.FrontVideoPath);
         items.Add(new PrerequisiteItem
         {
-            Name = "正面视频已就绪",
+            Name = L("MA.Step4.Prereq.FrontVideo"),
             IsMet = hasFrontVideo,
             IsRequired = false,
             Icon = "VideoOutline"
@@ -576,7 +591,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
                            && File.Exists(CurrentMeasurement?.SideVideoPath);
         items.Add(new PrerequisiteItem
         {
-            Name = "侧面视频已就绪",
+            Name = L("MA.Step4.Prereq.SideVideo"),
             IsMet = hasSideVideo,
             IsRequired = false,
             Icon = "VideoOutline"
@@ -585,7 +600,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         // 至少一个视频可用（必需）
         items.Add(new PrerequisiteItem
         {
-            Name = "至少一个视频可用",
+            Name = L("MA.Step4.Prereq.AnyVideo"),
             IsMet = hasFrontVideo || hasSideVideo,
             IsRequired = true,
             Icon = "VideoCheckOutline"
@@ -595,7 +610,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         var hasHeight = CurrentPatient?.Height is > 0;
         items.Add(new PrerequisiteItem
         {
-            Name = "患者身高已填写",
+            Name = L("MA.Step4.Prereq.PatientHeight"),
             IsMet = hasHeight,
             IsRequired = true,
             Icon = "HumanMaleHeight"
@@ -605,7 +620,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         var hasWeight = CurrentPatient?.Weight is > 0;
         items.Add(new PrerequisiteItem
         {
-            Name = "患者体重已填写",
+            Name = L("MA.Step4.Prereq.PatientWeight"),
             IsMet = hasWeight,
             IsRequired = false,
             Icon = "ScaleBathroom"
@@ -615,7 +630,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         var hasCameraDistance = settings.Algorithm.SideCameraDistance > 0;
         items.Add(new PrerequisiteItem
         {
-            Name = "相机距离已配置",
+            Name = L("MA.Step4.Prereq.CameraDistance"),
             IsMet = hasCameraDistance,
             IsRequired = false,
             Icon = "CameraOutline"
@@ -626,7 +641,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         var hasExe = !string.IsNullOrEmpty(exePath) && File.Exists(exePath);
         items.Add(new PrerequisiteItem
         {
-            Name = "算法程序可用",
+            Name = L("MA.Step4.Prereq.AlgorithmExe"),
             IsMet = hasExe,
             IsRequired = true,
             Icon = "CogOutline"
@@ -674,10 +689,10 @@ public partial class Step4AnalyzeViewModel : ObservableObject
                 AnalysisResult = null;
                 AnalysisState = AnalysisState.Failed;
                 Progress = 0;
-                CurrentStage = "结果缺失";
-                StatusMessage = "未找到该测量的分析结果，请重新分析。";
+                CurrentStage = L("MA.Step4.Stage.MissingResult");
+                StatusMessage = L("MA.Step4.Message.MissingResult");
                 ErrorDescription = StatusMessage;
-                ErrorSuggestion = "点击重新分析后重新生成结果。";
+                ErrorSuggestion = L("MA.Step4.Message.MissingResultSuggestion");
                 AddLog(StatusMessage);
                 return;
             }
@@ -688,13 +703,13 @@ public partial class Step4AnalyzeViewModel : ObservableObject
                 ? latestResult.AnnotatedVideoPath
                 : null;
             HasVideoError = AnnotatedVideoPath is null;
-            VideoErrorMessage = HasVideoError ? "标注视频文件缺失，仅展示参数数据" : null;
+            VideoErrorMessage = HasVideoError ? L("MA.Step4.Message.VideoMissingParamsOnly") : null;
             IsShowingParams = HasVideoError;
             LoadJointAngleDataAndBuildPlots(latestResult);
             HasChartData = HipAnglePlotModel is not null;
             Progress = 100;
-            CurrentStage = "分析完成";
-            StatusMessage = "已加载历史分析结果。";
+            CurrentStage = L("MA.Step4.Status.Completed");
+            StatusMessage = L("MA.Step4.Message.HistoryLoaded");
             AnalysisState = AnalysisState.Previewing;
             AddLog(StatusMessage);
             return;
@@ -706,8 +721,8 @@ public partial class Step4AnalyzeViewModel : ObservableObject
             StartElapsedTimer();
             AnalysisResult = null;
             Progress = Math.Max(Progress, 5);
-            CurrentStage = "分析中";
-            StatusMessage = "后台分析任务正在执行。";
+            CurrentStage = L("MA.Step4.Status.Running");
+            StatusMessage = L("MA.Step4.Message.BackgroundRunning");
             AnalysisState = AnalysisState.Running;
             return;
         }
@@ -716,17 +731,17 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         {
             AnalysisResult = null;
             Progress = 0;
-            CurrentStage = "等待重新分析";
+            CurrentStage = L("MA.Step4.Stage.WaitingReanalysis");
             StatusMessage = decision.Message;
             ErrorDescription = decision.Message;
-            ErrorSuggestion = "请确认视频文件和算法配置后重新分析。";
+            ErrorSuggestion = L("MA.Step4.Message.ReanalysisSuggestion");
             AnalysisState = AnalysisState.Failed;
             return;
         }
 
         AnalysisResult = null;
         Progress = 0;
-        CurrentStage = "等待分析";
+        CurrentStage = L("MA.Step4.Status.Waiting");
         StatusMessage = decision.Message;
         AnalysisState = AnalysisState.Ready;
     }
@@ -799,7 +814,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
             // 切换到运行状态
             AnalysisState = AnalysisState.Running;
             Progress = 0;
-            CurrentStage = "准备中...";
+            CurrentStage = L("MA.Step4.Stage.Preparing");
             StatusMessage = string.Empty;
             TaskLogs.Clear();
             IsLogExpanded = true;
@@ -895,8 +910,8 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         {
             AnalysisState = AnalysisState.Running;
             Progress = 0;
-            CurrentStage = "准备中...";
-            StatusMessage = "正在准备临时测试分析...";
+            CurrentStage = L("MA.Step4.Stage.Preparing");
+            StatusMessage = L("MA.Step4.Stage.Preparing");
             TaskLogs.Clear();
             IsLogExpanded = true;
             AnalysisResult = null;
@@ -914,11 +929,11 @@ public partial class Step4AnalyzeViewModel : ObservableObject
 
             var stages = new[]
             {
-                (Progress: 10, Stage: "初始化", Message: "正在读取测量配置..."),
-                (Progress: 30, Stage: "检测关键点", Message: "正在模拟关键点检测..."),
-                (Progress: 55, Stage: "检测步态事件", Message: "正在模拟步态事件识别..."),
-                (Progress: 80, Stage: "计算步态参数", Message: "正在模拟参数计算..."),
-                (Progress: 100, Stage: "输出结果", Message: "正在生成临时分析结果...")
+                (Progress: 10, Stage: L("MA.Step4.Stage.Initializing"), Message: L("MA.Step4.Stage.Initializing")),
+                (Progress: 30, Stage: L("MA.Step4.Stage.KeypointDetection"), Message: L("MA.Step4.Stage.KeypointDetection")),
+                (Progress: 55, Stage: L("MA.Step4.Stage.GaitEventDetection"), Message: L("MA.Step4.Stage.GaitEventDetection")),
+                (Progress: 80, Stage: L("MA.Step4.Stage.ParameterCalculation"), Message: L("MA.Step4.Stage.ParameterCalculation")),
+                (Progress: 100, Stage: L("MA.Step4.Stage.OutputResult"), Message: L("MA.Step4.Stage.OutputResult"))
             };
 
             foreach (var stage in stages)
@@ -968,10 +983,10 @@ public partial class Step4AnalyzeViewModel : ObservableObject
             {
                 DataContext = new ConfirmDialogViewModel
                 {
-                    Title = "停止分析",
-                    Message = "当前分析任务正在运行，停止后本次分析不会生成结果。是否确认停止分析？",
-                    ConfirmText = "确定",
-                    CancelText = "取消",
+                    Title = L("MA.Step4.Dialog.StopTitle"),
+                    Message = L("MA.Step4.Dialog.StopMessage"),
+                    ConfirmText = L("Confirm"),
+                    CancelText = L("Cancel"),
                     IsCancelVisible = true
                 }
             },
@@ -1180,7 +1195,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     public void OnVideoFailed(string errorMessage)
     {
         HasVideoError = true;
-        VideoErrorMessage = $"视频无法播放: {errorMessage}";
+        VideoErrorMessage = L("MA.Step4.Message.VideoCannotPlay", errorMessage);
         IsPlaying = false;
         IsShowingParams = true;
         _logHelper?.Error($"标注视频播放失败: {errorMessage}");
@@ -1260,7 +1275,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         {
             AnnotatedVideoPath = null;
             HasVideoError = true;
-            VideoErrorMessage = "标注视频文件缺失，仅展示参数数据";
+            VideoErrorMessage = L("MA.Step4.Message.VideoMissingParamsOnly");
             IsShowingParams = true;
             AddLog("⚠ 标注视频文件不存在，降级为参数概览");
             _logHelper?.Warning($"标注视频文件不存在: {result.AnnotatedVideoPath}");
@@ -1298,12 +1313,12 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         AddLog($"分析失败: [{errorCode}] {friendlyMessage.Description}");
     }
 
-    private static (string Description, string? Suggestion) ToUserFriendlyAnalysisError(string? rawMessage)
+    private (string Description, string? Suggestion) ToUserFriendlyAnalysisError(string? rawMessage)
     {
         var message = NormalizeWhitespace(rawMessage);
         if (string.IsNullOrWhiteSpace(message))
         {
-            return ("分析失败", "请检查视频文件和算法日志后重新分析。");
+            return (L("MA.Step4.Error.AnalysisFailed"), L("MA.Step4.Error.CheckVideoAndLog"));
         }
 
         var lower = message.ToLowerInvariant();
@@ -1314,7 +1329,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
             || lower.Contains("person is entirely visible", StringComparison.Ordinal)
             || lower.Contains("person is entirely wisible", StringComparison.Ordinal))
         {
-            return ("未检测到完整人体关键点", "请确认被采集人完整入镜、光线充足、无遮挡，并使用有效的人体步态视频重新分析。");
+            return (L("MA.Step4.Error.MissingBodyKeypoints"), L("MA.Step4.Error.MissingBodyKeypointsSuggestion"));
         }
 
         var logIndex = message.IndexOf("详细日志:", StringComparison.Ordinal);
@@ -1658,12 +1673,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
             _jointAngleFrames = ParseJointAngleCsv(csvFile.FilePath);
             if (_jointAngleFrames.Count == 0) return;
 
-            var maxTime = _jointAngleFrames[^1].TimeS;
-
-            HipAnglePlotModel = BuildJointPlotModel("髋关节角度 (°)", _jointAngleFrames, f => f.HipAngleDeg, OxyColors.SteelBlue, maxTime);
-            KneeAnglePlotModel = BuildJointPlotModel("膝关节角度 (°)", _jointAngleFrames, f => f.KneeAngleDeg, OxyColors.ForestGreen, maxTime);
-            AnkleAnglePlotModel = BuildJointPlotModel("踝关节角度 (°)", _jointAngleFrames, f => f.AnkleAngleDeg, OxyColors.OrangeRed, maxTime);
-            PelvisAnglePlotModel = BuildJointPlotModel("骨盆角度 (°)", _jointAngleFrames, f => f.PelvisAngleDeg, OxyColors.MediumPurple, maxTime);
+            RebuildJointAnglePlots();
         }
         catch (Exception ex)
         {
@@ -1921,24 +1931,38 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         _jointAngleFrames = [];
     }
 
-    private static string MapProgressToStage(int progress) => progress switch
+    private void RebuildJointAnglePlots()
     {
-        < 10 => "任务初始化",
-        < 35 => "检测关键点",
-        < 60 => "检测步态事件",
-        < 80 => "计算步态参数",
-        < 100 => "输出结果",
-        _ => "分析完成"
+        if (_jointAngleFrames.Count == 0)
+        {
+            return;
+        }
+
+        var maxTime = _jointAngleFrames[^1].TimeS;
+        HipAnglePlotModel = BuildJointPlotModel(L("MA.Step4.Chart.HipAngleTitle"), _jointAngleFrames, f => f.HipAngleDeg, OxyColors.SteelBlue, maxTime);
+        KneeAnglePlotModel = BuildJointPlotModel(L("MA.Step4.Chart.KneeAngleTitle"), _jointAngleFrames, f => f.KneeAngleDeg, OxyColors.ForestGreen, maxTime);
+        AnkleAnglePlotModel = BuildJointPlotModel(L("MA.Step4.Chart.AnkleAngleTitle"), _jointAngleFrames, f => f.AnkleAngleDeg, OxyColors.OrangeRed, maxTime);
+        PelvisAnglePlotModel = BuildJointPlotModel(L("MA.Step4.Chart.PelvisAngleTitle"), _jointAngleFrames, f => f.PelvisAngleDeg, OxyColors.MediumPurple, maxTime);
+    }
+
+    private string MapProgressToStage(int progress) => progress switch
+    {
+        < 10 => L("MA.Step4.Stage.Initializing"),
+        < 35 => L("MA.Step4.Stage.KeypointDetection"),
+        < 60 => L("MA.Step4.Stage.GaitEventDetection"),
+        < 80 => L("MA.Step4.Stage.ParameterCalculation"),
+        < 100 => L("MA.Step4.Stage.OutputResult"),
+        _ => L("MA.Step4.Status.Completed")
     };
 
-    private static string GetErrorSuggestion(int? errorCode) => errorCode switch
+    private string GetErrorSuggestion(int? errorCode) => errorCode switch
     {
-        1 => "请重新分析或联系技术支持",
-        2 => "请返回步骤2检查视频文件是否存在",
-        3 => "视频格式可能不受支持，请重新导入视频",
-        4 => "算法内部错误，请重新分析或联系技术支持",
-        5 => "请检查磁盘空间后重新分析",
-        _ => "请查看日志获取详细信息或联系技术支持"
+        1 => L("MA.Step4.Error.Suggestion1"),
+        2 => L("MA.Step4.Error.Suggestion2"),
+        3 => L("MA.Step4.Error.Suggestion3"),
+        4 => L("MA.Step4.Error.Suggestion4"),
+        5 => L("MA.Step4.Error.Suggestion5"),
+        _ => L("MA.Step4.Error.SuggestionDefault")
     };
 
     private static string FormatValue(double? value, string unit)

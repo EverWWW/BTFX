@@ -25,6 +25,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     private readonly IMeasurementService _measurementService;
     private readonly ISessionService _sessionService;
     private readonly IExportImportService _exportImportService;
+    private readonly ILocalizationService? _localizationService;
     private readonly ILogHelper? _logHelper;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private volatile bool _disposed;
@@ -130,6 +131,8 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     /// 已选报告总数
     /// </summary>
     public int SelectedReportTotalCount => _selectedReportIds.Count;
+
+    public string SelectedReportTotalCountText => L("DataManagement.SelectedCountFormat", SelectedReportTotalCount);
 
     #endregion
 
@@ -281,7 +284,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     /// 报告摘要说明。
     /// </summary>
     [ObservableProperty]
-    private string _previewSummaryMessage = "请选择左侧报告，查看报告摘要。";
+    private string _previewSummaryMessage = string.Empty;
 
     /// <summary>
     /// 医生意见
@@ -443,14 +446,56 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         try
         {
             _logHelper = App.Services?.GetService(typeof(ILogHelper)) as ILogHelper;
+            _localizationService = App.Services?.GetService<ILocalizationService>();
+            if (_localizationService is not null)
+            {
+                _localizationService.LanguageChanged += OnLanguageChanged;
+            }
         }
         catch { }
+
+        PreviewSummaryMessage = L("Report.SummaryHint");
 
         // 初始化权限
         InitializePermissions();
 
         // 加载数据
         _ = LoadReportsAsync();
+    }
+
+    private string L(string key)
+    {
+        var value = _localizationService?.GetString(key);
+        return string.IsNullOrWhiteSpace(value) ? key : value;
+    }
+
+    private string L(string key, params object[] args)
+    {
+        var value = _localizationService?.GetString(key, args);
+        return string.IsNullOrWhiteSpace(value) ? key : value;
+    }
+
+    private void OnLanguageChanged(object? sender, AppLanguage language)
+    {
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            foreach (var report in Reports)
+            {
+                report.SetLocalizationService(_localizationService);
+                report.RefreshLocalization();
+            }
+
+            if (_currentPreviewReport is not null)
+            {
+                UpdatePreviewSummary(_currentPreviewReport);
+            }
+            else
+            {
+                PreviewSummaryMessage = L("Report.SummaryHint");
+            }
+
+            OnPropertyChanged(nameof(SelectedReportTotalCountText));
+        });
     }
 
     /// <summary>
@@ -1450,6 +1495,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
             OnPropertyChanged(nameof(SelectedReportCount));
             OnPropertyChanged(nameof(SelectedReportTotalCount));
+            OnPropertyChanged(nameof(SelectedReportTotalCountText));
         }
         finally
         {
@@ -1493,6 +1539,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
             OnPropertyChanged(nameof(SelectedReportCount));
             OnPropertyChanged(nameof(SelectedReportTotalCount));
+            OnPropertyChanged(nameof(SelectedReportTotalCountText));
             OnPropertyChanged(nameof(SelectAllState));
         }
         finally
@@ -1647,7 +1694,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         var rowNumber = (CurrentPage - 1) * _reportPageSize + 1;
         foreach (var report in pageReports)
         {
-            var item = new ReportItem(report, rowNumber++)
+            var item = new ReportItem(report, rowNumber++, _localizationService)
             {
                 IsSelected = _selectedReportIds.Contains(report.Id)
             };
@@ -1727,6 +1774,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
             OnPropertyChanged(nameof(SelectedReportCount));
             OnPropertyChanged(nameof(SelectedReportTotalCount));
+            OnPropertyChanged(nameof(SelectedReportTotalCountText));
             OnPropertyChanged(nameof(SelectAllState));
         }
         finally
@@ -1767,6 +1815,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
             OnPropertyChanged(nameof(SelectedReportCount));
             OnPropertyChanged(nameof(SelectedReportTotalCount));
+            OnPropertyChanged(nameof(SelectedReportTotalCountText));
             OnPropertyChanged(nameof(SelectAllState));
         }
         finally
@@ -2056,7 +2105,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         PreviewBasicFields.Clear();
         PreviewMetrics.Clear();
         PreviewSectionTags.Clear();
-        PreviewSummaryMessage = "请选择左侧报告，查看报告摘要。";
+        PreviewSummaryMessage = L("Report.SummaryHint");
     }
 
     /// <summary>
@@ -2071,65 +2120,65 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         var quality = report.QualityControl ?? analysis?.QualityControl;
         var data = ReportAnalysisSnapshot.From(report);
 
-        var title = string.IsNullOrWhiteSpace(report.Title) ? "步态分析报告" : report.Title;
+        var title = string.IsNullOrWhiteSpace(report.Title) ? L("Report.DefaultTitle") : report.Title;
         var measurementType = record is null ? "--" : GetMeasurementTypeText(record.MeasurementType);
         var analysisMode = record is null
             ? "--"
-            : record.HasDualVideo ? "双视角模式" : record.HasSideVideo || record.HasFrontVideo ? "单视角模式" : "--";
+            : record.HasDualVideo ? L("Report.Mode.Dual") : record.HasSideVideo || record.HasFrontVideo ? L("Report.Mode.Single") : "--";
 
         PreviewBasicFields = new ObservableCollection<ReportSummaryField>
         {
-            new("报告标题", title),
-            new("报告编号", EmptyToDash(report.ReportNumber)),
-            new("患者姓名", EmptyToDash(patient?.Name)),
-            new("测量类型", measurementType),
-            new("分析模式", analysisMode),
-            new("测量时间", record?.MeasurementDate.ToString(Constants.DATETIME_FORMAT) ?? "--"),
-            new("生成时间", report.CreatedAt.ToString(Constants.DATETIME_FORMAT)),
-            new("报告状态", GetStatusText(report.Status))
+            new(L("Report.Field.Title"), title),
+            new(L("Report.Field.Number"), EmptyToDash(report.ReportNumber)),
+            new(L("Report.Field.PatientName"), EmptyToDash(patient?.Name)),
+            new(L("Report.Field.MeasurementType"), measurementType),
+            new(L("Report.Field.AnalysisMode"), analysisMode),
+            new(L("Report.Field.MeasurementTime"), record?.MeasurementDate.ToString(Constants.DATETIME_FORMAT) ?? "--"),
+            new(L("Report.Field.GeneratedTime"), report.CreatedAt.ToString(Constants.DATETIME_FORMAT)),
+            new(L("Report.Field.Status"), GetStatusText(report.Status))
         };
 
         PreviewMetrics = new ObservableCollection<ReportSummaryMetric>
         {
-            new("步态周期", FormatNumber(data.MeanCycleDurationSec ?? analysis?.GaitCycleDurationS ?? gait?.GaitCycleDurationS, "F2"), "s"),
-            new("平均步长", FormatNumber(data.MeanStepLengthM ?? analysis?.StepLengthM ?? gait?.StepLengthM, "F2"), "m"),
-            new("平均步频", FormatNumber(data.CadenceStepPerMin ?? gait?.Cadence, "F1"), "step/min"),
-            new("平均步速", FormatNumber(data.GaitSpeedMPerS ?? analysis?.GaitSpeedMPerS ?? gait?.GaitSpeedMPerS ?? gait?.Velocity, "F2"), "m/s"),
-            new("有效帧比例", FormatPercent(data.ValidFrameRatio ?? quality?.ValidFrameRatio), string.Empty)
+            new(L("Report.Metric.GaitCycle"), FormatNumber(data.MeanCycleDurationSec ?? analysis?.GaitCycleDurationS ?? gait?.GaitCycleDurationS, "F2"), "s"),
+            new(L("Report.Metric.AverageStepLength"), FormatNumber(data.MeanStepLengthM ?? analysis?.StepLengthM ?? gait?.StepLengthM, "F2"), "m"),
+            new(L("Report.Metric.AverageCadence"), FormatNumber(data.CadenceStepPerMin ?? gait?.Cadence, "F1"), "step/min"),
+            new(L("Report.Metric.AverageGaitSpeed"), FormatNumber(data.GaitSpeedMPerS ?? analysis?.GaitSpeedMPerS ?? gait?.GaitSpeedMPerS ?? gait?.Velocity, "F2"), "m/s"),
+            new(L("Report.Metric.ValidFrameRatio"), FormatPercent(data.ValidFrameRatio ?? quality?.ValidFrameRatio), string.Empty)
         };
 
         PreviewSectionTags = new ObservableCollection<string>(BuildReportSectionTags(report));
         PreviewSummaryMessage = BuildPreviewSummaryMessage(report, PreviewSectionTags.Count);
     }
 
-    private static string BuildPreviewSummaryMessage(Report report, int sectionCount)
+    private string BuildPreviewSummaryMessage(Report report, int sectionCount)
     {
-        return $"当前选中报告已包含 {sectionCount} 个报告模块。点击“查看完整报告”可查看正式报告版式、执行打印或导出。";
+        return L("Report.SummaryMessageFormat", sectionCount);
     }
 
-    private static IReadOnlyList<string> BuildReportSectionTags(Report report)
+    private IReadOnlyList<string> BuildReportSectionTags(Report report)
     {
         var tags = new List<string>();
         var options = ParseReportOptions(report.ReportOptionsJson);
 
         if (options is null || options.IncludeSpatiotemporalParameters)
         {
-            tags.Add("步态时空参数");
+            tags.Add(L("Report.Section.Spatiotemporal"));
         }
 
         if (options is null || options.IncludeKinematicSummary)
         {
-            tags.Add("运动学参数");
-            tags.Add("躯干和骨盆参数");
-            tags.Add("曲线图");
+            tags.Add(L("Report.Section.Kinematic"));
+            tags.Add(L("Report.Section.TrunkPelvis"));
+            tags.Add(L("Report.Section.Charts"));
         }
 
         if (options is null || options.IncludeQualityControl)
         {
-            tags.Add("对称性分析");
+            tags.Add(L("Report.Section.Symmetry"));
         }
 
-        tags.Add("左右侧参数");
+        tags.Add(L("Report.Section.SideParameters"));
         return tags.Distinct().ToArray();
     }
 
@@ -2181,14 +2230,14 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         return ratio >= 0.95 ? "A级" : ratio >= 0.85 ? "B级" : "C级";
     }
 
-    private static string GetMeasurementTypeText(MeasurementType type)
+    private string GetMeasurementTypeText(MeasurementType type)
     {
         return type switch
         {
-            MeasurementType.NormalWalk => "自然步行",
-            MeasurementType.FastWalk => "快走",
-            MeasurementType.SlowWalk => "慢走",
-            MeasurementType.Other => "其他",
+            MeasurementType.NormalWalk => L("MeasurementType.NormalWalk"),
+            MeasurementType.FastWalk => L("MeasurementType.FastWalk"),
+            MeasurementType.SlowWalk => L("MeasurementType.SlowWalk"),
+            MeasurementType.Other => L("MeasurementType.Other"),
             _ => type.ToString()
         };
     }
@@ -2196,15 +2245,15 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         /// <summary>
         /// 获取状态文本
         /// </summary>
-        private static string GetStatusText(ReportStatus status)
+        private string GetStatusText(ReportStatus status)
         {
             return status switch
             {
-                ReportStatus.Draft => "可查看",
-                ReportStatus.Completed => "可查看",
-                ReportStatus.Printed => "可查看",
-                ReportStatus.Outdated => "可查看",
-                _ => "未知"
+                ReportStatus.Draft => L("Report.Status.Viewable"),
+                ReportStatus.Completed => L("Report.Status.Viewable"),
+                ReportStatus.Printed => L("Report.Status.Viewable"),
+                ReportStatus.Outdated => L("Report.Status.Viewable"),
+                _ => L("Report.Status.Unknown")
             };
         }
 
@@ -2220,6 +2269,10 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             if (_disposed) return;
 
             _disposed = true;
+            if (_localizationService is not null)
+            {
+                _localizationService.LanguageChanged -= OnLanguageChanged;
+            }
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource.Dispose();
 
@@ -2255,6 +2308,8 @@ public sealed record BatchReportExportResult(
 /// </summary>
 public partial class ReportItem : ObservableObject
 {
+    private ILocalizationService? _localizationService;
+
     /// <summary>
     /// 报告实体
     /// </summary>
@@ -2333,21 +2388,21 @@ public partial class ReportItem : ObservableObject
     /// <summary>
     /// 详情提示
     /// </summary>
-    public string DetailHint => $"查看 {PatientName} 的报告详情";
+    public string DetailHint => L("Report.Tooltip.DetailFormat", PatientName);
 
     /// <summary>
     /// 导出提示
     /// </summary>
-    public string ExportHint => $"导出 {PatientName} 的报告";
+    public string ExportHint => L("Report.Tooltip.ExportFormat", PatientName);
 
     /// <summary>
     /// 打印提示
     /// </summary>
-    public string PrintHint => $"打印 {PatientName} 的报告";
+    public string PrintHint => L("Report.Tooltip.PrintFormat", PatientName);
 
     public string PrimaryActionText => Report.Status switch
     {
-        _ => "查看报告"
+        _ => L("Report.Action.ViewReport")
     };
 
     /// <summary>
@@ -2362,10 +2417,36 @@ public partial class ReportItem : ObservableObject
         _ => "#9E9E9E"
     };
 
-    public ReportItem(Report report, int rowNumber)
+    public ReportItem(Report report, int rowNumber, ILocalizationService? localizationService = null)
     {
         Report = report;
         RowNumber = rowNumber;
+        _localizationService = localizationService;
+    }
+
+    public void SetLocalizationService(ILocalizationService? localizationService)
+    {
+        _localizationService = localizationService;
+    }
+
+    public void RefreshLocalization()
+    {
+        OnPropertyChanged(nameof(DetailHint));
+        OnPropertyChanged(nameof(ExportHint));
+        OnPropertyChanged(nameof(PrintHint));
+        OnPropertyChanged(nameof(PrimaryActionText));
+    }
+
+    private string L(string key)
+    {
+        var value = _localizationService?.GetString(key);
+        return string.IsNullOrWhiteSpace(value) ? key : value;
+    }
+
+    private string L(string key, params object[] args)
+    {
+        var value = _localizationService?.GetString(key, args);
+        return string.IsNullOrWhiteSpace(value) ? key : value;
     }
 }
 

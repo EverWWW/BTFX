@@ -34,6 +34,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     private readonly IReportService _reportService;
     private readonly IExportImportService _exportImportService;
     private readonly ISessionService _sessionService;
+    private readonly ILocalizationService _localizationService;
     private readonly ILogHelper? _logHelper;
 
     /// <summary>
@@ -100,12 +101,12 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// 报告配置标题。
     /// </summary>
-    private string _reportConfigTitle = "报告配置";
+    private string _reportConfigTitle = string.Empty;
 
     /// <summary>
     /// 报告配置说明。
     /// </summary>
-    private string _reportConfigMessage = "可基于当前分析结果生成报告草稿，并在此完善基础配置。";
+    private string _reportConfigMessage = string.Empty;
 
     /// <summary>
     /// 报告标题。
@@ -140,7 +141,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// 报告预览状态说明。
     /// </summary>
-    private string _reportPreviewMessage = "完成基础配置后，可进入报告预览检查内容排版。";
+    private string _reportPreviewMessage = string.Empty;
 
     /// <summary>
     /// 是否正在准备报告预览。
@@ -369,15 +370,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// 左侧导航集合。
     /// </summary>
-    public ObservableCollection<AnalysisDetailNavigationItem> NavigationItems { get; } =
-    [
-        new("overview", "结果概览", "展示测量与分析摘要信息"),
-        new("spatiotemporal", "时空参数", "展示步速、步频、步长等核心参数"),
-        new("kinematics", "运动学参数", "展示髋膝踝等核心运动学摘要"),
-        new("quality", "质量控制", "展示分析质量与风险提示"),
-        new("files", "文件管理", "展示分析输出目录与结果文件"),
-        new("report", "报告配置", "基于当前分析结果生成并完善报告草稿")
-    ];
+    public ObservableCollection<AnalysisDetailNavigationItem> NavigationItems { get; } = [];
 
     public PlotModel LeftHipAnglePlotModel { get; private set; } = new();
 
@@ -421,12 +414,14 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         IGaitAnalysisService gaitAnalysisService,
         IReportService reportService,
         IExportImportService exportImportService,
-        ISessionService sessionService)
+        ISessionService sessionService,
+        ILocalizationService localizationService)
     {
         _gaitAnalysisService = gaitAnalysisService;
         _reportService = reportService;
         _exportImportService = exportImportService;
         _sessionService = sessionService;
+        _localizationService = localizationService;
         CanExport = _sessionService.HasPermission("export");
 
         try
@@ -438,9 +433,26 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         }
 
         BuildRealPlotModels();
+        ResetReportConfigState();
+        InitializeNavigationItems();
 
         SelectedNavigationItem = NavigationItems.FirstOrDefault();
-        SetEmptyState("暂无分析结果", "当前测量尚未生成可查看的分析结果，可先查看基础测量信息。", false);
+        SetEmptyState(L("AnalysisDetail.Empty.Title"), L("AnalysisDetail.Empty.Message"), false);
+    }
+
+    private string L(string key) => _localizationService.GetString(key);
+
+    private string L(string key, params object[] args) => _localizationService.GetString(key, args);
+
+    private void InitializeNavigationItems()
+    {
+        NavigationItems.Clear();
+        NavigationItems.Add(new AnalysisDetailNavigationItem("overview", L("AnalysisDetail.Navigation.Overview"), L("AnalysisDetail.Navigation.OverviewDesc")));
+        NavigationItems.Add(new AnalysisDetailNavigationItem("spatiotemporal", L("AnalysisDetail.Navigation.Spatiotemporal"), L("AnalysisDetail.Navigation.SpatiotemporalDesc")));
+        NavigationItems.Add(new AnalysisDetailNavigationItem("kinematics", L("AnalysisDetail.Navigation.Kinematics"), L("AnalysisDetail.Navigation.KinematicsDesc")));
+        NavigationItems.Add(new AnalysisDetailNavigationItem("quality", L("AnalysisDetail.Navigation.Quality"), L("AnalysisDetail.Navigation.QualityDesc")));
+        NavigationItems.Add(new AnalysisDetailNavigationItem("files", L("AnalysisDetail.Navigation.Files"), L("AnalysisDetail.Navigation.FilesDesc")));
+        NavigationItems.Add(new AnalysisDetailNavigationItem("report", L("AnalysisDetail.Navigation.Report"), L("AnalysisDetail.Navigation.ReportDesc")));
     }
 
     /// <summary>
@@ -476,12 +488,12 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
                 return;
             }
 
-            SetEmptyState("暂无分析结果", "当前测量已保存，但还没有成功的分析结果。", false);
+            SetEmptyState(L("AnalysisDetail.Empty.Title"), L("AnalysisDetail.Empty.NoSuccessResult"), false);
         }
         catch (Exception ex)
         {
             _logHelper?.Error($"加载分析详情失败：MeasurementId={record.Id}", ex);
-            SetFailedState($"分析结果加载失败：{ex.Message}");
+            SetFailedState(L("AnalysisDetail.LoadFailedFormat", ex.Message));
         }
         finally
         {
@@ -515,12 +527,14 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// 测量类型。
     /// </summary>
-    public string MeasurementTypeDisplay => Record is null ? "自然步行" : GetEnumDescription(Record.MeasurementType);
+    public string MeasurementTypeDisplay => Record is null ? L("AnalysisDetail.MeasurementType.NormalWalk") : GetEnumDescription(Record.MeasurementType);
 
     /// <summary>
     /// 分析模式。
     /// </summary>
-    public string MeasurementVideoModeDisplay => Record?.HasDualVideo == true ? "双视角模式" : "单视角模式";
+    public string MeasurementVideoModeDisplay => Record?.HasDualVideo == true
+        ? L("MA.Step4.Mode.Dual")
+        : L("MA.Step4.Mode.Single");
 
     public bool IsDualVideoMode => Record?.HasDualVideo == true;
 
@@ -545,16 +559,16 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         {
             if (AnalysisResult is null)
             {
-                return "已完成";
+                return L("AnalysisDetail.Status.Completed");
             }
 
             if (AnalysisResult.Success)
             {
-                return "已完成";
+                return L("AnalysisDetail.Status.Completed");
             }
 
             return string.IsNullOrWhiteSpace(AnalysisResult.TaskStatus)
-                ? "失败"
+                ? L("AnalysisDetail.Status.ShortFailed")
                 : AnalysisResult.TaskStatus;
         }
     }
@@ -589,9 +603,9 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// </summary>
     public string AnalysisStatusText => DetailState switch
     {
-        AnalysisDetailState.Success => "分析成功",
-        AnalysisDetailState.Failed => "分析失败",
-        _ => "尚未分析"
+        AnalysisDetailState.Success => L("AnalysisDetail.Status.Success"),
+        AnalysisDetailState.Failed => L("AnalysisDetail.Status.Failed"),
+        _ => L("AnalysisDetail.Status.NotAnalyzed")
     };
 
     /// <summary>
@@ -614,16 +628,16 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             if (AnalysisResult?.QualityControl is null)
             {
                 return _detailData.ValidFrameRatio is double ratio
-                    ? $"有效帧比例 {ratio:P0}"
+                    ? L("AnalysisDetail.ValidFrameRatioText", ratio.ToString("P0", CultureInfo.CurrentCulture))
                     : "--";
             }
 
             if (AnalysisResult.QualityControl.ValidFrameRatio is double validFrameRatio)
             {
-                return $"有效帧比例 {validFrameRatio:P0}";
+                return L("AnalysisDetail.ValidFrameRatioText", validFrameRatio.ToString("P0", CultureInfo.CurrentCulture));
             }
 
-            return "已生成质量控制信息";
+            return L("AnalysisDetail.QualityGenerated");
         }
     }
 
@@ -679,10 +693,14 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             var summary = AnalysisResult?.KinematicSummary;
             if (summary is null)
             {
-                return "髋关节 ROM -- / 膝关节 ROM -- / 踝关节 ROM --";
+                return L("AnalysisDetail.KinematicsSummaryEmpty");
             }
 
-            return $"髋关节 ROM {FormatNumber(summary.HipRomDeg, "F1", "°")} / 膝关节 ROM {FormatNumber(summary.KneeRomDeg, "F1", "°")} / 踝关节 ROM {FormatNumber(summary.AnkleRomDeg, "F1", "°")}";
+            return L(
+                "AnalysisDetail.KinematicsSummaryFormat",
+                FormatNumber(summary.HipRomDeg, "F1", "°"),
+                FormatNumber(summary.KneeRomDeg, "F1", "°"),
+                FormatNumber(summary.AnkleRomDeg, "F1", "°"));
         }
     }
 
@@ -697,8 +715,8 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// 结果文件数量。
     /// </summary>
     public string FileCountDisplay => AnalysisResult?.CsvFiles?.Count > 0
-        ? $"{AnalysisResult.CsvFiles.Count} 个结果文件"
-        : (_detailData.ResultFileCount > 0 ? $"{_detailData.ResultFileCount} 个结果文件" : "--");
+        ? L("AnalysisDetail.ResultFileCountFormat", AnalysisResult.CsvFiles.Count)
+        : (_detailData.ResultFileCount > 0 ? L("AnalysisDetail.ResultFileCountFormat", _detailData.ResultFileCount) : "--");
 
     /// <summary>
     /// 标注视频摘要。
@@ -724,13 +742,15 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// 有效周期数。
     /// </summary>
-    public string CycleCountDisplay => _detailData.CycleCount.HasValue ? $"{_detailData.CycleCount.Value} 个" : "--";
+    public string CycleCountDisplay => _detailData.CycleCount.HasValue
+        ? L("AnalysisDetail.CycleCountFormat", _detailData.CycleCount.Value)
+        : "--";
 
     /// <summary>
     /// 文件摘要。
     /// </summary>
     public string ResultFileSummaryDisplay => AnalysisResult?.CsvFiles?.Count > 0
-        ? $"已生成 {AnalysisResult.CsvFiles.Count} 个结果文件"
+        ? L("AnalysisDetail.FileSummaryFormat", AnalysisResult.CsvFiles.Count)
         : (_detailData.ResultFileSummary ?? "--");
 
     /// <summary>
@@ -741,12 +761,14 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// CSV 文件数量。
     /// </summary>
-    public string CsvFileCountDisplay => AnalysisResult?.CsvFiles?.Count is int count and > 0 ? $"{count} 个" : $"{_detailData.CsvFileCount} 个";
+    public string CsvFileCountDisplay => AnalysisResult?.CsvFiles?.Count is int count and > 0
+        ? L("AnalysisDetail.CountFormat", count)
+        : L("AnalysisDetail.CountFormat", _detailData.CsvFileCount);
 
     /// <summary>
     /// 图片文件数量。
     /// </summary>
-    public string ImageFileCountDisplay => $"{_detailData.ImageFileCount} 个";
+    public string ImageFileCountDisplay => L("AnalysisDetail.CountFormat", _detailData.ImageFileCount);
 
     public string MeanStrideLengthDisplay => StrideLengthDisplay;
 
@@ -834,7 +856,9 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
 
     public string VideoDurationPlaybackDisplay => FormatPlaybackTime(_detailData.VideoDurationSec);
 
-    public string CurrentGaitCycleDisplay => _detailData.CycleCount.HasValue ? $"共 {_detailData.CycleCount.Value} 周期" : "--";
+    public string CurrentGaitCycleDisplay => _detailData.CycleCount.HasValue
+        ? L("AnalysisDetail.CurrentGaitCycleFormat", _detailData.CycleCount.Value)
+        : "--";
 
     public string CurrentEventDisplay => "--";
 
@@ -879,12 +903,12 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         {
             if (AnalysisResult is null)
             {
-                return "当前没有可用于配置报告的分析结果。";
+                return L("AnalysisDetail.ReportConfig.Quality.NoResult");
             }
 
             return ValidFrameRatioDisplay == "--"
-                ? "当前分析结果已生成，暂未计算有效帧比例。"
-                : $"当前分析结果已生成，有效帧比例 {ValidFrameRatioDisplay}，可继续配置报告内容。";
+                ? L("AnalysisDetail.ReportConfig.Quality.NoValidRatio")
+                : L("AnalysisDetail.ReportConfig.Quality.ValidRatioFormat", ValidFrameRatioDisplay);
         }
     }
 
@@ -898,25 +922,27 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             var sections = new List<string>();
             if (IncludeSpatiotemporalParameters)
             {
-                sections.Add("时空参数");
+                sections.Add(L("AnalysisDetail.ReportPreview.Sections.Spatiotemporal"));
             }
 
             if (IncludeKinematicSummary)
             {
-                sections.Add("运动学摘要");
+                sections.Add(L("AnalysisDetail.ReportPreview.Sections.KinematicSummary"));
             }
 
             if (IncludeQualityControl)
             {
-                sections.Add("质量控制");
+                sections.Add(L("AnalysisDetail.ReportPreview.Sections.QualityControl"));
             }
 
             if (IncludeResultFiles)
             {
-                sections.Add("结果文件摘要");
+                sections.Add(L("AnalysisDetail.ReportPreview.Sections.ResultFiles"));
             }
 
-            return sections.Count > 0 ? string.Join("、", sections) : "尚未选择报告内容";
+            return sections.Count > 0
+                ? string.Join(L("AnalysisDetail.ReportPreview.Sections.Separator"), sections)
+                : L("AnalysisDetail.ReportConfig.Sections.None");
         }
     }
 
@@ -940,12 +966,12 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// 当前模块标题。
     /// </summary>
-    public string CurrentSectionTitle => SelectedNavigationItem?.Title ?? "结果概览";
+    public string CurrentSectionTitle => SelectedNavigationItem?.Title ?? L("AnalysisDetail.Navigation.Overview");
 
     /// <summary>
     /// 当前模块说明。
     /// </summary>
-    public string CurrentSectionDescription => SelectedNavigationItem?.Description ?? "展示当前测量与分析结果的核心信息。";
+    public string CurrentSectionDescription => SelectedNavigationItem?.Description ?? L("AnalysisDetail.Navigation.DefaultDesc");
 
     /// <summary>
     /// 导航模块总数。
@@ -983,8 +1009,8 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// 导航进度说明。
     /// </summary>
     public string NavigationProgressText => CurrentSectionIndex > 0
-        ? $"当前浏览第 {CurrentSectionIndex} / {NavigationSectionCount} 个模块"
-        : "当前暂无可浏览模块";
+        ? L("AnalysisDetail.Navigation.ProgressFormat", CurrentSectionIndex, NavigationSectionCount)
+        : L("AnalysisDetail.Navigation.Empty");
 
     /// <summary>
     /// 关闭命令。
@@ -1011,9 +1037,9 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         {
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
-                Title = "导出测量结果包",
-                Filter = "BTFX测量结果包 (*.btfxpkg)|*.btfxpkg",
-                FileName = $"测量结果包_{Record.Patient?.Name}_{Record.MeasurementDate:yyyyMMdd_HHmmss}.btfxpkg"
+                Title = L("AnalysisDetail.Export.PackageTitle"),
+                Filter = L("AnalysisDetail.Export.PackageFilter"),
+                FileName = L("AnalysisDetail.Export.PackageFileNameFormat", Record.Patient?.Name ?? "Patient", Record.MeasurementDate)
             };
 
             if (dialog.ShowDialog() != true)
@@ -1030,17 +1056,17 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
 
             if (result.Success)
             {
-                System.Windows.MessageBox.Show(result.Message, "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                System.Windows.MessageBox.Show(result.Message, L("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 _logHelper?.Information($"导出测量结果包：MeasurementId={Record.Id}, 文件={dialog.FileName}");
                 return;
             }
 
-            System.Windows.MessageBox.Show(result.Message, "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            System.Windows.MessageBox.Show(result.Message, L("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
         catch (Exception ex)
         {
             _logHelper?.Error($"导出测量结果包失败：MeasurementId={Record.Id}", ex);
-            System.Windows.MessageBox.Show($"导出失败：{ex.Message}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            System.Windows.MessageBox.Show(L("AnalysisDetail.Export.FailedFormat", ex.Message), L("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
     }
 
@@ -1062,13 +1088,13 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
 
         if (!CanConfigureReport)
         {
-            ReportConfigTitle = "暂不可配置报告";
+            ReportConfigTitle = L("AnalysisDetail.ReportConfig.UnavailableTitle");
             ReportConfigMessage = AnalysisResult is null
-                ? "需要先生成成功的分析结果，才能进入报告配置。"
-                : "当前用户没有报告配置权限。";
+                ? L("AnalysisDetail.ReportConfig.NeedSuccessResult")
+                : L("AnalysisDetail.ReportConfig.NoPermission");
             ReportPreviewMessage = AnalysisResult is null
-                ? "当前没有可预览的分析结果。"
-                : "当前用户没有报告预览权限。";
+                ? L("AnalysisDetail.ReportConfig.NoPreviewResult")
+                : L("AnalysisDetail.ReportConfig.NoPreviewPermission");
             return;
         }
 
@@ -1083,25 +1109,25 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             var report = await _reportService.GetOrCreateDraftReportAsync(Record.Id, _sessionService.CurrentUser?.Id ?? Record.OperatorId);
             if (report is null)
             {
-                ReportConfigTitle = "报告草稿初始化失败";
-                ReportConfigMessage = "无法为当前分析结果准备报告草稿，请稍后重试。";
-                ReportPreviewMessage = "报告草稿尚未准备完成，暂时无法进入预览。";
+                ReportConfigTitle = L("AnalysisDetail.ReportConfig.InitFailedTitle");
+                ReportConfigMessage = L("AnalysisDetail.ReportConfig.InitFailedMessage");
+                ReportPreviewMessage = L("AnalysisDetail.ReportConfig.DraftNotReady");
                 return;
             }
 
             CurrentReportDraft = report;
             ApplyDraftToReportConfig(report);
             await PersistDraftSnapshotAsync();
-            ReportConfigTitle = "报告配置";
-            ReportConfigMessage = "已加载当前分析结果对应的报告草稿，可继续完善基础信息与包含项。";
-            ReportPreviewMessage = "当前草稿已准备就绪，可进入报告预览检查版式与内容。";
+            ReportConfigTitle = L("AnalysisDetail.ReportConfig");
+            ReportConfigMessage = L("AnalysisDetail.ReportConfig.LoadedMessage");
+            ReportPreviewMessage = L("AnalysisDetail.ReportConfig.PreviewReady");
         }
         catch (Exception ex)
         {
             _logHelper?.Error($"加载报告配置失败：MeasurementId={Record.Id}", ex);
-            ReportConfigTitle = "报告配置加载失败";
-            ReportConfigMessage = $"初始化报告配置时发生错误：{ex.Message}";
-            ReportPreviewMessage = "报告预览入口初始化失败，请先重试草稿加载。";
+            ReportConfigTitle = L("AnalysisDetail.ReportConfig.LoadFailedTitle");
+            ReportConfigMessage = L("AnalysisDetail.ReportConfig.LoadFailedMessage", ex.Message);
+            ReportPreviewMessage = L("AnalysisDetail.ReportConfig.PreviewInitFailed");
         }
         finally
         {
@@ -1119,7 +1145,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         try
         {
             ReportTitle = string.IsNullOrWhiteSpace(report.Title)
-                ? $"步态分析报告 - {PatientName}"
+                ? L("AnalysisDetail.ReportConfig.DefaultReportTitleFormat", PatientName)
                 : report.Title;
             ReportDoctorOpinion = report.DoctorOpinion ?? string.Empty;
             IncludeSpatiotemporalParameters = options?.IncludeSpatiotemporalParameters ?? true;
@@ -1167,8 +1193,8 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         }
 
         ReportPreviewMessage = CanPreviewReport
-            ? "当前配置已同步，可进入报告预览检查版式与内容。"
-            : "请先补充报告标题并确认草稿已加载完成。";
+            ? L("AnalysisDetail.ReportConfig.SyncReady")
+            : L("AnalysisDetail.ReportConfig.TitleRequired");
 
         OnPropertyChanged(nameof(ReportNumberDisplay));
         OnPropertyChanged(nameof(ReportDraftUpdatedAtDisplay));
@@ -1191,15 +1217,15 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             return;
         }
 
-        ReportConfigMessage = "报告草稿配置保存失败，请稍后重试。";
-        ReportPreviewMessage = "当前配置已更新到界面，但尚未成功保存到草稿。";
+        ReportConfigMessage = L("AnalysisDetail.ReportConfig.SaveFailed");
+        ReportPreviewMessage = L("AnalysisDetail.ReportConfig.SavePartialFailed");
     }
 
     private void ResetReportConfigState()
     {
-        ReportConfigTitle = "报告配置";
-        ReportConfigMessage = "可基于当前分析结果生成报告草稿，并在此完善基础配置。";
-        ReportPreviewMessage = "完成基础配置后，可进入报告预览检查内容排版。";
+        ReportConfigTitle = L("AnalysisDetail.ReportConfig");
+        ReportConfigMessage = L("AnalysisDetail.ReportConfig.Message.Default");
+        ReportPreviewMessage = L("AnalysisDetail.ReportConfig.PreviewMessage.Default");
         ReportTitle = string.Empty;
         ReportDoctorOpinion = string.Empty;
         IncludeSpatiotemporalParameters = true;
@@ -1220,7 +1246,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     {
         if (!CanConfigureReport)
         {
-            ReportPreviewMessage = "当前条件不足，暂时无法进入报告预览。";
+            ReportPreviewMessage = L("AnalysisDetail.ReportConfig.PreviewUnavailable");
             return;
         }
 
@@ -1231,13 +1257,13 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
 
         if (CurrentReportDraft is null)
         {
-            ReportPreviewMessage = "报告草稿尚未准备完成，暂时无法进入预览。";
+            ReportPreviewMessage = L("AnalysisDetail.ReportConfig.DraftNotReady");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(ReportTitle))
         {
-            ReportPreviewMessage = "请先填写报告标题后再进入预览。";
+            ReportPreviewMessage = L("AnalysisDetail.ReportConfig.FillTitleFirst");
             return;
         }
 
@@ -1261,13 +1287,13 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
                 "RootDialog").ConfigureAwait(true);
 
             ReportPreviewMessage = previewResult is ReportPreviewDialogResult.BackToConfig
-                ? "已从预览返回配置，可继续调整后再次查看。"
-                : "已关闭报告预览，可继续调整配置后再次查看。";
+                ? L("AnalysisDetail.ReportConfig.BackFromPreview")
+                : L("AnalysisDetail.ReportConfig.ClosedPreview");
         }
         catch (Exception ex)
         {
             _logHelper?.Error($"打开报告预览失败：MeasurementId={Record?.Id}", ex);
-            ReportPreviewMessage = $"打开报告预览失败：{ex.Message}";
+            ReportPreviewMessage = L("AnalysisDetail.ReportConfig.OpenPreviewFailed", ex.Message);
         }
         finally
         {
@@ -1318,7 +1344,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         var path = ResolveOutputDirectory();
         if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
         {
-            System.Windows.MessageBox.Show("当前没有可打开的结果目录。", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            System.Windows.MessageBox.Show(L("AnalysisDetail.OutputDirectory.Empty"), L("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
             return;
         }
 
@@ -1333,23 +1359,23 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         catch (Exception ex)
         {
             _logHelper?.Error($"打开结果目录失败：Path={path}", ex);
-            System.Windows.MessageBox.Show($"打开目录失败：{ex.Message}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            System.Windows.MessageBox.Show(L("AnalysisDetail.OutputDirectory.OpenFailedFormat", ex.Message), L("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
     }
 
     private void SetSuccessState()
     {
         DetailState = AnalysisDetailState.Success;
-        StateTitle = "分析结果详情";
-        StateMessage = "已加载当前测量的最新成功分析结果。";
+        StateTitle = L("AnalysisDetail.State.SuccessTitle");
+        StateMessage = L("AnalysisDetail.State.SuccessMessage");
     }
 
     private void SetFailedState(string? message = null)
     {
         DetailState = AnalysisDetailState.Failed;
-        StateTitle = "分析未成功完成";
+        StateTitle = L("AnalysisDetail.State.FailedTitle");
         StateMessage = string.IsNullOrWhiteSpace(message)
-            ? "当前测量存在分析流程，但尚未生成可用结果，请检查分析日志后重试。"
+            ? L("AnalysisDetail.State.FailedMessage")
             : message;
     }
 
@@ -1477,36 +1503,36 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     {
         if (_angleFrames.Count == 0)
         {
-            LeftHipAnglePlotModel = CreateEmptyPlot("左髋角度曲线");
-            RightHipAnglePlotModel = CreateEmptyPlot("右髋角度曲线");
-            LeftKneeAnglePlotModel = CreateEmptyPlot("左膝角度曲线");
-            RightKneeAnglePlotModel = CreateEmptyPlot("右膝角度曲线");
-            LeftAnkleAnglePlotModel = CreateEmptyPlot("左踝角度曲线");
-            RightAnkleAnglePlotModel = CreateEmptyPlot("右踝角度曲线");
-            PelvisAnglePlotModel = CreateEmptyPlot("骨盆角度曲线");
-            TrunkAnglePlotModel = CreateEmptyPlot("躯干角度曲线");
-            VideoKneeAnglePlotModel = CreateEmptyPlot("膝关节角度曲线", alignToPlaybackBar: true);
-            VideoHipAnglePlotModel = CreateEmptyPlot("髋关节角度曲线", alignToPlaybackBar: true);
-            VideoAnkleAnglePlotModel = CreateEmptyPlot("踝关节角度曲线", alignToPlaybackBar: true);
-            VideoPelvisAnglePlotModel = CreateEmptyPlot("骨盆角度曲线", alignToPlaybackBar: true);
-            VideoTrunkAnglePlotModel = CreateEmptyPlot("躯干角度曲线", alignToPlaybackBar: true);
+            LeftHipAnglePlotModel = CreateEmptyPlot(L("AnalysisDetail.Chart.LeftHipTitle"));
+            RightHipAnglePlotModel = CreateEmptyPlot(L("AnalysisDetail.Chart.RightHipTitle"));
+            LeftKneeAnglePlotModel = CreateEmptyPlot(L("AnalysisDetail.Chart.LeftKneeTitle"));
+            RightKneeAnglePlotModel = CreateEmptyPlot(L("AnalysisDetail.Chart.RightKneeTitle"));
+            LeftAnkleAnglePlotModel = CreateEmptyPlot(L("AnalysisDetail.Chart.LeftAnkleTitle"));
+            RightAnkleAnglePlotModel = CreateEmptyPlot(L("AnalysisDetail.Chart.RightAnkleTitle"));
+            PelvisAnglePlotModel = CreateEmptyPlot(L("AnalysisDetail.Chart.PelvisTitle"));
+            TrunkAnglePlotModel = CreateEmptyPlot(L("AnalysisDetail.Chart.TrunkTitle"));
+            VideoKneeAnglePlotModel = CreateEmptyPlot(L("AnalysisDetail.Chart.KneeTitle"), alignToPlaybackBar: true);
+            VideoHipAnglePlotModel = CreateEmptyPlot(L("AnalysisDetail.Chart.HipTitle"), alignToPlaybackBar: true);
+            VideoAnkleAnglePlotModel = CreateEmptyPlot(L("AnalysisDetail.Chart.AnkleTitle"), alignToPlaybackBar: true);
+            VideoPelvisAnglePlotModel = CreateEmptyPlot(L("AnalysisDetail.Chart.PelvisTitle"), alignToPlaybackBar: true);
+            VideoTrunkAnglePlotModel = CreateEmptyPlot(L("AnalysisDetail.Chart.TrunkTitle"), alignToPlaybackBar: true);
         }
         else
         {
             var maxTime = Math.Max(_detailData.VideoDurationSec ?? 0d, _angleFrames[^1].TimeS);
-            LeftHipAnglePlotModel = BuildSingleAnglePlot("左髋角度曲线", _angleFrames, f => f.LeftHip, OxyColors.SteelBlue, maxTime);
-            RightHipAnglePlotModel = BuildSingleAnglePlot("右髋角度曲线", _angleFrames, f => f.RightHip, OxyColor.Parse("#F2306A"), maxTime);
-            LeftKneeAnglePlotModel = BuildSingleAnglePlot("左膝角度曲线", _angleFrames, f => f.LeftKnee, OxyColors.ForestGreen, maxTime);
-            RightKneeAnglePlotModel = BuildSingleAnglePlot("右膝角度曲线", _angleFrames, f => f.RightKnee, OxyColors.OrangeRed, maxTime);
-            LeftAnkleAnglePlotModel = BuildSingleAnglePlot("左踝角度曲线", _angleFrames, f => f.LeftAnkle, OxyColors.MediumPurple, maxTime);
-            RightAnkleAnglePlotModel = BuildSingleAnglePlot("右踝角度曲线", _angleFrames, f => f.RightAnkle, OxyColors.DarkCyan, maxTime);
-            PelvisAnglePlotModel = BuildSingleAnglePlot("骨盆角度曲线", _angleFrames, f => f.Pelvis, OxyColor.Parse("#40385F"), maxTime);
-            TrunkAnglePlotModel = BuildSingleAnglePlot("躯干角度曲线", _angleFrames, f => f.Trunk, OxyColor.Parse("#F2306A"), maxTime);
-            VideoKneeAnglePlotModel = BuildDualAnglePlot("膝关节角度曲线", "左膝", "右膝", _angleFrames, f => f.LeftKnee, f => f.RightKnee, OxyColors.ForestGreen, OxyColor.Parse("#F2306A"), maxTime);
-            VideoHipAnglePlotModel = BuildDualAnglePlot("髋关节角度曲线", "左髋", "右髋", _angleFrames, f => f.LeftHip, f => f.RightHip, OxyColors.SteelBlue, OxyColors.OrangeRed, maxTime);
-            VideoAnkleAnglePlotModel = BuildDualAnglePlot("踝关节角度曲线", "左踝", "右踝", _angleFrames, f => f.LeftAnkle, f => f.RightAnkle, OxyColors.MediumPurple, OxyColors.DarkCyan, maxTime);
-            VideoPelvisAnglePlotModel = BuildSinglePlaybackAnglePlot("骨盆角度曲线", "骨盆", _angleFrames, f => f.Pelvis, OxyColor.Parse("#40385F"), maxTime);
-            VideoTrunkAnglePlotModel = BuildSinglePlaybackAnglePlot("躯干角度曲线", "躯干", _angleFrames, f => f.Trunk, OxyColor.Parse("#F2306A"), maxTime);
+            LeftHipAnglePlotModel = BuildSingleAnglePlot(L("AnalysisDetail.Chart.LeftHipTitle"), L("AnalysisDetail.LeftHip"), _angleFrames, f => f.LeftHip, OxyColors.SteelBlue, maxTime);
+            RightHipAnglePlotModel = BuildSingleAnglePlot(L("AnalysisDetail.Chart.RightHipTitle"), L("AnalysisDetail.RightHip"), _angleFrames, f => f.RightHip, OxyColor.Parse("#F2306A"), maxTime);
+            LeftKneeAnglePlotModel = BuildSingleAnglePlot(L("AnalysisDetail.Chart.LeftKneeTitle"), L("AnalysisDetail.LeftKnee"), _angleFrames, f => f.LeftKnee, OxyColors.ForestGreen, maxTime);
+            RightKneeAnglePlotModel = BuildSingleAnglePlot(L("AnalysisDetail.Chart.RightKneeTitle"), L("AnalysisDetail.RightKnee"), _angleFrames, f => f.RightKnee, OxyColors.OrangeRed, maxTime);
+            LeftAnkleAnglePlotModel = BuildSingleAnglePlot(L("AnalysisDetail.Chart.LeftAnkleTitle"), L("AnalysisDetail.LeftAnkle"), _angleFrames, f => f.LeftAnkle, OxyColors.MediumPurple, maxTime);
+            RightAnkleAnglePlotModel = BuildSingleAnglePlot(L("AnalysisDetail.Chart.RightAnkleTitle"), L("AnalysisDetail.RightAnkle"), _angleFrames, f => f.RightAnkle, OxyColors.DarkCyan, maxTime);
+            PelvisAnglePlotModel = BuildSingleAnglePlot(L("AnalysisDetail.Chart.PelvisTitle"), L("AnalysisDetail.Pelvis"), _angleFrames, f => f.Pelvis, OxyColor.Parse("#40385F"), maxTime);
+            TrunkAnglePlotModel = BuildSingleAnglePlot(L("AnalysisDetail.Chart.TrunkTitle"), L("AnalysisDetail.Trunk"), _angleFrames, f => f.Trunk, OxyColor.Parse("#F2306A"), maxTime);
+            VideoKneeAnglePlotModel = BuildDualAnglePlot(L("AnalysisDetail.Chart.KneeTitle"), L("AnalysisDetail.LeftKnee"), L("AnalysisDetail.RightKnee"), _angleFrames, f => f.LeftKnee, f => f.RightKnee, OxyColors.ForestGreen, OxyColor.Parse("#F2306A"), maxTime);
+            VideoHipAnglePlotModel = BuildDualAnglePlot(L("AnalysisDetail.Chart.HipTitle"), L("AnalysisDetail.LeftHip"), L("AnalysisDetail.RightHip"), _angleFrames, f => f.LeftHip, f => f.RightHip, OxyColors.SteelBlue, OxyColors.OrangeRed, maxTime);
+            VideoAnkleAnglePlotModel = BuildDualAnglePlot(L("AnalysisDetail.Chart.AnkleTitle"), L("AnalysisDetail.LeftAnkle"), L("AnalysisDetail.RightAnkle"), _angleFrames, f => f.LeftAnkle, f => f.RightAnkle, OxyColors.MediumPurple, OxyColors.DarkCyan, maxTime);
+            VideoPelvisAnglePlotModel = BuildSinglePlaybackAnglePlot(L("AnalysisDetail.Chart.PelvisTitle"), L("AnalysisDetail.Pelvis"), _angleFrames, f => f.Pelvis, OxyColor.Parse("#40385F"), maxTime);
+            VideoTrunkAnglePlotModel = BuildSinglePlaybackAnglePlot(L("AnalysisDetail.Chart.TrunkTitle"), L("AnalysisDetail.Trunk"), _angleFrames, f => f.Trunk, OxyColor.Parse("#F2306A"), maxTime);
         }
 
         SetVideoPlaybackTime(_videoPlaybackSeconds);
@@ -1716,11 +1742,11 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             {
                 if (leftHeelStrikeFrames.Contains(start))
                 {
-                    side = "左侧";
+                    side = L("AnalysisDetail.Side.Left");
                 }
                 else if (rightHeelStrikeFrames.Contains(start))
                 {
-                    side = "右侧";
+                    side = L("AnalysisDetail.Side.Right");
                 }
             }
 
@@ -1780,7 +1806,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         return string.IsNullOrWhiteSpace(log) ? null : Path.GetFileName(log);
     }
 
-    private static string? BuildResultFileSummary(string? directory)
+    private string? BuildResultFileSummary(string? directory)
     {
         if (!Directory.Exists(directory))
         {
@@ -1794,19 +1820,19 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         if (hasResult) parts.Add("result.json");
         if (hasJoint) parts.Add("joint_angle.csv");
         if (hasPreview) parts.Add("analysis_preview.mp4");
-        return parts.Count > 0 ? $"已生成 {string.Join("、", parts)}" : null;
+        return parts.Count > 0 ? L("AnalysisDetail.FileSummaryNamesFormat", string.Join(", ", parts)) : null;
     }
 
-    private static PlotModel BuildSingleAnglePlot(string title, List<AnalysisAngleFrame> frames, Func<AnalysisAngleFrame, double> valueSelector, OxyColor color, double maxTime)
+    private PlotModel BuildSingleAnglePlot(string title, string seriesName, List<AnalysisAngleFrame> frames, Func<AnalysisAngleFrame, double> valueSelector, OxyColor color, double maxTime)
     {
-        var model = CreatePlotBase(title, "时间 (s)", "角度 (°)");
+        var model = CreatePlotBase(title, L("AnalysisDetail.Chart.TimeAxis"), L("AnalysisDetail.Chart.AngleAxis"));
         model.Axes.OfType<LinearAxis>().First(axis => axis.Position == AxisPosition.Bottom).Maximum = Math.Max(1, maxTime);
-        AddLineSeries(model, title.Replace("角度曲线", string.Empty, StringComparison.Ordinal), frames, valueSelector, color);
+        AddLineSeries(model, seriesName, frames, valueSelector, color);
         ApplyValueAxisRange(model);
         return model;
     }
 
-    private static PlotModel BuildDualAnglePlot(
+    private PlotModel BuildDualAnglePlot(
         string title,
         string firstName,
         string secondName,
@@ -1817,7 +1843,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         OxyColor secondColor,
         double maxTime)
     {
-        var model = CreatePlotBase($"{title}（{firstName} / {secondName}）", "时间 (s)", "角度 (°)", alignToPlaybackBar: true);
+        var model = CreatePlotBase($"{title} ({firstName} / {secondName})", L("AnalysisDetail.Chart.TimeAxis"), L("AnalysisDetail.Chart.AngleAxis"), alignToPlaybackBar: true);
         model.Axes.OfType<LinearAxis>().First(axis => axis.Position == AxisPosition.Bottom).Maximum = Math.Max(1, maxTime);
         AddLineSeries(model, firstName, frames, firstSelector, firstColor);
         AddLineSeries(model, secondName, frames, secondSelector, secondColor);
@@ -1826,7 +1852,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         return model;
     }
 
-    private static PlotModel BuildSinglePlaybackAnglePlot(
+    private PlotModel BuildSinglePlaybackAnglePlot(
         string title,
         string seriesName,
         List<AnalysisAngleFrame> frames,
@@ -1834,7 +1860,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         OxyColor color,
         double maxTime)
     {
-        var model = CreatePlotBase(title, "时间 (s)", "角度 (°)", alignToPlaybackBar: true);
+        var model = CreatePlotBase(title, L("AnalysisDetail.Chart.TimeAxis"), L("AnalysisDetail.Chart.AngleAxis"), alignToPlaybackBar: true);
         model.Axes.OfType<LinearAxis>().First(axis => axis.Position == AxisPosition.Bottom).Maximum = Math.Max(1, maxTime);
         AddLineSeries(model, seriesName, frames, valueSelector, color);
         AddPlaybackCursor(model, 0);
@@ -1975,10 +2001,10 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         return 50;
     }
 
-    private static PlotModel CreateEmptyPlot(string title, string message = "暂无曲线数据", bool alignToPlaybackBar = false)
+    private PlotModel CreateEmptyPlot(string title, string? message = null, bool alignToPlaybackBar = false)
     {
-        var model = CreatePlotBase(title, "时间 (s)", "角度 (°)", alignToPlaybackBar);
-        model.Subtitle = message;
+        var model = CreatePlotBase(title, L("AnalysisDetail.Chart.TimeAxis"), L("AnalysisDetail.Chart.AngleAxis"), alignToPlaybackBar);
+        model.Subtitle = message ?? L("AnalysisDetail.Chart.NoData");
         model.SubtitleColor = OxyColor.Parse("#999999");
         return model;
     }
@@ -2329,9 +2355,9 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         return value.HasValue ? $"{(value.Value / 100d):F2} m" : "--";
     }
 
-    private static string FormatCount(int? value)
+    private string FormatCount(int? value)
     {
-        return value.HasValue ? $"{value.Value} 次" : "--";
+        return value.HasValue ? L("AnalysisDetail.TimesFormat", value.Value) : "--";
     }
 
     private static double? ComplementPercent(double? value)

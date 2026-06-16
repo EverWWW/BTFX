@@ -90,11 +90,13 @@ public partial class MeasurementDetailDialog
             return;
         }
 
-        if (sender is TabControl { SelectedItem: TabItem { Header: "参数显示页" } })
+        if (sender is TabControl { SelectedItem: TabItem selectedItem }
+            && ReferenceEquals(selectedItem, ParametersTabItem))
         {
             ResetParameterScrollToTop();
         }
-        else if (sender is TabControl { SelectedItem: TabItem { Header: "视频预览页" } })
+        else if (sender is TabControl { SelectedItem: TabItem selectedVideoItem }
+                 && ReferenceEquals(selectedVideoItem, VideoPreviewTabItem))
         {
             ResetVideoPreviewScrollToTop();
         }

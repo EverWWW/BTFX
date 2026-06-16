@@ -190,7 +190,7 @@
                                     FontSize="22"
                                     Foreground="#BBBBBB"
                                     IsHitTestVisible="False"
-                                    Text="输入患者姓名关键字">
+                                    Text="{DynamicResource PatientSearchPlaceholder}">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="Visibility" Value="Collapsed" />
@@ -297,7 +297,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="22"
                                     Foreground="White"
-                                    Text="搜索" />
+                                    Text="{DynamicResource Search}" />
                             </StackPanel>
                         </Button>
 
@@ -325,7 +325,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="22"
                                     Foreground="#403B5B"
-                                    Text="添加" />
+                                    Text="{DynamicResource Add}" />
                             </StackPanel>
                         </Button>
                     </StackPanel>
@@ -356,7 +356,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="22"
                                     Foreground="#555555"
-                                    Text="导出" />
+                                    Text="{DynamicResource Export}" />
                             </StackPanel>
                         </Button>
 
@@ -381,7 +381,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="22"
                                     Foreground="#555555"
-                                    Text="导入" />
+                                    Text="{DynamicResource Import}" />
                             </StackPanel>
                         </Button>
                     </StackPanel>
@@ -444,7 +444,7 @@
                         FontFamily="{StaticResource AppFont}"
                         FontSize="22"
                         Foreground="#666666"
-                        Text="编号" />
+                        Text="{DynamicResource Id}" />
                     <TextBlock
                         Grid.Column="2"
                         HorizontalAlignment="Center"
@@ -452,7 +452,7 @@
                         FontFamily="{StaticResource AppFont}"
                         FontSize="22"
                         Foreground="#666666"
-                        Text="姓名" />
+                        Text="{DynamicResource PatientName}" />
                     <TextBlock
                         Grid.Column="3"
                         HorizontalAlignment="Center"
@@ -460,7 +460,7 @@
                         FontFamily="{StaticResource AppFont}"
                         FontSize="22"
                         Foreground="#666666"
-                        Text="性别" />
+                        Text="{DynamicResource Gender}" />
                     <TextBlock
                         Grid.Column="4"
                         HorizontalAlignment="Center"
@@ -468,7 +468,7 @@
                         FontFamily="{StaticResource AppFont}"
                         FontSize="22"
                         Foreground="#666666"
-                        Text="年龄" />
+                        Text="{DynamicResource Age}" />
                     <TextBlock
                         Grid.Column="5"
                         HorizontalAlignment="Center"
@@ -476,7 +476,7 @@
                         FontFamily="{StaticResource AppFont}"
                         FontSize="22"
                         Foreground="#666666"
-                        Text="身高(CM)" />
+                        Text="{DynamicResource HeightCm}" />
                     <TextBlock
                         Grid.Column="6"
                         HorizontalAlignment="Center"
@@ -484,7 +484,7 @@
                         FontFamily="{StaticResource AppFont}"
                         FontSize="22"
                         Foreground="#666666"
-                        Text="身份证号" />
+                        Text="{DynamicResource IdNumber}" />
                     <TextBlock
                         Grid.Column="7"
                         HorizontalAlignment="Center"
@@ -492,7 +492,7 @@
                         FontFamily="{StaticResource AppFont}"
                         FontSize="22"
                         Foreground="#666666"
-                        Text="编辑" />
+                        Text="{DynamicResource Edit}" />
                     <TextBlock
                         Grid.Column="8"
                         HorizontalAlignment="Center"
@@ -500,7 +500,7 @@
                         FontFamily="{StaticResource AppFont}"
                         FontSize="22"
                         Foreground="#666666"
-                        Text="删除" />
+                        Text="{DynamicResource Delete}" />
                 </Grid>
 
                 <!--  列表内容区（禁用滚动条，按可视高度动态分页）  -->

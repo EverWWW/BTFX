@@ -13,6 +13,7 @@ public partial class MeasurementDetailViewModel : ObservableObject
 {
     private readonly ISessionService _sessionService;
     private readonly IExportImportService _exportImportService;
+    private readonly ILocalizationService _localizationService;
 
     #region 属性
 
@@ -72,11 +73,11 @@ public partial class MeasurementDetailViewModel : ObservableObject
     /// </summary>
     public string Status => Record?.Status switch
     {
-        MeasurementStatus.Pending => "待处理",
-        MeasurementStatus.InProgress => "分析中",
-        MeasurementStatus.Completed => "已完成",
-        MeasurementStatus.Cancelled => "待处理",
-        MeasurementStatus.Failed => "分析失败",
+        MeasurementStatus.Pending => L("MeasurementDetail.Status.Pending"),
+        MeasurementStatus.InProgress => L("MeasurementDetail.Status.InProgress"),
+        MeasurementStatus.Completed => L("MeasurementDetail.Status.Completed"),
+        MeasurementStatus.Cancelled => L("MeasurementDetail.Status.Pending"),
+        MeasurementStatus.Failed => L("MeasurementDetail.Status.Failed"),
         _ => "--"
     };
 
@@ -97,7 +98,7 @@ public partial class MeasurementDetailViewModel : ObservableObject
     /// 测量时长
     /// </summary>
     public string Duration => Record?.DurationSeconds != null
-        ? $"{Record.DurationSeconds / 60}分{Record.DurationSeconds % 60}秒"
+        ? L("MeasurementDetail.DurationFormat", Record.DurationSeconds / 60, Record.DurationSeconds % 60)
         : "--";
 
     /// <summary>
@@ -159,12 +160,20 @@ public partial class MeasurementDetailViewModel : ObservableObject
     /// <summary>
     /// 构造函数
     /// </summary>
-    public MeasurementDetailViewModel(ISessionService sessionService, IExportImportService exportImportService)
+    public MeasurementDetailViewModel(
+        ISessionService sessionService,
+        IExportImportService exportImportService,
+        ILocalizationService localizationService)
     {
         _sessionService = sessionService;
         _exportImportService = exportImportService;
+        _localizationService = localizationService;
         CanExport = _sessionService.HasPermission("export");
     }
+
+    private string L(string key) => _localizationService.GetString(key);
+
+    private string L(string key, params object[] args) => _localizationService.GetString(key, args);
 
     /// <summary>
     /// 初始化
@@ -214,9 +223,9 @@ public partial class MeasurementDetailViewModel : ObservableObject
         {
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
-                                Title = "导出测量数据",
-                                Filter = "Excel文件 (*.xlsx)|*.xlsx|CSV文件 (*.csv)|*.csv",
-                                FileName = $"测量数据_{Record.Patient?.Name}_{Record.MeasurementDate:yyyyMMdd}"
+                                Title = L("MeasurementDetail.Export.Title"),
+                                Filter = L("MeasurementDetail.Export.Filter"),
+                                FileName = L("MeasurementDetail.Export.FileNameFormat", Record.Patient?.Name ?? "Patient", Record.MeasurementDate)
                             };
 
                             if (dialog.ShowDialog() == true)
@@ -227,17 +236,17 @@ public partial class MeasurementDetailViewModel : ObservableObject
 
                                 if (success)
                                 {
-                                    System.Windows.MessageBox.Show("导出成功！", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                                    System.Windows.MessageBox.Show(L("MeasurementDetail.Export.Success"), L("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                                 }
                                 else
                                 {
-                                    System.Windows.MessageBox.Show("导出失败，请重试", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                                    System.Windows.MessageBox.Show(L("MeasurementDetail.Export.FailedRetry"), L("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                                 }
                             }
                         }
                         catch (Exception ex)
                         {
-                            System.Windows.MessageBox.Show($"导出失败：{ex.Message}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                            System.Windows.MessageBox.Show(L("MeasurementDetail.Export.FailedFormat", ex.Message), L("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                         }
                     }
                 }

@@ -708,7 +708,7 @@
                                 FontFamily="{StaticResource AppFont}"
                                 FontSize="22"
                                 Foreground="White"
-                                Text="搜索" />
+                                Text="{DynamicResource Search}" />
                         </StackPanel>
                     </Button>
                 </Grid>
@@ -766,27 +766,27 @@
                                     <TextBlock
                                         Grid.Column="1"
                                         Style="{StaticResource HeaderTextStyle}"
-                                        Text="编号" />
+                                        Text="{DynamicResource Id}" />
                                     <TextBlock
                                         Grid.Column="2"
                                         Style="{StaticResource HeaderTextStyle}"
-                                        Text="姓名" />
+                                        Text="{DynamicResource PatientName}" />
                                     <TextBlock
                                         Grid.Column="3"
                                         Style="{StaticResource HeaderTextStyle}"
-                                        Text="测量日期" />
+                                        Text="{DynamicResource MeasurementDate}" />
                                     <TextBlock
                                         Grid.Column="4"
                                         Style="{StaticResource HeaderTextStyle}"
-                                        Text="详情" />
+                                        Text="{DynamicResource ViewDetails}" />
                                     <TextBlock
                                         Grid.Column="5"
                                         Style="{StaticResource HeaderTextStyle}"
-                                        Text="导出" />
+                                        Text="{DynamicResource Export}" />
                                     <TextBlock
                                         Grid.Column="6"
                                         Style="{StaticResource HeaderTextStyle}"
-                                        Text="打印" />
+                                        Text="{DynamicResource Print}" />
                                 </Grid>
                             </Border>
 
@@ -910,7 +910,7 @@
                                             FontFamily="{StaticResource AppFont}"
                                             FontSize="18"
                                             Foreground="#666666"
-                                            Text="正在加载数据..." />
+                                            Text="{DynamicResource DataManagement.LoadingData}" />
                                     </StackPanel>
                                 </Border>
 
@@ -933,7 +933,7 @@
                                         FontFamily="{StaticResource AppFont}"
                                         FontSize="18"
                                         Foreground="#999999"
-                                        Text="暂无报告数据" />
+                                        Text="{DynamicResource Report.EmptyList}" />
                                 </StackPanel>
                             </Grid>
 
@@ -979,7 +979,7 @@
                                                 FontSize="18"
                                                 FontWeight="Medium"
                                                 Foreground="#403B5B"
-                                                Text="全部导出" />
+                                                Text="{DynamicResource Report.BatchExport}" />
                                         </StackPanel>
                                     </Button>
 
@@ -1110,7 +1110,7 @@
                                         FontFamily="{StaticResource AppFont}"
                                         FontSize="16"
                                         Foreground="#999999"
-                                        Text="{Binding SelectedReportTotalCount, StringFormat=已选 {0} 项}" />
+                                        Text="{Binding SelectedReportTotalCountText}" />
                                 </Grid>
                             </StackPanel>
                         </Grid>
@@ -1149,7 +1149,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="24"
                                     Foreground="#403B5B"
-                                    Text="报告摘要" />
+                                    Text="{DynamicResource Report.SummaryTitle}" />
                             </StackPanel>
 
                             <StackPanel
@@ -1161,7 +1161,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="18"
                                     Foreground="#999999"
-                                    Text="选中左侧列表的一行可预览报告摘要" />
+                                    Text="{DynamicResource Report.SummaryHint}" />
 
                             </StackPanel>
                         </Grid>
@@ -1202,7 +1202,7 @@
                                                         VerticalAlignment="Center"
                                                         Background="#E4004A"
                                                         CornerRadius="2" />
-                                                    <TextBlock Style="{StaticResource ReportPreviewSectionTitleStyle}" Text="报告基础信息" />
+                                                    <TextBlock Style="{StaticResource ReportPreviewSectionTitleStyle}" Text="{DynamicResource Report.BasicInfo}" />
                                                 </StackPanel>
 
                                                 <ItemsControl ItemTemplate="{StaticResource ReportPreviewFieldTemplate}" ItemsSource="{Binding PreviewBasicFields}">
@@ -1231,7 +1231,7 @@
                                                         VerticalAlignment="Center"
                                                         Background="#E4004A"
                                                         CornerRadius="2" />
-                                                    <TextBlock Style="{StaticResource ReportPreviewSectionTitleStyle}" Text="关键指标" />
+                                                    <TextBlock Style="{StaticResource ReportPreviewSectionTitleStyle}" Text="{DynamicResource Report.KeyMetrics}" />
                                                 </StackPanel>
 
                                                 <ItemsControl ItemTemplate="{StaticResource ReportPreviewMetricTemplate}" ItemsSource="{Binding PreviewMetrics}">
@@ -1260,7 +1260,7 @@
                                                         VerticalAlignment="Center"
                                                         Background="#E4004A"
                                                         CornerRadius="2" />
-                                                    <TextBlock Style="{StaticResource ReportPreviewSectionTitleStyle}" Text="报告内容摘要" />
+                                                    <TextBlock Style="{StaticResource ReportPreviewSectionTitleStyle}" Text="{DynamicResource Report.ContentSummary}" />
                                                 </StackPanel>
 
                                                 <ItemsControl ItemTemplate="{StaticResource ReportPreviewTagTemplate}" ItemsSource="{Binding PreviewSectionTags}">
@@ -1310,7 +1310,7 @@
                                         FontFamily="{StaticResource AppFont}"
                                         FontSize="22"
                                         Foreground="#9E9E9E"
-                                        Text="暂无数据" />
+                                        Text="{DynamicResource NoData}" />
                                 </StackPanel>
 
                                 <StackPanel
@@ -1323,18 +1323,18 @@
                                         Margin="0,0,12,0"
                                         Command="{Binding ViewReportCommand}"
                                         CommandParameter="{Binding SelectedReport}"
-                                        Content="查看完整报告"
+                                        Content="{DynamicResource Report.ViewFull}"
                                         IsEnabled="{Binding HasPreviewContent}"
                                         Style="{StaticResource ReportPreviewPrimaryButtonStyle}" />
                                     <Button
                                         Margin="0,0,12,0"
                                         Command="{Binding ExportPdfCommand}"
-                                        Content="导出报告"
+                                        Content="{DynamicResource Report.ExportReport}"
                                         IsEnabled="{Binding HasPreviewContent}"
                                         Style="{StaticResource ReportPreviewSecondaryButtonStyle}" />
                                     <Button
                                         Command="{Binding PrintReportCommand}"
-                                        Content="打印报告"
+                                        Content="{DynamicResource Report.PrintReport}"
                                         IsEnabled="{Binding HasPreviewContent}"
                                         Style="{StaticResource ReportPreviewSecondaryButtonStyle}" />
                                 </StackPanel>

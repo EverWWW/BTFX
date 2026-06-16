@@ -180,7 +180,7 @@
                         FontSize="22"
                         FontWeight="Medium"
                         Foreground="White"
-                        Text="添加" />
+                        Text="{DynamicResource Add}" />
                 </StackPanel>
             </Button>
 
@@ -206,7 +206,7 @@
                         FontSize="22"
                         FontWeight="Medium"
                         Foreground="#403B5B"
-                        Text="刷新" />
+                        Text="{DynamicResource Refresh}" />
                 </StackPanel>
             </Button>
         </StackPanel>
@@ -237,31 +237,31 @@
                     <TextBlock
                         Grid.Column="0"
                         Style="{StaticResource HeaderTextStyle}"
-                        Text="编号" />
+                        Text="{DynamicResource Id}" />
                     <TextBlock
                         Grid.Column="1"
                         Style="{StaticResource HeaderTextStyle}"
-                        Text="科室名称" />
+                        Text="{DynamicResource DepartmentName}" />
                     <TextBlock
                         Grid.Column="2"
                         Style="{StaticResource HeaderTextStyle}"
-                        Text="科室代码" />
+                        Text="{DynamicResource DepartmentCode}" />
                     <TextBlock
                         Grid.Column="3"
                         Style="{StaticResource HeaderTextStyle}"
-                        Text="描述" />
+                        Text="{DynamicResource Description}" />
                     <TextBlock
                         Grid.Column="4"
                         Style="{StaticResource HeaderTextStyle}"
-                        Text="创建时间" />
+                        Text="{DynamicResource CreatedAt}" />
                     <TextBlock
                         Grid.Column="5"
                         Style="{StaticResource HeaderTextStyle}"
-                        Text="编辑" />
+                        Text="{DynamicResource Edit}" />
                     <TextBlock
                         Grid.Column="6"
                         Style="{StaticResource HeaderTextStyle}"
-                        Text="删除" />
+                        Text="{DynamicResource Delete}" />
                 </Grid>
             </Border>
 

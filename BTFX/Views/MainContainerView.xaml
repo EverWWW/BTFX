@@ -269,8 +269,8 @@
 
                 <ListBox
                     Grid.Row="1"
-                    IsEnabled="{Binding IsShellInteractionEnabled}"
                     Margin="0,18,0,0"
+                    IsEnabled="{Binding IsShellInteractionEnabled}"
                     ItemContainerStyle="{StaticResource NavigationListBoxItemStyle}"
                     ItemsSource="{Binding NavigationItems}"
                     SelectedItem="{Binding SelectedNavigationItem}"
@@ -318,14 +318,20 @@
                         Grid.Column="0"
                         VerticalAlignment="Center"
                         Orientation="Horizontal">
-                        <TextBlock Style="{StaticResource HeaderLabelTextStyle}" Text="姓名：" />
+                        <TextBlock Style="{StaticResource HeaderLabelTextStyle}">
+                            <Run Text="{DynamicResource PatientName}" />
+                            <Run Text="：" />
+                        </TextBlock>
                         <TextBlock Style="{StaticResource HeaderValueTextStyle}" Text="{Binding CurrentPatientName, TargetNullValue=--}" />
                         <StackPanel
                             Margin="36,0,0,0"
                             VerticalAlignment="Center"
                             Orientation="Horizontal"
                             Visibility="{Binding IsCurrentPatientGenderVisible, Converter={StaticResource BoolToVisConverter}}">
-                            <TextBlock Style="{StaticResource HeaderLabelTextStyle}" Text="性别：" />
+                            <TextBlock Style="{StaticResource HeaderLabelTextStyle}">
+                                <Run Text="{DynamicResource Gender}" />
+                                <Run Text="：" />
+                            </TextBlock>
                             <TextBlock Style="{StaticResource HeaderValueTextStyle}" Text="{Binding CurrentPatientGender, TargetNullValue=--}" />
                         </StackPanel>
                     </StackPanel>
@@ -350,7 +356,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="20"
                                     Foreground="#403B5B"
-                                    Text="更换患者" />
+                                    Text="{DynamicResource SwitchPatient}" />
                             </StackPanel>
                         </Button>
 

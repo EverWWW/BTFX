@@ -145,7 +145,7 @@
                             VerticalAlignment="Center"
                             Background="#E4004A"
                             CornerRadius="2" />
-                        <TextBlock Style="{StaticResource SettingsSectionTitleTextStyle}" Text="设备ID设置" />
+                        <TextBlock Style="{StaticResource SettingsSectionTitleTextStyle}" Text="{DynamicResource DeviceIdSettings}" />
                     </StackPanel>
 
                     <Grid Grid.Row="1" Margin="0,26,0,0" VerticalAlignment="Center">
@@ -158,7 +158,7 @@
               <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Style="{StaticResource SettingsLabelTextStyle}" Text="侧面相机ID" />
+                        <TextBlock Style="{StaticResource SettingsLabelTextStyle}" Text="{DynamicResource SideCameraId}" />
                         <TextBox
                             Grid.Column="1"
                             Text="{Binding SideCameraName, UpdateSourceTrigger=PropertyChanged}"
@@ -167,7 +167,7 @@
                         <TextBlock
                             Grid.Column="3"
                             Style="{StaticResource SettingsLabelTextStyle}"
-                            Text="正面相机ID" />
+                            Text="{DynamicResource FrontCameraId}" />
                         <TextBox
                             Grid.Column="4"
                             Text="{Binding FrontCameraName, UpdateSourceTrigger=PropertyChanged}"
@@ -176,7 +176,7 @@
                         <Button
                             Grid.Column="5"
                             Command="{Binding SaveDeviceConfigCommand}"
-                            Content="保存"
+                            Content="{DynamicResource Save}"
                             Style="{StaticResource SettingsPrimaryButtonStyle}" />
                     </Grid>
                 </Grid>
@@ -197,7 +197,7 @@
                             VerticalAlignment="Center"
                             Background="#E4004A"
                             CornerRadius="2" />
-                        <TextBlock Style="{StaticResource SettingsSectionTitleTextStyle}" Text="设备参数设置" />
+                        <TextBlock Style="{StaticResource SettingsSectionTitleTextStyle}" Text="{DynamicResource DeviceParameterSettings}" />
                     </StackPanel>
 
                     <Grid Grid.Row="1" Margin="0,26,0,0" VerticalAlignment="Center">
@@ -211,7 +211,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Style="{StaticResource SettingsLabelTextStyle}" Text="配置软件" />
+                        <TextBlock Style="{StaticResource SettingsLabelTextStyle}" Text="{DynamicResource ConfigSoftware}" />
                         <TextBox
                             Grid.Column="1"
                             Width="620"
@@ -220,12 +220,12 @@
                         <Button
                             Grid.Column="3"
                             Command="{Binding SelectExternalCameraConfigToolCommand}"
-                            Content="选择"
+                            Content="{DynamicResource Select}"
                             Style="{StaticResource SettingsSecondaryButtonStyle}" />
                         <Button
                             Grid.Column="5"
                             Command="{Binding OpenExternalCameraConfigToolCommand}"
-                            Content="打开"
+                            Content="{DynamicResource Open}"
                             Style="{StaticResource SettingsPrimaryButtonStyle}" />
                     </Grid>
                 </Grid>

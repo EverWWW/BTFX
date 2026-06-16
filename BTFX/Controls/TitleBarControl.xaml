@@ -37,7 +37,7 @@
             <!-- ② 中间系统标题（跨全列居中，使用 Grid 覆盖保证真正居中） -->
             <TextBlock Grid.Column="0"
                        Grid.ColumnSpan="4"
-                       Text="步态信息采集系统"
+                       Text="{DynamicResource AppName}"
                        FontFamily="{StaticResource AppFont}"
                        FontSize="36"
                        FontWeight="Normal"
@@ -58,7 +58,7 @@
                             Margin="0,0,16,0">
 
                     <!-- "你好！"文字 -->
-                    <TextBlock Text="你好！"
+                    <TextBlock Text="{DynamicResource Hello}"
                                FontFamily="{StaticResource AppFont}"
                                FontSize="22"
                                FontWeight="Normal"
@@ -93,7 +93,7 @@
                     BorderThickness="1"
                     Command="{Binding LogoutCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                     Cursor="Hand"
-                    ToolTip="退出登录">
+                    ToolTip="{DynamicResource Logout}">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Template">
@@ -150,7 +150,7 @@
                         BorderThickness="0"
                         Cursor="Hand"
                         Click="MinimizeButton_Click"
-                        ToolTip="最小化">
+                        ToolTip="{DynamicResource Minimize}">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Background" Value="Transparent" />
@@ -195,7 +195,7 @@
                         BorderThickness="0"
                         Cursor="Hand"
                         Click="CloseButton_Click"
-                        ToolTip="关闭">
+                        ToolTip="{DynamicResource Close}">
                     <Button.Style>
                         <Style TargetType="Button">
                             <Setter Property="Background" Value="Transparent" />

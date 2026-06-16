@@ -615,7 +615,7 @@
                             FontFamily="{StaticResource AppFont}"
                             FontSize="22"
                             Foreground="#666666"
-                            Text="状态" />
+                            Text="{DynamicResource Status}" />
                         <ComboBox
                             Width="220"
                             Height="68"
@@ -650,7 +650,7 @@
                                 FontFamily="{StaticResource AppFont}"
                                 FontSize="22"
                                 Foreground="White"
-                                Text="搜索" />
+                                Text="{DynamicResource Search}" />
                         </StackPanel>
                     </Button>
                 </Grid>
@@ -682,43 +682,43 @@
                         <TextBlock
                             Grid.Column="1"
                             Style="{StaticResource HeaderTextStyle}"
-                            Text="编号" />
+                            Text="{DynamicResource Id}" />
                         <TextBlock
                             Grid.Column="2"
                             Style="{StaticResource HeaderTextStyle}"
-                            Text="姓名" />
+                            Text="{DynamicResource PatientName}" />
                         <TextBlock
                             Grid.Column="3"
                             Style="{StaticResource HeaderTextStyle}"
-                            Text="性别" />
+                            Text="{DynamicResource Gender}" />
                         <TextBlock
                             Grid.Column="4"
                             Style="{StaticResource HeaderTextStyle}"
-                            Text="年龄" />
+                            Text="{DynamicResource Age}" />
                         <TextBlock
                             Grid.Column="5"
                             Style="{StaticResource HeaderTextStyle}"
-                            Text="测量日期" />
+                            Text="{DynamicResource MeasurementDate}" />
                         <TextBlock
                             Grid.Column="6"
                             Style="{StaticResource HeaderTextStyle}"
-                            Text="状态" />
+                            Text="{DynamicResource Status}" />
                         <TextBlock
                             Grid.Column="7"
                             Style="{StaticResource HeaderTextStyle}"
-                            Text="操作" />
+                            Text="{DynamicResource Operation}" />
                         <TextBlock
                             Grid.Column="8"
                             Style="{StaticResource HeaderTextStyle}"
-                            Text="详情" />
+                            Text="{DynamicResource ViewDetails}" />
                         <TextBlock
                             Grid.Column="9"
                             Style="{StaticResource HeaderTextStyle}"
-                            Text="导出" />
+                            Text="{DynamicResource Export}" />
                         <TextBlock
                             Grid.Column="10"
                             Style="{StaticResource HeaderTextStyle}"
-                            Text="删除" />
+                            Text="{DynamicResource Delete}" />
                     </Grid>
                 </Border>
 
@@ -893,7 +893,7 @@
                                 FontFamily="{StaticResource AppFont}"
                                 FontSize="18"
                                 Foreground="#666666"
-                                Text="正在加载数据..." />
+                                Text="{DynamicResource DataManagement.LoadingData}" />
                         </StackPanel>
                     </Border>
 
@@ -902,7 +902,7 @@
                             FontFamily="{StaticResource AppFont}"
                             FontSize="18"
                             Foreground="#999999"
-                            Text="暂无数据">
+                            Text="{DynamicResource NoData}">
                             <TextBlock.Visibility>
                                 <MultiBinding Converter="{StaticResource EmptyDataVisibilityConverter}">
                                     <Binding Path="MeasurementRecords.Count" />
@@ -960,7 +960,7 @@
                                     FontSize="18"
                                     FontWeight="Medium"
                                     Foreground="#403B5B"
-                                    Text="批量导出" />
+                                    Text="{DynamicResource BatchExport}" />
                             </StackPanel>
                         </Button>
 
@@ -989,7 +989,7 @@
                                     FontSize="18"
                                     FontWeight="Medium"
                                     Foreground="#403B5B"
-                                    Text="导入包" />
+                                    Text="{DynamicResource DataManagement.ImportPackage}" />
                             </StackPanel>
                         </Button>
 
@@ -1028,7 +1028,7 @@
                                     FontSize="18"
                                     FontWeight="Medium"
                                     Foreground="#FF0000"
-                                    Text="删除" />
+                                    Text="{DynamicResource Delete}" />
                             </StackPanel>
                         </Button>
                     </StackPanel>
@@ -1158,7 +1158,7 @@
                         FontFamily="{StaticResource AppFont}"
                         FontSize="16"
                         Foreground="#999999"
-                        Text="{Binding SelectedCount, StringFormat=已选 {0} 项}" />
+                        Text="{Binding SelectedCountText}" />
                 </Grid>
             </Grid>
         </Border>

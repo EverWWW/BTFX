@@ -325,22 +325,22 @@
                         VerticalAlignment="Center"
                         Background="#E4004A"
                         CornerRadius="8" />
-                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="测量信息" />
+                    <TextBlock Style="{StaticResource SectionTitleStyle}" Text="{DynamicResource MA.Step1.Card.BasicInfo}" />
                 </StackPanel>
 
                 <Grid Grid.Row="2">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.35*" />
-                        <ColumnDefinition Width="15" />
-                        <ColumnDefinition Width="0.95*" />
-                        <ColumnDefinition Width="15" />
-                        <ColumnDefinition Width="0.95*" />
-                        <ColumnDefinition Width="15" />
+                        <ColumnDefinition Width="1.2*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="10" />
                         <ColumnDefinition Width="1.45*" />
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal">
-                        <TextBlock Style="{StaticResource FieldLabelStyle}" Text="测量名称" />
+                        <TextBlock Style="{StaticResource FieldLabelStyle}" Text="{DynamicResource MA.Step1.MeasurementName}" />
                         <TextBox
                             MinWidth="280"
                             Style="{StaticResource RoundedInputTextBoxStyle}"
@@ -348,35 +348,35 @@
                     </StackPanel>
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
-                        <TextBlock Style="{StaticResource FieldLabelStyle}" Text="测量类型" />
+                        <TextBlock Style="{StaticResource FieldLabelStyle}" Text="{DynamicResource MA.Step1.MeasurementType}" />
                         <ComboBox
-                            Width="150"
+                            Width="180"
                             SelectedValue="{Binding SelectedMeasurementType}"
                             SelectedValuePath="Tag"
                             Style="{StaticResource FilterComboBoxStyle}">
-                            <ComboBoxItem Content="自然步行" Tag="{x:Static common:MeasurementType.NormalWalk}" />
-                            <ComboBoxItem Content="快走" Tag="{x:Static common:MeasurementType.FastWalk}" />
-                            <ComboBoxItem Content="慢走" Tag="{x:Static common:MeasurementType.SlowWalk}" />
-                            <ComboBoxItem Content="其他" Tag="{x:Static common:MeasurementType.Other}" />
+                            <ComboBoxItem Content="{DynamicResource MA.Step1.Type.NormalWalk}" Tag="{x:Static common:MeasurementType.NormalWalk}" />
+                            <ComboBoxItem Content="{DynamicResource MA.Step1.Type.FastWalk}" Tag="{x:Static common:MeasurementType.FastWalk}" />
+                            <ComboBoxItem Content="{DynamicResource MA.Step1.Type.SlowWalk}" Tag="{x:Static common:MeasurementType.SlowWalk}" />
+                            <ComboBoxItem Content="{DynamicResource MA.Step1.Type.Other}" Tag="{x:Static common:MeasurementType.Other}" />
                         </ComboBox>
                     </StackPanel>
 
                     <StackPanel Grid.Column="4" Orientation="Horizontal">
-                        <TextBlock Style="{StaticResource FieldLabelStyle}" Text="分析模式" />
+                        <TextBlock Style="{StaticResource FieldLabelStyle}" Text="{DynamicResource MA.Step1.AnalysisMode}" />
                         <ComboBox
                             Width="150"
                             SelectedValue="{Binding SelectedAnalysisMode}"
                             SelectedValuePath="Tag"
                             Style="{StaticResource FilterComboBoxStyle}">
-                            <ComboBoxItem Content="单视频模式" Tag="{x:Static vm:AnalysisVideoMode.Single}" />
-                            <ComboBoxItem Content="双视频模式" Tag="{x:Static vm:AnalysisVideoMode.Dual}" />
+                            <ComboBoxItem Content="{DynamicResource MA.Step1.AnalysisMode.Single}" Tag="{x:Static vm:AnalysisVideoMode.Single}" />
+                            <ComboBoxItem Content="{DynamicResource MA.Step1.AnalysisMode.Dual}" Tag="{x:Static vm:AnalysisVideoMode.Dual}" />
                         </ComboBox>
                     </StackPanel>
 
                     <StackPanel Grid.Column="6" Orientation="Horizontal">
-                        <TextBlock Style="{StaticResource FieldLabelStyle}" Text="备注" />
+                        <TextBlock Style="{StaticResource FieldLabelStyle}" Text="{DynamicResource MA.Step1.Remark}" />
                         <TextBox
-                            MinWidth="440"
+                            MinWidth="420"
                             Style="{StaticResource RoundedInputTextBoxStyle}"
                             Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
@@ -402,14 +402,14 @@
                             VerticalAlignment="Center"
                             Background="#E4004A"
                             CornerRadius="8" />
-                        <TextBlock Style="{StaticResource SectionTitleStyle}" Text="视频来源" />
+                        <TextBlock Style="{StaticResource SectionTitleStyle}" Text="{DynamicResource MA.Step1.VideoSource}" />
                         <TextBlock
                             Margin="18,0,0,0"
                             VerticalAlignment="Center"
                             FontFamily="{StaticResource AppFont}"
                             FontSize="14"
                             Foreground="#999999"
-                            Text="实时采集请点击右侧按钮；已有本地视频请在下方选择文件导入。" />
+                            Text="{DynamicResource MA.Step1.VideoSourceHint}" />
                     </StackPanel>
 
                     <Button
@@ -424,7 +424,7 @@
                                 Margin="0,0,8,0"
                                 VerticalAlignment="Center"
                                 Kind="Video" />
-                            <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="打开视频采集" />
+                            <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="{DynamicResource MA.Step1.OpenCapture}" />
                         </StackPanel>
                     </Button>
                 </Grid>
@@ -473,7 +473,7 @@
                                         FontFamily="{StaticResource AppFont}"
                                         FontSize="22"
                                         Foreground="#DDDDDD"
-                                        Text="未选择"
+                                        Text="{DynamicResource MA.Step1.NotSelected}"
                                         Visibility="{Binding SideVideoInfo.HasFile, Converter={StaticResource InverseBoolToVisConverter}}" />
                                     <Button
                                         Width="56"
@@ -509,7 +509,7 @@
                                         FontSize="22"
                                         FontWeight="Medium"
                                         Foreground="#403B5B"
-                                        Text="侧面视频" />
+                                        Text="{DynamicResource MA.Step2.SideVideo}" />
                                     <Border
                                         Padding="10,4"
                                         HorizontalAlignment="Right"
@@ -535,34 +535,34 @@
                                 </Grid>
 
                                 <StackPanel Grid.Row="2">
-                                    <TextBlock
-                                        Margin="0,0,0,12"
-                                        Style="{StaticResource VideoInfoTextStyle}"
-                                        Text="{Binding SideVideoInfo.Resolution, StringFormat=分辨率：{0}}" />
-                                    <TextBlock
-                                        Margin="0,0,0,12"
-                                        Style="{StaticResource VideoInfoTextStyle}"
-                                        Text="{Binding SideVideoInfo.FrameRateDisplay, StringFormat=帧率：{0}}" />
-                                    <TextBlock
-                                        Margin="0,0,0,12"
-                                        Style="{StaticResource VideoInfoTextStyle}"
-                                        Text="{Binding SideVideoInfo.DurationDisplay, StringFormat=时长：{0}}" />
-                                    <TextBlock
-                                        Margin="0,0,0,26"
-                                        Style="{StaticResource VideoInfoTextStyle}"
-                                        Text="{Binding SideVideoInfo.FileSizeDisplay, StringFormat=大小：{0}}" />
+                                    <StackPanel Margin="0,0,0,12" Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource VideoInfoTextStyle}" Text="{DynamicResource MA.Step1.Meta.ResolutionLabel}" />
+                                        <TextBlock Style="{StaticResource VideoInfoTextStyle}" Text="{Binding SideVideoInfo.Resolution}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,0,12" Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource VideoInfoTextStyle}" Text="{DynamicResource MA.Step1.Meta.FpsLabel}" />
+                                        <TextBlock Style="{StaticResource VideoInfoTextStyle}" Text="{Binding SideVideoInfo.FrameRateDisplay}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,0,12" Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource VideoInfoTextStyle}" Text="{DynamicResource MA.Step1.Meta.DurationLabel}" />
+                                        <TextBlock Style="{StaticResource VideoInfoTextStyle}" Text="{Binding SideVideoInfo.DurationDisplay}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,0,26" Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource VideoInfoTextStyle}" Text="{DynamicResource MA.Step1.Meta.SizeLabel}" />
+                                        <TextBlock Style="{StaticResource VideoInfoTextStyle}" Text="{Binding SideVideoInfo.FileSizeDisplay}" />
+                                    </StackPanel>
                                     <Grid>
                                         <Button
                                             HorizontalAlignment="Left"
                                             Command="{Binding SelectSideVideoCommand}"
                                             Style="{StaticResource PrimaryActionButtonStyle}">
-                                            <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="选择文件" />
+                                            <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="{DynamicResource MA.Step2.SelectFile}" />
                                         </Button>
                                         <Button
                                             HorizontalAlignment="Right"
                                             Command="{Binding ClearSideVideoCommand}"
                                             Style="{StaticResource SecondaryActionButtonStyle}">
-                                            <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="清除" />
+                                            <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="{DynamicResource Clear}" />
                                         </Button>
                                     </Grid>
                                 </StackPanel>
@@ -618,7 +618,7 @@
                                         FontFamily="{StaticResource AppFont}"
                                         FontSize="22"
                                         Foreground="#DDDDDD"
-                                        Text="未选择"
+                                        Text="{DynamicResource MA.Step1.NotSelected}"
                                         Visibility="{Binding FrontVideoInfo.HasFile, Converter={StaticResource InverseBoolToVisConverter}}" />
                                     <Button
                                         Width="56"
@@ -654,7 +654,7 @@
                                         FontSize="22"
                                         FontWeight="Medium"
                                         Foreground="#403B5B"
-                                        Text="正面视频" />
+                                        Text="{DynamicResource MA.Step2.FrontVideo}" />
                                     <Border
                                         Padding="10,4"
                                         HorizontalAlignment="Right"
@@ -680,34 +680,34 @@
                                 </Grid>
 
                                 <StackPanel Grid.Row="2">
-                                    <TextBlock
-                                        Margin="0,0,0,12"
-                                        Style="{StaticResource VideoInfoTextStyle}"
-                                        Text="{Binding FrontVideoInfo.Resolution, StringFormat=分辨率：{0}}" />
-                                    <TextBlock
-                                        Margin="0,0,0,12"
-                                        Style="{StaticResource VideoInfoTextStyle}"
-                                        Text="{Binding FrontVideoInfo.FrameRateDisplay, StringFormat=帧率：{0}}" />
-                                    <TextBlock
-                                        Margin="0,0,0,12"
-                                        Style="{StaticResource VideoInfoTextStyle}"
-                                        Text="{Binding FrontVideoInfo.DurationDisplay, StringFormat=时长：{0}}" />
-                                    <TextBlock
-                                        Margin="0,0,0,26"
-                                        Style="{StaticResource VideoInfoTextStyle}"
-                                        Text="{Binding FrontVideoInfo.FileSizeDisplay, StringFormat=大小：{0}}" />
+                                    <StackPanel Margin="0,0,0,12" Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource VideoInfoTextStyle}" Text="{DynamicResource MA.Step1.Meta.ResolutionLabel}" />
+                                        <TextBlock Style="{StaticResource VideoInfoTextStyle}" Text="{Binding FrontVideoInfo.Resolution}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,0,12" Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource VideoInfoTextStyle}" Text="{DynamicResource MA.Step1.Meta.FpsLabel}" />
+                                        <TextBlock Style="{StaticResource VideoInfoTextStyle}" Text="{Binding FrontVideoInfo.FrameRateDisplay}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,0,12" Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource VideoInfoTextStyle}" Text="{DynamicResource MA.Step1.Meta.DurationLabel}" />
+                                        <TextBlock Style="{StaticResource VideoInfoTextStyle}" Text="{Binding FrontVideoInfo.DurationDisplay}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,0,26" Orientation="Horizontal">
+                                        <TextBlock Style="{StaticResource VideoInfoTextStyle}" Text="{DynamicResource MA.Step1.Meta.SizeLabel}" />
+                                        <TextBlock Style="{StaticResource VideoInfoTextStyle}" Text="{Binding FrontVideoInfo.FileSizeDisplay}" />
+                                    </StackPanel>
                                     <Grid>
                                         <Button
                                             HorizontalAlignment="Left"
                                             Command="{Binding SelectFrontVideoCommand}"
                                             Style="{StaticResource PrimaryActionButtonStyle}">
-                                            <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="选择文件" />
+                                            <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="{DynamicResource MA.Step2.SelectFile}" />
                                         </Button>
                                         <Button
                                             HorizontalAlignment="Right"
                                             Command="{Binding ClearFrontVideoCommand}"
                                             Style="{StaticResource SecondaryActionButtonStyle}">
-                                            <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="清除" />
+                                            <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="{DynamicResource Clear}" />
                                         </Button>
                                     </Grid>
                                 </StackPanel>
@@ -733,11 +733,12 @@
 
         <Grid Grid.Row="4">
             <Button
+                Width="150"
                 HorizontalAlignment="Left"
                 Command="{Binding GoToStepCommand}"
                 CommandParameter="0"
                 Style="{StaticResource SecondaryActionButtonStyle}">
-                <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="返回封面" />
+                <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="{DynamicResource MA.Step1.BackToCover}" />
             </Button>
 
             <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
@@ -745,14 +746,14 @@
                     Margin="0,0,14,0"
                     Command="{Binding ResetMeasurementCommand}"
                     Style="{StaticResource SecondaryActionButtonStyle}">
-                    <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="重置" />
+                    <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="{DynamicResource Reset}" />
                 </Button>
                 <Button
                     Width="180"
                     Command="{Binding ConfirmImportCommand}"
                     IsEnabled="{Binding CanEnterReview}"
                     Style="{StaticResource PrimaryActionButtonStyle}">
-                    <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="进入回放检查" />
+                    <TextBlock Style="{StaticResource ActionButtonTextStyle}" Text="{DynamicResource MA.Step1.EnterReview}" />
                 </Button>
             </StackPanel>
 

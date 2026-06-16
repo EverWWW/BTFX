@@ -194,7 +194,7 @@
                 <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
                     <TextBlock Style="{StaticResource DepartmentLabelStyle}">
                         <Run Foreground="#F23030" Text="* " />
-                        <Run Text="科室名称" />
+                        <Run Text="{DynamicResource DepartmentName}" />
                     </TextBlock>
                     <TextBox
                         MaxLength="{x:Static common:Constants.DEPARTMENT_NAME_MAX_LENGTH}"
@@ -203,7 +203,7 @@
                 </StackPanel>
 
                 <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
-                    <TextBlock Style="{StaticResource DepartmentLabelStyle}" Text="科室代码" />
+                    <TextBlock Style="{StaticResource DepartmentLabelStyle}" Text="{DynamicResource DepartmentCode}" />
                     <TextBox
                         MaxLength="20"
                         Style="{StaticResource DepartmentInputStyle}"
@@ -215,7 +215,7 @@
                         VerticalAlignment="Top"
                         Margin="0,12,0,0"
                         Style="{StaticResource DepartmentLabelStyle}"
-                        Text="描述" />
+                        Text="{DynamicResource Description}" />
                     <TextBox
                         MaxLength="200"
                         Style="{StaticResource DepartmentMemoInputStyle}"
@@ -242,12 +242,12 @@
                 <Button
                     Margin="0,0,80,0"
                     Command="{Binding CancelCommand}"
-                    Content="取消"
+                    Content="{DynamicResource Cancel}"
                     IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
                     Style="{StaticResource DepartmentSecondaryButtonStyle}" />
                 <Button
                     Command="{Binding SaveCommand}"
-                    Content="确认"
+                    Content="{DynamicResource Confirm}"
                     IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
                     Style="{StaticResource DepartmentPrimaryButtonStyle}" />
             </StackPanel>

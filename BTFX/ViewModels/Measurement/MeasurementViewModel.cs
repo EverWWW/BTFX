@@ -84,10 +84,10 @@ public partial class MeasurementViewModel : ObservableObject
     /// </summary>
     public string CurrentStepTitle => CurrentStep switch
     {
-        1 => "新建测量",
-        2 => "回放检查",
-        3 => "分析结果",
-        _ => "测量评估"
+        1 => L("MA.StepBar.Step1"),
+        2 => L("MA.StepBar.Step3"),
+        3 => L("MA.StepBar.Step4"),
+        _ => L("Measurement")
     };
 
     #endregion
@@ -165,12 +165,12 @@ public partial class MeasurementViewModel : ObservableObject
     /// <summary>
     /// 正面视频信息。
     /// </summary>
-    public VideoFileInfoViewModel FrontVideoInfo { get; } = new("正面视频");
+    public VideoFileInfoViewModel FrontVideoInfo { get; }
 
     /// <summary>
     /// 侧面视频信息。
     /// </summary>
-    public VideoFileInfoViewModel SideVideoInfo { get; } = new("侧面视频");
+    public VideoFileInfoViewModel SideVideoInfo { get; }
 
     #endregion
 
@@ -275,17 +275,17 @@ public partial class MeasurementViewModel : ObservableObject
         {
             if (string.IsNullOrWhiteSpace(MeasurementName))
             {
-                return "请填写测量名称。";
+                return L("MA.Step1.Validation.MeasurementNameRequired");
             }
 
             if (WalkwayLength <= 0)
             {
-                return "请填写大于 0 的步道长度。";
+                return L("MA.Step1.Validation.WalkwayLengthRequired");
             }
 
             if (!SideVideoInfo.HasFile)
             {
-                return "请选择侧面视频。";
+                return L("MA.Step1.Validation.SideVideoRequired");
             }
 
             if (SideVideoInfo.Status == VideoValidationStatus.Failed)
@@ -297,7 +297,7 @@ public partial class MeasurementViewModel : ObservableObject
             {
                 if (!FrontVideoInfo.HasFile)
                 {
-                    return "双视频模式下请选择正面视频。";
+                    return L("MA.Step1.Validation.FrontVideoRequired");
                 }
 
                 if (FrontVideoInfo.Status == VideoValidationStatus.Failed)
@@ -365,6 +365,8 @@ public partial class MeasurementViewModel : ObservableObject
         _measurementService = measurementService;
         _localizationService = localizationService;
         _logHelper = logHelper;
+        FrontVideoInfo = new VideoFileInfoViewModel(L, "MA.Step2.FrontVideo");
+        SideVideoInfo = new VideoFileInfoViewModel(L, "MA.Step2.SideVideo");
 
         // 初始化 Step4 子 ViewModel
         AnalyzeViewModel = analyzeViewModel;
@@ -379,8 +381,21 @@ public partial class MeasurementViewModel : ObservableObject
 
         // 订阅患者变更事件
         _sessionService.CurrentPatientChanged += OnCurrentPatientChanged;
+        _localizationService.LanguageChanged += OnLanguageChanged;
 
         _logHelper?.Information("MeasurementViewModel 初始化完成");
+    }
+
+    private string L(string key) => _localizationService.GetString(key);
+
+    private string L(string key, params object[] args) => _localizationService.GetString(key, args);
+
+    private void OnLanguageChanged(object? sender, AppLanguage language)
+    {
+        FrontVideoInfo.RefreshLocalizedText();
+        SideVideoInfo.RefreshLocalizedText();
+        RefreshVideoValidationState();
+        OnPropertyChanged(nameof(CurrentStepTitle));
     }
 
     /// <summary>
@@ -417,7 +432,11 @@ public partial class MeasurementViewModel : ObservableObject
         catch (Exception ex)
         {
             _logHelper?.Error($"从测量分析步骤打开分析详情失败：MeasurementId={CurrentMeasurement.Id}", ex);
-            MessageBox.Show($"打开分析详情失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(
+                L("MA.Dialog.Error.OpenAnalysisDetailFailed", ex.Message),
+                L("Error"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
     }
 
@@ -457,12 +476,16 @@ public partial class MeasurementViewModel : ObservableObject
 
             if (report is null)
             {
-                MessageBox.Show("报告草稿创建失败，请稍后重试。", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(
+                    L("MA.Dialog.ReportDraftCreateFailed"),
+                    L("Tip"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
                 return;
             }
 
             report.Title = string.IsNullOrWhiteSpace(report.Title)
-                ? $"{CurrentMeasurement.MeasurementName ?? MeasurementName}分析报告"
+                ? L("MA.Report.DefaultTitleFormat", CurrentMeasurement.MeasurementName ?? MeasurementName)
                 : report.Title;
             report.DoctorOpinion ??= string.Empty;
             report.AnalysisResultId = analysisResult?.Id;
@@ -498,7 +521,11 @@ public partial class MeasurementViewModel : ObservableObject
         catch (Exception ex)
         {
             _logHelper?.Error($"从测量分析步骤打开报告预览失败：MeasurementId={CurrentMeasurement.Id}", ex);
-            MessageBox.Show($"打开报告预览失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(
+                L("MA.Dialog.Error.OpenReportPreviewFailed", ex.Message),
+                L("Error"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
     }
 
@@ -523,8 +550,8 @@ public partial class MeasurementViewModel : ObservableObject
         }
 
         MessageBox.Show(
-            $"{validation.Message}\n请重新分析后再继续。",
-            "结果包校验失败",
+            L("MA.Dialog.PackageValidationFailedMessage", validation.Message),
+            L("MA.Dialog.PackageValidationFailedTitle"),
             MessageBoxButton.OK,
             MessageBoxImage.Warning);
         return false;
@@ -551,7 +578,7 @@ public partial class MeasurementViewModel : ObservableObject
     /// </summary>
     private void ResetMeasurementFields()
     {
-        MeasurementName = DateTime.Now.ToString("测量_yyyyMMdd_HHmmss");
+        MeasurementName = L("MA.Step1.DefaultMeasurementNameFormat", DateTime.Now);
         SelectedMeasurementType = MeasurementType.NormalWalk;
         Remark = string.Empty;
         SelectedVideoSpec = VideoSpec.P1080_30fps;
@@ -614,7 +641,7 @@ public partial class MeasurementViewModel : ObservableObject
 
     partial void OnWalkwayLengthChanged(double value)
     {
-        WalkwayLengthError = value > 0 ? null : "请输入大于 0 的数字。";
+        WalkwayLengthError = value > 0 ? null : L("MA.Step1.Validation.WalkwayLengthRequired");
     }
 
     #region 步骤导航命令
@@ -715,7 +742,7 @@ public partial class MeasurementViewModel : ObservableObject
         HasMeasurementRecord = true;
 
         MeasurementName = string.IsNullOrWhiteSpace(record.MeasurementName)
-            ? $"测量_{record.MeasurementDate:yyyyMMdd_HHmmss}"
+            ? L("MA.Step1.DefaultMeasurementNameFormat", record.MeasurementDate)
             : record.MeasurementName;
         SelectedMeasurementType = record.MeasurementType;
         Remark = record.Remark ?? string.Empty;
@@ -908,7 +935,7 @@ public partial class MeasurementViewModel : ObservableObject
             FrontVideoPath = fileName;
             HasFrontVideo = true;
             await LoadVideoInfoAsync(FrontVideoInfo, fileName);
-            ShowVideoValidationFailureIfNeeded("正面视频", FrontVideoInfo);
+            ShowVideoValidationFailureIfNeeded(L("MA.Step2.FrontVideo"), FrontVideoInfo);
 
             if (CurrentMeasurement != null)
             {
@@ -931,7 +958,7 @@ public partial class MeasurementViewModel : ObservableObject
             SideVideoPath = fileName;
             HasSideVideo = true;
             await LoadVideoInfoAsync(SideVideoInfo, fileName);
-            ShowVideoValidationFailureIfNeeded("侧面视频", SideVideoInfo);
+            ShowVideoValidationFailureIfNeeded(L("MA.Step2.SideVideo"), SideVideoInfo);
 
             if (CurrentMeasurement != null)
             {
@@ -952,8 +979,8 @@ public partial class MeasurementViewModel : ObservableObject
         }
 
         MessageBox.Show(
-            $"{title}未通过校验：\n\n{videoInfo.ValidationMessage}",
-            "视频校验失败",
+            L("MA.Step1.Dialog.VideoValidationFailedMessage", title, videoInfo.ValidationMessage),
+            L("MA.Step1.Dialog.VideoValidationFailedTitle"),
             MessageBoxButton.OK,
             MessageBoxImage.Warning);
     }
@@ -978,7 +1005,11 @@ public partial class MeasurementViewModel : ObservableObject
         catch (Exception ex)
         {
             _logHelper?.Error("打开视频文件选择框失败", ex);
-            MessageBox.Show($"打开视频文件选择框失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(
+                L("MA.Dialog.Error.OpenVideoFileDialogFailed", ex.Message),
+                L("Error"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
             return null;
         }
     }
@@ -1069,7 +1100,11 @@ public partial class MeasurementViewModel : ObservableObject
         catch (Exception ex)
         {
             _logHelper?.Error("打开相机采集弹窗失败", ex);
-            MessageBox.Show($"打开相机采集失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(
+                L("MA.Dialog.Error.OpenCameraCaptureFailed", ex.Message),
+                L("Error"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
     }
 
@@ -1125,8 +1160,8 @@ public partial class MeasurementViewModel : ObservableObject
                 {
                     DataContext = new
                     {
-                        Title = "视频一致性警告",
-                        Message = $"{VideoConsistencyMessage}\n\n后续需要确认两个视频的共同有效片段。是否继续进入回放检查？"
+                        Title = L("MA.Step1.Dialog.VideoConsistencyWarningTitle"),
+                        Message = L("MA.Step1.Dialog.VideoConsistencyWarningMessage", VideoConsistencyMessage)
                     }
                 },
                 "RootDialog");
@@ -1273,34 +1308,34 @@ public partial class MeasurementViewModel : ObservableObject
         var durationDiff = Math.Abs(SideVideoInfo.DurationSeconds - FrontVideoInfo.DurationSeconds);
         if (durationDiff > 1.0)
         {
-            return $"双视频时长差 {durationDiff:F2}s，大于 1s，无法进入回放检查。";
+            return L("MA.Step1.Validation.DualDurationFailed", durationDiff);
         }
 
         if (Math.Abs(SideVideoInfo.FrameRate - FrontVideoInfo.FrameRate) > 0.01)
         {
-            return "侧面视频和正面视频帧率不一致。";
+            return L("MA.Step1.Validation.DualFrameRateMismatch");
         }
 
         if (durationDiff > 0.2)
         {
             return allowWarning
-                ? $"双视频时长差 {durationDiff:F2}s，进入回放后需要确认共同有效片段。"
+                ? L("MA.Step1.Validation.DualDurationWarning", durationDiff)
                 : string.Empty;
         }
 
         return string.Empty;
     }
 
-    private static async Task<VideoMetadata> ReadVideoMetadataAsync(string path)
+    private async Task<VideoMetadata> ReadVideoMetadataAsync(string path)
     {
         if (string.IsNullOrWhiteSpace(path))
         {
-            throw new InvalidOperationException("视频路径为空。");
+            throw new InvalidOperationException(L("MA.Step1.Validation.VideoPathEmpty"));
         }
 
         if (!File.Exists(path))
         {
-            throw new FileNotFoundException("文件不存在。", path);
+            throw new FileNotFoundException(L("MA.Step1.Validation.FileMissing"), path);
         }
 
         var extension = Path.GetExtension(path).ToLowerInvariant();
@@ -1311,7 +1346,7 @@ public partial class MeasurementViewModel : ObservableObject
 
         if (!supportedExtensions.Contains(extension))
         {
-            throw new InvalidOperationException("视频格式不支持。");
+            throw new InvalidOperationException(L("MA.Step1.Validation.UnsupportedFormat"));
         }
 
         using (File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
@@ -1321,7 +1356,7 @@ public partial class MeasurementViewModel : ObservableObject
         var ffprobePath = ResolveFfprobePath();
         if (string.IsNullOrWhiteSpace(ffprobePath))
         {
-            throw new InvalidOperationException("找不到 ffprobe，无法读取视频帧率和分辨率。");
+            throw new InvalidOperationException(L("MA.Step1.Validation.FfprobeMissing"));
         }
 
         var json = await RunFfprobeAsync(ffprobePath, path);
@@ -1334,7 +1369,7 @@ public partial class MeasurementViewModel : ObservableObject
 
         if (videoStream.ValueKind == JsonValueKind.Undefined)
         {
-            throw new InvalidOperationException("未检测到视频流。");
+            throw new InvalidOperationException(L("MA.Step1.Validation.NoVideoStream"));
         }
 
         var width = videoStream.GetProperty("width").GetInt32();
@@ -1354,18 +1389,18 @@ public partial class MeasurementViewModel : ObservableObject
 
         if (duration <= 0)
         {
-            throw new InvalidOperationException("无法读取有效视频时长。");
+            throw new InvalidOperationException(L("MA.Step1.Validation.InvalidDuration"));
         }
 
         if (frameRate <= 0)
         {
-            throw new InvalidOperationException("无法读取有效视频帧率。");
+            throw new InvalidOperationException(L("MA.Step1.Validation.InvalidFrameRate"));
         }
 
         const double minimumDurationSeconds = 1.0;
         if (duration < minimumDurationSeconds)
         {
-            throw new InvalidOperationException($"视频时长需大于 {minimumDurationSeconds:F0}s。");
+            throw new InvalidOperationException(L("MA.Step1.Validation.MinimumDuration", minimumDurationSeconds));
         }
 
         var fileInfo = new FileInfo(path);
@@ -1415,7 +1450,7 @@ public partial class MeasurementViewModel : ObservableObject
         });
     }
 
-    private static async Task<string> RunFfprobeAsync(string ffprobePath, string videoPath)
+    private async Task<string> RunFfprobeAsync(string ffprobePath, string videoPath)
     {
         using var process = new Process();
         process.StartInfo = new ProcessStartInfo
@@ -1437,7 +1472,9 @@ public partial class MeasurementViewModel : ObservableObject
         var error = await errorTask;
         if (process.ExitCode != 0)
         {
-            throw new InvalidOperationException(string.IsNullOrWhiteSpace(error) ? "ffprobe 读取失败。" : error.Trim());
+            throw new InvalidOperationException(string.IsNullOrWhiteSpace(error)
+                ? L("MA.Step1.Validation.FfprobeFailed")
+                : error.Trim());
         }
 
         return output;
@@ -1789,12 +1826,17 @@ public enum VideoValidationStatus
 
 public sealed partial class VideoFileInfoViewModel : ObservableObject
 {
-    public VideoFileInfoViewModel(string title)
+    private readonly Func<string, string> _getString;
+    private readonly string _titleKey;
+
+    public VideoFileInfoViewModel(Func<string, string> getString, string titleKey)
     {
-        Title = title;
+        _getString = getString;
+        _titleKey = titleKey;
+        ValidationMessage = _getString("MA.Step1.Video.Validation.NotSelected");
     }
 
-    public string Title { get; }
+    public string Title => _getString(_titleKey);
 
     [ObservableProperty]
     private string? _filePath;
@@ -1818,7 +1860,7 @@ public sealed partial class VideoFileInfoViewModel : ObservableObject
     private VideoValidationStatus _status = VideoValidationStatus.Empty;
 
     [ObservableProperty]
-    private string _validationMessage = "未选择视频";
+    private string _validationMessage = string.Empty;
 
     [ObservableProperty]
     private ImageSource? _previewImage;
@@ -1847,11 +1889,11 @@ public sealed partial class VideoFileInfoViewModel : ObservableObject
 
     public string StatusDisplay => Status switch
     {
-        VideoValidationStatus.Checking => "校验中",
-        VideoValidationStatus.Passed => "通过",
-        VideoValidationStatus.Warning => "警告",
-        VideoValidationStatus.Failed => "失败",
-        _ => "未选择"
+        VideoValidationStatus.Checking => _getString("MA.Step1.Video.Status.Checking"),
+        VideoValidationStatus.Passed => _getString("MA.Step1.Video.Status.Passed"),
+        VideoValidationStatus.Warning => _getString("MA.Step1.Video.Status.Warning"),
+        VideoValidationStatus.Failed => _getString("MA.Step1.Video.Status.Failed"),
+        _ => _getString("MA.Step1.Video.Status.Empty")
     };
 
     public void BeginLoad(string path)
@@ -1863,7 +1905,7 @@ public sealed partial class VideoFileInfoViewModel : ObservableObject
         DurationSeconds = 0;
         FileSizeBytes = File.Exists(path) ? new FileInfo(path).Length : 0;
         Status = VideoValidationStatus.Checking;
-        ValidationMessage = "正在校验视频...";
+        ValidationMessage = _getString("MA.Step1.Video.Validation.Checking");
         PreviewImage = null;
         NotifyComputedProperties();
     }
@@ -1875,7 +1917,7 @@ public sealed partial class VideoFileInfoViewModel : ObservableObject
         DurationSeconds = metadata.DurationSeconds;
         FileSizeBytes = metadata.FileSizeBytes;
         Status = VideoValidationStatus.Passed;
-        ValidationMessage = "校验通过";
+        ValidationMessage = _getString("MA.Step1.Video.Validation.Passed");
         NotifyComputedProperties();
     }
 
@@ -1895,8 +1937,22 @@ public sealed partial class VideoFileInfoViewModel : ObservableObject
         DurationSeconds = 0;
         FileSizeBytes = 0;
         Status = VideoValidationStatus.Empty;
-        ValidationMessage = "未选择视频";
+        ValidationMessage = _getString("MA.Step1.Video.Validation.NotSelected");
         PreviewImage = null;
+        NotifyComputedProperties();
+    }
+
+    public void RefreshLocalizedText()
+    {
+        ValidationMessage = Status switch
+        {
+            VideoValidationStatus.Empty => _getString("MA.Step1.Video.Validation.NotSelected"),
+            VideoValidationStatus.Checking => _getString("MA.Step1.Video.Validation.Checking"),
+            VideoValidationStatus.Passed => _getString("MA.Step1.Video.Validation.Passed"),
+            _ => ValidationMessage
+        };
+
+        OnPropertyChanged(nameof(Title));
         NotifyComputedProperties();
     }
 

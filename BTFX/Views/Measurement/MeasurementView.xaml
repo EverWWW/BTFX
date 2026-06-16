@@ -86,7 +86,7 @@
                                     Foreground="#403B5B"
                                     LineHeight="33"
                                     LineStackingStrategy="BlockLineHeight"
-                                    Text="步态智能分析系统测量评估注意事项"
+                                    Text="{DynamicResource MA.Cover.NoticeTitle}"
                                     TextWrapping="NoWrap" />
                             </StackPanel>
 
@@ -99,7 +99,7 @@
                                 Foreground="#666666"
                                 LineHeight="32"
                                 LineStackingStrategy="BlockLineHeight"
-                                Text="1、在视频采集过程中，请被采集人匀速并自然的走路，不要脱离地垫范围;"
+                                Text="{DynamicResource MA.Cover.Notice1}"
                                 TextWrapping="Wrap" />
                             <TextBlock
                                 MinHeight="32"
@@ -111,7 +111,7 @@
                                 Foreground="#666666"
                                 LineHeight="32"
                                 LineStackingStrategy="BlockLineHeight"
-                                Text="2、请被采集人不要穿太过宽松的衣服，否则会影响识别精度;"
+                                Text="{DynamicResource MA.Cover.Notice2}"
                                 TextWrapping="Wrap" />
                             <TextBlock
                                 MinHeight="32"
@@ -123,7 +123,7 @@
                                 Foreground="#666666"
                                 LineHeight="32"
                                 LineStackingStrategy="BlockLineHeight"
-                                Text="3、请保持现场光源明亮，注意不要太暗;"
+                                Text="{DynamicResource MA.Cover.Notice3}"
                                 TextWrapping="Wrap" />
                             <TextBlock
                                 MinHeight="32"
@@ -135,7 +135,7 @@
                                 Foreground="#666666"
                                 LineHeight="32"
                                 LineStackingStrategy="BlockLineHeight"
-                                Text="4、视频采集相机注意不要被障碍物遮挡;"
+                                Text="{DynamicResource MA.Cover.Notice4}"
                                 TextWrapping="Wrap" />
                             <TextBlock
                                 MinHeight="32"
@@ -147,7 +147,7 @@
                                 Foreground="#666666"
                                 LineHeight="32"
                                 LineStackingStrategy="BlockLineHeight"
-                                Text="5、步态视频采集过程中，请不要挪动相机位置，否则影响测量结果。"
+                                Text="{DynamicResource MA.Cover.Notice5}"
                                 TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
@@ -197,7 +197,7 @@
                                 FontWeight="Medium"
                                 Foreground="#FFFFFF"
                                 LineHeight="30"
-                                Text="创建测量" />
+                                Text="{DynamicResource MA.Cover.CreateMeasurement}" />
                         </Button>
                     </Grid>
                 </Grid>
@@ -231,7 +231,7 @@
                                 FontFamily="{StaticResource AppFont}"
                                 FontSize="24"
                                 FontWeight="Medium"
-                                Text="&gt;&gt;&gt; 1  新建测量  &gt;&gt;&gt;">
+                                Text="{DynamicResource MA.Workflow.Step1Indicator}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Foreground" Value="#999999" />
@@ -288,7 +288,7 @@
                                 FontFamily="{StaticResource AppFont}"
                                 FontSize="24"
                                 FontWeight="Medium"
-                                Text="&gt;&gt;&gt; 2  回放检查  &gt;&gt;&gt;">
+                                Text="{DynamicResource MA.Workflow.Step2Indicator}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Foreground" Value="#999999" />
@@ -345,7 +345,7 @@
                                 FontFamily="{StaticResource AppFont}"
                                 FontSize="24"
                                 FontWeight="Medium"
-                                Text="&gt;&gt;&gt; 3  分析结果  &gt;&gt;&gt;">
+                                Text="{DynamicResource MA.Workflow.Step3Indicator}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Foreground" Value="#999999" />

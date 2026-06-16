@@ -65,14 +65,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
     /// <summary>
     /// 状态选项列表
     /// </summary>
-    public ObservableCollection<StatusOption> StatusOptions { get; } = new()
-    {
-        new StatusOption { Value = null, Display = "全部" },
-        new StatusOption { Value = MeasurementStatus.Pending, Display = "待处理" },
-        new StatusOption { Value = MeasurementStatus.InProgress, Display = "分析中" },
-        new StatusOption { Value = MeasurementStatus.Completed, Display = "已完成" },
-        new StatusOption { Value = MeasurementStatus.Failed, Display = "分析失败" }
-    };
+    public ObservableCollection<StatusOption> StatusOptions { get; } = new();
 
     /// <summary>
     /// 选中的状态选项
@@ -154,6 +147,8 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
     /// </summary>
     [ObservableProperty]
     private int _selectedCount;
+
+    public string SelectedCountText => L("DataManagement.SelectedCountFormat", SelectedCount);
 
     /// <summary>
     /// 分页页码集合
@@ -254,6 +249,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
         _exportImportService = exportImportService;
         _measurementWorkflowResumeService = measurementWorkflowResumeService;
         _measurementWorkflowCoordinator = measurementWorkflowCoordinator;
+        _localizationService.LanguageChanged += OnLanguageChanged;
 
         try
         {
@@ -265,10 +261,50 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
         InitializePermissions();
 
         // 设置默认状态选项
+        RebuildStatusOptions();
         SelectedStatusOption = StatusOptions.First();
 
         // 加载数据
         _ = LoadDataAsync();
+    }
+
+    private string L(string key)
+    {
+        var value = _localizationService.GetString(key);
+        return string.IsNullOrWhiteSpace(value) ? key : value;
+    }
+
+    private string L(string key, params object[] args)
+    {
+        var value = _localizationService.GetString(key, args);
+        return string.IsNullOrWhiteSpace(value) ? key : value;
+    }
+
+    private void OnLanguageChanged(object? sender, AppLanguage language)
+    {
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            var selectedValue = SelectedStatusOption?.Value;
+            RebuildStatusOptions();
+            SelectedStatusOption = StatusOptions.FirstOrDefault(option => option.Value == selectedValue) ?? StatusOptions.FirstOrDefault();
+
+            foreach (var item in MeasurementRecords)
+            {
+                item.RefreshLocalization();
+            }
+
+            OnPropertyChanged(nameof(SelectedCountText));
+        });
+    }
+
+    private void RebuildStatusOptions()
+    {
+        StatusOptions.Clear();
+        StatusOptions.Add(new StatusOption { Value = null, Display = L("DataManagement.Status.All") });
+        StatusOptions.Add(new StatusOption { Value = MeasurementStatus.Pending, Display = L("DataManagement.Status.Pending") });
+        StatusOptions.Add(new StatusOption { Value = MeasurementStatus.InProgress, Display = L("DataManagement.Status.InProgress") });
+        StatusOptions.Add(new StatusOption { Value = MeasurementStatus.Completed, Display = L("DataManagement.Status.Completed") });
+        StatusOptions.Add(new StatusOption { Value = MeasurementStatus.Failed, Display = L("DataManagement.Status.Failed") });
     }
 
     /// <summary>
@@ -323,6 +359,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
                 foreach (var record in records)
                 {
                     var item = new MeasurementRecordItem(record, rowNumber++);
+                    item.SetLocalizationService(_localizationService);
 
                     // 恢复之前的选中状态
                     if (_globalSelectedIds.Contains(record.Id))
@@ -594,6 +631,11 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             _logHelper?.Error($"继续处理测量失败：ID={item.Record.Id}", ex);
             MessageBox.Show($"继续处理失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    partial void OnSelectedCountChanged(int value)
+    {
+        OnPropertyChanged(nameof(SelectedCountText));
     }
 
     private static bool MergeActiveMeasurementState(MeasurementRecord record)
@@ -1172,6 +1214,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             if (_disposed) return;
 
             _disposed = true;
+            _localizationService.LanguageChanged -= OnLanguageChanged;
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource.Dispose();
 
@@ -1186,6 +1229,8 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
     /// </summary>
 public partial class MeasurementRecordItem : ObservableObject
 {
+    private ILocalizationService? _localizationService;
+
     /// <summary>
     /// 测量记录
     /// </summary>
@@ -1227,11 +1272,11 @@ public partial class MeasurementRecordItem : ObservableObject
     /// </summary>
     public string StatusDisplay => Record.Status switch
     {
-        MeasurementStatus.Pending => "待处理",
-        MeasurementStatus.InProgress => "分析中",
-        MeasurementStatus.Completed => "已完成",
-        MeasurementStatus.Cancelled => "待处理",
-        MeasurementStatus.Failed => "分析失败",
+        MeasurementStatus.Pending => L("DataManagement.Status.Pending"),
+        MeasurementStatus.InProgress => L("DataManagement.Status.InProgress"),
+        MeasurementStatus.Completed => L("DataManagement.Status.Completed"),
+        MeasurementStatus.Cancelled => L("DataManagement.Status.Pending"),
+        MeasurementStatus.Failed => L("DataManagement.Status.Failed"),
         _ => "--"
     };
 
@@ -1281,11 +1326,11 @@ public partial class MeasurementRecordItem : ObservableObject
 
     public string PrimaryActionText => Record.Status switch
     {
-        MeasurementStatus.Pending => "继续处理",
-        MeasurementStatus.InProgress => "查看进度",
-        MeasurementStatus.Completed => "查看结果",
-        MeasurementStatus.Failed => "重新分析",
-        _ => "继续处理"
+        MeasurementStatus.Pending => L("DataManagement.Action.ContinueProcess"),
+        MeasurementStatus.InProgress => L("DataManagement.Action.ViewProgress"),
+        MeasurementStatus.Completed => L("DataManagement.Action.ViewResult"),
+        MeasurementStatus.Failed => L("DataManagement.Action.Reanalyze"),
+        _ => L("DataManagement.Action.ContinueProcess")
     };
 
     public bool HasCompletedAnalysis => Record.Status == MeasurementStatus.Completed;
@@ -1301,6 +1346,24 @@ public partial class MeasurementRecordItem : ObservableObject
     {
         Record = record;
         RowNumber = rowNumber;
+    }
+
+    public void SetLocalizationService(ILocalizationService localizationService)
+    {
+        _localizationService = localizationService;
+    }
+
+    public void RefreshLocalization()
+    {
+        OnPropertyChanged(nameof(GenderDisplay));
+        OnPropertyChanged(nameof(StatusDisplay));
+        OnPropertyChanged(nameof(PrimaryActionText));
+    }
+
+    private string L(string key)
+    {
+        var value = _localizationService?.GetString(key);
+        return string.IsNullOrWhiteSpace(value) ? key : value;
     }
 }
 

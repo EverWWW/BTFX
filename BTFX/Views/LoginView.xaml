@@ -106,7 +106,7 @@
                                     FontSize="{TemplateBinding FontSize}"
                                     Foreground="#BBBBBB"
                                     IsHitTestVisible="False"
-                                    Text="请输入密码"
+                                    Text="{DynamicResource PleaseEnterPassword}"
                                     Visibility="Collapsed" />
                                 <ScrollViewer
                                     x:Name="PART_ContentHost"
@@ -275,7 +275,7 @@
                             FontSize="40"
                             FontWeight="Medium"
                             Foreground="#333333"
-                            Text="账号登录" />
+                            Text="{DynamicResource AccountLogin}" />
 
                         <!-- 账号输入框 -->
                         <Grid Margin="0,48,0,0">
@@ -283,7 +283,7 @@
                                 x:Name="UsernameTextBox"
                                 MaxLength="20"
                                 Style="{StaticResource LoginTextBoxStyle}"
-                                Tag="请输入账号"
+                                Tag="{DynamicResource PleaseEnterAccount}"
                                 Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}">
                                 <TextBox.InputBindings>
                                     <KeyBinding Key="Return" Command="{Binding LoginCommand}" />
@@ -313,7 +313,7 @@
                                 x:Name="PasswordTextBox"
                                 MaxLength="20"
                                 Style="{StaticResource LoginPasswordTextBoxStyle}"
-                                Tag="请输入密码"
+                                Tag="{DynamicResource PleaseEnterPassword}"
                                 Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}"
                                 Visibility="{Binding IsPasswordHidden, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                                 <TextBox.InputBindings>

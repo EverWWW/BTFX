@@ -215,7 +215,7 @@
                                 <TextBlock
                                     FontSize="18"
                                     Style="{StaticResource SectionTitleTextStyle}"
-                                    Text="正在分析" />
+                                    Text="{DynamicResource MA.Step4.RunningShort}" />
                             </StackPanel>
 
                             <TextBlock
@@ -242,7 +242,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="14"
                                     Foreground="#8A8798"
-                                    Text="当前阶段" />
+                                    Text="{DynamicResource MA.Step4.CurrentStage}" />
                                 <TextBlock
                                     Grid.Column="1"
                                     FontFamily="{StaticResource AppFont}"
@@ -261,7 +261,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="14"
                                     Foreground="#8A8798"
-                                    Text="分析状态" />
+                                    Text="{DynamicResource MA.Step4.AnalysisStatus}" />
                                 <TextBlock
                                     Grid.Column="1"
                                     FontFamily="{StaticResource AppFont}"
@@ -280,7 +280,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="14"
                                     Foreground="#8A8798"
-                                    Text="已用时间" />
+                                    Text="{DynamicResource MA.Step4.ElapsedTime}" />
                                 <TextBlock
                                     Grid.Column="1"
                                     FontFamily="{StaticResource AppFont}"
@@ -294,7 +294,7 @@
                                 Margin="0,28,0,0"
                                 HorizontalAlignment="Center"
                                 Command="{Binding CancelAnalyzeCommand}"
-                                Content="停止分析"
+                                Content="{DynamicResource MA.Step4.Btn.StopAnalyze}"
                                 Style="{StaticResource ResultSecondaryButtonStyle}" />
                         </StackPanel>
                     </Border>
@@ -318,7 +318,7 @@
                             VerticalAlignment="Center"
                             Background="#E4004A"
                             CornerRadius="2" />
-                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="分析结果" />
+                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="{DynamicResource MA.Step4.ResultTitle}" />
                     </StackPanel>
 
                     <Grid Grid.Row="2">
@@ -332,7 +332,7 @@
 
                         <Border Grid.Column="0" Style="{StaticResource SummaryTileStyle}">
                             <StackPanel>
-                                <TextBlock Style="{StaticResource MetricLabelStyle}" Text="结果状态" />
+                                <TextBlock Style="{StaticResource MetricLabelStyle}" Text="{DynamicResource MA.Step4.ResultStatus}" />
                                 <TextBlock Text="{Binding ResultStatusDisplay, Mode=OneWay}">
                                     <TextBlock.Style>
                                         <Style BasedOn="{StaticResource MetricValueStyle}" TargetType="TextBlock">
@@ -353,21 +353,21 @@
 
                         <Border Grid.Column="1" Style="{StaticResource SummaryTileStyle}">
                             <StackPanel>
-                                <TextBlock Style="{StaticResource MetricLabelStyle}" Text="分析时长" />
+                                <TextBlock Style="{StaticResource MetricLabelStyle}" Text="{DynamicResource MA.Step4.AnalysisDuration}" />
                                 <TextBlock Style="{StaticResource MetricValueStyle}" Text="{Binding ResultAnalysisDurationDisplay, Mode=OneWay, FallbackValue=--, TargetNullValue=--}" />
                             </StackPanel>
                         </Border>
 
                         <Border Grid.Column="2" Style="{StaticResource SummaryTileStyle}">
                             <StackPanel>
-                                <TextBlock Style="{StaticResource MetricLabelStyle}" Text="分析模式" />
+                                <TextBlock Style="{StaticResource MetricLabelStyle}" Text="{DynamicResource MA.Step4.AnalysisMode}" />
                                 <TextBlock Style="{StaticResource MetricValueStyle}" Text="{Binding ResultAnalysisModeDisplay, Mode=OneWay, FallbackValue=--, TargetNullValue=--}" />
                             </StackPanel>
                         </Border>
 
                         <Border Grid.Column="3" Style="{StaticResource SummaryTileStyle}">
                             <StackPanel>
-                                <TextBlock Style="{StaticResource MetricLabelStyle}" Text="任务编号" />
+                                <TextBlock Style="{StaticResource MetricLabelStyle}" Text="{DynamicResource MA.Step4.TaskId}" />
                                 <TextBlock
                                     FontSize="17"
                                     Style="{StaticResource MetricValueStyle}"
@@ -381,7 +381,7 @@
                             Margin="0"
                             Style="{StaticResource SummaryTileStyle}">
                             <StackPanel>
-                                <TextBlock Style="{StaticResource MetricLabelStyle}" Text="有效帧比例" />
+                                <TextBlock Style="{StaticResource MetricLabelStyle}" Text="{DynamicResource MA.Step4.Quality.ValidFrameRatio}" />
                                 <TextBlock Style="{StaticResource MetricValueStyle}" Text="{Binding QualityResult.ValidFrameRatioDisplay, Mode=OneWay, FallbackValue=--, TargetNullValue=--}" />
                             </StackPanel>
                         </Border>
@@ -416,12 +416,12 @@
                                     FontSize="15"
                                     FontWeight="SemiBold"
                                     Foreground="#403B5B"
-                                    Text="本次分析信息" />
+                                    Text="{DynamicResource MA.Step4.AnalysisInfo}" />
 
                                 <UniformGrid Grid.Row="2" Columns="2">
                                     <Border Style="{StaticResource MetricTileStyle}">
                                         <StackPanel>
-                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="身高" />
+                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="{DynamicResource MA.Step4.PatientHeight}" />
                                             <TextBlock
                                                 FontSize="18"
                                                 Style="{StaticResource MetricValueStyle}"
@@ -430,7 +430,7 @@
                                     </Border>
                                     <Border Margin="0,0,0,14" Style="{StaticResource MetricTileStyle}">
                                         <StackPanel>
-                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="体重" />
+                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="{DynamicResource MA.Step4.PatientWeight}" />
                                             <TextBlock
                                                 FontSize="18"
                                                 Style="{StaticResource MetricValueStyle}"
@@ -439,7 +439,7 @@
                                     </Border>
                                     <Border Style="{StaticResource MetricTileStyle}">
                                         <StackPanel>
-                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="膝关节 ROM" />
+                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="{DynamicResource MA.Step4.Param.KneeRom}" />
                                             <TextBlock
                                                 FontSize="18"
                                                 Style="{StaticResource MetricValueStyle}"
@@ -448,7 +448,7 @@
                                     </Border>
                                     <Border Margin="0,0,0,14" Style="{StaticResource MetricTileStyle}">
                                         <StackPanel>
-                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="髋关节 ROM" />
+                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="{DynamicResource MA.Step4.Param.HipRom}" />
                                             <TextBlock
                                                 FontSize="18"
                                                 Style="{StaticResource MetricValueStyle}"
@@ -463,22 +463,28 @@
                                     Background="#F7F6FB"
                                     CornerRadius="8">
                                     <StackPanel>
-                                        <TextBlock Style="{StaticResource MetricLabelStyle}" Text="结果完整性" />
+                                        <TextBlock Style="{StaticResource MetricLabelStyle}" Text="{DynamicResource MA.Step4.ResultCompleteness}" />
                                         <TextBlock
                                             Margin="0,8,0,0"
                                             FontFamily="{StaticResource AppFont}"
                                             FontSize="14"
                                             Foreground="#666666"
-                                            Text="当前仅显示软件可计算的结果完整性信息。"
+                                            Text="{DynamicResource MA.Step4.ResultCompletenessHint}"
                                             TextWrapping="Wrap" />
-                                        <TextBlock
+                                        <StackPanel
                                             Margin="0,8,0,0"
-                                            FontFamily="{StaticResource AppFont}"
-                                            FontSize="13"
-                                            Foreground="#8A8798">
-                                            <Run Text="有效帧比例 " />
-                                            <Run Text="{Binding QualityResult.ValidFrameRatioDisplay, FallbackValue=--, TargetNullValue=--}" />
-                                        </TextBlock>
+                                            Orientation="Horizontal">
+                                            <TextBlock
+                                                FontFamily="{StaticResource AppFont}"
+                                                FontSize="13"
+                                                Foreground="#8A8798"
+                                                Text="{DynamicResource MA.Step4.ValidFrameRatioInline}" />
+                                            <TextBlock
+                                                FontFamily="{StaticResource AppFont}"
+                                                FontSize="13"
+                                                Foreground="#8A8798"
+                                                Text="{Binding QualityResult.ValidFrameRatioDisplay, FallbackValue=--, TargetNullValue=--}" />
+                                        </StackPanel>
                                     </StackPanel>
                                 </Border>
                             </Grid>
@@ -505,54 +511,54 @@
                                     FontSize="15"
                                     FontWeight="SemiBold"
                                     Foreground="#403B5B"
-                                    Text="关键步态参数" />
+                                    Text="{DynamicResource MA.Step4.KeyGaitParameters}" />
 
                                 <UniformGrid Grid.Row="2" Columns="4">
                                     <Border Style="{StaticResource MetricTileStyle}">
                                         <StackPanel>
-                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="步速" />
+                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="{DynamicResource MA.Step4.Param.GaitSpeed}" />
                                             <TextBlock Style="{StaticResource MetricValueStyle}" Text="{Binding GaitEventResult.GaitSpeed, FallbackValue=--, TargetNullValue=--}" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource MetricTileStyle}">
                                         <StackPanel>
-                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="步长" />
+                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="{DynamicResource MA.Step4.Param.StepLength}" />
                                             <TextBlock Style="{StaticResource MetricValueStyle}" Text="{Binding GaitEventResult.StepLength, FallbackValue=--, TargetNullValue=--}" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource MetricTileStyle}">
                                         <StackPanel>
-                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="步幅" />
+                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="{DynamicResource MA.Step4.Param.StrideLength}" />
                                             <TextBlock Style="{StaticResource MetricValueStyle}" Text="{Binding GaitEventResult.StrideLength, FallbackValue=--, TargetNullValue=--}" />
                                         </StackPanel>
                                     </Border>
                                     <Border Margin="0,0,0,14" Style="{StaticResource MetricTileStyle}">
                                         <StackPanel>
-                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="步频" />
+                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="{DynamicResource MA.Step4.Param.Cadence}" />
                                             <TextBlock Style="{StaticResource MetricValueStyle}" Text="{Binding ResultCadenceDisplay, FallbackValue=--, TargetNullValue=--}" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource MetricTileStyle}">
                                         <StackPanel>
-                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="步态周期" />
+                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="{DynamicResource MA.Step4.Param.GaitCycleDuration}" />
                                             <TextBlock Style="{StaticResource MetricValueStyle}" Text="{Binding GaitEventResult.GaitCycleDuration, FallbackValue=--, TargetNullValue=--}" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource MetricTileStyle}">
                                         <StackPanel>
-                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="站立相" />
+                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="{DynamicResource MA.Step4.Param.StanceTime}" />
                                             <TextBlock Style="{StaticResource MetricValueStyle}" Text="{Binding GaitEventResult.StanceTime, FallbackValue=--, TargetNullValue=--}" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource MetricTileStyle}">
                                         <StackPanel>
-                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="摆动相" />
+                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="{DynamicResource MA.Step4.Param.SwingTime}" />
                                             <TextBlock Style="{StaticResource MetricValueStyle}" Text="{Binding GaitEventResult.SwingTime, FallbackValue=--, TargetNullValue=--}" />
                                         </StackPanel>
                                     </Border>
                                     <Border Margin="0,0,0,14" Style="{StaticResource MetricTileStyle}">
                                         <StackPanel>
-                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="双支撑" />
+                                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="{DynamicResource MA.Step4.Param.DoubleSupportTime}" />
                                             <TextBlock Style="{StaticResource MetricValueStyle}" Text="{Binding GaitEventResult.DoubleSupportTime, FallbackValue=--, TargetNullValue=--}" />
                                         </StackPanel>
                                     </Border>
@@ -600,13 +606,13 @@
                                     FontSize="15"
                                     FontWeight="SemiBold"
                                     Foreground="#D92D4B"
-                                    Text="{Binding ErrorDescription, FallbackValue=分析失败, TargetNullValue=分析失败}" />
+                                    Text="{Binding ErrorDescription, FallbackValue={StaticResource MA.Step4.FailedTitle}, TargetNullValue={StaticResource MA.Step4.FailedTitle}}" />
                                 <TextBlock
                                     Margin="0,8,0,0"
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="13"
                                     Foreground="#666666"
-                                    Text="{Binding ErrorSuggestion, FallbackValue=请检查视频和配置后重新分析, TargetNullValue=请检查视频和配置后重新分析}"
+                                    Text="{Binding ErrorSuggestion, FallbackValue={StaticResource MA.Step4.Error.DefaultSuggestion}, TargetNullValue={StaticResource MA.Step4.Error.DefaultSuggestion}}"
                                     TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
@@ -626,7 +632,7 @@
                 Grid.Column="0"
                 HorizontalAlignment="Left"
                 Command="{Binding ReturnCoverCommand}"
-                Content="返回封面"
+                Content="{DynamicResource MA.Step4.Btn.ReturnCover}"
                 Style="{StaticResource ResultSecondaryButtonStyle}" />
 
             <StackPanel
@@ -634,19 +640,21 @@
                 HorizontalAlignment="Center"
                 Orientation="Horizontal">
                 <Button
+                  Width="132"
                     Margin="0,0,12,0"
                     Command="{Binding RerunAnalysisCommand}"
-                    Content="重新分析"
+                    Content="{DynamicResource MA.Step4.Btn.RetryAnalyze}"
                     Style="{StaticResource ResultSecondaryButtonStyle}" />
                 <Button
                     Width="132"
                     Margin="0,0,12,0"
                     Command="{Binding ViewReportCommand}"
-                    Content="查看分析详情"
+                    Content="{DynamicResource MA.Step4.Btn.ViewReport}"
                     Style="{StaticResource ResultPrimaryButtonStyle}" />
                 <Button
+                  Width="132"
                     Command="{Binding GenerateReportCommand}"
-                    Content="生成报告"
+                    Content="{DynamicResource MA.Step4.Btn.GenerateReport}"
                     Style="{StaticResource ResultPrimaryButtonStyle}" />
             </StackPanel>
         </Grid>

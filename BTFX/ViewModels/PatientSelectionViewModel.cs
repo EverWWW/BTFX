@@ -132,6 +132,18 @@ public partial class PatientSelectionViewModel : ObservableObject
         _ = LoadPatientsAsync();
     }
 
+    private string L(string key)
+    {
+        var value = _localizationService.GetString(key);
+        return string.IsNullOrWhiteSpace(value) ? key : value;
+    }
+
+    private string L(string key, params object[] args)
+    {
+        var value = _localizationService.GetString(key, args);
+        return string.IsNullOrWhiteSpace(value) ? key : value;
+    }
+
     /// <summary>
     /// Load patients加载患者
     /// </summary>
@@ -403,7 +415,7 @@ public partial class PatientSelectionViewModel : ObservableObject
     /// <summary>
     /// 显示确认对话框。
     /// </summary>
-    private static async Task<bool> ShowConfirmDialogAsync(string title, string message, string iconKind = "HelpCircleOutline")
+    private async Task<bool> ShowConfirmDialogAsync(string title, string message, string iconKind = "HelpCircleOutline")
     {
         var result = await DialogHost.Show(
             new Views.Dialogs.ConfirmDialog
@@ -412,8 +424,8 @@ public partial class PatientSelectionViewModel : ObservableObject
                 {
                     Title = title,
                     Message = message,
-                    ConfirmText = "确定",
-                    CancelText = "取消",
+                    ConfirmText = L("OK"),
+                    CancelText = L("Cancel"),
                     IsCancelVisible = true,
                     IconKind = iconKind
                 }
@@ -426,7 +438,7 @@ public partial class PatientSelectionViewModel : ObservableObject
     /// <summary>
     /// 显示提示对话框。
     /// </summary>
-    private static Task ShowNoticeDialogAsync(string message, string title)
+    private Task ShowNoticeDialogAsync(string message, string title)
     {
         return DialogHost.Show(
             new Views.Dialogs.ConfirmDialog
@@ -435,7 +447,7 @@ public partial class PatientSelectionViewModel : ObservableObject
                 {
                     Title = title,
                     Message = message,
-                    ConfirmText = "确定",
+                    ConfirmText = L("OK"),
                     IsCancelVisible = false,
                     IconKind = "InformationOutline"
                 }
@@ -467,8 +479,8 @@ public partial class PatientSelectionViewModel : ObservableObject
     {
         var dialog = new OpenFileDialog
         {
-            Title = "导入患者基础资料",
-            Filter = "患者资料文件 (*.xlsx;*.xls;*.csv)|*.xlsx;*.xls;*.csv|Excel 文件 (*.xlsx;*.xls)|*.xlsx;*.xls|CSV 文件 (*.csv)|*.csv",
+            Title = L("Patient.Import.Title"),
+            Filter = L("Patient.Import.Filter"),
             Multiselect = false
         };
 
@@ -480,25 +492,25 @@ public partial class PatientSelectionViewModel : ObservableObject
         try
         {
             var result = await RunWithProgressDialogAsync(
-                "导入患者基础资料",
-                "正在导入",
-                "正在读取患者资料文件...",
+                L("Patient.Import.Title"),
+                L("Patient.Import.Stage"),
+                L("Patient.Import.Reading"),
                 (progress, token) => ImportPatientsFromFileAsync(dialog.FileName, progress, token));
 
             await LoadPatientsAsync();
             await ShowNoticeDialogAsync(
-                $"导入完成：新增 {result.AddedCount} 条，更新 {result.UpdatedCount} 条，跳过 {result.SkippedCount} 条。",
-                "提示");
+                L("Patient.Import.SuccessFormat", result.AddedCount, result.UpdatedCount, result.SkippedCount),
+                L("Tip"));
             _logHelper?.Information($"患者资料导入完成：新增={result.AddedCount}, 更新={result.UpdatedCount}, 跳过={result.SkippedCount}");
         }
         catch (OperationCanceledException)
         {
-            await ShowNoticeDialogAsync("导入已取消。", "提示");
+            await ShowNoticeDialogAsync(L("Patient.Import.Cancelled"), L("Tip"));
         }
         catch (Exception ex)
         {
             _logHelper?.Error("患者资料导入失败", ex);
-            await ShowNoticeDialogAsync($"导入失败：{ex.Message}", "错误");
+            await ShowNoticeDialogAsync(L("Patient.Import.FailedFormat", ex.Message), L("Error"));
         }
     }
 
@@ -513,15 +525,15 @@ public partial class PatientSelectionViewModel : ObservableObject
         var exportPatients = GetPatientsForExport();
         if (exportPatients.Count == 0)
         {
-            await ShowNoticeDialogAsync("请先选择要导出的患者。", "提示");
+            await ShowNoticeDialogAsync(L("Patient.Export.SelectFirst"), L("Tip"));
             return;
         }
 
         var dialog = new SaveFileDialog
         {
-            Title = "导出患者基础资料",
-            Filter = "Excel 文件 (*.xlsx)|*.xlsx|CSV 文件 (*.csv)|*.csv",
-            FileName = $"患者基础资料_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            Title = L("Patient.Export.Title"),
+            Filter = L("Patient.Export.Filter"),
+            FileName = L("Patient.Export.FileNameFormat", DateTime.Now),
             AddExtension = true,
             DefaultExt = ".xlsx"
         };
@@ -536,32 +548,32 @@ public partial class PatientSelectionViewModel : ObservableObject
             var format = dialog.FilterIndex == 2 ? ExportFormat.CSV : ExportFormat.Excel;
             var filePath = EnsureExportExtension(dialog.FileName, format);
             var success = await RunWithProgressDialogAsync(
-                "导出患者基础资料",
-                "正在导出",
-                $"正在导出 {exportPatients.Count} 条患者资料...",
+                L("Patient.Export.Title"),
+                L("Patient.Export.Stage"),
+                L("Patient.Export.ExportingFormat", exportPatients.Count),
                 async (progress, token) =>
                 {
-                    progress.Report(new OperationProgressInfo(20, "准备数据", "正在整理患者基础资料..."));
+                    progress.Report(new OperationProgressInfo(20, L("Patient.Export.PrepareStage"), L("Patient.Export.PrepareMessage")));
                     token.ThrowIfCancellationRequested();
                     await Task.Delay(120, token);
-                    progress.Report(new OperationProgressInfo(55, "写入文件", $"正在写入 {Path.GetFileName(filePath)}..."));
+                    progress.Report(new OperationProgressInfo(55, L("Patient.Export.WriteStage"), L("Patient.Export.WriteMessageFormat", Path.GetFileName(filePath))));
                     var exported = await _exportImportService.ExportPatientsAsync(exportPatients, format, filePath);
-                    progress.Report(new OperationProgressInfo(92, "完成校验", "正在确认导出文件..."));
+                    progress.Report(new OperationProgressInfo(92, L("Patient.Export.CheckStage"), L("Patient.Export.CheckMessage")));
                     token.ThrowIfCancellationRequested();
                     return exported;
                 });
 
-            await ShowNoticeDialogAsync(success ? $"导出成功：{filePath}" : "导出失败，请检查文件是否被占用。", success ? "提示" : "错误");
+            await ShowNoticeDialogAsync(success ? L("Patient.Export.SuccessFormat", filePath) : L("Patient.Export.FailedOccupied"), success ? L("Tip") : L("Error"));
             _logHelper?.Information($"患者资料导出：Count={exportPatients.Count}, File={filePath}, Success={success}");
         }
         catch (OperationCanceledException)
         {
-            await ShowNoticeDialogAsync("导出已取消。", "提示");
+            await ShowNoticeDialogAsync(L("Patient.Export.Cancelled"), L("Tip"));
         }
         catch (Exception ex)
         {
             _logHelper?.Error("患者资料导出失败", ex);
-            await ShowNoticeDialogAsync($"导出失败：{ex.Message}", "错误");
+            await ShowNoticeDialogAsync(L("Patient.Export.FailedFormat", ex.Message), L("Error"));
         }
     }
 
@@ -601,11 +613,11 @@ public partial class PatientSelectionViewModel : ObservableObject
         IProgress<OperationProgressInfo> progress,
         CancellationToken cancellationToken)
     {
-        progress.Report(new OperationProgressInfo(10, "读取文件", "正在解析患者资料文件..."));
+        progress.Report(new OperationProgressInfo(10, L("Patient.Import.ParseStage"), L("Patient.Import.ParseMessage")));
         var importedPatients = await _exportImportService.ImportPatientsAsync(filePath);
         cancellationToken.ThrowIfCancellationRequested();
 
-        progress.Report(new OperationProgressInfo(35, "校验数据", $"已读取 {importedPatients.Count} 条患者资料，正在校验..."));
+        progress.Report(new OperationProgressInfo(35, L("Patient.Import.ValidateStage"), L("Patient.Import.ValidateMessageFormat", importedPatients.Count)));
         var existingPatients = await _patientService.GetAllPatientsAsync();
         var added = 0;
         var updated = 0;
@@ -616,7 +628,7 @@ public partial class PatientSelectionViewModel : ObservableObject
             cancellationToken.ThrowIfCancellationRequested();
             var imported = importedPatients[index];
             var percent = 35 + 55.0 * (index + 1) / Math.Max(importedPatients.Count, 1);
-            progress.Report(new OperationProgressInfo(percent, "写入数据", $"正在处理 {index + 1}/{importedPatients.Count}：{imported.Name}"));
+            progress.Report(new OperationProgressInfo(percent, L("Patient.Import.WriteStage"), L("Patient.Import.WriteMessageFormat", index + 1, importedPatients.Count, imported.Name)));
 
             if (string.IsNullOrWhiteSpace(imported.Name) || imported.Height is not > 0)
             {
@@ -654,7 +666,7 @@ public partial class PatientSelectionViewModel : ObservableObject
             }
         }
 
-        progress.Report(new OperationProgressInfo(95, "刷新列表", "正在刷新患者列表..."));
+        progress.Report(new OperationProgressInfo(95, L("Patient.Import.RefreshStage"), L("Patient.Import.RefreshMessage")));
         return new PatientImportResult(added, updated, skipped);
     }
 
@@ -697,7 +709,7 @@ public partial class PatientSelectionViewModel : ObservableObject
         target.Status = PatientStatus.Active;
     }
 
-    private static async Task<T> RunWithProgressDialogAsync<T>(
+    private async Task<T> RunWithProgressDialogAsync<T>(
         string title,
         string stage,
         string message,
@@ -721,7 +733,7 @@ public partial class PatientSelectionViewModel : ObservableObject
         try
         {
             var result = await Task.Run(() => operation(progress, operationCts.Token), operationCts.Token);
-            progressViewModel.MarkCompleted("操作已完成。");
+            progressViewModel.MarkCompleted(L("OperationCompleted"));
             await Task.Delay(650);
             DialogHost.Close("RootDialog");
             await dialogTask;
@@ -730,7 +742,7 @@ public partial class PatientSelectionViewModel : ObservableObject
         }
         catch (OperationCanceledException)
         {
-            progressViewModel.MarkFailed("操作已取消。");
+            progressViewModel.MarkFailed(L("OperationCancelled"));
             await Task.Delay(350);
             DialogHost.Close("RootDialog");
             await dialogTask;
@@ -739,7 +751,7 @@ public partial class PatientSelectionViewModel : ObservableObject
         }
         catch
         {
-            progressViewModel.MarkFailed("操作执行失败。");
+            progressViewModel.MarkFailed(L("OperationExecutionFailed"));
             await Task.Delay(350);
             DialogHost.Close("RootDialog");
             await dialogTask;
@@ -964,10 +976,10 @@ public partial class PatientSelectionViewModel : ObservableObject
     {
         return role switch
         {
-            UserRole.Administrator => "管理员",
-            UserRole.Operator => "操作员",
-            UserRole.Guest => "游客",
-            _ => "未知"
+            UserRole.Administrator => L("Administrator"),
+            UserRole.Operator => L("Operator"),
+            UserRole.Guest => L("Guest"),
+            _ => L("Unknown")
         };
     }
 }

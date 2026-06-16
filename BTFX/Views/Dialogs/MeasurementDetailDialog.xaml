@@ -348,7 +348,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="14"
                                     Foreground="{StaticResource ExportBlueBrush}"
-                                    Text="导出" />
+                                    Text="{DynamicResource AnalysisDetail.Export}" />
                             </StackPanel>
                         </Button>
                         <Button
@@ -369,7 +369,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="14"
                                     Foreground="{StaticResource ExportBlueBrush}"
-                                    Text="报告预览" />
+                                    Text="{DynamicResource AnalysisDetail.ReportPreviewButton}" />
                             </StackPanel>
                         </Button>
                     </StackPanel>
@@ -377,7 +377,7 @@
                     <TextBlock
                         Grid.Column="1"
                         Style="{StaticResource TitleTextStyle}"
-                        Text="分析结果详情" />
+                        Text="{DynamicResource AnalysisDetail.Title}" />
 
                     <Button
                         Grid.Column="2"
@@ -390,7 +390,7 @@
                                 FontFamily="{StaticResource AppFont}"
                                 FontSize="14"
                                 Foreground="{StaticResource WeakTextBrush}"
-                                Text="关闭" />
+                                Text="{DynamicResource AnalysisDetail.Close}" />
                             <materialDesign:PackIcon
                                 Width="18"
                                 Height="18"
@@ -418,30 +418,30 @@
                                 VerticalAlignment="Center"
                                 Background="{StaticResource AccentOrangeBrush}"
                                 CornerRadius="2" />
-                            <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="基本信息" />
+                            <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="{DynamicResource AnalysisDetail.BasicInfo}" />
                         </StackPanel>
                         <WrapPanel Margin="0,18,0,0">
-                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="患者" />
+                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.Patient}" />
                             <TextBlock
                                 Margin="8,0,52,0"
                                 Style="{StaticResource InfoValueTextStyle}"
                                 Text="{Binding PatientName, Mode=OneWay, TargetNullValue=--}" />
-                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="身高" />
+                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.Height}" />
                             <TextBlock
                                 Margin="8,0,52,0"
                                 Style="{StaticResource InfoValueTextStyle}"
                                 Text="{Binding PatientHeightDisplay, Mode=OneWay, TargetNullValue=--}" />
-                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="测量类型" />
+                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.MeasurementType}" />
                             <TextBlock
                                 Margin="8,0,52,0"
                                 Style="{StaticResource InfoValueTextStyle}"
                                 Text="{Binding MeasurementTypeDisplay, Mode=OneWay, TargetNullValue=--}" />
-                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="分析模式" />
+                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.AnalysisMode}" />
                             <TextBlock
                                 Margin="8,0,52,0"
                                 Style="{StaticResource InfoValueTextStyle}"
                                 Text="{Binding MeasurementVideoModeDisplay, Mode=OneWay, TargetNullValue=--}" />
-                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="测量时间" />
+                            <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.MeasurementTime}" />
                             <TextBlock
                                 Margin="8,0,0,0"
                                 Style="{StaticResource InfoValueTextStyle}"
@@ -453,7 +453,7 @@
                         Grid.Row="2"
                         SelectionChanged="AnalysisTabControl_OnSelectionChanged"
                         Style="{StaticResource AnalysisTabControlStyle}">
-                        <TabItem Header="总体情况页">
+                        <TabItem x:Name="OverviewTabItem" Header="{DynamicResource AnalysisDetail.Tab.Overview}">
 
                             <ScrollViewer Style="{StaticResource DetailContentScrollViewerStyle}" VerticalScrollBarVisibility="Disabled">
                                 <DockPanel Width="1312" LastChildFill="False">
@@ -463,31 +463,31 @@
                                         DockPanel.Dock="Top">
                                         <Border Style="{StaticResource MetricCardStyle}">
                                             <StackPanel>
-                                                <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="步态周期" />
+                                                <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="{DynamicResource AnalysisDetail.GaitCycle}" />
                                                 <TextBlock Style="{StaticResource MetricValueTextStyle}" Text="{Binding GaitCycleDisplay, TargetNullValue=--}" />
                                             </StackPanel>
                                         </Border>
                                         <Border Style="{StaticResource MetricCardStyle}">
                                             <StackPanel>
-                                                <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="平均步长" />
+                                                <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="{DynamicResource AnalysisDetail.AverageStepLength}" />
                                                 <TextBlock Style="{StaticResource MetricValueTextStyle}" Text="{Binding StepLengthDisplay, TargetNullValue=--}" />
                                             </StackPanel>
                                         </Border>
                                         <Border Style="{StaticResource MetricCardStyle}">
                                             <StackPanel>
-                                                <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="平均步幅" />
+                                                <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="{DynamicResource AnalysisDetail.AverageStrideLength}" />
                                                 <TextBlock Style="{StaticResource MetricValueTextStyle}" Text="{Binding StrideLengthDisplay, TargetNullValue=--}" />
                                             </StackPanel>
                                         </Border>
                                         <Border Style="{StaticResource MetricCardStyle}">
                                             <StackPanel>
-                                                <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="平均步频" />
+                                                <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="{DynamicResource AnalysisDetail.AverageCadence}" />
                                                 <TextBlock Style="{StaticResource MetricValueTextStyle}" Text="{Binding CadenceDisplay, TargetNullValue=--}" />
                                             </StackPanel>
                                         </Border>
                                         <Border Margin="0" Style="{StaticResource MetricCardStyle}">
                                             <StackPanel>
-                                                <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="平均步速" />
+                                                <TextBlock Style="{StaticResource MetricLabelTextStyle}" Text="{DynamicResource AnalysisDetail.AverageGaitSpeed}" />
                                                 <TextBlock Style="{StaticResource MetricValueTextStyle}" Text="{Binding GaitSpeedDisplay, TargetNullValue=--}" />
                                             </StackPanel>
                                         </Border>
@@ -508,7 +508,7 @@
                                                     Margin="0,0,10,0"
                                                     Background="{StaticResource AccentOrangeBrush}"
                                                     CornerRadius="2" />
-                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="结果摘要" />
+                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="{DynamicResource AnalysisDetail.ResultSummary}" />
                                             </StackPanel>
                                             <Border Height="220" Style="{StaticResource SectionCardStyle}">
                                                 <Grid>
@@ -524,7 +524,7 @@
                                                     <TextBlock
                                                         Grid.Row="0"
                                                         Style="{StaticResource InfoLabelTextStyle}"
-                                                        Text="有效帧比例" />
+                                                        Text="{DynamicResource AnalysisDetail.ValidFrameRatio}" />
                                                     <TextBlock
                                                         Grid.Row="0"
                                                         Grid.Column="1"
@@ -534,13 +534,13 @@
                                                         Grid.Row="1"
                                                         Margin="0,14,0,0"
                                                         Style="{StaticResource InfoLabelTextStyle}"
-                                                        Text="结果预览说明" />
+                                                        Text="{DynamicResource AnalysisDetail.ResultPreviewNote}" />
                                                     <TextBlock
                                                         Grid.Row="1"
                                                         Grid.Column="1"
                                                         Margin="0,14,0,0"
                                                         Style="{StaticResource InfoValueTextStyle}"
-                                                        Text="当前展示本次步态分析的概要数据，详细曲线与视频内容可通过页签切换查看。" />
+                                                        Text="{DynamicResource AnalysisDetail.ResultPreviewNoteText}" />
                                                 </Grid>
                                             </Border>
                                         </StackPanel>
@@ -553,7 +553,7 @@
                                                     Margin="0,0,10,0"
                                                     Background="{StaticResource AccentOrangeBrush}"
                                                     CornerRadius="2" />
-                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="分析基础信息" />
+                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="{DynamicResource AnalysisDetail.AnalysisBaseInfo}" />
                                             </StackPanel>
                                             <Border Height="220" Style="{StaticResource SectionCardStyle}">
                                                 <Grid>
@@ -572,7 +572,7 @@
                                                     <TextBlock
                                                         Grid.Row="0"
                                                         Style="{StaticResource InfoLabelTextStyle}"
-                                                        Text="分析时间" />
+                                                        Text="{DynamicResource AnalysisDetail.AnalysisTime}" />
                                                     <TextBlock
                                                         Grid.Row="0"
                                                         Grid.Column="1"
@@ -582,7 +582,7 @@
                                                         Grid.Row="1"
                                                         Margin="0,14,0,0"
                                                         Style="{StaticResource InfoLabelTextStyle}"
-                                                        Text="分析状态" />
+                                                        Text="{DynamicResource AnalysisDetail.AnalysisStatus}" />
                                                     <TextBlock
                                                         Grid.Row="1"
                                                         Grid.Column="1"
@@ -593,7 +593,7 @@
                                                         Grid.Row="2"
                                                         Margin="0,14,0,0"
                                                         Style="{StaticResource InfoLabelTextStyle}"
-                                                        Text="测量名称" />
+                                                        Text="{DynamicResource AnalysisDetail.MeasurementName}" />
                                                     <TextBlock
                                                         Grid.Row="2"
                                                         Grid.Column="1"
@@ -604,7 +604,7 @@
                                                         Grid.Row="3"
                                                         Margin="0,14,0,0"
                                                         Style="{StaticResource InfoLabelTextStyle}"
-                                                        Text="任务编号" />
+                                                        Text="{DynamicResource AnalysisDetail.TaskId}" />
                                                     <TextBlock
                                                         Grid.Row="3"
                                                         Grid.Column="1"
@@ -615,7 +615,7 @@
                                                         Grid.Row="4"
                                                         Margin="0,14,0,0"
                                                         Style="{StaticResource InfoLabelTextStyle}"
-                                                        Text="分析耗时" />
+                                                        Text="{DynamicResource AnalysisDetail.AnalysisDuration}" />
                                                     <TextBlock
                                                         Grid.Row="4"
                                                         Grid.Column="1"
@@ -635,7 +635,7 @@
                                                 Margin="0,0,10,0"
                                                 Background="{StaticResource AccentOrangeBrush}"
                                                 CornerRadius="2" />
-                                            <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="文件与输出摘要" />
+                                            <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="{DynamicResource AnalysisDetail.FileOutputSummary}" />
                                         </StackPanel>
                                         <Border MinHeight="106" Style="{StaticResource SectionCardStyle}">
                                             <Grid>
@@ -653,39 +653,39 @@
                                                 <TextBlock
                                                     Grid.Row="0"
                                                     Style="{StaticResource InfoLabelTextStyle}"
-                                                    Text="结果文件数量" />
+                                                    Text="{DynamicResource AnalysisDetail.ResultFileCount}" />
                                                 <TextBlock
                                                     Grid.Row="0"
                                                     Grid.Column="1"
                                                     Style="{StaticResource InfoValueTextStyle}"
-                                                    Text="{Binding FileCountDisplay, TargetNullValue=暂无结果文件}" />
+                                                    Text="{Binding FileCountDisplay, TargetNullValue={StaticResource AnalysisDetail.Empty.NoResultFiles}}" />
                                                 <TextBlock
                                                     Grid.Row="0"
                                                     Grid.Column="2"
                                                     Style="{StaticResource InfoLabelTextStyle}"
-                                                    Text="标注视频" />
+                                                    Text="{DynamicResource AnalysisDetail.AnnotatedVideo}" />
                                                 <TextBlock
                                                     Grid.Row="0"
                                                     Grid.Column="3"
                                                     Style="{StaticResource InfoValueTextStyle}"
-                                                    Text="{Binding AnnotatedVideoDisplay, TargetNullValue=未生成标注视频}" />
+                                                    Text="{Binding AnnotatedVideoDisplay, TargetNullValue={StaticResource AnalysisDetail.Empty.NoAnnotatedVideo}}" />
                                                 <TextBlock
                                                     Grid.Row="1"
                                                     Margin="0,14,0,0"
                                                     Style="{StaticResource InfoLabelTextStyle}"
-                                                    Text="摘要文件" />
+                                                    Text="{DynamicResource AnalysisDetail.SummaryFile}" />
                                                 <TextBlock
                                                     Grid.Row="1"
                                                     Grid.Column="1"
                                                     Margin="0,14,0,0"
                                                     Style="{StaticResource InfoValueTextStyle}"
-                                                    Text="{Binding SummaryFileDisplay, TargetNullValue=未生成 summary.json}" />
+                                                    Text="{Binding SummaryFileDisplay, TargetNullValue={StaticResource AnalysisDetail.Empty.NoSummaryJson}}" />
                                                 <TextBlock
                                                     Grid.Row="1"
                                                     Grid.Column="2"
                                                     Margin="0,14,0,0"
                                                     Style="{StaticResource InfoLabelTextStyle}"
-                                                    Text="输出目录" />
+                                                    Text="{DynamicResource AnalysisDetail.OutputDirectory}" />
                                                 <TextBlock
                                                     Grid.Row="1"
                                                     Grid.Column="3"
@@ -699,7 +699,7 @@
                             </ScrollViewer>
                         </TabItem>
 
-                        <TabItem Header="参数显示页">
+                        <TabItem x:Name="ParametersTabItem" Header="{DynamicResource AnalysisDetail.Tab.Parameters}">
 
                             <ScrollViewer
                                 x:Name="ParameterDetailScrollViewer"
@@ -722,68 +722,68 @@
                                                     Margin="0,0,10,0"
                                                     Background="{StaticResource AccentOrangeBrush}"
                                                     CornerRadius="2" />
-                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="时空参数" />
+                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="{DynamicResource AnalysisDetail.SpatiotemporalParameters}" />
                                             </StackPanel>
                                             <Border Height="300" Style="{StaticResource SectionCardStyle}">
                                                 <UniformGrid Columns="2">
                                                     <StackPanel Margin="0,0,24,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="步态周期" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.GaitCycle}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding GaitCycleDisplay, TargetNullValue=--}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,0,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="步长" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.StepLength}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding StepLengthDisplay, TargetNullValue=--}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,24,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="步幅" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.StrideLength}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding StrideLengthDisplay, TargetNullValue=--}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,0,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="步频" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.Cadence}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding CadenceDisplay, TargetNullValue=--}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,24,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="步速" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.GaitSpeed}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding GaitSpeedDisplay, TargetNullValue=--}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,0,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="站立相时间" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.StanceTime}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding StanceTimeDisplay, TargetNullValue=--}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,24,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="摆动相时间" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.SwingTime}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding SwingTimeDisplay, TargetNullValue=--}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,0,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="双支撑时间" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.DoubleSupportTime}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding DoubleSupportTimeDisplay, TargetNullValue=--}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,24,0">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="单支撑时间" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.SingleSupportTime}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
@@ -801,54 +801,54 @@
                                                     Margin="0,0,10,0"
                                                     Background="{StaticResource AccentOrangeBrush}"
                                                     CornerRadius="2" />
-                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="运动学参数" />
+                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="{DynamicResource AnalysisDetail.KinematicParameters}" />
                                             </StackPanel>
                                             <Border Height="300" Style="{StaticResource SectionCardStyle}">
                                                 <UniformGrid Columns="2">
                                                     <StackPanel Margin="0,0,24,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左髋 ROM" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.LeftHipRom}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding LeftHipRomDisplay}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,0,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="右髋 ROM" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.RightHipRom}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding RightHipRomDisplay}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,24,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左膝 ROM" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.LeftKneeRom}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding LeftKneeRomDisplay}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,0,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="右膝 ROM" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.RightKneeRom}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding RightKneeRomDisplay}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,24,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左踝 ROM" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.LeftAnkleRom}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding LeftAnkleRomDisplay}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,0,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="右踝 ROM" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.RightAnkleRom}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding RightAnkleRomDisplay}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,24,0" Visibility="{Binding IsDualVideoMode, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="骨盆冠状面角度" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.PelvisCoronalAngle}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
@@ -874,40 +874,40 @@
                                                     Margin="0,0,10,0"
                                                     Background="{StaticResource AccentOrangeBrush}"
                                                     CornerRadius="2" />
-                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="躯干和骨盆参数" />
+                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="{DynamicResource AnalysisDetail.TrunkPelvisParameters}" />
                                             </StackPanel>
                                             <Border Height="250" Style="{StaticResource SectionCardStyle}">
                                                 <UniformGrid Columns="2">
                                                     <StackPanel Margin="0,0,24,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="躯干倾斜平均角度" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.TrunkTiltMean}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding TrunkTiltMeanDisplay}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,0,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="躯干倾斜最大角度" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.TrunkTiltMax}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding TrunkTiltMaxDisplay}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,24,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="躯干倾斜最小角度" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.TrunkTiltMin}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding TrunkTiltMinDisplay}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,0,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="躯干倾斜活动范围" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.TrunkTiltRom}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding TrunkTiltRomDisplay}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,24,0">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="骨盆倾斜角" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.PelvicTilt}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
@@ -925,47 +925,47 @@
                                                     Margin="0,0,10,0"
                                                     Background="{StaticResource AccentOrangeBrush}"
                                                     CornerRadius="2" />
-                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="对称性分析" />
+                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="{DynamicResource AnalysisDetail.SymmetryAnalysis}" />
                                             </StackPanel>
                                             <Border Height="250" Style="{StaticResource SectionCardStyle}">
                                                 <UniformGrid Columns="2">
                                                     <StackPanel Margin="0,0,24,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左右步长差" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.StepLengthDiff}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding StepLengthDiffDisplay}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,0,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左右步长差百分比" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.StepLengthDiffPercent}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding StepLengthDiffPercentDisplay}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,24,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="膝关节 ROM 差" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.KneeRomDiff}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding KneeRomDiffDisplay}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,0,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="髋关节 ROM 差" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.HipRomDiff}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding HipRomDiffDisplay}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,24,0">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="踝关节 ROM 差" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.AnkleRomDiff}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding AnkleRomDiffDisplay}" />
                                                     </StackPanel>
                                                     <StackPanel>
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="综合对称性评分" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.SymmetryScore}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
@@ -984,61 +984,61 @@
                                                 Margin="0,0,10,0"
                                                 Background="{StaticResource AccentOrangeBrush}"
                                                 CornerRadius="2" />
-                                            <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="左右侧参数" />
+                                            <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="{DynamicResource AnalysisDetail.SideParameters}" />
                                         </StackPanel>
                                         <Border Style="{StaticResource SectionCardStyle}">
                                             <UniformGrid Columns="4">
                                                 <StackPanel Margin="0,0,24,14">
-                                                    <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左侧步幅" />
+                                                    <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.LeftStride}" />
                                                     <TextBlock
                                                         Margin="0,6,0,0"
                                                         Style="{StaticResource InfoValueTextStyle}"
                                                         Text="{Binding LeftStrideLengthDisplay, TargetNullValue=--}" />
                                                 </StackPanel>
                                                 <StackPanel Margin="0,0,24,14">
-                                                    <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="右侧步幅" />
+                                                    <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.RightStride}" />
                                                     <TextBlock
                                                         Margin="0,6,0,0"
                                                         Style="{StaticResource InfoValueTextStyle}"
                                                         Text="{Binding RightStrideLengthDisplay, TargetNullValue=--}" />
                                                 </StackPanel>
                                                 <StackPanel Margin="0,0,24,14">
-                                                    <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左右步幅差" />
+                                                    <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.StrideDiff}" />
                                                     <TextBlock
                                                         Margin="0,6,0,0"
                                                         Style="{StaticResource InfoValueTextStyle}"
                                                         Text="{Binding StrideLengthDiffDisplay, TargetNullValue=--}" />
                                                 </StackPanel>
                                                 <StackPanel Margin="0,0,0,14">
-                                                    <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="步幅差百分比" />
+                                                    <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.StrideDiffPercent}" />
                                                     <TextBlock
                                                         Margin="0,6,0,0"
                                                         Style="{StaticResource InfoValueTextStyle}"
                                                         Text="{Binding StrideLengthDiffPercentDisplay, TargetNullValue=--}" />
                                                 </StackPanel>
                                                 <StackPanel Margin="0,0,24,14">
-                                                    <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左侧站立相占比" />
+                                                    <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.LeftStanceRatio}" />
                                                     <TextBlock
                                                         Margin="0,6,0,0"
                                                         Style="{StaticResource InfoValueTextStyle}"
                                                         Text="{Binding LeftStancePhaseDisplay, TargetNullValue=--}" />
                                                 </StackPanel>
                                                 <StackPanel Margin="0,0,24,14">
-                                                    <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="右侧站立相占比" />
+                                                    <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.RightStanceRatio}" />
                                                     <TextBlock
                                                         Margin="0,6,0,0"
                                                         Style="{StaticResource InfoValueTextStyle}"
                                                         Text="{Binding RightStancePhaseDisplay, TargetNullValue=--}" />
                                                 </StackPanel>
                                                 <StackPanel Margin="0,0,24,14">
-                                                    <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="左侧摆动相占比" />
+                                                    <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.LeftSwingRatio}" />
                                                     <TextBlock
                                                         Margin="0,6,0,0"
                                                         Style="{StaticResource InfoValueTextStyle}"
                                                         Text="{Binding LeftSwingPhaseDisplay, TargetNullValue=--}" />
                                                 </StackPanel>
                                                 <StackPanel Margin="0,0,0,14">
-                                                    <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="右侧摆动相占比" />
+                                                    <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.RightSwingRatio}" />
                                                     <TextBlock
                                                         Margin="0,6,0,0"
                                                         Style="{StaticResource InfoValueTextStyle}"
@@ -1056,7 +1056,7 @@
                                                 Margin="0,0,10,0"
                                                 Background="{StaticResource AccentOrangeBrush}"
                                                 CornerRadius="2" />
-                                            <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="步态周期明细" />
+                                            <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="{DynamicResource AnalysisDetail.GaitCycleDetails}" />
                                         </StackPanel>
                                         <Border Style="{StaticResource SectionCardStyle}">
                                             <StackPanel>
@@ -1070,13 +1070,13 @@
                                                         <ColumnDefinition Width="*" />
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
-                                                    <TextBlock Grid.Column="0" Style="{StaticResource InfoLabelTextStyle}" Text="周期编号" />
-                                                    <TextBlock Grid.Column="1" Style="{StaticResource InfoLabelTextStyle}" Text="侧别" />
-                                                    <TextBlock Grid.Column="2" Style="{StaticResource InfoLabelTextStyle}" Text="起始帧" />
-                                                    <TextBlock Grid.Column="3" Style="{StaticResource InfoLabelTextStyle}" Text="结束帧" />
-                                                    <TextBlock Grid.Column="4" Style="{StaticResource InfoLabelTextStyle}" Text="起始时间" />
-                                                    <TextBlock Grid.Column="5" Style="{StaticResource InfoLabelTextStyle}" Text="结束时间" />
-                                                    <TextBlock Grid.Column="6" Style="{StaticResource InfoLabelTextStyle}" Text="周期时长" />
+                                                    <TextBlock Grid.Column="0" Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.CycleId}" />
+                                                    <TextBlock Grid.Column="1" Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.Side}" />
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.StartFrame}" />
+                                                    <TextBlock Grid.Column="3" Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.EndFrame}" />
+                                                    <TextBlock Grid.Column="4" Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.StartTime}" />
+                                                    <TextBlock Grid.Column="5" Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.EndTime}" />
+                                                    <TextBlock Grid.Column="6" Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.CycleDuration}" />
                                                 </Grid>
                                                 <ItemsControl ItemsSource="{Binding CycleDetails}">
                                                     <ItemsControl.ItemTemplate>
@@ -1114,7 +1114,7 @@
                                                 Margin="0,0,10,0"
                                                 Background="{StaticResource AccentOrangeBrush}"
                                                 CornerRadius="2" />
-                                            <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="曲线图预留区域" />
+                                            <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="{DynamicResource AnalysisDetail.ChartArea}" />
                                         </StackPanel>
                                         <Border Style="{StaticResource SectionCardStyle}">
                                             <StackPanel>
@@ -1198,7 +1198,7 @@
                             </ScrollViewer>
                         </TabItem>
 
-                        <TabItem Header="视频预览页">
+                        <TabItem x:Name="VideoPreviewTabItem" Header="{DynamicResource AnalysisDetail.Tab.Video}">
 
                             <ScrollViewer
                                 x:Name="VideoPreviewDetailScrollViewer"
@@ -1223,7 +1223,7 @@
                                                     Margin="0,0,10,0"
                                                     Background="{StaticResource AccentOrangeBrush}"
                                                     CornerRadius="2" />
-                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="视频预览区域" />
+                                                <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="{DynamicResource AnalysisDetail.VideoPreviewArea}" />
                                             </StackPanel>
                                             <Border
                                                 Grid.Row="2"
@@ -1262,7 +1262,7 @@
                                                             FontFamily="{StaticResource AppFont}"
                                                             FontSize="14"
                                                             Foreground="#D2DDE8"
-                                                            Text="暂无可播放的分析标注视频" />
+                                                            Text="{DynamicResource AnalysisDetail.NoAnnotatedVideo}" />
                                                     </StackPanel>
                                                 </Grid>
                                             </Border>
@@ -1348,9 +1348,9 @@
                                             <StackPanel>
                                                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                                                     <Border Width="26" Height="4" Margin="0,0,6,0" VerticalAlignment="Center" Background="ForestGreen" CornerRadius="2" />
-                                                    <TextBlock Margin="0,0,18,0" VerticalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="13" Foreground="#666666" Text="左膝" />
+                                                    <TextBlock Margin="0,0,18,0" VerticalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="13" Foreground="#666666" Text="{DynamicResource AnalysisDetail.LeftKnee}" />
                                                     <Border Width="26" Height="4" Margin="0,0,6,0" VerticalAlignment="Center" Background="#F2306A" CornerRadius="2" />
-                                                    <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="13" Foreground="#666666" Text="右膝" />
+                                                    <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="13" Foreground="#666666" Text="{DynamicResource AnalysisDetail.RightKnee}" />
                                                 </StackPanel>
                                                 <oxy:PlotView Height="220" Model="{Binding VideoKneeAnglePlotModel}" />
                                             </StackPanel>
@@ -1359,9 +1359,9 @@
                                             <StackPanel>
                                                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                                                     <Border Width="26" Height="4" Margin="0,0,6,0" VerticalAlignment="Center" Background="SteelBlue" CornerRadius="2" />
-                                                    <TextBlock Margin="0,0,18,0" VerticalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="13" Foreground="#666666" Text="左髋" />
+                                                    <TextBlock Margin="0,0,18,0" VerticalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="13" Foreground="#666666" Text="{DynamicResource AnalysisDetail.LeftHip}" />
                                                     <Border Width="26" Height="4" Margin="0,0,6,0" VerticalAlignment="Center" Background="OrangeRed" CornerRadius="2" />
-                                                    <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="13" Foreground="#666666" Text="右髋" />
+                                                    <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="13" Foreground="#666666" Text="{DynamicResource AnalysisDetail.RightHip}" />
                                                 </StackPanel>
                                                 <oxy:PlotView Height="210" Model="{Binding VideoHipAnglePlotModel}" />
                                             </StackPanel>
@@ -1370,9 +1370,9 @@
                                             <StackPanel>
                                                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                                                     <Border Width="26" Height="4" Margin="0,0,6,0" VerticalAlignment="Center" Background="MediumPurple" CornerRadius="2" />
-                                                    <TextBlock Margin="0,0,18,0" VerticalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="13" Foreground="#666666" Text="左踝" />
+                                                    <TextBlock Margin="0,0,18,0" VerticalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="13" Foreground="#666666" Text="{DynamicResource AnalysisDetail.LeftAnkle}" />
                                                     <Border Width="26" Height="4" Margin="0,0,6,0" VerticalAlignment="Center" Background="DarkCyan" CornerRadius="2" />
-                                                    <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="13" Foreground="#666666" Text="右踝" />
+                                                    <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="13" Foreground="#666666" Text="{DynamicResource AnalysisDetail.RightAnkle}" />
                                                 </StackPanel>
                                                 <oxy:PlotView Height="210" Model="{Binding VideoAnkleAnglePlotModel}" />
                                             </StackPanel>
@@ -1381,7 +1381,7 @@
                                             <StackPanel>
                                                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                                                     <Border Width="26" Height="4" Margin="0,0,6,0" VerticalAlignment="Center" Background="#40385F" CornerRadius="2" />
-                                                    <TextBlock Margin="0,0,18,0" VerticalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="13" Foreground="#666666" Text="骨盆" />
+                                                    <TextBlock Margin="0,0,18,0" VerticalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="13" Foreground="#666666" Text="{DynamicResource AnalysisDetail.Pelvis}" />
                                                 </StackPanel>
                                                 <oxy:PlotView Height="210" Model="{Binding VideoPelvisAnglePlotModel}" />
                                             </StackPanel>
@@ -1390,7 +1390,7 @@
                                             <StackPanel>
                                                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                                                     <Border Width="26" Height="4" Margin="0,0,6,0" VerticalAlignment="Center" Background="#F2306A" CornerRadius="2" />
-                                                    <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="13" Foreground="#666666" Text="躯干" />
+                                                    <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource AppFont}" FontSize="13" Foreground="#666666" Text="{DynamicResource AnalysisDetail.Trunk}" />
                                                 </StackPanel>
                                                 <oxy:PlotView Height="210" Model="{Binding VideoTrunkAnglePlotModel}" />
                                             </StackPanel>

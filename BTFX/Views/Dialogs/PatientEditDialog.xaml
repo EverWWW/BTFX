@@ -348,7 +348,8 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Style="{StaticResource PatientLabelStyle}">
                             <Run Foreground="#F23030" Text="* " />
-                            <Run Text="姓名 " />
+                            <Run Text="{DynamicResource PatientName}" />
+                            <Run Text=" " />
                         </TextBlock>
                         <TextBox
                             Grid.Column="1"
@@ -358,7 +359,7 @@
                         <TextBlock
                             Grid.Column="3"
                             Style="{StaticResource PatientLabelStyle}"
-                            Text="性别" />
+                            Text="{DynamicResource Gender}" />
                         <ComboBox
                             Grid.Column="4"
                             SelectedIndex="{Binding Gender, Converter={StaticResource EnumToIndexConverter}}"
@@ -369,7 +370,7 @@
                         <TextBlock
                             Grid.Column="6"
                             Style="{StaticResource PatientLabelStyle}"
-                            Text="出生日期" />
+                            Text="{DynamicResource BirthDate}" />
                         <Grid Grid.Column="7">
                             <Button
                                 x:Name="BirthDateButton"
@@ -383,7 +384,7 @@
                                         FontFamily="{StaticResource AppFont}"
                                         FontSize="22"
                                         Foreground="#333333"
-                                        Text="请选择日期" />
+                                        Text="{DynamicResource PleaseSelectDate}" />
                                     <materialDesign:PackIcon
                                         Width="22"
                                         Height="22"
@@ -427,7 +428,7 @@
                         <TextBlock
                             Grid.Column="0"
                             Style="{StaticResource PatientLabelStyle}"
-                            Text="手机号" />
+                            Text="{DynamicResource MobilePhone}" />
                         <TextBox
                             Grid.Column="1"
                             MaxLength="12"
@@ -439,7 +440,7 @@
                         </TextBox>
                         <TextBlock Grid.Column="3" Style="{StaticResource PatientLabelStyle}">
                             <Run Foreground="#F23030" Text="* " />
-                            <Run Text="身高" />
+                            <Run Text="{DynamicResource Height}" />
                         </TextBlock>
                         <Grid Grid.Column="4">
                             <TextBox
@@ -462,7 +463,7 @@
                         <TextBlock
                             Grid.Column="6"
                             Style="{StaticResource PatientLabelStyle}"
-                            Text="体重" />
+                            Text="{DynamicResource Weight}" />
                         <Grid Grid.Column="7">
                             <TextBox
                                 Padding="16,0,44,0"
@@ -494,7 +495,7 @@
                         <TextBlock
                             Grid.Column="0"
                             Style="{StaticResource PatientLabelStyle}"
-                            Text="身份证号" />
+                            Text="{DynamicResource IdNumber}" />
                         <TextBox
                             Grid.Column="1"
                             MaxLength="20"
@@ -507,7 +508,7 @@
                         <TextBlock
                             Grid.Column="3"
                             Style="{StaticResource PatientLabelStyle}"
-                            Text="就诊号" />
+                            Text="{DynamicResource VisitNumber}" />
                         <TextBox
                             Grid.Column="4"
                             MaxLength="20"
@@ -523,7 +524,7 @@
                         <TextBlock
                             Grid.Column="0"
                             Style="{StaticResource PatientLabelStyle}"
-                            Text="地址" />
+                            Text="{DynamicResource Address}" />
                         <TextBox
                             Grid.Column="1"
                             MaxLength="500"
@@ -539,7 +540,7 @@
                         <TextBlock
                             Grid.Column="0"
                             Style="{StaticResource PatientLabelStyle}"
-                            Text="病史" />
+                            Text="{DynamicResource MedicalHistory}" />
                         <TextBox
                             Grid.Column="1"
                             MaxLength="500"
@@ -555,7 +556,7 @@
                         <TextBlock
                             Grid.Column="0"
                             Style="{StaticResource PatientLabelStyle}"
-                            Text="备注" />
+                            Text="{DynamicResource Remark}" />
                         <TextBox
                             Grid.Column="1"
                             MaxLength="200"
@@ -581,11 +582,11 @@
                 <Button
                     Margin="0,0,80,0"
                     Command="{Binding CancelCommand}"
-                    Content="取消"
+                    Content="{DynamicResource Cancel}"
                     Style="{StaticResource PatientSecondaryButtonStyle}" />
                 <Button
                     Command="{Binding SaveCommand}"
-                    Content="保存"
+                    Content="{DynamicResource Save}"
                     IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
                     Style="{StaticResource PatientPrimaryButtonStyle}" />
             </StackPanel>

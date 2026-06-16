@@ -214,7 +214,7 @@
                         FontSize="22"
                         FontWeight="Medium"
                         Foreground="White"
-                        Text="添加" />
+                        Text="{DynamicResource Add}" />
                 </StackPanel>
             </Button>
 
@@ -240,7 +240,7 @@
                         FontSize="22"
                         FontWeight="Medium"
                         Foreground="#403B5B"
-                        Text="刷新" />
+                        Text="{DynamicResource Refresh}" />
                 </StackPanel>
             </Button>
         </StackPanel>
@@ -274,43 +274,43 @@
                     <TextBlock
                         Grid.Column="0"
                         Style="{StaticResource HeaderTextStyle}"
-                        Text="编号" />
+                        Text="{DynamicResource Id}" />
                     <TextBlock
                         Grid.Column="1"
                         Style="{StaticResource HeaderTextStyle}"
-                        Text="账号" />
+                        Text="{DynamicResource Account}" />
                     <TextBlock
                         Grid.Column="2"
                         Style="{StaticResource HeaderTextStyle}"
-                        Text="姓名" />
+                        Text="{DynamicResource RealName}" />
                     <TextBlock
                         Grid.Column="3"
                         Style="{StaticResource HeaderTextStyle}"
-                        Text="角色" />
+                        Text="{DynamicResource Role}" />
                     <TextBlock
                         Grid.Column="4"
                         Style="{StaticResource HeaderTextStyle}"
-                        Text="科室" />
+                        Text="{DynamicResource Department}" />
                     <TextBlock
                         Grid.Column="5"
                         Style="{StaticResource HeaderTextStyle}"
-                        Text="状态" />
+                        Text="{DynamicResource Status}" />
                     <TextBlock
                         Grid.Column="6"
                         Style="{StaticResource HeaderTextStyle}"
-                        Text="最后登录日期" />
+                        Text="{DynamicResource LastLoginDate}" />
                     <TextBlock
                         Grid.Column="7"
                         Style="{StaticResource HeaderTextStyle}"
-                        Text="重置密码" />
+                        Text="{DynamicResource ResetPassword}" />
                     <TextBlock
                         Grid.Column="8"
                         Style="{StaticResource HeaderTextStyle}"
-                        Text="编辑" />
+                        Text="{DynamicResource Edit}" />
                     <TextBlock
                         Grid.Column="9"
                         Style="{StaticResource HeaderTextStyle}"
-                        Text="删除" />
+                        Text="{DynamicResource Delete}" />
                 </Grid>
             </Border>
 
@@ -459,7 +459,7 @@
                                                 FontSize="18"
                                                 FontWeight="Medium"
                                                 Foreground="#403B5B"
-                                                Text="重置密码" />
+                                                Text="{DynamicResource ResetPassword}" />
                                         </StackPanel>
                                     </Button>
 

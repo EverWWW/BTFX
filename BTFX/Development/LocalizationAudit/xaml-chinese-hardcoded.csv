@@ -1,0 +1,595 @@
+﻿file,line,text
+App.xaml,13,<!--  Material Design 主题  -->
+App.xaml,19,<!--  Material Design 默认样式  -->
+App.xaml,22,<!--  多语言资源 - 默认中文  -->
+App.xaml,25,<!--  自定义样式  -->
+App.xaml,33,<!--  Override framework default background so DynamicResource MaterialDesign.Brush.Background 使用公司颜色  -->
+App.xaml,56,字体资源
+App.xaml,57,Alibaba PuHuiTi 3.0 仅包含 Regular (55) 字重文件，
+App.xaml,58,Medium / Bold 等字重在该字体中无真实字形，WPF 会合成粗体导致显示异常。
+App.xaml,59,"因此使用""Microsoft YaHei UI""作为主字体（系统自带 Light / Regular / Bold），"
+App.xaml,60,Alibaba PuHuiTi 3.0 保留作为备选。如需完整使用 Alibaba PuHuiTi，
+App.xaml,61,请将 65-Medium、75-SemiBold、85-Bold 等字重 TTF 文件放入 Resources/Fonts 文件夹。
+App.xaml,66,全局字体样式 —— 通过 TextElement.FontFamily 向下继承到所有子元素，
+App.xaml,67,不覆盖 TextBlock / Button / TextBox 等控件的隐式样式，
+App.xaml,68,避免破坏 MaterialDesign 内部控件模板
+MainWindow.xaml,35,<!--  标题栏：登录页时折叠为 0，其他页面显示  -->
+MainWindow.xaml,40,<!--  顶部标题栏：登录页时折叠隐藏，其他页面共用  -->
+MainWindow.xaml,47,"UserDisplayName=""{Binding UserDisplayName, FallbackValue=游客}"""
+Controls\TitleBarControl.xaml,18,<!-- 左侧 Logo 区域 -->
+Controls\TitleBarControl.xaml,20,<!-- 中间弹性占位 -->
+Controls\TitleBarControl.xaml,22,<!-- 中间标题（绝对居中通过 Grid 覆盖实现） -->
+Controls\TitleBarControl.xaml,24,<!-- 右侧用户区 + 窗口控制按钮 -->
+Controls\TitleBarControl.xaml,28,<!-- ① 左侧 Logo -->
+Controls\TitleBarControl.xaml,37,<!-- ② 中间系统标题（跨全列居中，使用 Grid 覆盖保证真正居中） -->
+Controls\TitleBarControl.xaml,40,"Text=""步态信息采集系统"""
+Controls\TitleBarControl.xaml,49,<!-- ③ 右侧：用户信息 + 窗口控制按钮 -->
+Controls\TitleBarControl.xaml,55,<!-- 用户区域 -->
+Controls\TitleBarControl.xaml,60,"<!-- ""你好！""文字 -->"
+Controls\TitleBarControl.xaml,61,"<TextBlock Text=""你好！"""
+Controls\TitleBarControl.xaml,67,<!-- 账号图标 -->
+Controls\TitleBarControl.xaml,74,<!-- 当前账号名 -->
+Controls\TitleBarControl.xaml,96,"ToolTip=""退出登录"">"
+Controls\TitleBarControl.xaml,144,<!-- 窗口控制按钮：最小化 -->
+Controls\TitleBarControl.xaml,153,"ToolTip=""最小化"">"
+Controls\TitleBarControl.xaml,179,<!-- 最小化符号：使用文字或 Path，此处用 Unicode 横线 -->
+Controls\TitleBarControl.xaml,189,<!-- 窗口控制按钮：关闭 -->
+Controls\TitleBarControl.xaml,198,"ToolTip=""关闭"">"
+Controls\TitleBarControl.xaml,224,<!-- ✕ 关闭符号 -->
+Views\ActivationView.xaml,152,"Text=""软件激活"" />"
+Views\ActivationView.xaml,159,"Text=""请完成软件授权激活后继续使用系统"" />"
+Views\ActivationView.xaml,182,"<TextBlock Grid.Row=""0"" Grid.Column=""0"" Style=""{StaticResource ActivationLabelStyle}"" Text=""软件名称"" />"
+Views\ActivationView.xaml,184,"<TextBlock Grid.Row=""0"" Grid.Column=""2"" Style=""{StaticResource ActivationLabelStyle}"" Text=""产品型号"" />"
+Views\ActivationView.xaml,187,"<TextBlock Grid.Row=""1"" Grid.Column=""0"" Style=""{StaticResource ActivationLabelStyle}"" Text=""软件版本"" />"
+Views\ActivationView.xaml,189,"<TextBlock Grid.Row=""1"" Grid.Column=""2"" Style=""{StaticResource ActivationLabelStyle}"" Text=""MAC地址"" />"
+Views\ActivationView.xaml,192,"<TextBlock Grid.Row=""2"" Grid.Column=""0"" Style=""{StaticResource ActivationLabelStyle}"" Text=""CPU编号"" />"
+Views\ActivationView.xaml,194,"<TextBlock Grid.Row=""2"" Grid.Column=""2"" Style=""{StaticResource ActivationLabelStyle}"" Text=""硬盘信息"" />"
+Views\ActivationView.xaml,197,"<TextBlock Grid.Row=""3"" Grid.Column=""0"" Style=""{StaticResource ActivationLabelStyle}"" Text=""BIOS编号"" />"
+Views\ActivationView.xaml,199,"<TextBlock Grid.Row=""3"" Grid.Column=""2"" Style=""{StaticResource ActivationLabelStyle}"" Text=""机器码"" />"
+Views\ActivationView.xaml,212,"Text=""复制"" />"
+Views\ActivationView.xaml,229,"Text=""复制设备信息"" />"
+Views\ActivationView.xaml,242,"<TextBlock Grid.Column=""0"" Style=""{StaticResource ActivationLabelStyle}"" Text=""产品编号"" />"
+Views\ActivationView.xaml,247,"<TextBlock Grid.Column=""3"" Style=""{StaticResource ActivationLabelStyle}"" Text=""激活码"" />"
+Views\ActivationView.xaml,275,"Text=""在线激活"" />"
+Views\ActivationView.xaml,287,"Text=""离线激活"" />"
+Views\DataManagementView.xaml,107,<!--  日期范围框中单个日期的样式：使用 Button + Popup + Calendar，不使用 DatePicker  -->
+Views\DataManagementView.xaml,109,<!--  状态下拉框：外层 Border 画完整圆角框，内层 Grid 分左右两列（文字 + 箭头）  -->
+Views\DataManagementView.xaml,167,<!--  ToggleButton 铺满整个控件，既是可视外框也是点击区域  -->
+Views\DataManagementView.xaml,190,<!--  箭头放在右侧  -->
+Views\DataManagementView.xaml,211,<!--  选中项文字：叠加在 ToggleButton 之上，不接收点击  -->
+Views\DataManagementView.xaml,222,<!--  下拉弹出层  -->
+Views\DataManagementView.xaml,392,<!--  ==================== 日期范围控件（完全不使用 DatePicker） ====================  -->
+Views\DataManagementView.xaml,403,<!--  起始日期文本  -->
+Views\DataManagementView.xaml,405,<!--  起始日期日历图标  -->
+Views\DataManagementView.xaml,407,<!--  分隔符  -->
+Views\DataManagementView.xaml,409,<!--  截止日期文本  -->
+Views\DataManagementView.xaml,411,<!--  截止日期日历图标  -->
+Views\DataManagementView.xaml,413,<!--  清空按钮（固定占位）  -->
+Views\DataManagementView.xaml,417,<!--  起始日期文本  -->
+Views\DataManagementView.xaml,463,<!--  起始日期日历图标（常驻）  -->
+Views\DataManagementView.xaml,488,<!--  分隔符  -->
+Views\DataManagementView.xaml,498,<!--  截止日期文本  -->
+Views\DataManagementView.xaml,544,<!--  截止日期日历图标（常驻）  -->
+Views\DataManagementView.xaml,569,<!--  清空按钮（固定列宽，不改变 Visibility，用 Opacity 控制显隐）  -->
+Views\DataManagementView.xaml,607,<!--  ==================== 状态下拉框 ====================  -->
+Views\DataManagementView.xaml,618,"Text=""状态"" />"
+Views\DataManagementView.xaml,653,"Text=""搜索"" />"
+Views\DataManagementView.xaml,685,"Text=""编号"" />"
+Views\DataManagementView.xaml,689,"Text=""姓名"" />"
+Views\DataManagementView.xaml,693,"Text=""性别"" />"
+Views\DataManagementView.xaml,697,"Text=""年龄"" />"
+Views\DataManagementView.xaml,701,"Text=""测量日期"" />"
+Views\DataManagementView.xaml,705,"Text=""状态"" />"
+Views\DataManagementView.xaml,709,"Text=""操作"" />"
+Views\DataManagementView.xaml,713,"Text=""详情"" />"
+Views\DataManagementView.xaml,717,"Text=""导出"" />"
+Views\DataManagementView.xaml,721,"Text=""删除"" />"
+Views\DataManagementView.xaml,896,"Text=""正在加载数据..."" />"
+Views\DataManagementView.xaml,905,"Text=""暂无数据"">"
+Views\DataManagementView.xaml,963,"Text=""批量导出"" />"
+Views\DataManagementView.xaml,992,"Text=""导入包"" />"
+Views\DataManagementView.xaml,1031,"Text=""删除"" />"
+Views\DataManagementView.xaml,1161,"Text=""{Binding SelectedCount, StringFormat=已选 {0} 项}"" />"
+Views\LoginView.xaml,18,<!-- 输入框内左侧图标样式 -->
+Views\LoginView.xaml,29,<!-- 无边框输入框基础样式 -->
+Views\LoginView.xaml,47,<!-- 占位文字 -->
+Views\LoginView.xaml,73,<!-- Text为null时也显示占位符 -->
+Views\LoginView.xaml,83,<!-- 无边框密码框样式 -->
+Views\LoginView.xaml,101,"<!-- 占位文字：Tag==""""（无密码）时可见 -->"
+Views\LoginView.xaml,109,"Text=""请输入密码"""
+Views\LoginView.xaml,120,<!-- Tag 为空字符串时表示密码为空，显示水印 -->
+Views\LoginView.xaml,130,<!-- 密码可见时的文本框样式（复用 LoginTextBoxStyle） -->
+Views\LoginView.xaml,136,<!-- 密码可见性切换按钮样式 -->
+Views\LoginView.xaml,161,<!-- 中心主卡片容器 -->
+Views\LoginView.xaml,184,<!-- 左侧展示区约 850/1620 ≈ 52.5% -->
+Views\LoginView.xaml,186,<!-- 右侧登录区约 770/1620 ≈ 47.5% -->
+Views\LoginView.xaml,190,<!-- ========== 左侧展示区 ========== -->
+Views\LoginView.xaml,213,<!-- 产品展示图 -->
+Views\LoginView.xaml,225,<!-- 系统名称 -->
+Views\LoginView.xaml,237,<!-- ========== 右侧登录区 ========== -->
+Views\LoginView.xaml,239,<!-- 关闭按钮（右上角） -->
+Views\LoginView.xaml,266,<!-- 登录表单区 -->
+Views\LoginView.xaml,272,"<!-- 标题""账号登录"" -->"
+Views\LoginView.xaml,278,"Text=""账号登录"" />"
+Views\LoginView.xaml,280,<!-- 账号输入框 -->
+Views\LoginView.xaml,286,"Tag=""请输入账号"""
+Views\LoginView.xaml,297,<!-- 密码输入框 -->
+Views\LoginView.xaml,299,<!-- 隐藏密码模式 - PasswordBox -->
+Views\LoginView.xaml,311,<!-- 显示密码模式 - TextBox -->
+Views\LoginView.xaml,316,"Tag=""请输入密码"""
+Views\LoginView.xaml,323,<!-- 左侧锁图标 -->
+Views\LoginView.xaml,327,<!-- 右侧密码可见性切换按钮 -->
+Views\LoginView.xaml,348,<!-- 记住密码 -->
+Views\LoginView.xaml,355,<!-- 记住密码 -->
+Views\LoginView.xaml,380,<!-- 错误信息 -->
+Views\LoginView.xaml,389,<!-- 登录按钮 -->
+Views\MainContainerView.xaml,321,"<TextBlock Style=""{StaticResource HeaderLabelTextStyle}"" Text=""姓名："" />"
+Views\MainContainerView.xaml,328,"<TextBlock Style=""{StaticResource HeaderLabelTextStyle}"" Text=""性别："" />"
+Views\MainContainerView.xaml,353,"Text=""更换患者"" />"
+Views\PatientSelectionView.xaml,19,<!--  页面级按钮模板（圆角 16）  -->
+Views\PatientSelectionView.xaml,46,<!--  分页箭头按钮样式  -->
+Views\PatientSelectionView.xaml,75,<!--  页码数字按钮样式（非当前页）  -->
+Views\PatientSelectionView.xaml,141,<!--  ═══════════════════ 主内容卡片 ═══════════════════  -->
+Views\PatientSelectionView.xaml,163,<!--  ═══════════════════ 三、搜索区和操作按钮区 ═══════════════════  -->
+Views\PatientSelectionView.xaml,172,<!--  搜索框  -->
+Views\PatientSelectionView.xaml,185,<!--  占位提示文字  -->
+Views\PatientSelectionView.xaml,193,"Text=""输入患者姓名关键字"">"
+Views\PatientSelectionView.xaml,208,<!--  实际输入框  -->
+Views\PatientSelectionView.xaml,224,<!--  清除按钮（X）  -->
+Views\PatientSelectionView.xaml,277,<!--  搜索按钮  -->
+Views\PatientSelectionView.xaml,300,"Text=""搜索"" />"
+Views\PatientSelectionView.xaml,304,<!--  添加按钮  -->
+Views\PatientSelectionView.xaml,328,"Text=""添加"" />"
+Views\PatientSelectionView.xaml,333,<!--  右侧：导出 + 导入  -->
+Views\PatientSelectionView.xaml,359,"Text=""导出"" />"
+Views\PatientSelectionView.xaml,384,"Text=""导入"" />"
+Views\PatientSelectionView.xaml,390,<!--  已选提示（轻量）  -->
+Views\PatientSelectionView.xaml,415,<!--  ═══════════════════ 四、患者信息列表区域 ═══════════════════  -->
+Views\PatientSelectionView.xaml,416,<!--  列表标题栏  -->
+Views\PatientSelectionView.xaml,434,<!--  全选按钮（可点击）  -->
+Views\PatientSelectionView.xaml,447,"Text=""编号"" />"
+Views\PatientSelectionView.xaml,455,"Text=""姓名"" />"
+Views\PatientSelectionView.xaml,463,"Text=""性别"" />"
+Views\PatientSelectionView.xaml,471,"Text=""年龄"" />"
+Views\PatientSelectionView.xaml,479,"Text=""身高(CM)"" />"
+Views\PatientSelectionView.xaml,487,"Text=""身份证号"" />"
+Views\PatientSelectionView.xaml,495,"Text=""编辑"" />"
+Views\PatientSelectionView.xaml,503,"Text=""删除"" />"
+Views\PatientSelectionView.xaml,506,<!--  列表内容区（禁用滚动条，按可视高度动态分页）  -->
+Views\PatientSelectionView.xaml,552,<!--  选择框图标  -->
+Views\PatientSelectionView.xaml,571,<!--  显示序号（跨页连续）  -->
+Views\PatientSelectionView.xaml,621,<!--  编辑按钮  -->
+Views\PatientSelectionView.xaml,637,<!--  删除按钮  -->
+Views\PatientSelectionView.xaml,664,<!--  ═══════════════════ 五、分页区域 ═══════════════════  -->
+Views\PatientSelectionView.xaml,672,<!--  上一页箭头  -->
+Views\PatientSelectionView.xaml,685,<!--  页码列表：每项固定宽 65px，保证中心间距 65px  -->
+Views\PatientSelectionView.xaml,694,<!--  每个页码项固定 65px 宽，高 40px，内容居中  -->
+Views\PatientSelectionView.xaml,697,<!--  省略号（不可点击，IsEllipsis=True 时显示）  -->
+Views\PatientSelectionView.xaml,718,<!--  当前页高亮块（IsCurrent=True 且非省略号时显示）  -->
+Views\PatientSelectionView.xaml,749,<!--  非当前页数字按钮（可点击，IsCurrent=False 且非省略号时显示）  -->
+Views\PatientSelectionView.xaml,782,<!--  下一页箭头  -->
+Views\ReportView.xaml,408,"Text=""输入姓名"">"
+Views\ReportView.xaml,711,"Text=""搜索"" />"
+Views\ReportView.xaml,769,"Text=""编号"" />"
+Views\ReportView.xaml,773,"Text=""姓名"" />"
+Views\ReportView.xaml,777,"Text=""测量日期"" />"
+Views\ReportView.xaml,781,"Text=""详情"" />"
+Views\ReportView.xaml,785,"Text=""导出"" />"
+Views\ReportView.xaml,789,"Text=""打印"" />"
+Views\ReportView.xaml,913,"Text=""正在加载数据..."" />"
+Views\ReportView.xaml,936,"Text=""暂无报告数据"" />"
+Views\ReportView.xaml,982,"Text=""全部导出"" />"
+Views\ReportView.xaml,1113,"Text=""{Binding SelectedReportTotalCount, StringFormat=已选 {0} 项}"" />"
+Views\ReportView.xaml,1152,"Text=""报告摘要"" />"
+Views\ReportView.xaml,1164,"Text=""选中左侧列表的一行可预览报告摘要"" />"
+Views\ReportView.xaml,1205,"<TextBlock Style=""{StaticResource ReportPreviewSectionTitleStyle}"" Text=""报告基础信息"" />"
+Views\ReportView.xaml,1234,"<TextBlock Style=""{StaticResource ReportPreviewSectionTitleStyle}"" Text=""关键指标"" />"
+Views\ReportView.xaml,1263,"<TextBlock Style=""{StaticResource ReportPreviewSectionTitleStyle}"" Text=""报告内容摘要"" />"
+Views\ReportView.xaml,1313,"Text=""暂无数据"" />"
+Views\ReportView.xaml,1326,"Content=""查看完整报告"""
+Views\ReportView.xaml,1332,"Content=""导出报告"""
+Views\ReportView.xaml,1337,"Content=""打印报告"""
+Views\Dialogs\AboutDialog.xaml,82,"Text=""关于我们"" />"
+Views\Dialogs\AboutDialog.xaml,170,"<TextBlock Grid.Row=""0"" Grid.Column=""0"" Style=""{StaticResource InfoLabelStyle}"" Text=""软件版本"" />"
+Views\Dialogs\AboutDialog.xaml,173,"<TextBlock Grid.Row=""1"" Grid.Column=""0"" Style=""{StaticResource InfoLabelStyle}"" Text=""发布版本"" />"
+Views\Dialogs\AboutDialog.xaml,176,"<TextBlock Grid.Row=""2"" Grid.Column=""0"" Style=""{StaticResource InfoLabelStyle}"" Text=""内部版本"" />"
+Views\Dialogs\AboutDialog.xaml,179,"<TextBlock Grid.Row=""3"" Grid.Column=""0"" Style=""{StaticResource InfoLabelStyle}"" Text=""协议版本"" />"
+Views\Dialogs\CameraCaptureDialog.xaml,176,"Text=""单视角"" />"
+Views\Dialogs\CameraCaptureDialog.xaml,183,"Text=""双视角"" />"
+Views\Dialogs\CameraCaptureDialog.xaml,201,"Text=""单视角"" />"
+Views\Dialogs\CameraCaptureDialog.xaml,208,"<Setter TargetName=""SwitchText"" Property=""Text"" Value=""双视角"" />"
+Views\Dialogs\CameraCaptureDialog.xaml,454,"Text=""相机视频采集"" />"
+Views\Dialogs\CameraCaptureDialog.xaml,463,"ToolTip=""关闭"">"
+Views\Dialogs\CameraCaptureDialog.xaml,484,"<TextBlock Style=""{StaticResource CameraSectionTitleStyle}"" Text=""采集参数"" />"
+Views\Dialogs\CameraCaptureDialog.xaml,499,"<TextBlock Style=""{StaticResource CameraFieldLabelStyle}"" Text=""当前模式"" />"
+Views\Dialogs\CameraCaptureDialog.xaml,511,"<TextBlock Style=""{StaticResource CameraFieldLabelStyle}"" Text=""录制分辨率"" />"
+Views\Dialogs\CameraCaptureDialog.xaml,524,"<TextBlock Style=""{StaticResource CameraFieldLabelStyle}"" Text=""录制帧率"" />"
+Views\Dialogs\CameraCaptureDialog.xaml,537,"<TextBlock Style=""{StaticResource CameraFieldLabelStyle}"" Text=""录制时长"" />"
+Views\Dialogs\CameraCaptureDialog.xaml,590,"<TextBlock Style=""{StaticResource CameraSectionTitleStyle}"" Text=""侧面相机"" />"
+Views\Dialogs\CameraCaptureDialog.xaml,612,"ToolTip=""刷新相机状态"">"
+Views\Dialogs\CameraCaptureDialog.xaml,622,"Content=""修改"""
+Views\Dialogs\CameraCaptureDialog.xaml,624,"<TextBlock Style=""{StaticResource CameraMetaTextStyle}"" Text=""相机ID："" />"
+Views\Dialogs\CameraCaptureDialog.xaml,749,"Content=""横向"""
+Views\Dialogs\CameraCaptureDialog.xaml,755,"Content=""纵向"""
+Views\Dialogs\CameraCaptureDialog.xaml,761,"Content=""上下翻转"""
+Views\Dialogs\CameraCaptureDialog.xaml,796,"<TextBlock Style=""{StaticResource CameraSectionTitleStyle}"" Text=""正面相机"" />"
+Views\Dialogs\CameraCaptureDialog.xaml,818,"ToolTip=""刷新相机状态"">"
+Views\Dialogs\CameraCaptureDialog.xaml,828,"Content=""修改"""
+Views\Dialogs\CameraCaptureDialog.xaml,830,"<TextBlock Style=""{StaticResource CameraMetaTextStyle}"" Text=""相机ID："" />"
+Views\Dialogs\CameraCaptureDialog.xaml,955,"Content=""横向"""
+Views\Dialogs\CameraCaptureDialog.xaml,961,"Content=""纵向"""
+Views\Dialogs\CameraCaptureDialog.xaml,967,"Content=""上下翻转"""
+Views\Dialogs\CameraCaptureDialog.xaml,994,"Content=""确定"""
+Views\Dialogs\CameraCaptureDialog.xaml,1010,"<TextBlock Style=""{StaticResource CameraSectionTitleStyle}"" Text=""修改相机编号"" />"
+Views\Dialogs\CameraCaptureDialog.xaml,1013,"materialDesign:HintAssist.Hint=""DirectShow 相机设备名"""
+Views\Dialogs\CameraCaptureDialog.xaml,1020,"Content=""取消"""
+Views\Dialogs\CameraCaptureDialog.xaml,1025,"Content=""确认"""
+Views\Dialogs\DepartmentEditDialog.xaml,197,"<Run Text=""科室名称"" />"
+Views\Dialogs\DepartmentEditDialog.xaml,206,"<TextBlock Style=""{StaticResource DepartmentLabelStyle}"" Text=""科室代码"" />"
+Views\Dialogs\DepartmentEditDialog.xaml,218,"Text=""描述"" />"
+Views\Dialogs\DepartmentEditDialog.xaml,245,"Content=""取消"""
+Views\Dialogs\DepartmentEditDialog.xaml,250,"Content=""确认"""
+Views\Dialogs\MeasurementDetailDialog.xaml,351,"Text=""导出"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,372,"Text=""报告预览"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,380,"Text=""分析结果详情"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,393,"Text=""关闭"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,421,"<TextBlock Style=""{StaticResource SectionHeaderTextStyle}"" Text=""基本信息"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,424,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""患者"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,429,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""身高"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,434,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""测量类型"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,439,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""分析模式"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,444,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""测量时间"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,456,"<TabItem Header=""总体情况页"">"
+Views\Dialogs\MeasurementDetailDialog.xaml,466,"<TextBlock Style=""{StaticResource MetricLabelTextStyle}"" Text=""步态周期"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,472,"<TextBlock Style=""{StaticResource MetricLabelTextStyle}"" Text=""平均步长"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,478,"<TextBlock Style=""{StaticResource MetricLabelTextStyle}"" Text=""平均步幅"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,484,"<TextBlock Style=""{StaticResource MetricLabelTextStyle}"" Text=""平均步频"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,490,"<TextBlock Style=""{StaticResource MetricLabelTextStyle}"" Text=""平均步速"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,511,"<TextBlock Style=""{StaticResource SectionHeaderTextStyle}"" Text=""结果摘要"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,527,"Text=""有效帧比例"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,537,"Text=""结果预览说明"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,543,"Text=""当前展示本次步态分析的概要数据，详细曲线与视频内容可通过页签切换查看。"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,556,"<TextBlock Style=""{StaticResource SectionHeaderTextStyle}"" Text=""分析基础信息"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,575,"Text=""分析时间"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,585,"Text=""分析状态"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,596,"Text=""测量名称"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,607,"Text=""任务编号"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,618,"Text=""分析耗时"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,638,"<TextBlock Style=""{StaticResource SectionHeaderTextStyle}"" Text=""文件与输出摘要"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,656,"Text=""结果文件数量"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,661,"Text=""{Binding FileCountDisplay, TargetNullValue=暂无结果文件}"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,666,"Text=""标注视频"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,671,"Text=""{Binding AnnotatedVideoDisplay, TargetNullValue=未生成标注视频}"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,676,"Text=""摘要文件"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,682,"Text=""{Binding SummaryFileDisplay, TargetNullValue=未生成 summary.json}"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,688,"Text=""输出目录"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,702,"<TabItem Header=""参数显示页"">"
+Views\Dialogs\MeasurementDetailDialog.xaml,725,"<TextBlock Style=""{StaticResource SectionHeaderTextStyle}"" Text=""时空参数"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,730,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""步态周期"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,737,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""步长"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,744,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""步幅"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,751,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""步频"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,758,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""步速"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,765,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""站立相时间"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,772,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""摆动相时间"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,779,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""双支撑时间"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,786,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""单支撑时间"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,804,"<TextBlock Style=""{StaticResource SectionHeaderTextStyle}"" Text=""运动学参数"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,809,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""左髋 ROM"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,816,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""右髋 ROM"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,823,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""左膝 ROM"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,830,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""右膝 ROM"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,837,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""左踝 ROM"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,844,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""右踝 ROM"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,851,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""骨盆冠状面角度"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,877,"<TextBlock Style=""{StaticResource SectionHeaderTextStyle}"" Text=""躯干和骨盆参数"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,882,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""躯干倾斜平均角度"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,889,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""躯干倾斜最大角度"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,896,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""躯干倾斜最小角度"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,903,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""躯干倾斜活动范围"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,910,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""骨盆倾斜角"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,928,"<TextBlock Style=""{StaticResource SectionHeaderTextStyle}"" Text=""对称性分析"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,933,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""左右步长差"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,940,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""左右步长差百分比"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,947,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""膝关节 ROM 差"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,954,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""髋关节 ROM 差"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,961,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""踝关节 ROM 差"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,968,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""综合对称性评分"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,987,"<TextBlock Style=""{StaticResource SectionHeaderTextStyle}"" Text=""左右侧参数"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,992,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""左侧步幅"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,999,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""右侧步幅"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1006,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""左右步幅差"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1013,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""步幅差百分比"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1020,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""左侧站立相占比"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1027,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""右侧站立相占比"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1034,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""左侧摆动相占比"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1041,"<TextBlock Style=""{StaticResource InfoLabelTextStyle}"" Text=""右侧摆动相占比"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1059,"<TextBlock Style=""{StaticResource SectionHeaderTextStyle}"" Text=""步态周期明细"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1073,"<TextBlock Grid.Column=""0"" Style=""{StaticResource InfoLabelTextStyle}"" Text=""周期编号"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1074,"<TextBlock Grid.Column=""1"" Style=""{StaticResource InfoLabelTextStyle}"" Text=""侧别"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1075,"<TextBlock Grid.Column=""2"" Style=""{StaticResource InfoLabelTextStyle}"" Text=""起始帧"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1076,"<TextBlock Grid.Column=""3"" Style=""{StaticResource InfoLabelTextStyle}"" Text=""结束帧"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1077,"<TextBlock Grid.Column=""4"" Style=""{StaticResource InfoLabelTextStyle}"" Text=""起始时间"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1078,"<TextBlock Grid.Column=""5"" Style=""{StaticResource InfoLabelTextStyle}"" Text=""结束时间"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1079,"<TextBlock Grid.Column=""6"" Style=""{StaticResource InfoLabelTextStyle}"" Text=""周期时长"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1117,"<TextBlock Style=""{StaticResource SectionHeaderTextStyle}"" Text=""曲线图预留区域"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1201,"<TabItem Header=""视频预览页"">"
+Views\Dialogs\MeasurementDetailDialog.xaml,1226,"<TextBlock Style=""{StaticResource SectionHeaderTextStyle}"" Text=""视频预览区域"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1265,"Text=""暂无可播放的分析标注视频"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1351,"<TextBlock Margin=""0,0,18,0"" VerticalAlignment=""Center"" FontFamily=""{StaticResource AppFont}"" FontSize=""13"" Foreground=""#666666"" Text=""左膝"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1353,"<TextBlock VerticalAlignment=""Center"" FontFamily=""{StaticResource AppFont}"" FontSize=""13"" Foreground=""#666666"" Text=""右膝"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1362,"<TextBlock Margin=""0,0,18,0"" VerticalAlignment=""Center"" FontFamily=""{StaticResource AppFont}"" FontSize=""13"" Foreground=""#666666"" Text=""左髋"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1364,"<TextBlock VerticalAlignment=""Center"" FontFamily=""{StaticResource AppFont}"" FontSize=""13"" Foreground=""#666666"" Text=""右髋"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1373,"<TextBlock Margin=""0,0,18,0"" VerticalAlignment=""Center"" FontFamily=""{StaticResource AppFont}"" FontSize=""13"" Foreground=""#666666"" Text=""左踝"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1375,"<TextBlock VerticalAlignment=""Center"" FontFamily=""{StaticResource AppFont}"" FontSize=""13"" Foreground=""#666666"" Text=""右踝"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1384,"<TextBlock Margin=""0,0,18,0"" VerticalAlignment=""Center"" FontFamily=""{StaticResource AppFont}"" FontSize=""13"" Foreground=""#666666"" Text=""骨盆"" />"
+Views\Dialogs\MeasurementDetailDialog.xaml,1393,"<TextBlock VerticalAlignment=""Center"" FontFamily=""{StaticResource AppFont}"" FontSize=""13"" Foreground=""#666666"" Text=""躯干"" />"
+Views\Dialogs\OperationProgressDialog.xaml,167,"Text=""操作执行期间请稍候，取消后已写入的临时文件会保留在本地目录中。"""
+Views\Dialogs\OperationProgressDialog.xaml,177,"Content=""取消"""
+Views\Dialogs\PasswordResetDialog.xaml,141,"<Run Text=""登录密码"" />"
+Views\Dialogs\PasswordResetDialog.xaml,153,"<Run Text=""确认密码"" />"
+Views\Dialogs\PasswordResetDialog.xaml,169,"Text=""密码由纯数字组成，&#x0a;登录密码需与确认密码一致。"" />"
+Views\Dialogs\PasswordResetDialog.xaml,187,"Content=""确认"""
+Views\Dialogs\PatientEditDialog.xaml,351,"<Run Text=""姓名 "" />"
+Views\Dialogs\PatientEditDialog.xaml,361,"Text=""性别"" />"
+Views\Dialogs\PatientEditDialog.xaml,372,"Text=""出生日期"" />"
+Views\Dialogs\PatientEditDialog.xaml,386,"Text=""请选择日期"" />"
+Views\Dialogs\PatientEditDialog.xaml,430,"Text=""手机号"" />"
+Views\Dialogs\PatientEditDialog.xaml,442,"<Run Text=""身高"" />"
+Views\Dialogs\PatientEditDialog.xaml,465,"Text=""体重"" />"
+Views\Dialogs\PatientEditDialog.xaml,497,"Text=""身份证号"" />"
+Views\Dialogs\PatientEditDialog.xaml,510,"Text=""就诊号"" />"
+Views\Dialogs\PatientEditDialog.xaml,526,"Text=""地址"" />"
+Views\Dialogs\PatientEditDialog.xaml,542,"Text=""病史"" />"
+Views\Dialogs\PatientEditDialog.xaml,558,"Text=""备注"" />"
+Views\Dialogs\PatientEditDialog.xaml,584,"Content=""取消"""
+Views\Dialogs\PatientEditDialog.xaml,588,"Content=""保存"""
+Views\Dialogs\ReportPreviewDialog.xaml,271,"Text=""报告预览"" />"
+Views\Dialogs\ReportPreviewDialog.xaml,284,"Text=""关闭"" />"
+Views\Dialogs\ReportPreviewDialog.xaml,324,"Text=""报告标题"" />"
+Views\Dialogs\ReportPreviewDialog.xaml,330,"Text=""{Binding ReportTitle, Mode=OneWay, TargetNullValue=步态分析报告}"" />"
+Views\Dialogs\ReportPreviewDialog.xaml,335,"Text=""编号"" />"
+Views\Dialogs\ReportPreviewDialog.xaml,346,"Text=""患者"" />"
+Views\Dialogs\ReportPreviewDialog.xaml,358,"Text=""测量类型"" />"
+Views\Dialogs\ReportPreviewDialog.xaml,371,"Text=""分析模式"" />"
+Views\Dialogs\ReportPreviewDialog.xaml,384,"Text=""测量时间"" />"
+Views\Dialogs\ReportPreviewDialog.xaml,416,"<TextBlock Style=""{StaticResource ReportSectionTitleTextStyle}"" Text=""报告配置"" />"
+Views\Dialogs\ReportPreviewDialog.xaml,431,"Text=""报告内容选择"" />"
+Views\Dialogs\ReportPreviewDialog.xaml,433,"Content=""步态时空参数"""
+Views\Dialogs\ReportPreviewDialog.xaml,437,"Content=""运动学参数"""
+Views\Dialogs\ReportPreviewDialog.xaml,441,"Content=""躯干和骨盆参数"""
+Views\Dialogs\ReportPreviewDialog.xaml,446,"Content=""对称性分析"""
+Views\Dialogs\ReportPreviewDialog.xaml,450,"Content=""左右侧参数"""
+Views\Dialogs\ReportPreviewDialog.xaml,454,"Content=""曲线图"""
+Views\Dialogs\ReportPreviewDialog.xaml,461,"Text=""勾选变化后，右侧报告预览会自动更新。打印会使用当前选择的报告内容。"" />"
+Views\Dialogs\ReportPreviewDialog.xaml,471,"Text=""导出格式"" />"
+Views\Dialogs\ReportPreviewDialog.xaml,493,"Content=""导出报告"""
+Views\Dialogs\ReportPreviewDialog.xaml,505,"Text=""打印操作"" />"
+Views\Dialogs\ReportPreviewDialog.xaml,511,"Content=""打印"""
+Views\Dialogs\ReportPreviewDialog.xaml,540,"<TextBlock Style=""{StaticResource ReportSectionTitleTextStyle}"" Text=""报告文档预览"" />"
+Views\Dialogs\ReportPreviewDialog.xaml,562,"Content=""上一页"""
+Views\Dialogs\ReportPreviewDialog.xaml,567,"Content=""下一页"""
+Views\Dialogs\ReportPreviewDialog.xaml,584,"Content=""缩小"""
+Views\Dialogs\ReportPreviewDialog.xaml,593,"Content=""放大"""
+Views\Dialogs\ReportPreviewDialog.xaml,598,"Content=""适合宽度"""
+Views\Dialogs\UserEditDialog.xaml,345,"<Run Text=""登录账号"" />"
+Views\Dialogs\UserEditDialog.xaml,357,"<Run Text=""角色"" />"
+Views\Dialogs\UserEditDialog.xaml,369,"<Run Text=""用户姓名"" />"
+Views\Dialogs\UserEditDialog.xaml,378,"<TextBlock Grid.Row=""1"" Grid.Column=""3"" Style=""{StaticResource DialogFormLabelStyle}"" Text=""科室"" />"
+Views\Dialogs\UserEditDialog.xaml,387,"<TextBlock Grid.Row=""2"" Grid.Column=""0"" Style=""{StaticResource DialogFormLabelStyle}"" Text=""电话"" />"
+Views\Dialogs\UserEditDialog.xaml,414,"Text=""启用账号"" />"
+Views\Dialogs\UserEditDialog.xaml,423,"<Run Text=""登录密码"" />"
+Views\Dialogs\UserEditDialog.xaml,440,"<Run Text=""确认密码"" />"
+Views\Dialogs\UserEditDialog.xaml,459,"Text=""密码由纯数字组成，登录密码需与确认密码一致。"""
+Views\Dialogs\UserEditDialog.xaml,484,"Content=""取消"""
+Views\Dialogs\UserEditDialog.xaml,488,"Content=""确认"""
+Views\Measurement\MeasurementView.xaml,49,<!--  封面  -->
+Views\Measurement\MeasurementView.xaml,89,"Text=""步态智能分析系统测量评估注意事项"""
+Views\Measurement\MeasurementView.xaml,102,"Text=""1、在视频采集过程中，请被采集人匀速并自然的走路，不要脱离地垫范围;"""
+Views\Measurement\MeasurementView.xaml,114,"Text=""2、请被采集人不要穿太过宽松的衣服，否则会影响识别精度;"""
+Views\Measurement\MeasurementView.xaml,126,"Text=""3、请保持现场光源明亮，注意不要太暗;"""
+Views\Measurement\MeasurementView.xaml,138,"Text=""4、视频采集相机注意不要被障碍物遮挡;"""
+Views\Measurement\MeasurementView.xaml,150,"Text=""5、步态视频采集过程中，请不要挪动相机位置，否则影响测量结果。"""
+Views\Measurement\MeasurementView.xaml,200,"Text=""创建测量"" />"
+Views\Measurement\MeasurementView.xaml,206,<!--  三步骤流程  -->
+Views\Measurement\MeasurementView.xaml,234,"Text=""&gt;&gt;&gt; 1  新建测量  &gt;&gt;&gt;"">"
+Views\Measurement\MeasurementView.xaml,291,"Text=""&gt;&gt;&gt; 2  回放检查  &gt;&gt;&gt;"">"
+Views\Measurement\MeasurementView.xaml,348,"Text=""&gt;&gt;&gt; 3  分析结果  &gt;&gt;&gt;"">"
+Views\Measurement\Step1CreateMeasurementView.xaml,328,"<TextBlock Style=""{StaticResource SectionTitleStyle}"" Text=""测量信息"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,343,"<TextBlock Style=""{StaticResource FieldLabelStyle}"" Text=""测量名称"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,351,"<TextBlock Style=""{StaticResource FieldLabelStyle}"" Text=""测量类型"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,357,"<ComboBoxItem Content=""自然步行"" Tag=""{x:Static common:MeasurementType.NormalWalk}"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,358,"<ComboBoxItem Content=""快走"" Tag=""{x:Static common:MeasurementType.FastWalk}"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,359,"<ComboBoxItem Content=""慢走"" Tag=""{x:Static common:MeasurementType.SlowWalk}"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,360,"<ComboBoxItem Content=""其他"" Tag=""{x:Static common:MeasurementType.Other}"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,365,"<TextBlock Style=""{StaticResource FieldLabelStyle}"" Text=""分析模式"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,371,"<ComboBoxItem Content=""单视频模式"" Tag=""{x:Static vm:AnalysisVideoMode.Single}"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,372,"<ComboBoxItem Content=""双视频模式"" Tag=""{x:Static vm:AnalysisVideoMode.Dual}"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,377,"<TextBlock Style=""{StaticResource FieldLabelStyle}"" Text=""备注"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,405,"<TextBlock Style=""{StaticResource SectionTitleStyle}"" Text=""视频来源"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,412,"Text=""实时采集请点击右侧按钮；已有本地视频请在下方选择文件导入。"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,427,"<TextBlock Style=""{StaticResource ActionButtonTextStyle}"" Text=""打开视频采集"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,476,"Text=""未选择"""
+Views\Measurement\Step1CreateMeasurementView.xaml,512,"Text=""侧面视频"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,541,"Text=""{Binding SideVideoInfo.Resolution, StringFormat=分辨率：{0}}"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,545,"Text=""{Binding SideVideoInfo.FrameRateDisplay, StringFormat=帧率：{0}}"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,549,"Text=""{Binding SideVideoInfo.DurationDisplay, StringFormat=时长：{0}}"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,553,"Text=""{Binding SideVideoInfo.FileSizeDisplay, StringFormat=大小：{0}}"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,559,"<TextBlock Style=""{StaticResource ActionButtonTextStyle}"" Text=""选择文件"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,565,"<TextBlock Style=""{StaticResource ActionButtonTextStyle}"" Text=""清除"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,621,"Text=""未选择"""
+Views\Measurement\Step1CreateMeasurementView.xaml,657,"Text=""正面视频"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,686,"Text=""{Binding FrontVideoInfo.Resolution, StringFormat=分辨率：{0}}"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,690,"Text=""{Binding FrontVideoInfo.FrameRateDisplay, StringFormat=帧率：{0}}"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,694,"Text=""{Binding FrontVideoInfo.DurationDisplay, StringFormat=时长：{0}}"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,698,"Text=""{Binding FrontVideoInfo.FileSizeDisplay, StringFormat=大小：{0}}"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,704,"<TextBlock Style=""{StaticResource ActionButtonTextStyle}"" Text=""选择文件"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,710,"<TextBlock Style=""{StaticResource ActionButtonTextStyle}"" Text=""清除"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,740,"<TextBlock Style=""{StaticResource ActionButtonTextStyle}"" Text=""返回封面"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,748,"<TextBlock Style=""{StaticResource ActionButtonTextStyle}"" Text=""重置"" />"
+Views\Measurement\Step1CreateMeasurementView.xaml,755,"<TextBlock Style=""{StaticResource ActionButtonTextStyle}"" Text=""进入回放检查"" />"
+Views\Measurement\Step4AnalyzeView.xaml,218,"Text=""正在分析"" />"
+Views\Measurement\Step4AnalyzeView.xaml,245,"Text=""当前阶段"" />"
+Views\Measurement\Step4AnalyzeView.xaml,264,"Text=""分析状态"" />"
+Views\Measurement\Step4AnalyzeView.xaml,283,"Text=""已用时间"" />"
+Views\Measurement\Step4AnalyzeView.xaml,297,"Content=""停止分析"""
+Views\Measurement\Step4AnalyzeView.xaml,321,"<TextBlock Style=""{StaticResource SectionTitleTextStyle}"" Text=""分析结果"" />"
+Views\Measurement\Step4AnalyzeView.xaml,335,"<TextBlock Style=""{StaticResource MetricLabelStyle}"" Text=""结果状态"" />"
+Views\Measurement\Step4AnalyzeView.xaml,356,"<TextBlock Style=""{StaticResource MetricLabelStyle}"" Text=""分析时长"" />"
+Views\Measurement\Step4AnalyzeView.xaml,363,"<TextBlock Style=""{StaticResource MetricLabelStyle}"" Text=""分析模式"" />"
+Views\Measurement\Step4AnalyzeView.xaml,370,"<TextBlock Style=""{StaticResource MetricLabelStyle}"" Text=""任务编号"" />"
+Views\Measurement\Step4AnalyzeView.xaml,384,"<TextBlock Style=""{StaticResource MetricLabelStyle}"" Text=""有效帧比例"" />"
+Views\Measurement\Step4AnalyzeView.xaml,419,"Text=""本次分析信息"" />"
+Views\Measurement\Step4AnalyzeView.xaml,424,"<TextBlock Style=""{StaticResource MetricLabelStyle}"" Text=""身高"" />"
+Views\Measurement\Step4AnalyzeView.xaml,433,"<TextBlock Style=""{StaticResource MetricLabelStyle}"" Text=""体重"" />"
+Views\Measurement\Step4AnalyzeView.xaml,442,"<TextBlock Style=""{StaticResource MetricLabelStyle}"" Text=""膝关节 ROM"" />"
+Views\Measurement\Step4AnalyzeView.xaml,451,"<TextBlock Style=""{StaticResource MetricLabelStyle}"" Text=""髋关节 ROM"" />"
+Views\Measurement\Step4AnalyzeView.xaml,466,"<TextBlock Style=""{StaticResource MetricLabelStyle}"" Text=""结果完整性"" />"
+Views\Measurement\Step4AnalyzeView.xaml,472,"Text=""当前仅显示软件可计算的结果完整性信息。"""
+Views\Measurement\Step4AnalyzeView.xaml,479,"<Run Text=""有效帧比例 "" />"
+Views\Measurement\Step4AnalyzeView.xaml,508,"Text=""关键步态参数"" />"
+Views\Measurement\Step4AnalyzeView.xaml,513,"<TextBlock Style=""{StaticResource MetricLabelStyle}"" Text=""步速"" />"
+Views\Measurement\Step4AnalyzeView.xaml,519,"<TextBlock Style=""{StaticResource MetricLabelStyle}"" Text=""步长"" />"
+Views\Measurement\Step4AnalyzeView.xaml,525,"<TextBlock Style=""{StaticResource MetricLabelStyle}"" Text=""步幅"" />"
+Views\Measurement\Step4AnalyzeView.xaml,531,"<TextBlock Style=""{StaticResource MetricLabelStyle}"" Text=""步频"" />"
+Views\Measurement\Step4AnalyzeView.xaml,537,"<TextBlock Style=""{StaticResource MetricLabelStyle}"" Text=""步态周期"" />"
+Views\Measurement\Step4AnalyzeView.xaml,543,"<TextBlock Style=""{StaticResource MetricLabelStyle}"" Text=""站立相"" />"
+Views\Measurement\Step4AnalyzeView.xaml,549,"<TextBlock Style=""{StaticResource MetricLabelStyle}"" Text=""摆动相"" />"
+Views\Measurement\Step4AnalyzeView.xaml,555,"<TextBlock Style=""{StaticResource MetricLabelStyle}"" Text=""双支撑"" />"
+Views\Measurement\Step4AnalyzeView.xaml,603,"Text=""{Binding ErrorDescription, FallbackValue=分析失败, TargetNullValue=分析失败}"" />"
+Views\Measurement\Step4AnalyzeView.xaml,609,"Text=""{Binding ErrorSuggestion, FallbackValue=请检查视频和配置后重新分析, TargetNullValue=请检查视频和配置后重新分析}"""
+Views\Measurement\Step4AnalyzeView.xaml,629,"Content=""返回封面"""
+Views\Measurement\Step4AnalyzeView.xaml,639,"Content=""重新分析"""
+Views\Measurement\Step4AnalyzeView.xaml,645,"Content=""查看分析详情"""
+Views\Measurement\Step4AnalyzeView.xaml,649,"Content=""生成报告"""
+Views\Measurement\TaskDrawerView.xaml,23,<!--  左侧：当前任务  -->
+Views\Measurement\TaskDrawerView.xaml,33,<!--  有任务时显示  -->
+Views\Measurement\TaskDrawerView.xaml,68,<!--  无任务时显示  -->
+Views\Measurement\TaskDrawerView.xaml,75,<!--  右侧：日志  -->
+Views\Measurement\TaskDrawerView.xaml,113,<!--  关闭按钮  -->
+Views\Settings\DataManagementSettingsView.xaml,127,"Text=""关"" />"
+Views\Settings\DataManagementSettingsView.xaml,134,"<Setter TargetName=""SwitchText"" Property=""Text"" Value=""开"" />"
+Views\Settings\DataManagementSettingsView.xaml,408,"<TextBlock Style=""{StaticResource SectionTitleTextStyle}"" Text=""自动备份"" />"
+Views\Settings\DataManagementSettingsView.xaml,426,"<Setter Property=""Text"" Value=""已关闭自动备份"" />"
+Views\Settings\DataManagementSettingsView.xaml,429,"<Setter Property=""Text"" Value=""已开启自动备份"" />"
+Views\Settings\DataManagementSettingsView.xaml,453,"Text=""立即备份"" />"
+Views\Settings\DataManagementSettingsView.xaml,469,"Text=""备份时间"" />"
+Views\Settings\DataManagementSettingsView.xaml,484,"Text=""保留数量"" />"
+Views\Settings\DataManagementSettingsView.xaml,499,"Text=""保存设置"" />"
+Views\Settings\DataManagementSettingsView.xaml,529,"<TextBlock Style=""{StaticResource SectionTitleTextStyle}"" Text=""视频文件管理"" />"
+Views\Settings\DataManagementSettingsView.xaml,538,"<TextBlock Style=""{StaticResource CardFieldLabelStyle}"" Text=""录制视频目录占用"" />"
+Views\Settings\DataManagementSettingsView.xaml,557,"Text=""打开目录"" />"
+Views\Settings\DataManagementSettingsView.xaml,569,"<TextBlock Style=""{StaticResource CardFieldLabelStyle}"" Text=""分析结果目录占用"" />"
+Views\Settings\DataManagementSettingsView.xaml,588,"Text=""打开目录"" />"
+Views\Settings\DataManagementSettingsView.xaml,622,"<TextBlock Style=""{StaticResource SectionTitleTextStyle}"" Text=""备份历史"" />"
+Views\Settings\DataManagementSettingsView.xaml,641,"Text=""刷新"" />"
+Views\Settings\DataManagementSettingsView.xaml,662,"Text=""编号"" />"
+Views\Settings\DataManagementSettingsView.xaml,666,"Text=""文件名称"" />"
+Views\Settings\DataManagementSettingsView.xaml,670,"Text=""大小"" />"
+Views\Settings\DataManagementSettingsView.xaml,674,"Text=""备份时间"" />"
+Views\Settings\DataManagementSettingsView.xaml,678,"Text=""删除"" />"
+Views\Settings\DataManagementSettingsView.xaml,732,"Text=""恢复"" />"
+Views\Settings\DataManagementSettingsView.xaml,771,"Text=""暂无备份记录"""
+Views\Settings\DepartmentManagementView.xaml,183,"Text=""添加"" />"
+Views\Settings\DepartmentManagementView.xaml,209,"Text=""刷新"" />"
+Views\Settings\DepartmentManagementView.xaml,240,"Text=""编号"" />"
+Views\Settings\DepartmentManagementView.xaml,244,"Text=""科室名称"" />"
+Views\Settings\DepartmentManagementView.xaml,248,"Text=""科室代码"" />"
+Views\Settings\DepartmentManagementView.xaml,252,"Text=""描述"" />"
+Views\Settings\DepartmentManagementView.xaml,256,"Text=""创建时间"" />"
+Views\Settings\DepartmentManagementView.xaml,260,"Text=""编辑"" />"
+Views\Settings\DepartmentManagementView.xaml,264,"Text=""删除"" />"
+Views\Settings\DeviceConfigView.xaml,148,"<TextBlock Style=""{StaticResource SettingsSectionTitleTextStyle}"" Text=""设备ID设置"" />"
+Views\Settings\DeviceConfigView.xaml,161,"<TextBlock Style=""{StaticResource SettingsLabelTextStyle}"" Text=""侧面相机ID"" />"
+Views\Settings\DeviceConfigView.xaml,170,"Text=""正面相机ID"" />"
+Views\Settings\DeviceConfigView.xaml,179,"Content=""保存"""
+Views\Settings\DeviceConfigView.xaml,200,"<TextBlock Style=""{StaticResource SettingsSectionTitleTextStyle}"" Text=""设备参数设置"" />"
+Views\Settings\DeviceConfigView.xaml,214,"<TextBlock Style=""{StaticResource SettingsLabelTextStyle}"" Text=""配置软件"" />"
+Views\Settings\DeviceConfigView.xaml,223,"Content=""选择"""
+Views\Settings\DeviceConfigView.xaml,228,"Content=""打开"""
+Views\Settings\GeneralSettingsView.xaml,302,"<TextBlock Style=""{StaticResource SettingsSectionTitleTextStyle}"" Text=""语言设置"" />"
+Views\Settings\GeneralSettingsView.xaml,336,"<TextBlock Style=""{StaticResource SettingsSectionTitleTextStyle}"" Text=""主题设置"" />"
+Views\Settings\GeneralSettingsView.xaml,365,"Text=""主题色"" />"
+Views\Settings\GeneralSettingsView.xaml,413,"<TextBlock Style=""{StaticResource SettingsSectionTitleTextStyle}"" Text=""设置导入/导出"" />"
+Views\Settings\GeneralSettingsView.xaml,436,"Text=""导出设置"" />"
+Views\Settings\GeneralSettingsView.xaml,455,"Text=""导入设置"" />"
+Views\Settings\SystemInfoView.xaml,197,"Content=""检查更新"""
+Views\Settings\SystemInfoView.xaml,329,"Text=""打开文件"" />"
+Views\Settings\SystemInfoView.xaml,374,"Text=""刷新"" />"
+Views\Settings\SystemInfoView.xaml,396,"Text=""导出"" />"
+Views\Settings\SystemInfoView.xaml,427,"Text=""近30天日志："" />"
+Views\Settings\SystemInfoView.xaml,439,"Text=""信息："" />"
+Views\Settings\SystemInfoView.xaml,451,"Text=""警告："" />"
+Views\Settings\SystemInfoView.xaml,463,"Text=""错误："" />"
+Views\Settings\SystemInfoView.xaml,475,"Text=""日志文件："" />"
+Views\Settings\SystemInfoView.xaml,487,"Text=""总大小："" />"
+Views\Settings\SystemInfoView.xaml,535,"Text=""清理"" />"
+Views\Settings\UnitSettingsView.xaml,190,"<TextBlock Style=""{StaticResource SectionTitleTextStyle}"" Text=""单位信息"" />"
+Views\Settings\UnitSettingsView.xaml,203,"Text=""单位名称"" />"
+Views\Settings\UnitSettingsView.xaml,261,"Text=""支持 PNG、JPG 格式的图片，最大 300K 左右"" />"
+Views\Settings\UnitSettingsView.xaml,265,"Content=""清除当前 LOGO"""
+Views\Settings\UnitSettingsView.xaml,276,"Content=""确认"""
+Views\Settings\UserManagementView.xaml,217,"Text=""添加"" />"
+Views\Settings\UserManagementView.xaml,243,"Text=""刷新"" />"
+Views\Settings\UserManagementView.xaml,277,"Text=""编号"" />"
+Views\Settings\UserManagementView.xaml,281,"Text=""账号"" />"
+Views\Settings\UserManagementView.xaml,285,"Text=""姓名"" />"
+Views\Settings\UserManagementView.xaml,289,"Text=""角色"" />"
+Views\Settings\UserManagementView.xaml,293,"Text=""科室"" />"
+Views\Settings\UserManagementView.xaml,297,"Text=""状态"" />"
+Views\Settings\UserManagementView.xaml,301,"Text=""最后登录日期"" />"
+Views\Settings\UserManagementView.xaml,305,"Text=""重置密码"" />"
+Views\Settings\UserManagementView.xaml,309,"Text=""编辑"" />"
+Views\Settings\UserManagementView.xaml,313,"Text=""删除"" />"
+Views\Settings\UserManagementView.xaml,462,"Text=""重置密码"" />"
+Resources\Styles\ButtonStyles.xaml,6,<!--  主按钮样式  -->
+Resources\Styles\ButtonStyles.xaml,17,<!--  次要按钮样式  -->
+Resources\Styles\ButtonStyles.xaml,28,<!--  文字按钮样式  -->
+Resources\Styles\ButtonStyles.xaml,38,<!--  图标按钮样式  -->
+Resources\Styles\ButtonStyles.xaml,48,<!--  危险操作按钮样式（红色）  -->
+Resources\Styles\ButtonStyles.xaml,61,<!--  危险操作轮廓按钮样式  -->
+Resources\Styles\ButtonStyles.xaml,74,<!--  工具栏按钮样式  -->
+Resources\Styles\ButtonStyles.xaml,84,<!--  小型按钮样式  -->
+Resources\Styles\ButtonStyles.xaml,96,<!--  标题栏按钮样式  -->
+Resources\Styles\ButtonStyles.xaml,113,<!--  标题栏关闭按钮样式  -->
+Resources\Styles\DataGridStyles.xaml,6,<!--  斑马纹行样式  -->
+Resources\Styles\DataGridStyles.xaml,13,<!--  斑马纹：奇数行  -->
+Resources\Styles\DataGridStyles.xaml,17,<!--  选中状态  -->
+Resources\Styles\DataGridStyles.xaml,22,<!--  鼠标悬停  -->
+Resources\Styles\DataGridStyles.xaml,33,<!--  标准DataGrid样式  -->
+Resources\Styles\DataGridStyles.xaml,55,<!--  列标题样式  -->
+Resources\Styles\DataGridStyles.xaml,68,<!--  全局CenteredTextColumnStyle样式  -->
+Resources\Styles\DataGridStyles.xaml,73,<!--  单元格样式  -->
+Resources\Styles\DataGridStyles.xaml,79,<!--  确保内容垂直居中  -->
+Resources\Styles\DataGridStyles.xaml,94,<!--  全局DataGridCell样式 - 去除焦点边框  -->
+Resources\Styles\DataGridStyles.xaml,110,<!--  全局DataGridRow样式 - 去除焦点边框  -->
+Resources\Styles\DataGridStyles.xaml,115,<!--  操作列按钮样式  -->
+Resources\Styles\DataGridStyles.xaml,126,<!--  编辑按钮样式  -->
+Resources\Styles\DataGridStyles.xaml,135,<!--  删除按钮样式  -->
+Resources\Styles\DataGridStyles.xaml,144,<!--  紧凑型DataGrid样式  -->
+Resources\Styles\DataGridStyles.xaml,153,<!--  分页控件文本样式  -->
+Resources\Styles\DataGridStyles.xaml,160,<!--  分页按钮样式  -->
+Resources\Styles\TextBoxStyles.xaml,6,<!--  标准文本框样式  -->
+Resources\Styles\TextBoxStyles.xaml,17,<!--  带清除按钮的文本框样式  -->
+Resources\Styles\TextBoxStyles.xaml,28,<!--  搜索框样式  -->
+Resources\Styles\TextBoxStyles.xaml,36,"<Setter Property=""materialDesign:HintAssist.Hint"" Value=""搜索..."" />"
+Resources\Styles\TextBoxStyles.xaml,40,<!--  密码框样式  -->
+Resources\Styles\TextBoxStyles.xaml,50,<!--  多行文本框样式  -->
+Resources\Styles\TextBoxStyles.xaml,63,<!--  数字输入框样式  -->
+Resources\Styles\TextBoxStyles.xaml,74,<!--  填充式文本框样式  -->
+Resources\Styles\TextBoxStyles.xaml,84,<!--  紧凑型文本框样式  -->
+Resources\Styles\TextBoxStyles.xaml,95,<!--  日期选择器样式  -->
+Resources\Styles\TextBoxStyles.xaml,105,<!--  下拉框样式  -->
+Resources\Templates\ReportTemplate.xaml,5,<!--  报告模板样式  -->
+Resources\Templates\ReportTemplate.xaml,7,<!--  报告标题样式  -->
+Resources\Templates\ReportTemplate.xaml,15,<!--  报告副标题样式  -->
+Resources\Templates\ReportTemplate.xaml,23,<!--  区域标题样式  -->
+Resources\Templates\ReportTemplate.xaml,31,<!--  标签样式  -->
+Resources\Templates\ReportTemplate.xaml,38,<!--  值样式  -->
+Resources\Templates\ReportTemplate.xaml,45,<!--  参数值样式  -->
+Resources\Templates\ReportTemplate.xaml,53,<!--  参数单位样式  -->
+Resources\Templates\ReportTemplate.xaml,60,<!--  医生意见样式  -->
+Resources\Templates\ReportTemplate.xaml,67,<!--  页脚样式  -->
+Resources\Templates\ReportTemplate.xaml,74,<!--  分隔线样式  -->
+Resources\Templates\ReportTemplate.xaml,81,<!--  报告卡片样式  -->
+Resources\Templates\ReportTemplate.xaml,91,<!--  参数网格项样式  -->
