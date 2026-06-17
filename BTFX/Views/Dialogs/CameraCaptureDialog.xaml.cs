@@ -71,16 +71,18 @@ public partial class CameraCaptureDialog : UserControl
 
     private void CloseButton_OnClick(object sender, System.Windows.RoutedEventArgs e)
     {
-        var result = System.Windows.MessageBox.Show(
-            "是否退出视频采集？",
-            "退出确认",
-            System.Windows.MessageBoxButton.OKCancel,
-            System.Windows.MessageBoxImage.Question);
+        ExitConfirmOverlay.Visibility = System.Windows.Visibility.Visible;
+    }
 
-        if (result == System.Windows.MessageBoxResult.OK)
-        {
-            DialogHost.CloseDialogCommand.Execute(null, this);
-        }
+    private void CancelExitButton_OnClick(object sender, System.Windows.RoutedEventArgs e)
+    {
+        ExitConfirmOverlay.Visibility = System.Windows.Visibility.Collapsed;
+    }
+
+    private void ConfirmExitButton_OnClick(object sender, System.Windows.RoutedEventArgs e)
+    {
+        ExitConfirmOverlay.Visibility = System.Windows.Visibility.Collapsed;
+        DialogHost.CloseDialogCommand.Execute(null, this);
     }
 
     private void SidePlaybackSlider_OnPreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -409,3 +411,4 @@ public partial class CameraCaptureDialog : UserControl
             : time.ToString(@"mm\:ss");
     }
 }
+

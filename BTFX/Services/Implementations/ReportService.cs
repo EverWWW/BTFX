@@ -14,6 +14,7 @@ public class ReportService : IReportService
 {
     private readonly IMeasurementService _measurementService;
     private readonly ILogHelper? _logHelper;
+    private readonly ILocalizationService? _localizationService;
 
     // 报告序号（每日重置）
     private static int _reportSequence = 1;
@@ -27,6 +28,7 @@ public class ReportService : IReportService
         try
         {
             _logHelper = App.Services?.GetService(typeof(ILogHelper)) as ILogHelper;
+            _localizationService = App.Services?.GetService(typeof(ILocalizationService)) as ILocalizationService;
         }
         catch { }
     }
@@ -110,9 +112,7 @@ public class ReportService : IReportService
                 Patient = measurement.Patient,
                 CreatedBy = operatorId,
                 Status = ReportStatus.Completed,
-                Title = string.IsNullOrWhiteSpace(measurement.Patient?.Name)
-                    ? "步态分析报告"
-                    : $"步态分析报告 - {measurement.Patient.Name}",
+                Title = BuildDefaultReportTitle(measurement.Patient?.Name),
                 DoctorOpinion = string.Empty,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
@@ -484,9 +484,7 @@ public class ReportService : IReportService
             existing.Status = ReportStatus.Completed;
             if (string.IsNullOrWhiteSpace(existing.Title))
             {
-                existing.Title = string.IsNullOrWhiteSpace(measurement.Patient?.Name)
-                    ? "步态分析报告"
-                    : $"步态分析报告 - {measurement.Patient.Name}";
+                existing.Title = BuildDefaultReportTitle(measurement.Patient?.Name);
             }
             existing.PatientId = measurement.PatientId;
             existing.Patient = measurement.Patient;
@@ -508,9 +506,7 @@ public class ReportService : IReportService
                 Patient = measurement.Patient,
                 CreatedBy = operatorId,
                 Status = ReportStatus.Completed,
-                Title = string.IsNullOrWhiteSpace(measurement.Patient?.Name)
-                    ? "步态分析报告"
-                    : $"步态分析报告 - {measurement.Patient.Name}",
+                Title = BuildDefaultReportTitle(measurement.Patient?.Name),
                 DoctorOpinion = string.Empty,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
@@ -589,9 +585,33 @@ public class ReportService : IReportService
 
         if (string.IsNullOrWhiteSpace(report.Title))
         {
-            report.Title = string.IsNullOrWhiteSpace(report.Patient?.Name)
-                ? "步态分析报告"
-                : $"步态分析报告 - {report.Patient.Name}";
+            report.Title = BuildDefaultReportTitle(report.Patient?.Name);
         }
+    }
+
+    private string BuildDefaultReportTitle(string? patientName)
+    {
+        if (string.IsNullOrWhiteSpace(patientName))
+        {
+            return L("Report.DefaultTitle");
+        }
+
+        return L("AnalysisDetail.ReportConfig.DefaultReportTitleFormat", patientName);
+    }
+
+    private string L(string key)
+    {
+        var value = _localizationService?.GetString(key);
+        return string.IsNullOrWhiteSpace(value) || string.Equals(value, key, StringComparison.Ordinal)
+            ? key
+            : value;
+    }
+
+    private string L(string key, params object[] args)
+    {
+        var value = _localizationService?.GetString(key, args);
+        return string.IsNullOrWhiteSpace(value) || string.Equals(value, key, StringComparison.Ordinal)
+            ? string.Format(System.Globalization.CultureInfo.CurrentCulture, key, args)
+            : value;
     }
 }

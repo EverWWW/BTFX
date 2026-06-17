@@ -28,7 +28,6 @@ public partial class PatientEditDialog : UserControl
     {
         AttachViewModel(DataContext as PatientEditViewModel);
         SetCalendarLanguage();
-        SyncBirthDateDisplay();
 
         if (_localizationService == null
             && App.Services?.GetService(typeof(ILocalizationService)) is ILocalizationService localizationService)
@@ -36,6 +35,8 @@ public partial class PatientEditDialog : UserControl
             _localizationService = localizationService;
             _localizationService.LanguageChanged += OnLanguageChanged;
         }
+
+        SyncBirthDateDisplay();
     }
 
     private void PatientEditDialog_Unloaded(object sender, RoutedEventArgs e)
@@ -93,6 +94,7 @@ public partial class PatientEditDialog : UserControl
     private void OnLanguageChanged(object? sender, Common.AppLanguage language)
     {
         SetCalendarLanguage();
+        SyncBirthDateDisplay();
     }
 
     private void SetCalendarLanguage()
@@ -143,9 +145,12 @@ public partial class PatientEditDialog : UserControl
         }
         else
         {
-            BirthDateText.Text = "请选择日期";
+            BirthDateText.Text = _localizationService?.GetString("PleaseSelectDate")
+                ?? Application.Current.TryFindResource("PleaseSelectDate") as string
+                ?? "请选择日期";
             BirthDateText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#999999"));
             BirthDateCalendar.SelectedDate = null;
         }
     }
 }
+

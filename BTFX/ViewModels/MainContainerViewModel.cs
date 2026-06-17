@@ -286,7 +286,7 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     {
         // 更新导航菜单标题
         UpdateNavigationTitles();
-
+        UpdateUserInfo();
     }
 
     /// <summary>
@@ -296,7 +296,7 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
     {
         var user = _sessionService.CurrentUser;
         IsGuestMode = _sessionService.IsGuestMode;
-        CurrentUsername = user?.Username ?? "游客";
+        CurrentUsername = user?.Username ?? _localizationService.GetString("Guest");
 
         // 游客模式下禁用部分菜单
         foreach (var item in NavigationItems)
@@ -319,7 +319,7 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
         if (IsGuestMode)
         {
             HasCurrentPatient = false;
-            CurrentPatientName = "游客";
+            CurrentPatientName = _localizationService.GetString("Guest");
             CurrentPatientGender = string.Empty;
             CurrentPatientAge = null;
             return;
@@ -499,8 +499,10 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
             {
                 DataContext = new ConfirmDialogViewModel
                 {
-                    Title = "切换患者",
-                    Message = "切换患者前请确保当前工作已保存。是否继续？"
+                    Title = _localizationService.GetString("SwitchPatient"),
+                    Message = _localizationService.GetString("SwitchPatientConfirmMessage"),
+                    ConfirmText = _localizationService.GetString("Confirm"),
+                    CancelText = _localizationService.GetString("Cancel")
                 }
             },
             "RootDialog");
@@ -525,10 +527,12 @@ public partial class MainContainerViewModel : ObservableObject, IDisposable
             {
                 DataContext = new ConfirmDialogViewModel
                 {
-                    Title = "退出登录",
+                    Title = _localizationService.GetString("Logout"),
                     Message = IsGuestMode 
-                        ? "游客模式下的临时数据将被清除。是否确认退出？"
-                        : "退出登录前请确保当前工作已保存。是否确认退出？"
+                        ? _localizationService.GetString("GuestLogoutConfirmMessage")
+                        : _localizationService.GetString("LogoutConfirmMessage"),
+                    ConfirmText = _localizationService.GetString("Confirm"),
+                    CancelText = _localizationService.GetString("Cancel")
                 }
             },
             "RootDialog");

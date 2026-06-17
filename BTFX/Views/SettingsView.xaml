@@ -140,8 +140,8 @@
                                 <Border
                                     Grid.Row="1"
                                     Background="White"
-                                    CornerRadius="0,0,8,8"
                                     BorderThickness="0"
+                                    CornerRadius="0,0,8,8"
                                     KeyboardNavigation.TabIndex="2">
                                     <ContentPresenter
                                         x:Name="PART_SelectedContentHost"
@@ -157,7 +157,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="0"  Background="Transparent">
+    <Grid Margin="0" Background="Transparent">
         <TabControl SelectedIndex="{Binding SelectedTabIndex}" Style="{StaticResource SettingsTopTabControlStyle}">
             <TabItem>
                 <TabItem.Header>

@@ -79,7 +79,7 @@
                         FontSize="30"
                         FontWeight="Medium"
                         Foreground="#333333"
-                        Text="关于我们" />
+                        Text="{DynamicResource AboutUs}" />
                     <Button
                         Width="56"
                         Height="56"
@@ -167,16 +167,16 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource InfoLabelStyle}" Text="软件版本" />
+                        <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource InfoLabelStyle}" Text="{DynamicResource Activation.SoftwareVersion}" />
                         <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource InfoValueStyle}" Text="{x:Static common:Constants.VERSION_FULL}" />
 
-                        <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource InfoLabelStyle}" Text="发布版本" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource InfoLabelStyle}" Text="{DynamicResource About.ReleaseVersion}" />
                         <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource InfoValueStyle}" Text="{x:Static common:Constants.VERSION_DISPLAY}" />
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource InfoLabelStyle}" Text="内部版本" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource InfoLabelStyle}" Text="{DynamicResource About.InternalVersion}" />
                         <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource InfoValueStyle}" Text="{x:Static common:Constants.VERSION_INTERNAL}" />
 
-                        <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource InfoLabelStyle}" Text="协议版本" />
+                        <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource InfoLabelStyle}" Text="{DynamicResource About.ProtocolVersion}" />
                         <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource InfoValueStyle}" Text="{x:Static common:Constants.PROTOCOL_VERSION}" />
                     </Grid>
                 </Border>

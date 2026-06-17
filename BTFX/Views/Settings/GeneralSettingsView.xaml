@@ -299,7 +299,7 @@
                             VerticalAlignment="Center"
                             Background="#E4004A"
                             CornerRadius="2" />
-                        <TextBlock Style="{StaticResource SettingsSectionTitleTextStyle}" Text="语言设置" />
+                        <TextBlock Style="{StaticResource SettingsSectionTitleTextStyle}" Text="{DynamicResource LanguageSettings}" />
                     </StackPanel>
 
                     <ComboBox
@@ -333,7 +333,7 @@
                             VerticalAlignment="Center"
                             Background="#E4004A"
                             CornerRadius="2" />
-                        <TextBlock Style="{StaticResource SettingsSectionTitleTextStyle}" Text="主题设置" />
+                        <TextBlock Style="{StaticResource SettingsSectionTitleTextStyle}" Text="{DynamicResource ThemeSettings}" />
                     </StackPanel>
 
                     <Grid
@@ -362,7 +362,7 @@
                             FontFamily="{StaticResource AppFont}"
                             FontSize="24"
                             Foreground="#403B5B"
-                            Text="主题色" />
+                            Text="{DynamicResource ThemeColorSettings}" />
 
                         <Border
                             Grid.Column="3"
@@ -410,7 +410,7 @@
                             VerticalAlignment="Center"
                             Background="#E4004A"
                             CornerRadius="2" />
-                        <TextBlock Style="{StaticResource SettingsSectionTitleTextStyle}" Text="设置导入/导出" />
+                        <TextBlock Style="{StaticResource SettingsSectionTitleTextStyle}" Text="{DynamicResource SettingsImportExport}" />
                     </StackPanel>
 
                     <StackPanel
@@ -433,7 +433,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="22"
                                     Foreground="#403B5B"
-                                    Text="导出设置" />
+                                    Text="{DynamicResource ExportSettings}" />
                             </StackPanel>
                         </Button>
 
@@ -452,7 +452,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="22"
                                     Foreground="#403B5B"
-                                    Text="导入设置" />
+                                    Text="{DynamicResource ImportSettings}" />
                             </StackPanel>
                         </Button>
                     </StackPanel>

@@ -22,7 +22,7 @@ public class MainWindowViewModel : ObservableObject
     private object? _currentView;
     private string _version = Constants.VERSION_DISPLAY;
     private bool _isFullscreen;
-    private string _userDisplayName = "游客";
+    private string _userDisplayName = string.Empty;
 
 
     /// <summary>
@@ -138,6 +138,7 @@ public class MainWindowViewModel : ObservableObject
             _localizationService.LanguageChanged += (s, e) =>
             {
                 Title = _localizationService.GetString("AppName");
+                RefreshUserDisplayName();
             };
 
             // 初始化时立即应用当前语言的标题
@@ -170,10 +171,10 @@ public class MainWindowViewModel : ObservableObject
             {
                 DataContext = new ConfirmDialogViewModel
                 {
-                    Title = "退出登录",
-                    Message = "退出登录前请确保当前工作已保存。是否确认退出？",
-                    ConfirmText = "确定",
-                    CancelText = "取消",
+                    Title = _localizationService.GetString("Logout"),
+                    Message = _localizationService.GetString("LogoutConfirmMessage"),
+                    ConfirmText = _localizationService.GetString("Confirm"),
+                    CancelText = _localizationService.GetString("Cancel"),
                     IsCancelVisible = true
                 }
             },
@@ -204,6 +205,6 @@ public class MainWindowViewModel : ObservableObject
             ? user.Name
             : !string.IsNullOrWhiteSpace(user?.Username)
                 ? user.Username
-                : "游客";
+                : _localizationService.GetString("Guest");
     }
 }

@@ -176,7 +176,7 @@ public partial class PatientEditViewModel : ObservableObject
 
             if (!Height.HasValue)
             {
-                return "身高不能为空";
+                return _localizationService.GetString("HeightRequired");
             }
 
         // Check IdNumber (optional, but if present must be valid)
@@ -208,7 +208,7 @@ public partial class PatientEditViewModel : ObservableObject
     {
         _isEditMode = false;
         DialogResult = null;
-        DialogTitle = "添加新患者信息";
+        DialogTitle = _localizationService.GetString("AddPatientInfo");
         PatientId = 0;
         ClearForm();
     }
@@ -220,7 +220,7 @@ public partial class PatientEditViewModel : ObservableObject
     {
         _isEditMode = true;
         DialogResult = null;
-        DialogTitle = "编辑患者信息";
+        DialogTitle = _localizationService.GetString("EditPatientInfo");
         PatientId = patient.Id;
         Name = patient.Name;
         Gender = patient.Gender;
@@ -287,7 +287,7 @@ public partial class PatientEditViewModel : ObservableObject
 
         if (!Height.HasValue)
         {
-            ErrorMessage = "身高不能为空";
+            ErrorMessage = _localizationService.GetString("HeightRequired");
             return false;
         }
 

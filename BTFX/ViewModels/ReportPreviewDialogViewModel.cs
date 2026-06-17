@@ -23,10 +23,10 @@ namespace BTFX.ViewModels;
 /// </summary>
 public partial class ReportPreviewDialogViewModel : ObservableObject
 {
-    private const string DefaultUnitName = "步态智能分析系统";
+    private readonly ILocalizationService _localizationService;
     private Report? _report;
     private FlowDocument? _previewDocument;
-    private string _previewStatus = "尚未加载报告预览。";
+    private string _previewStatus;
     private bool _isInitializing;
     private bool _includeSpatiotemporalParameters = true;
     private bool _includeKinematicParameters = true;
@@ -35,6 +35,25 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
     private bool _includeLeftRightParameters = true;
     private bool _includeCurveCharts = true;
     private string _selectedExportFormat = "PDF";
+
+    public ReportPreviewDialogViewModel(ILocalizationService localizationService)
+    {
+        _localizationService = localizationService;
+        _previewStatus = L("AnalysisDetail.ReportPreview.Status.NotLoaded");
+        _localizationService.LanguageChanged += OnLanguageChanged;
+    }
+
+    private string L(string key) => _localizationService.GetString(key);
+
+    private string L(string key, params object[] args) => _localizationService.GetString(key, args);
+
+    private void OnLanguageChanged(object? sender, AppLanguage language)
+    {
+        RebuildPreviewDocument();
+        NotifyReportPropertiesChanged();
+        NotifySectionPropertiesChanged();
+        OnPropertyChanged(nameof(PreviewStatus));
+    }
 
     public Report? Report
     {
@@ -104,7 +123,7 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         set => SetSectionProperty(ref _includeCurveCharts, value);
     }
 
-    public string ReportTitle => string.IsNullOrWhiteSpace(Report?.Title) ? "步态分析报告" : Report.Title;
+    public string ReportTitle => NormalizeReportTitle(Report?.Title);
 
     public string ReportNumber => string.IsNullOrWhiteSpace(Report?.ReportNumber) ? "--" : Report.ReportNumber;
 
@@ -114,7 +133,7 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
 
     public string PatientNameDisplay => !string.IsNullOrWhiteSpace(Report?.Patient?.Name)
         ? Report.Patient.Name
-        : Report?.PatientId > 0 ? $"患者 #{Report.PatientId}" : "--";
+        : Report?.PatientId > 0 ? L("ReportPreview.PatientIdFormat", Report.PatientId) : "--";
 
     public string MeasurementTypeDisplay => Report?.MeasurementRecord is null
         ? "--"
@@ -134,7 +153,9 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
                 return "--";
             }
 
-            return record.HasDualVideo ? "双视角模式" : record.HasSideVideo || record.HasFrontVideo ? "单视角模式" : "--";
+            return record.HasDualVideo
+                ? L("Report.Mode.Dual")
+                : record.HasSideVideo || record.HasFrontVideo ? L("Report.Mode.Single") : "--";
         }
     }
 
@@ -153,7 +174,9 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         get
         {
             var sections = BuildIncludedSections();
-            return sections.Count > 0 ? string.Join("、", sections) : "未选择包含项";
+            return sections.Count > 0
+                ? string.Join(L("AnalysisDetail.ReportPreview.Sections.Separator"), sections)
+                : L("AnalysisDetail.ReportPreview.Sections.NoneSelected");
         }
     }
 
@@ -194,7 +217,7 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         _isInitializing = false;
 
         RebuildPreviewDocument();
-        PreviewStatus = "已生成当前报告预览，可在返回配置后继续调整。";
+        PreviewStatus = L("ReportPreview.Status.Ready");
         NotifyReportPropertiesChanged();
         return Task.CompletedTask;
     }
@@ -216,14 +239,14 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
     {
         if (PreviewDocument is null)
         {
-            MessageBox.Show("当前没有可打印的报告预览。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(L("ReportPreview.Print.NoPreview"), L("Tip"), MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
-        var printed = PrintHelper.PrintDocument(PreviewDocument, $"报告_{ReportNumber}", showDialog: true);
+        var printed = PrintHelper.PrintDocument(PreviewDocument, $"{L("ReportPreview.FilePrefix")}_{ReportNumber}", showDialog: true);
         if (printed)
         {
-            MessageBox.Show("报告已发送到打印队列。", "打印", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(L("ReportPreview.Print.Sent"), L("Print"), MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 
@@ -239,9 +262,9 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
 
         var dialog = new SaveFileDialog
         {
-            Title = "导出报告",
-            Filter = "PDF 文件 (*.pdf)|*.pdf",
-            FileName = $"报告_{SanitizeFileName(ReportNumber)}.pdf"
+            Title = L("Report.ExportReport"),
+            Filter = L("ReportPreview.Export.PdfFilter"),
+            FileName = $"{L("ReportPreview.FilePrefix")}_{SanitizeFileName(ReportNumber)}.pdf"
         };
 
         if (dialog.ShowDialog(Application.Current.MainWindow) != true)
@@ -276,14 +299,14 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
             }
 
             MessageBox.Show(
-                success ? $"报告已导出至：\n{filePath}" : "PDF 导出失败。",
-                success ? "导出成功" : "导出失败",
+                success ? L("ReportPreview.Export.SuccessFormat", filePath) : L("ReportPreview.Export.Failed"),
+                success ? L("ReportPreview.Export.SuccessTitle") : L("ReportPreview.Export.FailedTitle"),
                 MessageBoxButton.OK,
                 success ? MessageBoxImage.Information : MessageBoxImage.Error);
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"导出失败：{ex.Message}", "导出失败", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(L("ReportPreview.Export.FailedFormat", ex.Message), L("ReportPreview.Export.FailedTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -352,17 +375,17 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
 
         if (IncludeSpatiotemporalParameters)
         {
-            AddClinicalParameterSection(document, "步态时空参数", "反映整体步行效率、节律稳定性和支撑相分配，是评估步态功能的基础参数。",
+            AddClinicalParameterSection(document, L("Report.Section.Spatiotemporal"), L("ReportPreview.Description.Spatiotemporal"),
             [
-                ("步态周期", FormatSeconds(data.MeanCycleDurationSec), "s", "参考 0.9-1.2"),
-                ("平均步长", FormatMeters(data.MeanStepLengthM), "m", "参考 0.55-0.75"),
-                ("平均步幅", FormatMeters(data.MeanStrideLengthM), "m", "参考 1.10-1.50"),
-                ("平均步频", FormatNumber(data.CadenceStepPerMin, "F1"), "step/min", "参考 100-120"),
-                ("平均步速", FormatNumber(data.GaitSpeedMPerS, "F2"), "m/s", "参考 1.0-1.4"),
-                ("站立相时间", FormatNumber(data.MeanStanceTimeSec, "F2"), "s", "参考 0.60-0.80"),
-                ("摆动相时间", FormatNumber(data.MeanSwingTimeSec, "F2"), "s", "参考 0.30-0.45"),
-                ("双支撑时间", FormatNumber(data.MeanDoubleSupportTimeSec, "F2"), "s", "参考 0.15-0.25"),
-                ("单支撑时间", FormatNumber(data.MeanSingleSupportTimeSec, "F2"), "s", "参考 0.40-0.55")
+                (L("ReportPreview.Param.GaitCycle"), FormatSeconds(data.MeanCycleDurationSec), "s", L("ReportPreview.Ref.GaitCycle")),
+                (L("ReportPreview.Param.MeanStepLength"), FormatMeters(data.MeanStepLengthM), "m", L("ReportPreview.Ref.StepLength")),
+                (L("ReportPreview.Param.MeanStrideLength"), FormatMeters(data.MeanStrideLengthM), "m", L("ReportPreview.Ref.StrideLength")),
+                (L("ReportPreview.Param.MeanCadence"), FormatNumber(data.CadenceStepPerMin, "F1"), "step/min", L("ReportPreview.Ref.Cadence")),
+                (L("ReportPreview.Param.MeanGaitSpeed"), FormatNumber(data.GaitSpeedMPerS, "F2"), "m/s", L("ReportPreview.Ref.GaitSpeed")),
+                (L("ReportPreview.Param.StanceTime"), FormatNumber(data.MeanStanceTimeSec, "F2"), "s", L("ReportPreview.Ref.StanceTime")),
+                (L("ReportPreview.Param.SwingTime"), FormatNumber(data.MeanSwingTimeSec, "F2"), "s", L("ReportPreview.Ref.SwingTime")),
+                (L("ReportPreview.Param.DoubleSupportTime"), FormatNumber(data.MeanDoubleSupportTimeSec, "F2"), "s", L("ReportPreview.Ref.DoubleSupportTime")),
+                (L("ReportPreview.Param.SingleSupportTime"), FormatNumber(data.MeanSingleSupportTimeSec, "F2"), "s", L("ReportPreview.Ref.SingleSupportTime"))
             ]);
         }
 
@@ -370,65 +393,65 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         {
             var kinematicItems = new List<(string Name, string Value, string Unit, string Reference)>
             {
-                ("左髋 ROM", FormatNumber(data.LeftHipRomDeg, "F1"), "°", "--"),
-                ("右髋 ROM", FormatNumber(data.RightHipRomDeg, "F1"), "°", "--"),
-                ("左膝 ROM", FormatNumber(data.LeftKneeRomDeg, "F1"), "°", "--"),
-                ("右膝 ROM", FormatNumber(data.RightKneeRomDeg, "F1"), "°", "--"),
-                ("左踝 ROM", FormatNumber(data.LeftAnkleRomDeg, "F1"), "°", "--"),
-                ("右踝 ROM", FormatNumber(data.RightAnkleRomDeg, "F1"), "°", "--"),
-                ("髋关节平均 ROM", FormatNumber(data.HipRomDeg, "F1"), "°", "--"),
-                ("膝关节平均 ROM", FormatNumber(data.KneeRomDeg, "F1"), "°", "--"),
-                ("踝关节平均 ROM", FormatNumber(data.AnkleRomDeg, "F1"), "°", "--")
+                (L("ReportPreview.Param.LeftHipRom"), FormatNumber(data.LeftHipRomDeg, "F1"), "°", "--"),
+                (L("ReportPreview.Param.RightHipRom"), FormatNumber(data.RightHipRomDeg, "F1"), "°", "--"),
+                (L("ReportPreview.Param.LeftKneeRom"), FormatNumber(data.LeftKneeRomDeg, "F1"), "°", "--"),
+                (L("ReportPreview.Param.RightKneeRom"), FormatNumber(data.RightKneeRomDeg, "F1"), "°", "--"),
+                (L("ReportPreview.Param.LeftAnkleRom"), FormatNumber(data.LeftAnkleRomDeg, "F1"), "°", "--"),
+                (L("ReportPreview.Param.RightAnkleRom"), FormatNumber(data.RightAnkleRomDeg, "F1"), "°", "--"),
+                (L("ReportPreview.Param.HipAverageRom"), FormatNumber(data.HipRomDeg, "F1"), "°", "--"),
+                (L("ReportPreview.Param.KneeAverageRom"), FormatNumber(data.KneeRomDeg, "F1"), "°", "--"),
+                (L("ReportPreview.Param.AnkleAverageRom"), FormatNumber(data.AnkleRomDeg, "F1"), "°", "--")
             };
 
             if (data.IsDualVideoMode)
             {
-                kinematicItems.Add(("骨盆冠状面角度", FormatNumber(data.PelvisCoronalRomDeg, "F1"), "°", "--"));
+                kinematicItems.Add((L("ReportPreview.Param.PelvisCoronalAngle"), FormatNumber(data.PelvisCoronalRomDeg, "F1"), "°", "--"));
             }
 
-            AddClinicalParameterSection(document, "运动学参数", "展示下肢主要关节活动范围，用于识别关节活动受限、代偿和左右活动差异。",
+            AddClinicalParameterSection(document, L("Report.Section.Kinematic"), L("ReportPreview.Description.Kinematic"),
                 kinematicItems);
         }
 
         if (IncludeTrunkPelvisParameters && data.IsDualVideoMode)
         {
-            AddClinicalParameterSection(document, "躯干和骨盆参数", "用于观察躯干稳定性、骨盆控制能力和步行过程中的姿态代偿情况。",
+            AddClinicalParameterSection(document, L("Report.Section.TrunkPelvis"), L("ReportPreview.Description.TrunkPelvis"),
             [
-                ("躯干倾斜平均角度", FormatNumber(data.TrunkTiltMeanDeg, "F1"), "°", "--"),
-                ("躯干倾斜最大角度", FormatNumber(data.TrunkTiltMaxDeg, "F1"), "°", "--"),
-                ("躯干倾斜最小角度", FormatNumber(data.TrunkTiltMinDeg, "F1"), "°", "--"),
-                ("躯干倾斜活动范围", FormatNumber(data.TrunkTiltRomDeg, "F1"), "°", "--"),
-                ("骨盆倾斜平均角度", FormatNumber(data.PelvisTiltMeanDeg, "F1"), "°", "--"),
-                ("骨盆倾斜最大角度", FormatNumber(data.PelvisTiltMaxDeg, "F1"), "°", "--"),
-                ("骨盆活动范围", FormatNumber(data.PelvisRomDeg, "F1"), "°", "--")
+                (L("ReportPreview.Param.TrunkTiltMean"), FormatNumber(data.TrunkTiltMeanDeg, "F1"), "°", "--"),
+                (L("ReportPreview.Param.TrunkTiltMax"), FormatNumber(data.TrunkTiltMaxDeg, "F1"), "°", "--"),
+                (L("ReportPreview.Param.TrunkTiltMin"), FormatNumber(data.TrunkTiltMinDeg, "F1"), "°", "--"),
+                (L("ReportPreview.Param.TrunkTiltRom"), FormatNumber(data.TrunkTiltRomDeg, "F1"), "°", "--"),
+                (L("ReportPreview.Param.PelvisTiltMean"), FormatNumber(data.PelvisTiltMeanDeg, "F1"), "°", "--"),
+                (L("ReportPreview.Param.PelvisTiltMax"), FormatNumber(data.PelvisTiltMaxDeg, "F1"), "°", "--"),
+                (L("ReportPreview.Param.PelvisRom"), FormatNumber(data.PelvisRomDeg, "F1"), "°", "--")
             ]);
         }
 
         if (IncludeSymmetryAnalysis)
         {
-            AddClinicalParameterSection(document, "对称性分析", "对比左右侧关键时空和运动学指标，辅助判断双侧负重、支撑和摆动是否协调。",
+            AddClinicalParameterSection(document, L("Report.Section.Symmetry"), L("ReportPreview.Description.Symmetry"),
             [
-                ("左右步幅差", FormatNumber(AbsDiff(data.LeftStrideMeanM, data.RightStrideMeanM), "F2"), "m", "--"),
-                ("左右步幅差百分比", FormatNumber(DiffPercent(data.LeftStrideMeanM, data.RightStrideMeanM), "F1"), "%", "--"),
-                ("左右站立相差", FormatNumber(AbsDiff(data.LeftStanceRatioPct, data.RightStanceRatioPct), "F1"), "%", "--"),
-                ("左右站立相差百分比", FormatNumber(DiffPercent(data.LeftStanceRatioPct, data.RightStanceRatioPct), "F1"), "%", "--"),
-                ("左右膝关节 ROM 差", FormatNumber(AbsDiff(data.LeftKneeRomDeg, data.RightKneeRomDeg), "F1"), "°", "--"),
-                ("左右髋关节 ROM 差", FormatNumber(AbsDiff(data.LeftHipRomDeg, data.RightHipRomDeg), "F1"), "°", "--"),
-                ("左右踝关节 ROM 差", FormatNumber(AbsDiff(data.LeftAnkleRomDeg, data.RightAnkleRomDeg), "F1"), "°", "--"),
-                ("综合对称性评分", FormatNumber(data.SymmetryScore, "F1"), "分", "--")
+                (L("ReportPreview.Param.StrideDiff"), FormatNumber(AbsDiff(data.LeftStrideMeanM, data.RightStrideMeanM), "F2"), "m", "--"),
+                (L("ReportPreview.Param.StrideDiffPercent"), FormatNumber(DiffPercent(data.LeftStrideMeanM, data.RightStrideMeanM), "F1"), "%", "--"),
+                (L("ReportPreview.Param.StanceRatioDiff"), FormatNumber(AbsDiff(data.LeftStanceRatioPct, data.RightStanceRatioPct), "F1"), "%", "--"),
+                (L("ReportPreview.Param.StanceRatioDiffPercent"), FormatNumber(DiffPercent(data.LeftStanceRatioPct, data.RightStanceRatioPct), "F1"), "%", "--"),
+                (L("ReportPreview.Param.KneeRomDiff"), FormatNumber(AbsDiff(data.LeftKneeRomDeg, data.RightKneeRomDeg), "F1"), "°", "--"),
+                (L("ReportPreview.Param.HipRomDiff"), FormatNumber(AbsDiff(data.LeftHipRomDeg, data.RightHipRomDeg), "F1"), "°", "--"),
+                (L("ReportPreview.Param.AnkleRomDiff"), FormatNumber(AbsDiff(data.LeftAnkleRomDeg, data.RightAnkleRomDeg), "F1"), "°", "--"),
+                (L("ReportPreview.Param.SymmetryScore"), FormatNumber(data.SymmetryScore, "F1"), L("ReportPreview.Unit.Score"), "--")
             ]);
         }
 
         if (IncludeLeftRightParameters)
         {
-            AddClinicalParameterSection(document, "左右侧参数", "列出左右侧步幅和时相占比，用于复核单侧步态表现。",
+            AddClinicalParameterSection(document, L("Report.Section.SideParameters"), L("ReportPreview.Description.SideParameters"),
             [
-                ("左侧步幅", FormatMeters(data.LeftStrideMeanM), "m", "--"),
-                ("右侧步幅", FormatMeters(data.RightStrideMeanM), "m", "--"),
-                ("左侧站立相占比", FormatNumber(data.LeftStanceRatioPct, "F1"), "%", "--"),
-                ("右侧站立相占比", FormatNumber(data.RightStanceRatioPct, "F1"), "%", "--"),
-                ("左侧摆动相占比", FormatNumber(ComplementPercent(data.LeftStanceRatioPct), "F1"), "%", "--"),
-                ("右侧摆动相占比", FormatNumber(ComplementPercent(data.RightStanceRatioPct), "F1"), "%", "--")
+                (L("ReportPreview.Param.LeftStride"), FormatMeters(data.LeftStrideMeanM), "m", "--"),
+                (L("ReportPreview.Param.RightStride"), FormatMeters(data.RightStrideMeanM), "m", "--"),
+                (L("ReportPreview.Param.LeftStanceRatio"), FormatNumber(data.LeftStanceRatioPct, "F1"), "%", "--"),
+                (L("ReportPreview.Param.RightStanceRatio"), FormatNumber(data.RightStanceRatioPct, "F1"), "%", "--"),
+                (L("ReportPreview.Param.LeftSwingRatio"), FormatNumber(ComplementPercent(data.LeftStanceRatioPct), "F1"), "%", "--"),
+                (L("ReportPreview.Param.RightSwingRatio"), FormatNumber(ComplementPercent(data.RightStanceRatioPct), "F1"), "%", "--")
             ]);
         }
 
@@ -439,138 +462,8 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
 
         if (!BuildIncludedSections().Any())
         {
-            AddSectionTitle(document, "报告内容");
-            AddNoteBox(document, "未选择报告内容，请在左侧勾选需要预览、打印或导出的参数模块。");
-        }
-
-        AddFooter(document, report);
-        return document;
-    }
-
-    private FlowDocument BuildSelectedSectionsDocument(Report report)
-    {
-        var document = new FlowDocument
-        {
-            PageWidth = PrintHelper.A4WidthInPixels,
-            PageHeight = PrintHelper.A4HeightInPixels,
-            PagePadding = new Thickness(48, 44, 48, 44),
-            FontFamily = new FontFamily("Microsoft YaHei UI"),
-            FontSize = 12,
-            Background = Brushes.White,
-            ColumnWidth = PrintHelper.A4WidthInPixels
-        };
-
-        AddHeader(document, report);
-        AddBasicInfo(document, report);
-        AddComputedClinicalSummary(document, ReportAnalysisSnapshot.From(report));
-
-        if (IncludeSpatiotemporalParameters)
-        {
-            AddClinicalParameterSection(
-                document,
-                "步态时空参数",
-                "反映整体步行效率、节律稳定性和支撑相分配，是评估步态功能的基础参数。",
-                new[]
-                {
-                    ("步态周期", FormatSeconds(report.AnalysisResult?.GaitCycleDurationS ?? report.MeasurementRecord?.GaitParameters?.GaitCycleDurationS, 1.02), "s", "参考 0.9-1.2"),
-                    ("步长", FormatMeters(report.AnalysisResult?.StepLengthM ?? report.MeasurementRecord?.GaitParameters?.StepLengthM, 0.63), "m", "参考 0.55-0.75"),
-                    ("步幅", FormatMeters(report.AnalysisResult?.StrideLengthM ?? report.MeasurementRecord?.GaitParameters?.StrideLengthM, 1.26), "m", "参考 1.10-1.50"),
-                    ("步频", FormatNumber(report.MeasurementRecord?.GaitParameters?.Cadence, 112.5, "F1"), "step/min", "参考 100-120"),
-                    ("步速", FormatNumber(report.AnalysisResult?.GaitSpeedMPerS ?? report.MeasurementRecord?.GaitParameters?.GaitSpeedMPerS, 1.18, "F2"), "m/s", "参考 1.0-1.4"),
-                    ("站立相时间", FormatNumber(report.AnalysisResult?.StanceTimeS ?? report.MeasurementRecord?.GaitParameters?.StanceTimeS, 0.72, "F2"), "s", "参考 0.60-0.80"),
-                    ("摆动相时间", FormatNumber(report.AnalysisResult?.SwingTimeS ?? report.MeasurementRecord?.GaitParameters?.SwingTimeS, 0.38, "F2"), "s", "参考 0.30-0.45"),
-                    ("双支撑时间", FormatNumber(report.AnalysisResult?.DoubleSupportTimeS ?? report.MeasurementRecord?.GaitParameters?.DoubleSupportTimeS, 0.21, "F2"), "s", "参考 0.15-0.25"),
-                    ("单支撑时间", FormatNumber(report.AnalysisResult?.SingleSupportTimeS ?? report.MeasurementRecord?.GaitParameters?.SingleSupportTimeS, 0.49, "F2"), "s", "参考 0.40-0.55")
-                });
-        }
-
-        if (IncludeKinematicParameters)
-        {
-            AddClinicalParameterSection(
-                document,
-                "运动学参数",
-                "展示下肢主要关节活动范围，用于识别关节活动受限、代偿和左右活动差异。",
-                new[]
-                {
-                    ("左髋 ROM", "43.6", "°", "--"),
-                    ("右髋 ROM", "42.1", "°", "--"),
-                    ("左膝 ROM", "57.3", "°", "--"),
-                    ("右膝 ROM", "55.4", "°", "--"),
-                    ("左踝 ROM", "25.1", "°", "--"),
-                    ("右踝 ROM", "23.7", "°", "--"),
-                    ("骨盆冠状面角度", FormatNumber(report.KinematicSummary?.PelvisCoronalRomDeg, 7.8, "F1"), "°", "--"),
-                    ("髋关节 ROM", FormatNumber(report.KinematicSummary?.HipRomDeg, 42.8, "F1"), "°", "--"),
-                    ("膝关节 ROM", FormatNumber(report.KinematicSummary?.KneeRomDeg, 57.3, "F1"), "°", "--"),
-                    ("踝关节 ROM", FormatNumber(report.KinematicSummary?.AnkleRomDeg, 24.6, "F1"), "°", "--")
-                });
-        }
-
-        if (IncludeTrunkPelvisParameters)
-        {
-            AddClinicalParameterSection(
-                document,
-                "躯干和骨盆参数",
-                "用于观察躯干稳定性、骨盆控制能力和步行过程中的姿势代偿情况。",
-                new[]
-                {
-                    ("躯干倾斜平均角度", "4.2", "°", "--"),
-                    ("躯干倾斜最大角度", "8.5", "°", "--"),
-                    ("躯干倾斜最小角度", "1.2", "°", "--"),
-                    ("躯干倾斜活动范围", "7.3", "°", "--"),
-                    ("骨盆倾斜角", "6.1", "°", "--"),
-                    ("骨盆侧倾角", "3.4", "°", "--"),
-                    ("躯干侧屈角", "2.8", "°", "--")
-                });
-        }
-
-        if (IncludeSymmetryAnalysis)
-        {
-            AddClinicalParameterSection(
-                document,
-                "对称性分析",
-                "对比左右侧关键时空和运动学指标，辅助判断双侧负重、支撑和摆动是否协调。",
-                new[]
-                {
-                    ("左右步长差", "0.02", "m", "--"),
-                    ("左右步长差百分比", "3.2", "%", "--"),
-                    ("左右站立相差", "0.03", "s", "--"),
-                    ("左右站立相差百分比", "4.1", "%", "--"),
-                    ("左右摆动相差", "0.02", "s", "--"),
-                    ("左右膝关节 ROM 差", "1.9", "°", "--"),
-                    ("左右髋关节 ROM 差", "2.4", "°", "--"),
-                    ("左右踝关节 ROM 差", "1.6", "°", "--"),
-                    ("综合对称性评分", FormatNumber(report.MeasurementRecord?.GaitParameters?.SymmetryIndex, 92.4, "F1"), "分", "--")
-                });
-        }
-
-        if (IncludeLeftRightParameters)
-        {
-            AddClinicalParameterSection(
-                document,
-                "左右侧参数",
-                "列出左右侧步长、步幅和时相占比，用于复核单侧步态表现。",
-                new[]
-                {
-                    ("左侧步长", FormatMetersFromCentimeters(report.MeasurementRecord?.GaitParameters?.StepLengthLeft, 0.62), "m", "--"),
-                    ("右侧步长", FormatMetersFromCentimeters(report.MeasurementRecord?.GaitParameters?.StepLengthRight, 0.64), "m", "--"),
-                    ("左侧步幅", FormatMetersFromCentimeters(report.MeasurementRecord?.GaitParameters?.StrideLengthLeft, 1.25), "m", "--"),
-                    ("右侧步幅", FormatMetersFromCentimeters(report.MeasurementRecord?.GaitParameters?.StrideLengthRight, 1.27), "m", "--"),
-                    ("左侧站立相占比", FormatNumber(report.MeasurementRecord?.GaitParameters?.StancePhaseLeft, 61.8, "F1"), "%", "--"),
-                    ("右侧站立相占比", FormatNumber(report.MeasurementRecord?.GaitParameters?.StancePhaseRight, 62.4, "F1"), "%", "--"),
-                    ("左侧摆动相占比", FormatNumber(report.MeasurementRecord?.GaitParameters?.SwingPhaseLeft, 38.2, "F1"), "%", "--"),
-                    ("右侧摆动相占比", FormatNumber(report.MeasurementRecord?.GaitParameters?.SwingPhaseRight, 37.6, "F1"), "%", "--")
-                });
-        }
-
-        if (IncludeCurveCharts)
-        {
-            AddCurveSection(document);
-        }
-
-        if (!BuildIncludedSections().Any())
-        {
-            AddSectionTitle(document, "报告内容");
-            AddNoteBox(document, "未选择报告内容，请在左侧勾选需要预览、打印或导出的参数模块。");
+            AddSectionTitle(document, L("ReportPreview.ReportContent"));
+            AddNoteBox(document, L("ReportPreview.NoContentSelected"));
         }
 
         AddFooter(document, report);
@@ -580,7 +473,7 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
     private void AddHeader(FlowDocument document, Report report)
     {
         var settingsService = App.Services?.GetService(typeof(ISettingsService)) as ISettingsService;
-        var unitName = settingsService?.CurrentSettings?.Unit?.Name ?? DefaultUnitName;
+        var unitName = settingsService?.CurrentSettings?.Unit?.Name ?? L("AppName");
         var logoPath = settingsService?.CurrentSettings?.Unit?.LogoPath;
 
         var logo = TryCreateReportLogo(logoPath);
@@ -601,7 +494,7 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
             Margin = new Thickness(0, 0, 0, 6)
         });
 
-        document.Blocks.Add(new Paragraph(new Run(string.IsNullOrWhiteSpace(report.Title) ? "步态分析报告" : report.Title))
+        document.Blocks.Add(new Paragraph(new Run(NormalizeReportTitle(report.Title)))
         {
             FontSize = 24,
             FontWeight = FontWeights.Bold,
@@ -609,7 +502,7 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
             Margin = new Thickness(0, 0, 0, 6)
         });
 
-        document.Blocks.Add(new Paragraph(new Run($"报告编号：{ReportNumber}"))
+        document.Blocks.Add(new Paragraph(new Run(L("ReportPreview.ReportNumberLineFormat", ReportNumber)))
         {
             FontSize = 11,
             Foreground = new SolidColorBrush(Color.FromRgb(32, 32, 32)),
@@ -654,28 +547,32 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
     private void AddBasicInfo(FlowDocument document, Report report)
     {
         var patient = report.Patient ?? report.MeasurementRecord?.Patient;
-        AddSectionTitle(document, "基本信息");
+        AddSectionTitle(document, L("BasicInformation"));
         AddCompactInfoGrid(document, new[]
         {
-            ("患者", PatientNameDisplay),
-            ("性别", patient?.GenderDisplay ?? "--"),
-            ("年龄", patient?.Age is int age ? $"{age} 岁" : "--"),
-            ("身高", patient?.Height is double height ? $"{height:F0} cm" : "--"),
-            ("测量类型", MeasurementTypeDisplay),
-            ("分析模式", AnalysisModeDisplay),
-            ("测量时间", MeasurementDateDisplay)
+            (L("Patient"), PatientNameDisplay),
+            (L("Gender"), patient?.GenderDisplay ?? "--"),
+            (L("Age"), patient?.Age is int age ? L("ReportPreview.AgeFormat", age) : "--"),
+            (L("Height"), patient?.Height is double height ? $"{height:F0} cm" : "--"),
+            (L("Report.Field.MeasurementType"), MeasurementTypeDisplay),
+            (L("Report.Field.AnalysisMode"), AnalysisModeDisplay),
+            (L("Report.Field.MeasurementTime"), MeasurementDateDisplay)
         });
     }
 
     private void AddComputedClinicalSummary(FlowDocument document, ReportAnalysisSnapshot data)
     {
-        AddSectionTitle(document, "评估摘要");
-        var validFrameRatio = data.ValidFrameRatio is double ratio ? $"有效帧比例 {ratio:P0}" : "有效帧比例 --";
-        var cycleCount = data.CycleCount.HasValue ? $"{data.CycleCount.Value} 个有效周期" : "有效周期数 --";
-        AddNoteBox(document, $"本报告展示本次步态分析的核心指标、左右侧对比和运动学曲线。当前结果状态：{ReportStatusDisplay}；{validFrameRatio}；{cycleCount}。");
+        AddSectionTitle(document, L("ReportPreview.EvaluationSummary"));
+        var validFrameRatio = data.ValidFrameRatio is double ratio
+            ? L("ReportPreview.ValidFrameRatioFormat", ratio.ToString("P0", CultureInfo.CurrentCulture))
+            : L("ReportPreview.ValidFrameRatioEmpty");
+        var cycleCount = data.CycleCount.HasValue
+            ? L("ReportPreview.ValidCycleCountFormat", data.CycleCount.Value)
+            : L("ReportPreview.ValidCycleCountEmpty");
+        AddNoteBox(document, L("ReportPreview.EvaluationSummaryText", ReportStatusDisplay, validFrameRatio, cycleCount));
     }
 
-    private static void AddClinicalParameterSection(
+    private void AddClinicalParameterSection(
         FlowDocument document,
         string title,
         string description,
@@ -784,7 +681,7 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         });
     }
 
-    private static void AddParameterMatrix(FlowDocument document, IReadOnlyList<(string Name, string Value, string Unit, string Reference)> items)
+    private void AddParameterMatrix(FlowDocument document, IReadOnlyList<(string Name, string Value, string Unit, string Reference)> items)
     {
         var table = new Table
         {
@@ -799,10 +696,10 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         table.RowGroups.Add(new TableRowGroup());
 
         var header = new TableRow();
-        AddHeaderCell(header, "指标");
-        AddHeaderCell(header, "结果");
-        AddHeaderCell(header, "单位");
-        AddHeaderCell(header, "参考");
+        AddHeaderCell(header, L("ReportPreview.Table.Metric"));
+        AddHeaderCell(header, L("ReportPreview.Table.Result"));
+        AddHeaderCell(header, L("ReportPreview.Table.Unit"));
+        AddHeaderCell(header, L("ReportPreview.Table.Reference"));
         table.RowGroups[0].Rows.Add(header);
 
         foreach (var item in items)
@@ -848,27 +745,27 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         });
     }
 
-    private static void AddRealCurveSection(FlowDocument document, ReportAnalysisSnapshot data)
+    private void AddRealCurveSection(FlowDocument document, ReportAnalysisSnapshot data)
     {
-        AddSectionTitle(document, "曲线图");
+        AddSectionTitle(document, L("Report.Section.Charts"));
         if (data.AngleFrames.Count == 0)
         {
-            AddNoteBox(document, "当前分析结果未找到 joint_angle.csv，暂无法生成真实关节角度曲线。");
+            AddNoteBox(document, L("ReportPreview.Chart.NoJointAngleCsv"));
             return;
         }
 
-        AddNoteBox(document, "以下曲线用于展示关节角度随视频时间变化的趋势。");
+        AddNoteBox(document, L("ReportPreview.Chart.Description"));
         var curveDefinitions = new List<(string Title, Func<ReportAngleFrame, double> First, Func<ReportAngleFrame, double>? Second, string FirstName, string? SecondName)>
         {
-            ("髋关节角度曲线", f => f.LeftHip, f => f.RightHip, "左髋", "右髋"),
-            ("膝关节角度曲线", f => f.LeftKnee, f => f.RightKnee, "左膝", "右膝"),
-            ("踝关节角度曲线", f => f.LeftAnkle, f => f.RightAnkle, "左踝", "右踝")
+            (L("AnalysisDetail.Chart.HipTitle"), f => f.LeftHip, f => f.RightHip, L("ReportPreview.Legend.LeftHip"), L("ReportPreview.Legend.RightHip")),
+            (L("AnalysisDetail.Chart.KneeTitle"), f => f.LeftKnee, f => f.RightKnee, L("ReportPreview.Legend.LeftKnee"), L("ReportPreview.Legend.RightKnee")),
+            (L("AnalysisDetail.Chart.AnkleTitle"), f => f.LeftAnkle, f => f.RightAnkle, L("ReportPreview.Legend.LeftAnkle"), L("ReportPreview.Legend.RightAnkle"))
         };
 
         if (data.IsDualVideoMode)
         {
-            curveDefinitions.Add(("骨盆角度曲线", f => f.Pelvis, null, "骨盆", null));
-            curveDefinitions.Add(("躯干角度曲线", f => f.Trunk, null, "躯干", null));
+            curveDefinitions.Add((L("AnalysisDetail.Chart.PelvisTitle"), f => f.Pelvis, null, L("ReportPreview.Legend.Pelvis"), null));
+            curveDefinitions.Add((L("AnalysisDetail.Chart.TrunkTitle"), f => f.Trunk, null, L("ReportPreview.Legend.Trunk"), null));
         }
 
         foreach (var curve in curveDefinitions)
@@ -884,41 +781,6 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
                 Child = new Image
                 {
                     Source = CreateRealCurveImage(curve.Title, data.AngleFrames, curve.First, curve.Second, curve.FirstName, curve.SecondName, data.VideoDurationSec),
-                    Stretch = Stretch.Uniform,
-                    MaxWidth = 620
-                }
-            }));
-        }
-    }
-
-    private static void AddCurveSection(FlowDocument document)
-    {
-        AddSectionTitle(document, "曲线图");
-        AddNoteBox(document, "以下曲线使用 20s 模拟数据生成，用于预览报告排版效果。后续接入真实分析结果后，将替换为实际关节角度曲线。");
-
-        var curves = new[]
-        {
-            ("左髋角度曲线", 0.0, Color.FromRgb(32, 32, 32)),
-            ("右髋角度曲线", 0.45, Color.FromRgb(32, 32, 32)),
-            ("左膝角度曲线", 0.9, Color.FromRgb(32, 32, 32)),
-            ("右膝角度曲线", 1.35, Color.FromRgb(32, 32, 32)),
-            ("左踝角度曲线", 1.8, Color.FromRgb(32, 32, 32)),
-            ("右踝角度曲线", 2.25, Color.FromRgb(32, 32, 32))
-        };
-
-        foreach (var curve in curves)
-        {
-            document.Blocks.Add(new BlockUIContainer(new Border
-            {
-                Padding = new Thickness(10),
-                Margin = new Thickness(0, 0, 0, 10),
-                Background = Brushes.White,
-                BorderBrush = new SolidColorBrush(Color.FromRgb(160, 160, 160)),
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(6),
-                Child = new Image
-                {
-                    Source = CreateDemoCurveImage(curve.Item1, curve.Item2, curve.Item3),
                     Stretch = Stretch.Uniform,
                     MaxWidth = 620
                 }
@@ -1143,10 +1005,10 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         }));
     }
 
-    private static void AddFooter(FlowDocument document, Report report)
+    private void AddFooter(FlowDocument document, Report report)
     {
         AddSeparator(document);
-        document.Blocks.Add(new Paragraph(new Run($"报告生成时间：{report.ReportDate.ToString(Constants.DATETIME_FORMAT, CultureInfo.CurrentCulture)}"))
+        document.Blocks.Add(new Paragraph(new Run(L("ReportPreview.GeneratedTimeFormat", report.ReportDate.ToString(Constants.DATETIME_FORMAT, CultureInfo.CurrentCulture))))
         {
             FontSize = 10,
             Foreground = new SolidColorBrush(Color.FromRgb(32, 32, 32)),
@@ -1231,35 +1093,61 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         var sections = new List<string>();
         if (IncludeSpatiotemporalParameters)
         {
-            sections.Add("步态时空参数");
+            sections.Add(L("Report.Section.Spatiotemporal"));
         }
 
         if (IncludeKinematicParameters)
         {
-            sections.Add("运动学参数");
+            sections.Add(L("Report.Section.Kinematic"));
         }
 
         if (IncludeTrunkPelvisParameters)
         {
-            sections.Add("躯干和骨盆参数");
+            sections.Add(L("Report.Section.TrunkPelvis"));
         }
 
         if (IncludeSymmetryAnalysis)
         {
-            sections.Add("对称性分析");
+            sections.Add(L("Report.Section.Symmetry"));
         }
 
         if (IncludeLeftRightParameters)
         {
-            sections.Add("左右侧参数");
+            sections.Add(L("Report.Section.SideParameters"));
         }
 
         if (IncludeCurveCharts)
         {
-            sections.Add("曲线图");
+            sections.Add(L("Report.Section.Charts"));
         }
 
         return sections;
+    }
+
+    private string NormalizeReportTitle(string? title)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return L("Report.DefaultTitle");
+        }
+
+        const string legacyDefaultTitle = "步态分析报告";
+        const string legacyDefaultTitlePrefix = "步态分析报告 - ";
+
+        if (string.Equals(title, legacyDefaultTitle, StringComparison.Ordinal))
+        {
+            return L("Report.DefaultTitle");
+        }
+
+        if (title.StartsWith(legacyDefaultTitlePrefix, StringComparison.Ordinal))
+        {
+            var suffix = title[legacyDefaultTitlePrefix.Length..].Trim();
+            return string.IsNullOrWhiteSpace(suffix)
+                ? L("Report.DefaultTitle")
+                : L("AnalysisDetail.ReportConfig.DefaultReportTitleFormat", suffix);
+        }
+
+        return title;
     }
 
     private void NotifySectionPropertiesChanged()

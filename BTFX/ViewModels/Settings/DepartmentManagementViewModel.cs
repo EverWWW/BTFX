@@ -165,8 +165,8 @@ public partial class DepartmentManagementViewModel : ObservableObject
         if (item == null) return;
 
         var result = await ShowConfirmDialogAsync(
-            "确认删除",
-            $"确定要删除科室 {item.Department.Name} 吗？此操作不可恢复！",
+            _localizationService.GetString("ConfirmDelete"),
+            _localizationService.GetString("ConfirmDeleteDepartment", item.Department.Name),
             "TrashCanOutline");
 
         if (!result) return;
@@ -181,20 +181,20 @@ public partial class DepartmentManagementViewModel : ObservableObject
             }
             else
             {
-                await ShowNoticeDialogAsync("警告", "该科室正在被使用，无法删除");
+                await ShowNoticeDialogAsync(_localizationService.GetString("Warning"), _localizationService.GetString("DepartmentInUse"));
             }
         }
         catch (Exception ex)
         {
             _logHelper?.Error($"删除科室失败: {item.Department.Name}", ex);
-            await ShowNoticeDialogAsync("错误", $"删除失败：{ex.Message}");
+            await ShowNoticeDialogAsync(_localizationService.GetString("Error"), $"{_localizationService.GetString("DeleteFailed")}: {ex.Message}");
         }
     }
 
     /// <summary>
     /// 显示确认对话框。
     /// </summary>
-    private static async Task<bool> ShowConfirmDialogAsync(string title, string message, string iconKind = "HelpCircleOutline")
+    private async Task<bool> ShowConfirmDialogAsync(string title, string message, string iconKind = "HelpCircleOutline")
     {
         var result = await DialogHost.Show(
             new ConfirmDialog
@@ -203,8 +203,8 @@ public partial class DepartmentManagementViewModel : ObservableObject
                 {
                     Title = title,
                     Message = message,
-                    ConfirmText = "确定",
-                    CancelText = "取消",
+                    ConfirmText = _localizationService.GetString("Confirm"),
+                    CancelText = _localizationService.GetString("Cancel"),
                     IsCancelVisible = true,
                     IconKind = iconKind
                 }
@@ -217,7 +217,7 @@ public partial class DepartmentManagementViewModel : ObservableObject
     /// <summary>
     /// 显示提示对话框。
     /// </summary>
-    private static Task ShowNoticeDialogAsync(string title, string message)
+    private Task ShowNoticeDialogAsync(string title, string message)
     {
         return DialogHost.Show(
             new ConfirmDialog
@@ -226,7 +226,7 @@ public partial class DepartmentManagementViewModel : ObservableObject
                 {
                     Title = title,
                     Message = message,
-                    ConfirmText = "确定",
+                    ConfirmText = _localizationService.GetString("Confirm"),
                     IsCancelVisible = false,
                     IconKind = "InformationOutline"
                 }

@@ -736,8 +736,8 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
         if (item == null || !CanDelete) return;
 
         var result = await ShowConfirmDialogAsync(
-            "确认删除",
-            $"确定要删除 {item.Record.Patient?.Name} 的测量记录吗？\n此操作不可恢复。",
+            _localizationService.GetString("DataManagement.DeleteConfirmTitle"),
+            _localizationService.GetString("DataManagement.DeleteConfirmMessage", item.Record.Patient?.Name ?? "--"),
             "TrashCanOutline");
 
         if (!result) return;
@@ -750,13 +750,13 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
                 _globalSelectedIds.Remove(item.Record.Id);
                 await LoadDataAsync();
                 _logHelper?.Information($"删除测量记录：ID={item.Record.Id}");
-                await ShowNoticeDialogAsync("提示", "删除成功！");
+                await ShowNoticeDialogAsync(_localizationService.GetString("Information"), _localizationService.GetString("DeleteSuccess"));
             }
         }
         catch (Exception ex)
         {
             _logHelper?.Error($"删除测量记录失败：ID={item.Record.Id}", ex);
-            await ShowNoticeDialogAsync("错误", $"删除失败：{ex.Message}");
+            await ShowNoticeDialogAsync(_localizationService.GetString("Error"), $"{_localizationService.GetString("DeleteFailed")}: {ex.Message}");
         }
     }
 
@@ -1070,13 +1070,15 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
 
         if (_globalSelectedIds.Count == 0)
         {
-            System.Windows.MessageBox.Show("请先选择要删除的记录", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            await ShowNoticeDialogAsync(
+                _localizationService.GetString("Information"),
+                _localizationService.GetString("DataManagement.SelectDeleteFirst"));
             return;
         }
 
         var result = await ShowConfirmDialogAsync(
-            "确认批量删除",
-            $"确定要删除选中的 {_globalSelectedIds.Count} 条记录吗？\n此操作不可恢复。",
+            _localizationService.GetString("DataManagement.BatchDeleteConfirmTitle"),
+            _localizationService.GetString("DataManagement.BatchDeleteConfirmMessage", _globalSelectedIds.Count),
             "TrashCanOutline");
 
         if (!result) return;
@@ -1088,16 +1090,16 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             _globalSelectedIds.Clear();
             await LoadDataAsync();
             _logHelper?.Information($"批量删除测量记录：{count}条");
-            await ShowNoticeDialogAsync("提示", $"成功删除 {count} 条记录！");
+            await ShowNoticeDialogAsync(_localizationService.GetString("Information"), _localizationService.GetString("DeleteSuccess"));
         }
         catch (Exception ex)
         {
             _logHelper?.Error($"批量删除测量记录失败", ex);
-            await ShowNoticeDialogAsync("错误", $"批量删除失败：{ex.Message}");
+            await ShowNoticeDialogAsync(_localizationService.GetString("Error"), $"{_localizationService.GetString("DeleteFailed")}: {ex.Message}");
         }
     }
 
-    private static async Task<bool> ShowConfirmDialogAsync(string title, string message, string iconKind = "HelpCircleOutline")
+    private async Task<bool> ShowConfirmDialogAsync(string title, string message, string iconKind = "HelpCircleOutline")
     {
         var result = await DialogHost.Show(
             new Views.Dialogs.ConfirmDialog
@@ -1106,8 +1108,8 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
                 {
                     Title = title,
                     Message = message,
-                    ConfirmText = "确定",
-                    CancelText = "取消",
+                    ConfirmText = _localizationService.GetString("Confirm"),
+                    CancelText = _localizationService.GetString("Cancel"),
                     IsCancelVisible = true,
                     IconKind = iconKind
                 }
@@ -1117,7 +1119,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
         return result is true;
     }
 
-    private static Task ShowNoticeDialogAsync(string title, string message)
+    private Task ShowNoticeDialogAsync(string title, string message)
     {
         return DialogHost.Show(
             new Views.Dialogs.ConfirmDialog
@@ -1126,7 +1128,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
                 {
                     Title = title,
                     Message = message,
-                    ConfirmText = "确定",
+                    ConfirmText = _localizationService.GetString("Confirm"),
                     IsCancelVisible = false,
                     IconKind = "InformationOutline"
                 }

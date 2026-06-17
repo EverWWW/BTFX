@@ -22,13 +22,15 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
         <Style x:Key="DialogFormLabelStyle" TargetType="TextBlock">
-            <Setter Property="Width" Value="120" />
+            <Setter Property="Width" Value="170" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
             <Setter Property="FontSize" Value="22" />
             <Setter Property="FontWeight" Value="Medium" />
             <Setter Property="Foreground" Value="#666666" />
             <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="LineHeight" Value="28" />
         </Style>
 
         <Style x:Key="DialogInputTextBoxStyle" TargetType="TextBox">
@@ -333,11 +335,11 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="120" />
-                    <ColumnDefinition Width="330" />
-                    <ColumnDefinition Width="74" />
-                    <ColumnDefinition Width="120" />
-                    <ColumnDefinition Width="330" />
+                    <ColumnDefinition Width="170" />
+                    <ColumnDefinition Width="280" />
+                    <ColumnDefinition Width="44" />
+                    <ColumnDefinition Width="170" />
+                    <ColumnDefinition Width="280" />
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource DialogFormLabelStyle}">

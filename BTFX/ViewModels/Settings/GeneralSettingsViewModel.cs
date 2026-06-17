@@ -32,7 +32,7 @@ public partial class GeneralSettingsViewModel : ObservableObject
     public ObservableCollection<LanguageOption> LanguageOptions { get; } =
     [
         new() { Value = Common.AppLanguage.ChineseSimplified, Display = "中文" },
-        new() { Value = Common.AppLanguage.English, Display = "英文" }
+        new() { Value = Common.AppLanguage.English, Display = "English" }
     ];
 
     public ObservableCollection<ThemeOption> ThemeOptions { get; } =
@@ -151,14 +151,14 @@ public partial class GeneralSettingsViewModel : ObservableObject
         try
         {
             _settingsService.SaveSettings();
-            System.Windows.MessageBox.Show("设置已保存！", "提示",
+            System.Windows.MessageBox.Show(_localizationService.GetString("SaveSuccess"), _localizationService.GetString("Information"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
             _logHelper?.Information("保存通用设置");
         }
         catch (Exception ex)
         {
             _logHelper?.Error("保存通用设置失败", ex);
-            System.Windows.MessageBox.Show($"保存失败：{ex.Message}", "错误",
+            System.Windows.MessageBox.Show(string.Format(_localizationService.GetString("SaveExceptionFormat"), ex.Message), _localizationService.GetString("Error"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
     }
@@ -170,8 +170,8 @@ public partial class GeneralSettingsViewModel : ObservableObject
         {
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
-                Title = "导出设置",
-                Filter = "JSON文件 (*.json)|*.json",
+                Title = _localizationService.GetString("ExportSettings"),
+                Filter = _localizationService.GetString("JsonFileFilter"),
                 FileName = $"BTFX_Settings_{DateTime.Now:yyyyMMdd}",
                 DefaultExt = ".json"
             };
@@ -183,20 +183,20 @@ public partial class GeneralSettingsViewModel : ObservableObject
 
             if (success)
             {
-                System.Windows.MessageBox.Show($"设置导出成功！\n文件：{dialog.FileName}", "提示",
+                System.Windows.MessageBox.Show(string.Format(_localizationService.GetString("SettingsExportSuccessFormat"), dialog.FileName), _localizationService.GetString("Information"),
                     System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 _logHelper?.Information($"设置导出成功：{dialog.FileName}");
             }
             else
             {
-                System.Windows.MessageBox.Show("设置导出失败", "错误",
+                System.Windows.MessageBox.Show(_localizationService.GetString("SettingsExportFailed"), _localizationService.GetString("Error"),
                     System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
         catch (Exception ex)
         {
             _logHelper?.Error("设置导出失败", ex);
-            System.Windows.MessageBox.Show($"导出失败：{ex.Message}", "错误",
+            System.Windows.MessageBox.Show(string.Format(_localizationService.GetString("ExportFailedFormat"), ex.Message), _localizationService.GetString("Error"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
         finally
@@ -212,16 +212,16 @@ public partial class GeneralSettingsViewModel : ObservableObject
         {
             var dialog = new Microsoft.Win32.OpenFileDialog
             {
-                Title = "导入设置",
-                Filter = "JSON文件 (*.json)|*.json",
+                Title = _localizationService.GetString("ImportSettings"),
+                Filter = _localizationService.GetString("JsonFileFilter"),
                 Multiselect = false
             };
 
             if (dialog.ShowDialog() != true) return;
 
             var result = System.Windows.MessageBox.Show(
-                "导入设置将覆盖当前的通用设置和单位设置，是否继续？",
-                "确认导入",
+                _localizationService.GetString("ConfirmImportSettings"),
+                _localizationService.GetString("ConfirmImport"),
                 System.Windows.MessageBoxButton.YesNo,
                 System.Windows.MessageBoxImage.Question);
 
@@ -236,20 +236,20 @@ public partial class GeneralSettingsViewModel : ObservableObject
                 LoadSettings();
                 _isInitializing = false;
 
-                System.Windows.MessageBox.Show("设置导入成功！\n部分设置可能需要重启应用后生效。", "提示",
+                System.Windows.MessageBox.Show(_localizationService.GetString("SettingsImportSuccessRestartHint"), _localizationService.GetString("Information"),
                     System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 _logHelper?.Information($"设置导入成功：{dialog.FileName}");
             }
             else
             {
-                System.Windows.MessageBox.Show("设置导入失败，请检查文件格式", "错误",
+                System.Windows.MessageBox.Show(_localizationService.GetString("SettingsImportFailedCheckFormat"), _localizationService.GetString("Error"),
                     System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
         catch (Exception ex)
         {
             _logHelper?.Error("设置导入失败", ex);
-            System.Windows.MessageBox.Show($"导入失败：{ex.Message}", "错误",
+            System.Windows.MessageBox.Show(string.Format(_localizationService.GetString("ImportFailedFormat"), ex.Message), _localizationService.GetString("Error"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
         finally

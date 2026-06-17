@@ -36,7 +36,7 @@ public static class ReportPreviewHelper
         };
 
         // 报告头部
-        AddHeader(document, unitName, report.ReportNumber, logoPath);
+        AddHeader(document, unitName, report, logoPath);
 
         // 患者信息
         AddPatientInfo(document, report);
@@ -71,7 +71,7 @@ public static class ReportPreviewHelper
     /// <summary>
     /// 添加报告头部
     /// </summary>
-    private static void AddHeader(FlowDocument document, string unitName, string reportNumber, string? logoPath)
+    private static void AddHeader(FlowDocument document, string unitName, Report report, string? logoPath)
     {
         if (!string.IsNullOrWhiteSpace(logoPath) && File.Exists(logoPath))
         {
@@ -100,7 +100,7 @@ public static class ReportPreviewHelper
         }
 
         // 报告标题
-        var titleParagraph = new Paragraph(new Run("步态分析报告"))
+        var titleParagraph = new Paragraph(new Run(NormalizeReportTitle(report.Title)))
         {
             FontSize = 24,
             FontWeight = FontWeights.Bold,
@@ -110,7 +110,7 @@ public static class ReportPreviewHelper
         document.Blocks.Add(titleParagraph);
 
         // 报告编号
-        var numberParagraph = new Paragraph(new Run($"报告编号：{reportNumber}"))
+        var numberParagraph = new Paragraph(new Run(L("ReportPreview.ReportNumberLineFormat", report.ReportNumber)))
         {
             FontSize = 11,
             Foreground = Brushes.Gray,
@@ -121,6 +121,50 @@ public static class ReportPreviewHelper
 
         // 分隔线
         AddSeparator(document);
+    }
+
+    private static string NormalizeReportTitle(string? title)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return L("Report.DefaultTitle");
+        }
+
+        const string legacyDefaultTitle = "步态分析报告";
+        const string legacyDefaultTitlePrefix = "步态分析报告 - ";
+
+        if (string.Equals(title, legacyDefaultTitle, StringComparison.Ordinal))
+        {
+            return L("Report.DefaultTitle");
+        }
+
+        if (title.StartsWith(legacyDefaultTitlePrefix, StringComparison.Ordinal))
+        {
+            var suffix = title[legacyDefaultTitlePrefix.Length..].Trim();
+            return string.IsNullOrWhiteSpace(suffix)
+                ? L("Report.DefaultTitle")
+                : L("AnalysisDetail.ReportConfig.DefaultReportTitleFormat", suffix);
+        }
+
+        return title;
+    }
+
+    private static string L(string key)
+    {
+        var service = App.Services?.GetService(typeof(ILocalizationService)) as ILocalizationService;
+        var value = service?.GetString(key);
+        return string.IsNullOrWhiteSpace(value) || string.Equals(value, key, StringComparison.Ordinal)
+            ? key
+            : value;
+    }
+
+    private static string L(string key, params object[] args)
+    {
+        var service = App.Services?.GetService(typeof(ILocalizationService)) as ILocalizationService;
+        var value = service?.GetString(key, args);
+        return string.IsNullOrWhiteSpace(value) || string.Equals(value, key, StringComparison.Ordinal)
+            ? key
+            : value;
     }
 
     private static Image? TryCreateReportLogo(string logoPath)

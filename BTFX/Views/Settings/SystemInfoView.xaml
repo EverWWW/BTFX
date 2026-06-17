@@ -97,10 +97,10 @@
         </Style>
 
         <Style x:Key="AboutButtonStyle" TargetType="Button">
-            <Setter Property="Width" Value="132" />
+            <Setter Property="MinWidth" Value="132" />
             <Setter Property="Height" Value="48" />
             <Setter Property="Margin" Value="16,0,0,0" />
-            <Setter Property="Padding" Value="18,0" />
+            <Setter Property="Padding" Value="24,0" />
             <Setter Property="Background" Value="#403B5B" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Cursor" Value="Hand" />
@@ -188,13 +188,10 @@
                             <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="{DynamicResource AppInfo}" />
                         </StackPanel>
 
-                        <StackPanel
-                            Grid.Column="1"
-                            Orientation="Horizontal">
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <Button
-                                Width="132"
                                 Command="{Binding CheckUpdateCommand}"
-                                Content="检查更新"
+                                Content="{DynamicResource CheckForUpdates}"
                                 IsEnabled="{Binding IsCheckingUpdate, Converter={StaticResource InverseBooleanConverter}}"
                                 Style="{StaticResource AboutButtonStyle}" />
                             <Button
@@ -264,7 +261,7 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="160" />
+                            <ColumnDefinition Width="180" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
@@ -326,7 +323,7 @@
                                 <TextBlock
                                     Grid.Column="1"
                                     Style="{StaticResource ActionButtonTextStyle}"
-                                    Text="打开文件" />
+                                    Text="{DynamicResource OpenFolder}" />
                             </Grid>
                         </Button>
                     </Grid>
@@ -371,7 +368,7 @@
                                     <TextBlock
                                         Grid.Column="1"
                                         Style="{StaticResource ActionButtonTextStyle}"
-                                        Text="刷新" />
+                                        Text="{DynamicResource Refresh}" />
                                 </Grid>
                             </Button>
                             <Button
@@ -393,7 +390,7 @@
                                     <TextBlock
                                         Grid.Column="1"
                                         Style="{StaticResource ActionButtonTextStyle}"
-                                        Text="导出" />
+                                        Text="{DynamicResource Export}" />
                                 </Grid>
                             </Button>
                         </StackPanel>
@@ -424,7 +421,7 @@
                                 Grid.Column="0"
                                 Margin="0,0,16,8"
                                 Style="{StaticResource InfoLabelTextStyle}"
-                                Text="近30天日志：" />
+                                Text="{DynamicResource LogsLast30DaysLabel}" />
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.Column="1"
@@ -436,7 +433,7 @@
                                 Grid.Column="0"
                                 Margin="0,0,16,8"
                                 Style="{StaticResource InfoLabelTextStyle}"
-                                Text="信息：" />
+                                Text="{DynamicResource LogInfoLabel}" />
                             <TextBlock
                                 Grid.Row="1"
                                 Grid.Column="1"
@@ -448,7 +445,7 @@
                                 Grid.Column="0"
                                 Margin="0,0,16,0"
                                 Style="{StaticResource InfoLabelTextStyle}"
-                                Text="警告：" />
+                                Text="{DynamicResource LogWarningLabel}" />
                             <TextBlock
                                 Grid.Row="2"
                                 Grid.Column="1"
@@ -460,7 +457,7 @@
                                 Grid.Column="3"
                                 Margin="0,0,16,8"
                                 Style="{StaticResource InfoLabelTextStyle}"
-                                Text="错误：" />
+                                Text="{DynamicResource LogErrorLabel}" />
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.Column="4"
@@ -472,7 +469,7 @@
                                 Grid.Column="3"
                                 Margin="0,0,16,8"
                                 Style="{StaticResource InfoLabelTextStyle}"
-                                Text="日志文件：" />
+                                Text="{DynamicResource LogFilesLabel}" />
                             <TextBlock
                                 Grid.Row="1"
                                 Grid.Column="4"
@@ -484,7 +481,7 @@
                                 Grid.Column="3"
                                 Margin="0,0,16,0"
                                 Style="{StaticResource InfoLabelTextStyle}"
-                                Text="总大小：" />
+                                Text="{DynamicResource TotalSizeLabel}" />
                             <TextBlock
                                 Grid.Row="2"
                                 Grid.Column="4"
@@ -532,7 +529,7 @@
                                     <TextBlock
                                         Grid.Column="1"
                                         Style="{StaticResource ActionButtonTextStyle}"
-                                        Text="清理" />
+                                        Text="{DynamicResource Cleanup}" />
                                 </Grid>
                             </Button>
                         </Grid>

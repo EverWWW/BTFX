@@ -124,14 +124,14 @@
                                     FontSize="18"
                                     FontWeight="Medium"
                                     Foreground="#666666"
-                                    Text="关" />
+                                    Text="{DynamicResource Off}" />
                             </Border>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="SwitchTrack" Property="Background" Value="#403B5B" />
                                 <Setter TargetName="SwitchThumb" Property="HorizontalAlignment" Value="Right" />
-                                <Setter TargetName="SwitchText" Property="Text" Value="开" />
+                                <Setter TargetName="SwitchText" Property="Text" Value="{DynamicResource On}" />
                                 <Setter TargetName="SwitchText" Property="Foreground" Value="#403B5B" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
@@ -405,7 +405,7 @@
                             Margin="0,0,12,0"
                             Background="#E4004A"
                             CornerRadius="2" />
-                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="自动备份" />
+                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="{DynamicResource AutoBackupSettings}" />
                     </StackPanel>
 
                     <ToggleButton
@@ -423,10 +423,10 @@
                         <TextBlock VerticalAlignment="Center">
                             <TextBlock.Style>
                                 <Style BasedOn="{StaticResource StatusTextStyle}" TargetType="TextBlock">
-                                    <Setter Property="Text" Value="已关闭自动备份" />
+                                    <Setter Property="Text" Value="{DynamicResource AutoBackupDisabled}" />
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding AutoBackupEnabled}" Value="True">
-                                            <Setter Property="Text" Value="已开启自动备份" />
+                                            <Setter Property="Text" Value="{DynamicResource AutoBackupEnabled}" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
@@ -434,6 +434,7 @@
                         </TextBlock>
                         <Button
                             Margin="24,0,0,0"
+                           Height="60"
                             Command="{Binding BackupNowCommand}"
                             IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBooleanConverter}}"
                             Style="{StaticResource PrimaryActionButtonStyle}">
@@ -450,7 +451,7 @@
                                     FontSize="20"
                                     FontWeight="Medium"
                                     Foreground="White"
-                                    Text="立即备份" />
+                                    Text="{DynamicResource BackupNow}" />
                             </StackPanel>
                         </Button>
                     </StackPanel>
@@ -466,7 +467,7 @@
                                 Margin="0,0,12,0"
                                 VerticalAlignment="Center"
                                 Style="{StaticResource CardFieldLabelStyle}"
-                                Text="备份时间" />
+                                Text="{DynamicResource BackupTime}" />
                             <TextBox
                                 Width="140"
                                 Style="{StaticResource RoundedInputTextBoxStyle}"
@@ -481,7 +482,7 @@
                                 Margin="0,0,12,0"
                                 VerticalAlignment="Center"
                                 Style="{StaticResource CardFieldLabelStyle}"
-                                Text="保留数量" />
+                                Text="{DynamicResource RetainCount}" />
                             <TextBox
                                 Width="120"
                                 Style="{StaticResource RoundedInputTextBoxStyle}"
@@ -496,7 +497,7 @@
                                 FontFamily="{StaticResource AppFont}"
                                 FontSize="18"
                                 Foreground="#403B5B"
-                                Text="保存设置" />
+                                Text="{DynamicResource SaveSettings}" />
                         </Button>
 
                     </StackPanel>
@@ -505,7 +506,7 @@
 
             <Border
                 Grid.Row="2"
-                Height="128"
+                Height="100"
                 Style="{StaticResource SectionCardStyle}">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -526,7 +527,7 @@
                             Margin="0,0,12,0"
                             Background="#E4004A"
                             CornerRadius="2" />
-                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="视频文件管理" />
+                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="{DynamicResource VideoFileManagement}" />
                     </StackPanel>
 
                     <Border
@@ -534,29 +535,28 @@
                         Padding="24,14"
                         Background="Transparent"
                         CornerRadius="8">
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Style="{StaticResource CardFieldLabelStyle}" Text="录制视频目录占用" />
-                            <StackPanel
-                                Margin="0,8,0,0"
-                                Orientation="Horizontal">
+                        <StackPanel
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource CardFieldLabelStyle}" VerticalAlignment="Center" Text="{DynamicResource RecordedVideoStorageUsage}" />
+                            <TextBlock Style="{StaticResource CardFieldLabelStyle}" VerticalAlignment="Center" Text="：" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontFamily="{StaticResource AppFont}"
+                                FontSize="22"
+                                FontWeight="Medium"
+                                Foreground="#403B5B"
+                                Text="{Binding RecordedVideoStorageDisplay}" />
+                            <Button
+                                Margin="16,0,0,0"
+                                Command="{Binding OpenRecordedVideoFolderCommand}"
+                                Style="{StaticResource SecondaryActionButtonStyle}">
                                 <TextBlock
-                                    VerticalAlignment="Center"
                                     FontFamily="{StaticResource AppFont}"
-                                    FontSize="22"
-                                    FontWeight="Medium"
+                                    FontSize="18"
                                     Foreground="#403B5B"
-                                    Text="{Binding RecordedVideoStorageDisplay}" />
-                                <Button
-                                    Margin="16,0,0,0"
-                                    Command="{Binding OpenRecordedVideoFolderCommand}"
-                                    Style="{StaticResource SecondaryActionButtonStyle}">
-                                    <TextBlock
-                                        FontFamily="{StaticResource AppFont}"
-                                        FontSize="18"
-                                        Foreground="#403B5B"
-                                        Text="打开目录" />
-                                </Button>
-                            </StackPanel>
+                                    Text="{DynamicResource MA.Common.OpenFolder}" />
+                            </Button>
                         </StackPanel>
                     </Border>
 
@@ -565,29 +565,28 @@
                         Padding="24,14"
                         Background="Transparent"
                         CornerRadius="8">
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Style="{StaticResource CardFieldLabelStyle}" Text="分析结果目录占用" />
-                            <StackPanel
-                                Margin="0,8,0,0"
-                                Orientation="Horizontal">
+                        <StackPanel
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal">
+                          <TextBlock Style="{StaticResource CardFieldLabelStyle}"  VerticalAlignment="Center" Text="{DynamicResource AnalysisResultStorageUsage}" />
+                          <TextBlock Style="{StaticResource CardFieldLabelStyle}" VerticalAlignment="Center"  Text="：" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontFamily="{StaticResource AppFont}"
+                                FontSize="22"
+                                FontWeight="Medium"
+                                Foreground="#403B5B"
+                                Text="{Binding AnalysisResultStorageDisplay}" />
+                            <Button
+                                Margin="16,0,0,0"
+                                Command="{Binding OpenAnalysisResultFolderCommand}"
+                                Style="{StaticResource SecondaryActionButtonStyle}">
                                 <TextBlock
-                                    VerticalAlignment="Center"
                                     FontFamily="{StaticResource AppFont}"
-                                    FontSize="22"
-                                    FontWeight="Medium"
+                                    FontSize="18"
                                     Foreground="#403B5B"
-                                    Text="{Binding AnalysisResultStorageDisplay}" />
-                                <Button
-                                    Margin="16,0,0,0"
-                                    Command="{Binding OpenAnalysisResultFolderCommand}"
-                                    Style="{StaticResource SecondaryActionButtonStyle}">
-                                    <TextBlock
-                                        FontFamily="{StaticResource AppFont}"
-                                        FontSize="18"
-                                        Foreground="#403B5B"
-                                        Text="打开目录" />
-                                </Button>
-                            </StackPanel>
+                                    Text="{DynamicResource MA.Common.OpenFolder}" />
+                            </Button>
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -619,7 +618,7 @@
                                 Margin="0,0,12,0"
                                 Background="#E4004A"
                                 CornerRadius="2" />
-                            <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="备份历史" />
+                            <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="{DynamicResource BackupHistory}" />
                         </StackPanel>
 
                         <Button
@@ -638,7 +637,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="22"
                                     Foreground="#E4004A"
-                                    Text="刷新" />
+                                    Text="{DynamicResource Refresh}" />
                             </StackPanel>
                         </Button>
                     </DockPanel>
@@ -659,23 +658,23 @@
                             <TextBlock
                                 Grid.Column="0"
                                 Style="{StaticResource HistoryHeaderTextStyle}"
-                                Text="编号" />
+                                Text="{DynamicResource Index}" />
                             <TextBlock
                                 Grid.Column="1"
                                 Style="{StaticResource HistoryHeaderTextStyle}"
-                                Text="文件名称" />
+                                Text="{DynamicResource FileName}" />
                             <TextBlock
                                 Grid.Column="2"
                                 Style="{StaticResource HistoryHeaderTextStyle}"
-                                Text="大小" />
+                                Text="{DynamicResource Size}" />
                             <TextBlock
                                 Grid.Column="3"
                                 Style="{StaticResource HistoryHeaderTextStyle}"
-                                Text="备份时间" />
+                                Text="{DynamicResource BackupTime}" />
                             <TextBlock
                                 Grid.Column="4"
                                 Style="{StaticResource HistoryHeaderTextStyle}"
-                                Text="删除" />
+                                Text="{DynamicResource Delete}" />
                         </Grid>
                     </Border>
 
@@ -729,7 +728,7 @@
                                                         FontFamily="{StaticResource AppFont}"
                                                         FontSize="16"
                                                         Foreground="#403B5B"
-                                                        Text="恢复" />
+                                                        Text="{DynamicResource Restore}" />
                                                 </Button>
                                             </StackPanel>
 
@@ -768,7 +767,7 @@
                             FontSize="20"
                             Foreground="#A0A0A0"
                             IsHitTestVisible="False"
-                            Text="暂无备份记录"
+                            Text="{DynamicResource NoBackupRecords}"
                             Visibility="{Binding BackupHistory.Count, Converter={StaticResource CountToVisibilityConverter}, ConverterParameter=Inverse, FallbackValue=Collapsed}" />
                     </Grid>
 

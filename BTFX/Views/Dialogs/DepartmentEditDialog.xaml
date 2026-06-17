@@ -20,13 +20,15 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
         <Style x:Key="DepartmentLabelStyle" TargetType="TextBlock">
-            <Setter Property="Width" Value="132" />
+            <Setter Property="Width" Value="180" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
             <Setter Property="FontSize" Value="22" />
             <Setter Property="FontWeight" Value="Medium" />
             <Setter Property="Foreground" Value="#666666" />
             <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="LineHeight" Value="28" />
         </Style>
 
         <Style x:Key="DepartmentInputStyle" TargetType="TextBox">
@@ -187,7 +189,7 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="540" />
+                    <ColumnDefinition Width="600" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
@@ -225,7 +227,7 @@
                 <TextBlock
                     Grid.Row="3"
                     Grid.Column="1"
-                    Margin="132,0,0,0"
+                    Margin="196,0,0,0"
                     FontSize="20"
                     FontWeight="Medium"
                     Foreground="#F23030"

@@ -118,13 +118,10 @@ public partial class PatientSelectionViewModel : ObservableObject
         catch { }
 
         // Set current user info
-        var user = _sessionService.CurrentUser;
-        if (user != null)
-        {
-            CurrentUserInfo = $"{user.Username} ({GetRoleDisplayName(user.Role)})";
-        }
+        RefreshCurrentUserInfo();
 
         // Set permissions
+        var user = _sessionService.CurrentUser;
         CanAddPatient = user?.Role == UserRole.Administrator || user?.Role == UserRole.Operator;
         CanImportExport = user?.Role == UserRole.Administrator || user?.Role == UserRole.Operator;
 
@@ -142,6 +139,12 @@ public partial class PatientSelectionViewModel : ObservableObject
     {
         var value = _localizationService.GetString(key, args);
         return string.IsNullOrWhiteSpace(value) ? key : value;
+    }
+
+    private void RefreshCurrentUserInfo()
+    {
+        var user = _sessionService.CurrentUser;
+        CurrentUserInfo = user is null ? string.Empty : $"{user.Username} ({GetRoleDisplayName(user.Role)})";
     }
 
     /// <summary>
@@ -789,15 +792,13 @@ public partial class PatientSelectionViewModel : ObservableObject
     /// Confirm select command
     /// </summary>
     [RelayCommand]
-    private void ConfirmSelect()
+    private async Task ConfirmSelectAsync()
     {
         if (SelectedPatient == null)
         {
-            System.Windows.MessageBox.Show(
-                "请先选择一个患者",
-                "提示",
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Information);
+            await ShowNoticeDialogAsync(
+                L("NoPatientSelected"),
+                L("Tip"));
             return;
         }
 
@@ -860,7 +861,7 @@ public partial class PatientSelectionViewModel : ObservableObject
     /// Toggle patient row selection command（单击选中；双击直接进入）
     /// </summary>
     [RelayCommand]
-    private void ToggleSelect(PatientRowItem? row)
+    private async Task ToggleSelectAsync(PatientRowItem? row)
     {
         if (row == null) return;
 
@@ -878,7 +879,7 @@ public partial class PatientSelectionViewModel : ObservableObject
             OnPropertyChanged(nameof(SelectedCount));
             OnPropertyChanged(nameof(SelectAllState));
             OnSelectionStateChanged();
-            ConfirmSelect();
+            await ConfirmSelectAsync();
             return;
         }
 
@@ -904,13 +905,13 @@ public partial class PatientSelectionViewModel : ObservableObject
     /// Patient double click command（保留以兼容 XAML 绑定，实际由 ToggleSelect 处理）
     /// </summary>
     [RelayCommand]
-    private void PatientDoubleClick(Patient? patient)
+    private async Task PatientDoubleClickAsync(Patient? patient)
     {
         // 双击逻辑已在 ToggleSelect 中通过时间检测处理，此处作为备用
         if (patient != null)
         {
             SelectedPatient = patient;
-            ConfirmSelect();
+            await ConfirmSelectAsync();
         }
     }
 

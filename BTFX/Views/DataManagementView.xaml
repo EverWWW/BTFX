@@ -610,8 +610,9 @@
                         VerticalAlignment="Center"
                         Orientation="Horizontal">
                         <TextBlock
-                            Width="44"
+                            Width="75"
                             VerticalAlignment="Center"
+                             TextAlignment="Right"
                             FontFamily="{StaticResource AppFont}"
                             FontSize="22"
                             Foreground="#666666"
@@ -619,7 +620,7 @@
                         <ComboBox
                             Width="220"
                             Height="68"
-                            Margin="18,0,0,0"
+                            Margin="10,0,0,0"
                             DisplayMemberPath="Display"
                             ItemsSource="{Binding StatusOptions}"
                             PreviewMouseLeftButtonDown="StatusComboBox_PreviewMouseLeftButtonDown"

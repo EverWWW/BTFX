@@ -187,7 +187,7 @@
                         VerticalAlignment="Center"
                         Background="#E4004A"
                         CornerRadius="2" />
-                    <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="单位信息" />
+                    <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="{DynamicResource UnitInformation}" />
                 </StackPanel>
 
                 <Grid Grid.Row="2" VerticalAlignment="Center">
@@ -200,7 +200,7 @@
                     <TextBlock
                         Grid.Column="0"
                         Style="{StaticResource SectionLabelTextStyle}"
-                        Text="单位名称" />
+                        Text="{DynamicResource UnitName}" />
 
                     <TextBox
                         Grid.Column="2"
@@ -258,11 +258,11 @@
                                 Width="302"
                                 Margin="0,0,0,12"
                                 Style="{StaticResource HintTextStyle}"
-                                Text="支持 PNG、JPG 格式的图片，最大 300K 左右" />
+                                Text="{DynamicResource LogoSizeHint}" />
 
                             <Button
                                 Command="{Binding ClearLogoCommand}"
-                                Content="清除当前 LOGO"
+                                Content="{DynamicResource ClearCurrentLogo}"
                                 Style="{StaticResource LinkButtonStyle}"
                                 Visibility="{Binding HasLogo, Converter={StaticResource BooleanToVisibilityConverter}}" />
                         </StackPanel>
@@ -273,7 +273,7 @@
                     Grid.Row="6"
                     HorizontalAlignment="Center"
                     Command="{Binding SaveUnitSettingsCommand}"
-                    Content="确认"
+                    Content="{DynamicResource Confirm}"
                     Style="{StaticResource PrimaryActionButtonStyle}" />
             </Grid>
         </Border>

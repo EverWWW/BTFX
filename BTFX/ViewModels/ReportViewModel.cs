@@ -2120,7 +2120,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         var quality = report.QualityControl ?? analysis?.QualityControl;
         var data = ReportAnalysisSnapshot.From(report);
 
-        var title = string.IsNullOrWhiteSpace(report.Title) ? L("Report.DefaultTitle") : report.Title;
+        var title = NormalizeReportTitle(report.Title);
         var measurementType = record is null ? "--" : GetMeasurementTypeText(record.MeasurementType);
         var analysisMode = record is null
             ? "--"
@@ -2154,6 +2154,32 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     private string BuildPreviewSummaryMessage(Report report, int sectionCount)
     {
         return L("Report.SummaryMessageFormat", sectionCount);
+    }
+
+    private string NormalizeReportTitle(string? title)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return L("Report.DefaultTitle");
+        }
+
+        const string legacyDefaultTitle = "步态分析报告";
+        const string legacyDefaultTitlePrefix = "步态分析报告 - ";
+
+        if (string.Equals(title, legacyDefaultTitle, StringComparison.Ordinal))
+        {
+            return L("Report.DefaultTitle");
+        }
+
+        if (title.StartsWith(legacyDefaultTitlePrefix, StringComparison.Ordinal))
+        {
+            var suffix = title[legacyDefaultTitlePrefix.Length..].Trim();
+            return string.IsNullOrWhiteSpace(suffix)
+                ? L("Report.DefaultTitle")
+                : L("AnalysisDetail.ReportConfig.DefaultReportTitleFormat", suffix);
+        }
+
+        return title;
     }
 
     private IReadOnlyList<string> BuildReportSectionTags(Report report)

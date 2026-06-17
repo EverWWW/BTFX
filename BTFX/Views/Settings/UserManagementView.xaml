@@ -577,7 +577,7 @@
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                            FontFamily="{StaticResource AppFont}"
+                                    FontFamily="{StaticResource AppFont}"
                                     FontSize="22"
                                     FontWeight="Medium"
                                     Foreground="#999999"
@@ -617,7 +617,7 @@
                                     <TextBlock
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                                FontFamily="{StaticResource AppFont}"
+                                        FontFamily="{StaticResource AppFont}"
                                         FontSize="22"
                                         FontWeight="Medium"
                                         Foreground="White"
@@ -644,7 +644,7 @@
                                         </Style>
                                     </Button.Style>
                                     <TextBlock
-                                                FontFamily="{StaticResource AppFont}"
+                                        FontFamily="{StaticResource AppFont}"
                                         FontSize="22"
                                         FontWeight="Medium"
                                         Foreground="#555555"

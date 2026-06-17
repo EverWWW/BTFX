@@ -21,7 +21,7 @@ public partial class SystemInfoViewModel : ObservableObject
     private readonly ILogHelper? _logHelper;
 
     public string AppVersion => BtfxConstants.VERSION_FULL;
-    public string AppName => BtfxConstants.APP_DISPLAY_NAME;
+    public string AppName => _localizationService.GetString("AppName");
 
     [ObservableProperty]
     private string _databasePath = string.Empty;
@@ -88,6 +88,12 @@ public partial class SystemInfoViewModel : ObservableObject
         _appUpdateService = appUpdateService;
 
         try { _logHelper = App.Services?.GetService(typeof(ILogHelper)) as ILogHelper; } catch { }
+
+        _localizationService.LanguageChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(AppName));
+            LoadSystemInfo();
+        };
 
         LoadSystemInfo();
         _ = LoadLogStatisticsAsync();

@@ -149,14 +149,14 @@
                         FontSize="32"
                         FontWeight="Medium"
                         Foreground="#403B5B"
-                        Text="软件激活" />
+                        Text="{DynamicResource Activation.Title}" />
                     <TextBlock
                         Margin="0,12,0,0"
                         HorizontalAlignment="Center"
                         FontFamily="{StaticResource AppFont}"
                         FontSize="16"
                         Foreground="#999999"
-                        Text="请完成软件授权激活后继续使用系统" />
+                        Text="{DynamicResource Activation.Subtitle}" />
                 </StackPanel>
 
                 <Border
@@ -179,24 +179,24 @@
                             <RowDefinition Height="44" />
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource ActivationLabelStyle}" Text="软件名称" />
+                        <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource ActivationLabelStyle}" Text="{DynamicResource Activation.SoftwareName}" />
                         <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource ActivationValueStyle}" Text="{Binding EquipmentName}" />
-                        <TextBlock Grid.Row="0" Grid.Column="2" Style="{StaticResource ActivationLabelStyle}" Text="产品型号" />
+                        <TextBlock Grid.Row="0" Grid.Column="2" Style="{StaticResource ActivationLabelStyle}" Text="{DynamicResource Activation.ProductModel}" />
                         <TextBlock Grid.Row="0" Grid.Column="3" Style="{StaticResource ActivationValueStyle}" Text="{Binding EquipmentModel}" />
 
-                        <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource ActivationLabelStyle}" Text="软件版本" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource ActivationLabelStyle}" Text="{DynamicResource Activation.SoftwareVersion}" />
                         <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource ActivationValueStyle}" Text="{Binding EquipmentVersion}" />
-                        <TextBlock Grid.Row="1" Grid.Column="2" Style="{StaticResource ActivationLabelStyle}" Text="MAC地址" />
+                        <TextBlock Grid.Row="1" Grid.Column="2" Style="{StaticResource ActivationLabelStyle}" Text="{DynamicResource Activation.MacAddress}" />
                         <TextBlock Grid.Row="1" Grid.Column="3" Style="{StaticResource ActivationValueStyle}" Text="{Binding MacAddress}" />
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource ActivationLabelStyle}" Text="CPU编号" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource ActivationLabelStyle}" Text="{DynamicResource Activation.CpuId}" />
                         <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource ActivationValueStyle}" Text="{Binding CpuId}" />
-                        <TextBlock Grid.Row="2" Grid.Column="2" Style="{StaticResource ActivationLabelStyle}" Text="硬盘信息" />
+                        <TextBlock Grid.Row="2" Grid.Column="2" Style="{StaticResource ActivationLabelStyle}" Text="{DynamicResource Activation.DiskInfo}" />
                         <TextBlock Grid.Row="2" Grid.Column="3" Style="{StaticResource ActivationValueStyle}" Text="{Binding DiskId}" />
 
-                        <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource ActivationLabelStyle}" Text="BIOS编号" />
+                        <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource ActivationLabelStyle}" Text="{DynamicResource Activation.BiosId}" />
                         <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource ActivationValueStyle}" Text="{Binding BiosId}" />
-                        <TextBlock Grid.Row="3" Grid.Column="2" Style="{StaticResource ActivationLabelStyle}" Text="机器码" />
+                        <TextBlock Grid.Row="3" Grid.Column="2" Style="{StaticResource ActivationLabelStyle}" Text="{DynamicResource Activation.MachineCode}" />
                         <DockPanel Grid.Row="3" Grid.Column="3">
                             <Button
                                 Width="88"
@@ -209,7 +209,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="14"
                                     Foreground="#403B5B"
-                                    Text="复制" />
+                                    Text="{DynamicResource Copy}" />
                             </Button>
                             <TextBlock Style="{StaticResource ActivationValueStyle}" Text="{Binding MachineCode}" />
                         </DockPanel>
@@ -226,7 +226,7 @@
                                 FontFamily="{StaticResource AppFont}"
                                 FontSize="14"
                                 Foreground="#403B5B"
-                                Text="复制设备信息" />
+                                Text="{DynamicResource Activation.CopyDeviceInfo}" />
                         </Button>
                     </Grid>
                 </Border>
@@ -239,12 +239,12 @@
                         <ColumnDefinition Width="120" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Style="{StaticResource ActivationLabelStyle}" Text="产品编号" />
+                    <TextBlock Grid.Column="0" Style="{StaticResource ActivationLabelStyle}" Text="{DynamicResource Activation.ProductCode}" />
                     <TextBox
                         Grid.Column="1"
                         Style="{StaticResource ActivationInputStyle}"
                         Text="{Binding ProductCode, UpdateSourceTrigger=PropertyChanged}" />
-                    <TextBlock Grid.Column="3" Style="{StaticResource ActivationLabelStyle}" Text="激活码" />
+                    <TextBlock Grid.Column="3" Style="{StaticResource ActivationLabelStyle}" Text="{DynamicResource Activation.LicenseKey}" />
                     <TextBox
                         Grid.Column="4"
                         Style="{StaticResource ActivationInputStyle}"
@@ -272,7 +272,7 @@
                                 FontFamily="{StaticResource AppFont}"
                                 FontSize="18"
                                 Foreground="White"
-                                Text="在线激活" />
+                                Text="{DynamicResource Activation.OnlineActivate}" />
                         </Button>
                         <Button
                             Width="160"
@@ -284,7 +284,7 @@
                                 FontFamily="{StaticResource AppFont}"
                                 FontSize="18"
                                 Foreground="#403B5B"
-                                Text="离线激活" />
+                                Text="{DynamicResource Activation.OfflineActivate}" />
                         </Button>
                     </StackPanel>
                 </StackPanel>

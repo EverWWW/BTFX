@@ -141,7 +141,7 @@ public class ReportPdfExporter
             }
 
             // 报告标题
-            column.Item().Text("步态分析报告")
+            column.Item().Text(NormalizeReportTitle(report.Title))
                 .FontSize(22)
                 .Bold()
                 .AlignCenter();
@@ -149,7 +149,7 @@ public class ReportPdfExporter
             column.Item().PaddingVertical(4);
 
             // 报告编号
-            column.Item().Text($"报告编号：{report.ReportNumber}")
+            column.Item().Text(L("ReportPreview.ReportNumberLineFormat", report.ReportNumber))
                 .FontSize(9)
                 .FontColor(Colors.Grey.Medium)
                 .AlignCenter();
@@ -159,6 +159,50 @@ public class ReportPdfExporter
             // 分隔线
             column.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
         });
+    }
+
+    private static string NormalizeReportTitle(string? title)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return L("Report.DefaultTitle");
+        }
+
+        const string legacyDefaultTitle = "步态分析报告";
+        const string legacyDefaultTitlePrefix = "步态分析报告 - ";
+
+        if (string.Equals(title, legacyDefaultTitle, StringComparison.Ordinal))
+        {
+            return L("Report.DefaultTitle");
+        }
+
+        if (title.StartsWith(legacyDefaultTitlePrefix, StringComparison.Ordinal))
+        {
+            var suffix = title[legacyDefaultTitlePrefix.Length..].Trim();
+            return string.IsNullOrWhiteSpace(suffix)
+                ? L("Report.DefaultTitle")
+                : L("AnalysisDetail.ReportConfig.DefaultReportTitleFormat", suffix);
+        }
+
+        return title;
+    }
+
+    private static string L(string key)
+    {
+        var service = App.Services?.GetService(typeof(ILocalizationService)) as ILocalizationService;
+        var value = service?.GetString(key);
+        return string.IsNullOrWhiteSpace(value) || string.Equals(value, key, StringComparison.Ordinal)
+            ? key
+            : value;
+    }
+
+    private static string L(string key, params object[] args)
+    {
+        var service = App.Services?.GetService(typeof(ILocalizationService)) as ILocalizationService;
+        var value = service?.GetString(key, args);
+        return string.IsNullOrWhiteSpace(value) || string.Equals(value, key, StringComparison.Ordinal)
+            ? key
+            : value;
     }
 
     /// <summary>

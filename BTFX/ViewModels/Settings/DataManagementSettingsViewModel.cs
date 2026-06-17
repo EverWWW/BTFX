@@ -227,7 +227,7 @@ public partial class DataManagementSettingsViewModel : ObservableObject
 
             if (!string.IsNullOrEmpty(filePath))
             {
-                System.Windows.MessageBox.Show($"备份成功！\n文件：{filePath}", "提示",
+                System.Windows.MessageBox.Show(_localizationService.GetString("BackupSuccessFormat", filePath), _localizationService.GetString("Information"),
                     System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 _logHelper?.Information($"手动备份成功：{filePath}");
                 await LoadBackupHistoryAsync();
@@ -236,7 +236,7 @@ public partial class DataManagementSettingsViewModel : ObservableObject
         catch (Exception ex)
         {
             _logHelper?.Error("手动备份失败", ex);
-            System.Windows.MessageBox.Show($"备份失败：{ex.Message}", "错误",
+            System.Windows.MessageBox.Show(_localizationService.GetString("BackupFailedFormat", ex.Message), _localizationService.GetString("Error"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
         finally
@@ -293,8 +293,8 @@ public partial class DataManagementSettingsViewModel : ObservableObject
         }
 
         var result = await ShowConfirmDialogAsync(
-            "确认删除",
-            $"确定要删除备份文件“{item.FileName}”吗？\n此操作不可恢复。",
+            _localizationService.GetString("ConfirmDelete"),
+            _localizationService.GetString("ConfirmDeleteBackupFile", item.FileName),
             "TrashCanOutline");
 
         if (!result)
@@ -309,17 +309,17 @@ public partial class DataManagementSettingsViewModel : ObservableObject
             if (success)
             {
                 await LoadBackupHistoryAsync();
-                await ShowNoticeDialogAsync("提示", "备份文件已删除。");
+                await ShowNoticeDialogAsync(_localizationService.GetString("Information"), _localizationService.GetString("BackupFileDeleted"));
                 _logHelper?.Information($"删除备份成功：{item.FileName}");
                 return;
             }
 
-            await ShowNoticeDialogAsync("错误", "删除备份失败，请重试。");
+            await ShowNoticeDialogAsync(_localizationService.GetString("Error"), _localizationService.GetString("DeleteBackupFailedRetry"));
         }
         catch (Exception ex)
         {
             _logHelper?.Error($"删除备份失败：{item.FileName}", ex);
-            await ShowNoticeDialogAsync("错误", $"删除失败：{ex.Message}");
+            await ShowNoticeDialogAsync(_localizationService.GetString("Error"), $"{_localizationService.GetString("DeleteFailed")}: {ex.Message}");
         }
         finally
         {
@@ -327,7 +327,7 @@ public partial class DataManagementSettingsViewModel : ObservableObject
         }
     }
 
-    private static async Task<bool> ShowConfirmDialogAsync(string title, string message, string iconKind = "HelpCircleOutline")
+    private async Task<bool> ShowConfirmDialogAsync(string title, string message, string iconKind = "HelpCircleOutline")
     {
         var result = await DialogHost.Show(
             new ConfirmDialog
@@ -336,8 +336,8 @@ public partial class DataManagementSettingsViewModel : ObservableObject
                 {
                     Title = title,
                     Message = message,
-                    ConfirmText = "确定",
-                    CancelText = "取消",
+                    ConfirmText = _localizationService.GetString("Confirm"),
+                    CancelText = _localizationService.GetString("Cancel"),
                     IsCancelVisible = true,
                     IconKind = iconKind
                 }
@@ -347,7 +347,7 @@ public partial class DataManagementSettingsViewModel : ObservableObject
         return result is true;
     }
 
-    private static Task ShowNoticeDialogAsync(string title, string message)
+    private Task ShowNoticeDialogAsync(string title, string message)
     {
         return DialogHost.Show(
             new ConfirmDialog
@@ -356,7 +356,7 @@ public partial class DataManagementSettingsViewModel : ObservableObject
                 {
                     Title = title,
                     Message = message,
-                    ConfirmText = "确定",
+                    ConfirmText = _localizationService.GetString("Confirm"),
                     IsCancelVisible = false,
                     IconKind = "InformationOutline"
                 }
@@ -370,8 +370,8 @@ public partial class DataManagementSettingsViewModel : ObservableObject
         if (item == null) return;
 
         var result = System.Windows.MessageBox.Show(
-            "恢复备份将覆盖当前数据，此操作不可撤销！确定要继续吗？",
-            "确认恢复",
+            _localizationService.GetString("ConfirmRestoreBackup"),
+            _localizationService.GetString("ConfirmRestore"),
             System.Windows.MessageBoxButton.YesNo,
             System.Windows.MessageBoxImage.Warning);
 
@@ -383,7 +383,7 @@ public partial class DataManagementSettingsViewModel : ObservableObject
             var success = await _backupService.RestoreBackupAsync(item.FilePath);
             if (success)
             {
-                System.Windows.MessageBox.Show("恢复成功！程序需要重启。", "提示",
+                System.Windows.MessageBox.Show(_localizationService.GetString("RestoreSuccessRestart"), _localizationService.GetString("Information"),
                     System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 _logHelper?.Information($"恢复备份成功：{item.FilePath}");
             }
@@ -391,7 +391,7 @@ public partial class DataManagementSettingsViewModel : ObservableObject
         catch (Exception ex)
         {
             _logHelper?.Error($"恢复备份失败：{item.FilePath}", ex);
-            System.Windows.MessageBox.Show($"恢复失败：{ex.Message}", "错误",
+            System.Windows.MessageBox.Show(_localizationService.GetString("RestoreFailedFormat", ex.Message), _localizationService.GetString("Error"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
         finally
@@ -429,20 +429,20 @@ public partial class DataManagementSettingsViewModel : ObservableObject
                 _backupService.StopAutoBackup();
             }
 
-            System.Windows.MessageBox.Show("备份设置已保存！", "提示",
+            System.Windows.MessageBox.Show(_localizationService.GetString("BackupSettingsSaved"), _localizationService.GetString("Information"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
             _logHelper?.Information($"保存备份设置：启用={AutoBackupEnabled}，时间={normalizedBackupTime}，保留数量={normalizedRetainCount}");
         }
         catch (ArgumentException ex)
         {
             _logHelper?.Warning($"保存备份设置失败：{ex.Message}");
-            System.Windows.MessageBox.Show(ex.Message, "提示",
+            System.Windows.MessageBox.Show(ex.Message, _localizationService.GetString("Warning"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
         }
         catch (Exception ex)
         {
             _logHelper?.Error("保存备份设置失败", ex);
-            System.Windows.MessageBox.Show($"保存失败：{ex.Message}", "错误",
+            System.Windows.MessageBox.Show(_localizationService.GetString("SaveExceptionFormat", ex.Message), _localizationService.GetString("Error"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
         finally
@@ -451,26 +451,26 @@ public partial class DataManagementSettingsViewModel : ObservableObject
         }
     }
 
-    private static string NormalizeBackupTime(string? backupTime)
+    private string NormalizeBackupTime(string? backupTime)
     {
         if (string.IsNullOrWhiteSpace(backupTime))
         {
-            throw new ArgumentException("备份时间不能为空，请使用 HH:mm 格式，例如 02:00。", nameof(backupTime));
+            throw new ArgumentException(_localizationService.GetString("BackupTimeRequiredHint"), nameof(backupTime));
         }
 
         if (!TimeSpan.TryParse(backupTime, out var parsedTime))
         {
-            throw new ArgumentException("备份时间格式不正确，请使用 HH:mm 格式，例如 02:00。", nameof(backupTime));
+            throw new ArgumentException(_localizationService.GetString("BackupTimeFormatHint"), nameof(backupTime));
         }
 
         return parsedTime.ToString(@"hh\:mm");
     }
 
-    private static int NormalizeBackupRetainCount(int retainCount)
+    private int NormalizeBackupRetainCount(int retainCount)
     {
         if (retainCount <= 0)
         {
-            throw new ArgumentException("保留数量必须大于 0。", nameof(retainCount));
+            throw new ArgumentException(_localizationService.GetString("RetainCountPositiveHint"), nameof(retainCount));
         }
 
         return retainCount;

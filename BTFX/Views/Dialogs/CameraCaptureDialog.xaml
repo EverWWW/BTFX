@@ -153,7 +153,7 @@
         </Style>
 
         <Style x:Key="CameraModeSwitchStyle" TargetType="ToggleButton">
-            <Setter Property="Width" Value="136" />
+            <Setter Property="Width" Value="170" />
             <Setter Property="Height" Value="48" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Background" Value="#403B5B" />
@@ -173,18 +173,18 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="14"
                                     Foreground="#FFFFFF"
-                                    Text="单视角" />
+                                    Text="{DynamicResource CameraCapture.Mode.Single}" />
                                 <TextBlock
                                     HorizontalAlignment="Right"
                                     VerticalAlignment="Center"
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="14"
                                     Foreground="#FFFFFF"
-                                    Text="双视角" />
+                                    Text="{DynamicResource CameraCapture.Mode.Dual}" />
                             </Grid>
                             <Border
                                 x:Name="SwitchThumb"
-                                Width="62"
+                                Width="80"
                                 Height="40"
                                 Margin="4"
                                 HorizontalAlignment="Left"
@@ -198,14 +198,14 @@
                                     FontSize="15"
                                     FontWeight="Medium"
                                     Foreground="#403B5B"
-                                    Text="单视角" />
+                                    Text="{DynamicResource CameraCapture.Mode.Single}" />
                             </Border>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="SwitchTrack" Property="Background" Value="#403B5B" />
                                 <Setter TargetName="SwitchThumb" Property="HorizontalAlignment" Value="Right" />
-                                <Setter TargetName="SwitchText" Property="Text" Value="双视角" />
+                                <Setter TargetName="SwitchText" Property="Text" Value="{DynamicResource CameraCapture.Mode.Dual}" />
                                 <Setter TargetName="SwitchText" Property="Foreground" Value="#403B5B" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
@@ -451,7 +451,7 @@
                 <TextBlock
                     HorizontalAlignment="Center"
                     Style="{StaticResource CameraDialogTitleStyle}"
-                    Text="相机视频采集" />
+                    Text="{DynamicResource CameraCapture.Title}" />
 
                 <Button
                     Width="34"
@@ -460,7 +460,7 @@
                     VerticalAlignment="Center"
                     Click="CloseButton_OnClick"
                     Style="{StaticResource MaterialDesignIconButton}"
-                    ToolTip="关闭">
+                    ToolTip="{DynamicResource Close}">
                     <materialDesign:PackIcon Kind="Close" />
                 </Button>
             </Grid>
@@ -481,7 +481,7 @@
                             VerticalAlignment="Center"
                             Background="{StaticResource CameraAccentBrush}"
                             CornerRadius="8" />
-                        <TextBlock Style="{StaticResource CameraSectionTitleStyle}" Text="采集参数" />
+                        <TextBlock Style="{StaticResource CameraSectionTitleStyle}" Text="{DynamicResource CameraCapture.Section.Parameters}" />
                     </StackPanel>
 
                     <Grid Grid.Row="2">
@@ -496,7 +496,7 @@
                             Grid.Column="0"
                             VerticalAlignment="Center"
                             Orientation="Horizontal">
-                            <TextBlock Style="{StaticResource CameraFieldLabelStyle}" Text="当前模式" />
+                            <TextBlock Style="{StaticResource CameraFieldLabelStyle}" Text="{DynamicResource CameraCapture.Field.CurrentMode}" />
                             <ToggleButton
                                 Margin="10,0,0,0"
                                 Command="{Binding ToggleCaptureModeCommand}"
@@ -508,7 +508,7 @@
                             Grid.Column="1"
                             VerticalAlignment="Center"
                             Orientation="Horizontal">
-                            <TextBlock Style="{StaticResource CameraFieldLabelStyle}" Text="录制分辨率" />
+                            <TextBlock Style="{StaticResource CameraFieldLabelStyle}" Text="{DynamicResource CameraCapture.Field.Resolution}" />
                             <ComboBox
                                 Width="150"
                                 Margin="10,0,0,0"
@@ -521,7 +521,7 @@
                             Grid.Column="2"
                             VerticalAlignment="Center"
                             Orientation="Horizontal">
-                            <TextBlock Style="{StaticResource CameraFieldLabelStyle}" Text="录制帧率" />
+                            <TextBlock Style="{StaticResource CameraFieldLabelStyle}" Text="{DynamicResource CameraCapture.Field.FrameRate}" />
                             <ComboBox
                                 Width="170"
                                 Margin="10,0,0,0"
@@ -534,7 +534,7 @@
                             Grid.Column="3"
                             VerticalAlignment="Center"
                             Orientation="Horizontal">
-                            <TextBlock Style="{StaticResource CameraFieldLabelStyle}" Text="录制时长" />
+                            <TextBlock Style="{StaticResource CameraFieldLabelStyle}" Text="{DynamicResource CameraCapture.Field.Duration}" />
                             <ComboBox
                                 Width="110"
                                 Margin="10,0,0,0"
@@ -587,7 +587,7 @@
                                     VerticalAlignment="Center"
                                     Background="{StaticResource CameraAccentBrush}"
                                     CornerRadius="8" />
-                                <TextBlock Style="{StaticResource CameraSectionTitleStyle}" Text="侧面相机" />
+                                <TextBlock Style="{StaticResource CameraSectionTitleStyle}" Text="{DynamicResource CameraCapture.Camera.Side}" />
                             </StackPanel>
                             <Border
                                 Grid.Column="1"
@@ -600,7 +600,7 @@
                                     FontSize="12"
                                     FontWeight="SemiBold"
                                     Foreground="{Binding SideCameraStatusBrush}"
-                                    Text="{Binding SideCameraStatus}" />
+                                    Text="{Binding SideCameraStatusDisplay}" />
                             </Border>
                             <Button
                                 Grid.Column="2"
@@ -609,7 +609,7 @@
                                 Margin="4,0,0,0"
                                 Command="{Binding RefreshCameraStatusCommand}"
                                 Style="{StaticResource MaterialDesignIconButton}"
-                                ToolTip="刷新相机状态">
+                                ToolTip="{DynamicResource CameraCapture.Action.RefreshCameraStatus}">
                                 <materialDesign:PackIcon Kind="Refresh" />
                             </Button>
                             <StackPanel
@@ -619,9 +619,9 @@
                                 <Button
                                     Margin="0,0,10,0"
                                     Command="{Binding EditSideCameraCommand}"
-                                    Content="修改"
+                                    Content="{DynamicResource Edit}"
                                     Style="{StaticResource CameraCompactSecondaryButtonStyle}" />
-                                <TextBlock Style="{StaticResource CameraMetaTextStyle}" Text="相机ID：" />
+                                <TextBlock Style="{StaticResource CameraMetaTextStyle}" Text="{DynamicResource CameraCapture.CameraIdLabel}" />
                                 <TextBlock
                                     Width="170"
                                     Style="{StaticResource CameraMetaTextStyle}"
@@ -664,7 +664,7 @@
                                             FontSize="32"
                                             FontWeight="Bold"
                                             Foreground="#F87171"
-                                            Text="{Binding RecordingStageText}" />
+                                            Text="{Binding RecordingStageTextDisplay}" />
                                     </StackPanel>
                                     <TextBlock
                                         Margin="0,12,0,0"
@@ -746,19 +746,19 @@
                         <Grid Grid.Row="3">
                             <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                                 <RadioButton
-                                    Content="横向"
+                                    Content="{DynamicResource CameraCapture.Orientation.Landscape}"
                                     GroupName="SideOrientation"
                                     IsChecked="{Binding SideOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Landscape}"
                                     IsEnabled="{Binding IsPreviewState}" />
                                 <RadioButton
                                     Margin="12,0,0,0"
-                                    Content="纵向"
+                                    Content="{DynamicResource CameraCapture.Orientation.Portrait}"
                                     GroupName="SideOrientation"
                                     IsChecked="{Binding SideOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=PortraitClockwise}"
                                     IsEnabled="{Binding IsPreviewState}" />
                                 <CheckBox
                                     Margin="14,0,0,0"
-                                    Content="上下翻转"
+                                    Content="{DynamicResource CameraCapture.Orientation.FlipVertical}"
                                     IsChecked="{Binding SideFlipHorizontal}"
                                     IsEnabled="{Binding IsPreviewState}" />
                             </StackPanel>
@@ -793,7 +793,7 @@
                                     VerticalAlignment="Center"
                                     Background="{StaticResource CameraAccentBrush}"
                                     CornerRadius="8" />
-                                <TextBlock Style="{StaticResource CameraSectionTitleStyle}" Text="正面相机" />
+                                <TextBlock Style="{StaticResource CameraSectionTitleStyle}" Text="{DynamicResource CameraCapture.Camera.Front}" />
                             </StackPanel>
                             <Border
                                 Grid.Column="1"
@@ -806,7 +806,7 @@
                                     FontSize="12"
                                     FontWeight="SemiBold"
                                     Foreground="{Binding FrontCameraStatusBrush}"
-                                    Text="{Binding FrontCameraStatus}" />
+                                    Text="{Binding FrontCameraStatusDisplay}" />
                             </Border>
                             <Button
                                 Grid.Column="2"
@@ -815,7 +815,7 @@
                                 Margin="4,0,0,0"
                                 Command="{Binding RefreshCameraStatusCommand}"
                                 Style="{StaticResource MaterialDesignIconButton}"
-                                ToolTip="刷新相机状态">
+                                ToolTip="{DynamicResource CameraCapture.Action.RefreshCameraStatus}">
                                 <materialDesign:PackIcon Kind="Refresh" />
                             </Button>
                             <StackPanel
@@ -825,9 +825,9 @@
                                 <Button
                                     Margin="0,0,10,0"
                                     Command="{Binding EditFrontCameraCommand}"
-                                    Content="修改"
+                                    Content="{DynamicResource Edit}"
                                     Style="{StaticResource CameraCompactSecondaryButtonStyle}" />
-                                <TextBlock Style="{StaticResource CameraMetaTextStyle}" Text="相机ID：" />
+                                <TextBlock Style="{StaticResource CameraMetaTextStyle}" Text="{DynamicResource CameraCapture.CameraIdLabel}" />
                                 <TextBlock
                                     Width="170"
                                     Style="{StaticResource CameraMetaTextStyle}"
@@ -870,7 +870,7 @@
                                             FontSize="32"
                                             FontWeight="Bold"
                                             Foreground="#F87171"
-                                            Text="{Binding RecordingStageText}" />
+                                            Text="{Binding RecordingStageTextDisplay}" />
                                     </StackPanel>
                                     <TextBlock
                                         Margin="0,12,0,0"
@@ -952,19 +952,19 @@
                         <Grid Grid.Row="3">
                             <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                                 <RadioButton
-                                    Content="横向"
+                                    Content="{DynamicResource CameraCapture.Orientation.Landscape}"
                                     GroupName="FrontOrientation"
                                     IsChecked="{Binding FrontOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Landscape}"
                                     IsEnabled="{Binding IsPreviewState}" />
                                 <RadioButton
                                     Margin="12,0,0,0"
-                                    Content="纵向"
+                                    Content="{DynamicResource CameraCapture.Orientation.Portrait}"
                                     GroupName="FrontOrientation"
                                     IsChecked="{Binding FrontOrientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=PortraitClockwise}"
                                     IsEnabled="{Binding IsPreviewState}" />
                                 <CheckBox
                                     Margin="14,0,0,0"
-                                    Content="上下翻转"
+                                    Content="{DynamicResource CameraCapture.Orientation.FlipVertical}"
                                     IsChecked="{Binding FrontFlipHorizontal}"
                                     IsEnabled="{Binding IsPreviewState}" />
                             </StackPanel>
@@ -984,14 +984,14 @@
                     Style="{StaticResource CameraPrimaryButtonStyle}">
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon Margin="0,0,6,0" Kind="RecordRec" />
-                        <TextBlock Text="{Binding PrimaryActionText}" />
+                        <TextBlock Text="{Binding PrimaryActionTextDisplay}" />
                     </StackPanel>
                 </Button>
                 <Button
                     Margin="12,0,0,0"
                     Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
                     CommandParameter="{Binding CaptureResult}"
-                    Content="确定"
+                    Content="{DynamicResource Confirm}"
                     IsEnabled="{Binding CanConfirm}"
                     Style="{StaticResource CameraPrimaryButtonStyle}" />
             </StackPanel>
@@ -1007,26 +1007,117 @@
                     VerticalAlignment="Center"
                     UniformCornerRadius="6">
                     <StackPanel>
-                        <TextBlock Style="{StaticResource CameraSectionTitleStyle}" Text="修改相机编号" />
+                        <TextBlock Style="{StaticResource CameraSectionTitleStyle}" Text="{DynamicResource CameraCapture.EditCameraName}" />
                         <TextBox
                             Margin="0,18,0,18"
-                            materialDesign:HintAssist.Hint="DirectShow 相机设备名"
+                            materialDesign:HintAssist.Hint="{DynamicResource CameraCapture.CameraNameHint}"
                             FontFamily="{StaticResource AppFont}"
                             FontSize="16"
                             Text="{Binding EditingCameraName, UpdateSourceTrigger=PropertyChanged}" />
                         <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                             <Button
                                 Command="{Binding CancelEditCameraNameCommand}"
-                                Content="取消"
+                                Content="{DynamicResource Cancel}"
                                 Style="{StaticResource CameraSecondaryButtonStyle}" />
                             <Button
                                 Margin="8,0,0,0"
                                 Command="{Binding ConfirmEditCameraNameCommand}"
-                                Content="确认"
+                                Content="{DynamicResource Confirm}"
                                 Style="{StaticResource CameraPrimaryButtonStyle}" />
                         </StackPanel>
                     </StackPanel>
                 </materialDesign:Card>
+            </Border>
+
+            <Border
+                x:Name="ExitConfirmOverlay"
+                Grid.RowSpan="4"
+                Background="#66000000"
+                Visibility="Collapsed">
+                <Border
+                    Width="420"
+                    Height="360"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="#FFFFFF"
+                    CornerRadius="8">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="72" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="92" />
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0" Background="#F3F8FC">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontFamily="{StaticResource AppFont}"
+                                FontSize="24"
+                                FontWeight="Medium"
+                                Foreground="#333333"
+                                Text="{DynamicResource CameraCapture.ExitConfirmTitle}" />
+                            <Button
+                                Width="44"
+                                Height="44"
+                                Margin="0,0,14,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Click="CancelExitButton_OnClick"
+                                Cursor="Hand">
+                                <materialDesign:PackIcon
+                                    Width="24"
+                                    Height="24"
+                                    Foreground="#403B5B"
+                                    Kind="Close" />
+                            </Button>
+                        </Grid>
+
+                        <StackPanel
+                            Grid.Row="1"
+                            Margin="40,24,40,0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                            <materialDesign:PackIcon
+                                Width="64"
+                                Height="64"
+                                HorizontalAlignment="Center"
+                                Foreground="#403B5B"
+                                Kind="HelpCircleOutline" />
+                            <TextBlock
+                                Margin="0,24,0,0"
+                                HorizontalAlignment="Center"
+                                FontFamily="{StaticResource AppFont}"
+                                FontSize="22"
+                                FontWeight="Medium"
+                                Foreground="#333333"
+                                Text="{DynamicResource CameraCapture.ExitConfirmMessage}"
+                                TextAlignment="Center"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <StackPanel
+                            Grid.Row="2"
+                            HorizontalAlignment="Center"
+                            Orientation="Horizontal">
+                            <Button
+                                Width="136"
+                                Height="48"
+                                Click="CancelExitButton_OnClick"
+                                Content="{DynamicResource Cancel}"
+                                Style="{StaticResource CameraSecondaryButtonStyle}" />
+                            <Button
+                                Width="136"
+                                Height="48"
+                                Margin="28,0,0,0"
+                                Click="ConfirmExitButton_OnClick"
+                                Content="{DynamicResource Confirm}"
+                                Style="{StaticResource CameraPrimaryButtonStyle}" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
             </Border>
         </Grid>
     </Border>

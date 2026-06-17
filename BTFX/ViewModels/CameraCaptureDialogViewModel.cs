@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -22,6 +22,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
     private const int RecordingStartDelaySeconds = 5;
     private readonly ICameraRecordingService _cameraRecordingService;
     private readonly ICameraCaptureSettingsService _settingsService;
+    private readonly ILocalizationService _localizationService;
     private readonly List<PreviewProcess> _previewProcesses = new();
     private readonly SemaphoreSlim _cameraStatusProbeGate = new(1, 1);
     private readonly SemaphoreSlim _previewRestartGate = new(1, 1);
@@ -50,17 +51,17 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SideCameraStatusBrush))]
-    private string _sideCameraStatus = "未检测";
+    private string _sideCameraStatus = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(FrontCameraStatusBrush))]
-    private string _frontCameraStatus = "未检测";
+    private string _frontCameraStatus = string.Empty;
 
     [ObservableProperty]
     private string _selectedResolution = "3840x2160";
 
     [ObservableProperty]
-    private FrameRateOption _selectedFrameRate;
+    private FrameRateOption _selectedFrameRate = null!;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(RecordingElapsedDisplayText))]
@@ -72,9 +73,11 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsCompletedState))]
     [NotifyPropertyChangedFor(nameof(CanConfirm))]
     [NotifyPropertyChangedFor(nameof(PrimaryActionText))]
+    [NotifyPropertyChangedFor(nameof(PrimaryActionTextDisplay))]
     [NotifyPropertyChangedFor(nameof(IsRecordingCountdownVisible))]
     [NotifyPropertyChangedFor(nameof(IsTranscodingVisible))]
     [NotifyPropertyChangedFor(nameof(RecordingStageText))]
+    [NotifyPropertyChangedFor(nameof(RecordingStageTextDisplay))]
     private CameraCaptureUiState _captureState = CameraCaptureUiState.Preview;
 
     [ObservableProperty]
@@ -88,22 +91,25 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsRecordingCountdownVisible))]
     [NotifyPropertyChangedFor(nameof(IsTranscodingVisible))]
     [NotifyPropertyChangedFor(nameof(RecordingStageText))]
+    [NotifyPropertyChangedFor(nameof(RecordingStageTextDisplay))]
     private bool _isTranscoding;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsRecordingCountdownVisible))]
     [NotifyPropertyChangedFor(nameof(RecordingStageText))]
+    [NotifyPropertyChangedFor(nameof(RecordingStageTextDisplay))]
     private bool _isPreparingRecording;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(RecordingStageText))]
+    [NotifyPropertyChangedFor(nameof(RecordingStageTextDisplay))]
     private int _recordingStartDelayRemainingSeconds;
 
     [ObservableProperty]
     private string _transcodeLogText = string.Empty;
 
     [ObservableProperty]
-    private string _statusText = "预览中";
+    private string _statusText = string.Empty;
 
     [ObservableProperty]
     private ImageSource? _sidePreviewImage;
@@ -156,12 +162,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         "1280x720"
     };
 
-    public ObservableCollection<FrameRateOption> FrameRateOptions { get; } = new()
-    {
-        new("高帧率", 59),
-        new("中帧率", 45),
-        new("低帧率", 30)
-    };
+    public ObservableCollection<FrameRateOption> FrameRateOptions { get; } = new();
 
     public ObservableCollection<DurationOption> DurationOptions { get; } = new()
     {
@@ -188,13 +189,13 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
                               && !string.IsNullOrWhiteSpace(SideOutputPath)
                               && (!IsDualMode || !string.IsNullOrWhiteSpace(FrontOutputPath));
 
-    public string ModeText => IsDualMode ? "双视角视频采集" : "单视角视频采集";
+    public string ModeText => IsDualMode ? L("CameraCapture.Mode.DualFull") : L("CameraCapture.Mode.SingleFull");
 
-    public string PrimaryActionText => CaptureState == CameraCaptureUiState.Completed ? "重新录制" : "开始录制";
+    public string PrimaryActionText => CaptureState == CameraCaptureUiState.Completed ? L("CameraCapture.Action.Rerecord") : L("CameraCapture.Action.StartRecording");
 
     public string RecordingStageText => IsPreparingRecording
         ? $"\u51c6\u5907\u5f55\u5236\uff0c{RecordingStartDelayRemainingSeconds}s \u540e\u5f00\u59cb"
-        : IsTranscodingVisible ? "视频录制完成，正在转码" : IsRecordingState ? "正在录制" : string.Empty;
+        : IsTranscodingVisible ? L("CameraCapture.Status.Transcoding") : IsRecordingState ? L("CameraCapture.Status.Recording") : string.Empty;
 
     public string RecordingElapsedDisplayText =>
         $"{FormatDuration(SelectedDuration.Value - RecordingRemainingSeconds)} / {FormatDuration(SelectedDuration.Value)}";
@@ -203,21 +204,104 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
 
     public Brush FrontCameraStatusBrush => GetCameraStatusBrush(FrontCameraStatus);
 
+    public string SideCameraStatusDisplay => GetCameraStatusDisplay(SideCameraStatus, SideCameraStatusBrush);
+
+    public string FrontCameraStatusDisplay => GetCameraStatusDisplay(FrontCameraStatus, FrontCameraStatusBrush);
+
+    public string PrimaryActionTextDisplay => CaptureState == CameraCaptureUiState.Completed
+        ? L("CameraCapture.Action.Rerecord")
+        : L("CameraCapture.Action.StartRecording");
+
+    public string RecordingStageTextDisplay => IsPreparingRecording
+        ? L("CameraCapture.Status.StartDelayFormat", RecordingStartDelayRemainingSeconds)
+        : IsTranscodingVisible ? L("CameraCapture.Status.Transcoding") : IsRecordingState ? L("CameraCapture.Status.Recording") : string.Empty;
+
     public string FfmpegPath => Path.Combine(AppContext.BaseDirectory, "ffmpeg", "ffmpeg.exe");
 
     public string SaveDirectory => Path.Combine(AppContext.BaseDirectory, "video");
 
     public CameraCaptureDialogViewModel(
         ICameraRecordingService cameraRecordingService,
-        ICameraCaptureSettingsService settingsService)
+        ICameraCaptureSettingsService settingsService,
+        ILocalizationService localizationService)
     {
         _cameraRecordingService = cameraRecordingService;
         _settingsService = settingsService;
+        _localizationService = localizationService;
         _settings = _settingsService.Load();
 
-        _selectedFrameRate = FrameRateOptions.First();
+        _isLoadingSettings = true;
         _selectedDuration = DurationOptions.First();
+        RebuildFrameRateOptions(_settings.FrameRate);
+        _isLoadingSettings = false;
+        _localizationService.LanguageChanged += (_, _) => RefreshLocalizedText();
         LoadSettings(_settings.LastMode);
+    }
+
+    private string L(string key, params object[] args)
+    {
+        var value = args.Length == 0
+            ? _localizationService.GetString(key)
+            : _localizationService.GetString(key, args);
+        return string.IsNullOrWhiteSpace(value) ? key : value;
+    }
+
+    private void RebuildFrameRateOptions(int selectedValue)
+    {
+        FrameRateOptions.Clear();
+        FrameRateOptions.Add(new FrameRateOption(L("CameraCapture.FrameRate.High"), 59));
+        FrameRateOptions.Add(new FrameRateOption(L("CameraCapture.FrameRate.Medium"), 45));
+        FrameRateOptions.Add(new FrameRateOption(L("CameraCapture.FrameRate.Low"), 30));
+        SelectedFrameRate = FrameRateOptions.FirstOrDefault(item => item.Value == selectedValue) ?? FrameRateOptions[0];
+    }
+
+    private void RefreshLocalizedText()
+    {
+        var selectedFrameRate = SelectedFrameRate.Value;
+        var previousLoading = _isLoadingSettings;
+        _isLoadingSettings = true;
+        RebuildFrameRateOptions(selectedFrameRate);
+        _isLoadingSettings = previousLoading;
+        OnPropertyChanged(nameof(ModeText));
+        OnPropertyChanged(nameof(PrimaryActionTextDisplay));
+        OnPropertyChanged(nameof(RecordingStageTextDisplay));
+        OnPropertyChanged(nameof(SideCameraStatusDisplay));
+        OnPropertyChanged(nameof(FrontCameraStatusDisplay));
+    }
+
+    private string GetCameraStatusDisplay(string status, Brush statusBrush)
+    {
+        if (ReferenceEquals(statusBrush, Brushes.ForestGreen) || Equals(statusBrush, Brushes.ForestGreen))
+        {
+            return L("CameraCapture.CameraStatus.Connected");
+        }
+
+        if (string.IsNullOrWhiteSpace(status))
+        {
+            return L("CameraCapture.CameraStatus.Undetected");
+        }
+
+        if (status.Contains("FFmpeg", StringComparison.OrdinalIgnoreCase))
+        {
+            return L("CameraCapture.CameraStatus.FfmpegMissing");
+        }
+
+        if (string.Equals(status, "Disabled", StringComparison.OrdinalIgnoreCase))
+        {
+            return L("CameraCapture.CameraStatus.Disabled");
+        }
+
+        if (string.Equals(status, "Unconfigured", StringComparison.OrdinalIgnoreCase))
+        {
+            return L("CameraCapture.CameraStatus.Unconfigured");
+        }
+
+        if (string.Equals(status, "ProbeFailed", StringComparison.OrdinalIgnoreCase))
+        {
+            return L("CameraCapture.CameraStatus.ProbeFailed");
+        }
+
+        return L("CameraCapture.CameraStatus.NotFound");
     }
 
     public void Initialize(CameraCaptureMode mode)
@@ -261,6 +345,16 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         ResetRecordingState();
         _ = RefreshCameraStatusAsync();
         _ = RestartPreviewAsync();
+    }
+
+    partial void OnSideCameraStatusChanged(string value)
+    {
+        OnPropertyChanged(nameof(SideCameraStatusDisplay));
+    }
+
+    partial void OnFrontCameraStatusChanged(string value)
+    {
+        OnPropertyChanged(nameof(FrontCameraStatusDisplay));
     }
 
     partial void OnSelectedResolutionChanged(string value)
@@ -414,7 +508,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         try
         {
             var newSideStatus = await ProbeCameraAsync(SideCameraName, cancellationToken);
-            var newFrontStatus = IsDualMode ? await ProbeCameraAsync(FrontCameraName, cancellationToken) : "未启用";
+            var newFrontStatus = IsDualMode ? await ProbeCameraAsync(FrontCameraName, cancellationToken) : "Disabled";
 
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
@@ -478,7 +572,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
 
     private async Task StartRecordingAsync()
     {
-        if (!DiskSpaceGuard.EnsureProgramDriveHasSpace("视频录制"))
+        if (!DiskSpaceGuard.EnsureProgramDriveHasSpace(L("CameraCapture.Title")))
         {
             return;
         }
@@ -499,7 +593,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         TranscodeLogText = string.Empty;
         LogLines.Clear();
         CaptureState = CameraCaptureUiState.Recording;
-        StatusText = "准备录制";
+        StatusText = L("CameraCapture.Status.StartDelayFormat", RecordingStartDelaySeconds);
 
         using var progressCancellation = new CancellationTokenSource();
         var progressTask = TrackRecordingProgressAsync(progressCancellation.Token);
@@ -507,7 +601,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         try
         {
             await DelayBeforeRecordingAsync(_recordingCancellation.Token);
-            StatusText = "录制中";
+            StatusText = L("CameraCapture.Status.Recording");
 
             Directory.CreateDirectory(SaveDirectory);
             var cameraNames = IsDualMode
@@ -568,21 +662,21 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
             RecordingProgress = 100;
             RecordingRemainingSeconds = 0;
             CaptureState = CameraCaptureUiState.Completed;
-            StatusText = "录制完成";
-            AppendLog("录制和转码完成。");
+            StatusText = L("CameraCapture.Status.Completed");
+            AppendLog(L("CameraCapture.Log.RecordAndTranscodeCompleted"));
         }
         catch (OperationCanceledException)
         {
             CaptureState = CameraCaptureUiState.Preview;
-            StatusText = "已取消";
-            AppendLog("录制已取消。");
+            StatusText = L("CameraCapture.Status.Canceled");
+            AppendLog(L("CameraCapture.Log.RecordingCanceled"));
             await RestartPreviewAsync();
         }
         catch (Exception ex)
         {
             CaptureState = CameraCaptureUiState.Preview;
-            StatusText = "录制失败";
-            AppendLog($"错误: {ex.Message}");
+            StatusText = L("CameraCapture.Status.Failed");
+            AppendLog($"Error: {ex.Message}");
             await RestartPreviewAsync();
         }
         finally
@@ -608,7 +702,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         for (var remaining = RecordingStartDelaySeconds; remaining > 0; remaining--)
         {
             RecordingStartDelayRemainingSeconds = remaining;
-            StatusText = $"准备录制，{remaining}s 后开始";
+            StatusText = L("CameraCapture.Status.StartDelayFormat", remaining);
             await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
         }
 
@@ -659,8 +753,8 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         {
             RecordingProgress = 70;
             RecordingRemainingSeconds = 0;
-            StatusText = "转码准备中";
-            AppendLog("录制阶段完成。");
+            StatusText = L("CameraCapture.Status.TranscodePreparing");
+            AppendLog(L("CameraCapture.Log.RecordStageCompleted"));
             return;
         }
 
@@ -669,16 +763,16 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
             IsTranscoding = true;
             RecordingProgress = Math.Max(RecordingProgress, 72);
             RecordingRemainingSeconds = 0;
-            StatusText = "转码中";
-            AppendLog("开始转码。");
+            StatusText = L("CameraCapture.Status.TranscodingShort");
+            AppendLog(L("CameraCapture.Log.TranscodeStarted"));
             return;
         }
 
         if (message.Contains("STAGE:DONE", StringComparison.OrdinalIgnoreCase))
         {
             RecordingProgress = 100;
-            StatusText = "录制完成";
-            AppendLog("全部任务完成。");
+            StatusText = L("CameraCapture.Status.Completed");
+            AppendLog(L("CameraCapture.Log.AllTasksCompleted"));
             return;
         }
 
@@ -709,7 +803,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
     private void ResetRecordingState()
     {
         CaptureState = CameraCaptureUiState.Preview;
-        StatusText = "预览中";
+        StatusText = L("CameraCapture.Status.Previewing");
         RecordingProgress = 0;
         RecordingRemainingSeconds = 0;
         IsTranscoding = false;
@@ -726,12 +820,12 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(cameraName))
         {
-            return "未配置";
+            return "Unconfigured";
         }
 
         if (!File.Exists(FfmpegPath))
         {
-            return "FFmpeg缺失";
+            return "FFmpegMissing";
         }
 
         try
@@ -751,7 +845,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
             process.Start();
             var output = await process.StandardError.ReadToEndAsync(cancellationToken);
             await process.WaitForExitAsync(cancellationToken);
-            return output.Contains(cameraName, StringComparison.OrdinalIgnoreCase) ? "已连接" : "未发现";
+            return output.Contains(cameraName, StringComparison.OrdinalIgnoreCase) ? "Connected" : "NotFound";
         }
         catch (OperationCanceledException)
         {
@@ -759,7 +853,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         }
         catch
         {
-            return "检测失败";
+            return "ProbeFailed";
         }
     }
 
@@ -901,7 +995,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            AppendLog($"预览启动失败({cameraName}): {ex.Message}");
+            AppendLog($"棰勮鍚姩澶辫触({cameraName}): {ex.Message}");
         }
     }
 
@@ -914,7 +1008,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
                 var line = await process.StandardError.ReadLineAsync(cancellationToken);
                 if (!string.IsNullOrWhiteSpace(line))
                 {
-                    AppendLog($"预览({cameraName}): {line}");
+                    AppendLog($"棰勮({cameraName}): {line}");
                 }
                 else if (line == null)
                 {
@@ -1106,6 +1200,11 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
 
     private void SaveSettings()
     {
+        if (SelectedFrameRate is null || SelectedDuration is null)
+        {
+            return;
+        }
+
         _settings.LastMode = CurrentMode;
         _settings.SideCameraName = SideCameraName;
         _settings.FrontCameraName = FrontCameraName;
@@ -1174,7 +1273,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
             {
                 if (!string.IsNullOrWhiteSpace(error))
                 {
-                    AppendLog($"首帧加载失败: {error.Trim()}");
+                    AppendLog($"棣栧抚鍔犺浇澶辫触: {error.Trim()}");
                 }
 
                 return null;
@@ -1189,7 +1288,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            AppendLog($"首帧加载失败: {ex.Message}");
+            AppendLog($"棣栧抚鍔犺浇澶辫触: {ex.Message}");
             return null;
         }
     }
@@ -1275,7 +1374,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
 
     private static Brush GetCameraStatusBrush(string status)
     {
-        return string.Equals(status, "已连接", StringComparison.Ordinal)
+        return string.Equals(status, "Connected", StringComparison.Ordinal)
             ? Brushes.ForestGreen
             : Brushes.Firebrick;
     }
@@ -1299,3 +1398,4 @@ public sealed record DurationOption(string Name, int Value)
 {
     public override string ToString() => Name;
 }
+

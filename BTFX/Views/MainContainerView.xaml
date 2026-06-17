@@ -342,6 +342,7 @@
                         VerticalAlignment="Center"
                         Orientation="Horizontal">
                         <Button
+                            Width="180"
                             Command="{Binding SwitchPatientCommand}"
                             IsEnabled="{Binding IsShellInteractionEnabled}"
                             Style="{StaticResource SwitchPatientButtonStyle}">

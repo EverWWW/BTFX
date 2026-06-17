@@ -174,7 +174,7 @@ public partial class UserManagementViewModel : ObservableObject
 
         if (item.IsDefaultAdmin)
         {
-            await ShowNoticeDialogAsync("默认管理员账户不可编辑", _localizationService.GetString("Warning"));
+            await ShowNoticeDialogAsync(_localizationService.GetString("DefaultAdminEditNotAllowed"), _localizationService.GetString("Warning"));
             return;
         }
 
@@ -206,7 +206,7 @@ public partial class UserManagementViewModel : ObservableObject
 
         if (item.IsDefaultAdmin)
         {
-            await ShowNoticeDialogAsync("默认管理员账户不可重置密码", _localizationService.GetString("Warning"));
+            await ShowNoticeDialogAsync(_localizationService.GetString("DefaultAdminResetPasswordNotAllowed"), _localizationService.GetString("Warning"));
             return;
         }
 
@@ -226,7 +226,7 @@ public partial class UserManagementViewModel : ObservableObject
             {
                 await LoadUsersAsync();
                 await ShowNoticeDialogAsync(
-                    "密码已重置",
+                    _localizationService.GetString("PasswordResetSuccess"),
                     _localizationService.GetString("Information"));
                 _logHelper?.Information($"重置用户密码: {item.User.Username}");
                 return;
@@ -345,7 +345,7 @@ public partial class UserManagementViewModel : ObservableObject
     /// <summary>
     /// 显示确认对话框。
     /// </summary>
-    private static async Task<bool> ShowConfirmDialogAsync(string title, string message, string iconKind = "HelpCircleOutline")
+    private async Task<bool> ShowConfirmDialogAsync(string title, string message, string iconKind = "HelpCircleOutline")
     {
         var result = await DialogHost.Show(
             new ConfirmDialog
@@ -354,8 +354,8 @@ public partial class UserManagementViewModel : ObservableObject
                 {
                     Title = title,
                     Message = message,
-                    ConfirmText = "确定",
-                    CancelText = "取消",
+                    ConfirmText = _localizationService.GetString("Confirm"),
+                    CancelText = _localizationService.GetString("Cancel"),
                     IsCancelVisible = true,
                     IconKind = iconKind
                 }
@@ -368,7 +368,7 @@ public partial class UserManagementViewModel : ObservableObject
     /// <summary>
     /// 显示提示对话框。
     /// </summary>
-    private static Task ShowNoticeDialogAsync(string message, string title)
+    private Task ShowNoticeDialogAsync(string message, string title)
     {
         return DialogHost.Show(
             new ConfirmDialog
@@ -377,7 +377,7 @@ public partial class UserManagementViewModel : ObservableObject
                 {
                     Title = title,
                     Message = message,
-                    ConfirmText = "确定",
+                    ConfirmText = _localizationService.GetString("Confirm"),
                     IsCancelVisible = false,
                     IconKind = "InformationOutline"
                 }

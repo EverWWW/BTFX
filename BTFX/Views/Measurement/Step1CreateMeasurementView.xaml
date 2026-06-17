@@ -364,7 +364,7 @@
                     <StackPanel Grid.Column="4" Orientation="Horizontal">
                         <TextBlock Style="{StaticResource FieldLabelStyle}" Text="{DynamicResource MA.Step1.AnalysisMode}" />
                         <ComboBox
-                            Width="150"
+                            Width="160"
                             SelectedValue="{Binding SelectedAnalysisMode}"
                             SelectedValuePath="Tag"
                             Style="{StaticResource FilterComboBoxStyle}">

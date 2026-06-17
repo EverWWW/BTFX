@@ -22,11 +22,12 @@ public class UserEditViewModel : ObservableObject
 {
     private readonly IUserService _userService;
     private readonly IDepartmentService _departmentService;
+    private readonly ILocalizationService _localizationService;
     private readonly User? _originalUser;
 
     public bool IsNewUser => _originalUser == null;
 
-    public string DialogTitle => IsNewUser ? "添加用户" : "编辑用户";
+    public string DialogTitle => _localizationService.GetString(IsNewUser ? "AddUser" : "EditUser");
 
     private string _username = string.Empty;
     public string Username
@@ -129,6 +130,8 @@ public class UserEditViewModel : ObservableObject
     {
         _userService = userService;
         _departmentService = departmentService;
+        _localizationService = App.Services?.GetService(typeof(ILocalizationService)) as ILocalizationService
+            ?? throw new InvalidOperationException("Localization service is not available.");
         _originalUser = user;
 
         CancelCommand = new RelayCommand(Cancel);
@@ -140,8 +143,8 @@ public class UserEditViewModel : ObservableObject
 
     private void InitializeOptions()
     {
-        RoleOptions.Add(new RoleOption { Value = UserRole.Administrator, Display = "管理员" });
-        RoleOptions.Add(new RoleOption { Value = UserRole.Operator, Display = "操作员" });
+        RoleOptions.Add(new RoleOption { Value = UserRole.Administrator, Display = _localizationService.GetString("Administrator") });
+        RoleOptions.Add(new RoleOption { Value = UserRole.Operator, Display = _localizationService.GetString("Operator") });
     }
 
     private void LoadData()
@@ -226,12 +229,12 @@ public class UserEditViewModel : ObservableObject
             }
             else
             {
-                ValidationError = "保存失败，请重试";
+                ValidationError = _localizationService.GetString("SaveRetryError");
             }
         }
         catch (Exception ex)
         {
-            ValidationError = $"保存出错: {ex.Message}";
+            ValidationError = string.Format(_localizationService.GetString("SaveExceptionFormat"), ex.Message);
         }
         finally
         {
@@ -245,26 +248,26 @@ public class UserEditViewModel : ObservableObject
 
         if (string.IsNullOrWhiteSpace(Username))
         {
-            ValidationError = "登录账号不能为空";
+            ValidationError = _localizationService.GetString("UsernameRequired");
             return false;
         }
 
         if (Username.Length < 3 || Username.Length > 20)
         {
-            ValidationError = "登录账号长度应在3-20位之间";
+            ValidationError = _localizationService.GetString("UsernameLengthError");
             return false;
         }
 
         bool isExists = await _userService.IsUsernameExistsAsync(Username, _originalUser?.Id);
         if (isExists)
         {
-            ValidationError = "该账号已存在";
+            ValidationError = _localizationService.GetString("UsernameExists");
             return false;
         }
 
         if (string.IsNullOrWhiteSpace(Name))
         {
-            ValidationError = "用户姓名不能为空";
+            ValidationError = _localizationService.GetString("UserNameRequired");
             return false;
         }
 
@@ -272,20 +275,20 @@ public class UserEditViewModel : ObservableObject
         {
             if (Phone.Length > BTFX.Common.Constants.PHONE_MAX_LENGTH)
             {
-                ValidationError = $"电话长度不能超过{BTFX.Common.Constants.PHONE_MAX_LENGTH}位";
+                ValidationError = string.Format(_localizationService.GetString("PhoneMaxLengthError"), BTFX.Common.Constants.PHONE_MAX_LENGTH);
                 return false;
             }
 
             if (!Phone.All(char.IsDigit))
             {
-                ValidationError = "电话只能输入数字";
+                ValidationError = _localizationService.GetString("PhoneDigitsOnly");
                 return false;
             }
         }
 
         if (SelectedRole == null)
         {
-            ValidationError = "请选择角色";
+            ValidationError = _localizationService.GetString("SelectRoleRequired");
             return false;
         }
 
@@ -293,31 +296,31 @@ public class UserEditViewModel : ObservableObject
         {
             if (string.IsNullOrWhiteSpace(Password))
             {
-                ValidationError = "密码不能为空";
+                ValidationError = _localizationService.GetString("PasswordRequired");
                 return false;
             }
 
             if (Password.Length < 6)
             {
-                ValidationError = "密码长度至少为6位";
+                ValidationError = _localizationService.GetString("PasswordMinLengthError");
                 return false;
             }
 
             if (Password.Length > BTFX.Common.Constants.PASSWORD_MAX_LENGTH)
             {
-                ValidationError = $"密码长度不能超过{BTFX.Common.Constants.PASSWORD_MAX_LENGTH}位";
+                ValidationError = string.Format(_localizationService.GetString("PasswordMaxLengthError"), BTFX.Common.Constants.PASSWORD_MAX_LENGTH);
                 return false;
             }
 
             if (!Password.All(char.IsDigit))
             {
-                ValidationError = "密码由纯数字组成";
+                ValidationError = _localizationService.GetString("PasswordDigitsOnly");
                 return false;
             }
 
             if (Password != ConfirmPassword)
             {
-                ValidationError = "两次输入的密码不一致";
+                ValidationError = _localizationService.GetString("PasswordMismatch");
                 return false;
             }
         }

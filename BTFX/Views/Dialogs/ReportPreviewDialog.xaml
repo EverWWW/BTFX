@@ -268,7 +268,7 @@
                             Grid.Column="1"
                             HorizontalAlignment="Center"
                             Style="{StaticResource ReportTitleTextStyle}"
-                            Text="报告预览" />
+                            Text="{DynamicResource AnalysisDetail.ReportPreview.Title}" />
 
                         <Button
                             Grid.Column="2"
@@ -281,7 +281,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="14"
                                     Foreground="{StaticResource ReportSecondaryTextBrush}"
-                                    Text="关闭" />
+                                    Text="{DynamicResource Close}" />
                                 <materialDesign:PackIcon
                                     Width="18"
                                     Height="18"
@@ -321,18 +321,18 @@
                             Grid.Column="0"
                             VerticalAlignment="Center"
                             Style="{StaticResource ReportLabelTextStyle}"
-                            Text="报告标题" />
+                            Text="{DynamicResource Report.Field.Title}" />
                         <TextBlock
                             Grid.Column="1"
                             Margin="0,0,24,0"
                             VerticalAlignment="Center"
                             Style="{StaticResource ReportValueTextStyle}"
-                            Text="{Binding ReportTitle, Mode=OneWay, TargetNullValue=步态分析报告}" />
+                            Text="{Binding ReportTitle, Mode=OneWay, TargetNullValue=--}" />
                         <TextBlock
                             Grid.Column="2"
                             VerticalAlignment="Center"
                             Style="{StaticResource ReportLabelTextStyle}"
-                            Text="编号" />
+                            Text="{DynamicResource Report.Field.Number}" />
                         <TextBlock
                             Grid.Column="3"
                             Margin="0,0,24,0"
@@ -343,7 +343,7 @@
                             Grid.Column="4"
                             VerticalAlignment="Center"
                             Style="{StaticResource ReportLabelTextStyle}"
-                            Text="患者" />
+                            Text="{DynamicResource Patient}" />
                         <TextBlock
                             Grid.Column="5"
                             VerticalAlignment="Center"
@@ -355,7 +355,7 @@
                             Grid.Column="0"
                             VerticalAlignment="Center"
                             Style="{StaticResource ReportLabelTextStyle}"
-                            Text="测量类型" />
+                            Text="{DynamicResource Report.Field.MeasurementType}" />
                         <TextBlock
                             Grid.Row="2"
                             Grid.Column="1"
@@ -368,7 +368,7 @@
                             Grid.Column="2"
                             VerticalAlignment="Center"
                             Style="{StaticResource ReportLabelTextStyle}"
-                            Text="分析模式" />
+                            Text="{DynamicResource Report.Field.AnalysisMode}" />
                         <TextBlock
                             Grid.Row="2"
                             Grid.Column="3"
@@ -381,7 +381,7 @@
                             Grid.Column="4"
                             VerticalAlignment="Center"
                             Style="{StaticResource ReportLabelTextStyle}"
-                            Text="测量时间" />
+                            Text="{DynamicResource Report.Field.MeasurementTime}" />
                         <TextBlock
                             Grid.Row="2"
                             Grid.Column="5"
@@ -413,7 +413,7 @@
                                     VerticalAlignment="Center"
                                     Background="{StaticResource ReportAccentBrush}"
                                     CornerRadius="2" />
-                                <TextBlock Style="{StaticResource ReportSectionTitleTextStyle}" Text="报告配置" />
+                                <TextBlock Style="{StaticResource ReportSectionTitleTextStyle}" Text="{DynamicResource AnalysisDetail.ReportConfig}" />
                             </StackPanel>
 
                             <ScrollViewer
@@ -428,37 +428,37 @@
                                                 Margin="0,0,0,12"
                                                 FontWeight="SemiBold"
                                                 Style="{StaticResource ReportValueTextStyle}"
-                                                Text="报告内容选择" />
+                                                Text="{DynamicResource AnalysisDetail.ReportConfig.IncludeSections}" />
                                             <CheckBox
-                                                Content="步态时空参数"
+                                                Content="{DynamicResource Report.Section.Spatiotemporal}"
                                                 IsChecked="{Binding IncludeSpatiotemporalParameters, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Style="{StaticResource ReportCheckBoxStyle}" />
                                             <CheckBox
-                                                Content="运动学参数"
+                                                Content="{DynamicResource Report.Section.Kinematic}"
                                                 IsChecked="{Binding IncludeKinematicParameters, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Style="{StaticResource ReportCheckBoxStyle}" />
                                             <CheckBox
-                                                Content="躯干和骨盆参数"
-                                                IsEnabled="{Binding CanIncludeTrunkPelvisParameters}"
+                                                Content="{DynamicResource Report.Section.TrunkPelvis}"
                                                 IsChecked="{Binding IncludeTrunkPelvisParameters, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                IsEnabled="{Binding CanIncludeTrunkPelvisParameters}"
                                                 Style="{StaticResource ReportCheckBoxStyle}" />
                                             <CheckBox
-                                                Content="对称性分析"
+                                                Content="{DynamicResource Report.Section.Symmetry}"
                                                 IsChecked="{Binding IncludeSymmetryAnalysis, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Style="{StaticResource ReportCheckBoxStyle}" />
                                             <CheckBox
-                                                Content="左右侧参数"
+                                                Content="{DynamicResource Report.Section.SideParameters}"
                                                 IsChecked="{Binding IncludeLeftRightParameters, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Style="{StaticResource ReportCheckBoxStyle}" />
                                             <CheckBox
-                                                Content="曲线图"
+                                                Content="{DynamicResource Report.Section.Charts}"
                                                 IsChecked="{Binding IncludeCurveCharts, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Style="{StaticResource ReportCheckBoxStyle}" />
 
                                             <TextBlock
                                                 Margin="0,4,0,0"
                                                 Style="{StaticResource ReportHintTextStyle}"
-                                                Text="勾选变化后，右侧报告预览会自动更新。打印会使用当前选择的报告内容。" />
+                                                Text="{DynamicResource ReportPreview.ConfigChangeHint}" />
                                         </StackPanel>
                                     </Border>
 
@@ -468,7 +468,7 @@
                                                 Margin="0,0,0,12"
                                                 FontWeight="SemiBold"
                                                 Style="{StaticResource ReportValueTextStyle}"
-                                                Text="导出格式" />
+                                                Text="{DynamicResource ReportPreview.ExportFormat}" />
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
@@ -490,7 +490,7 @@
                                                     Grid.Column="2"
                                                     Width="112"
                                                     Command="{Binding ExportReportCommand}"
-                                                    Content="导出报告"
+                                                    Content="{DynamicResource Report.ExportReport}"
                                                     Style="{StaticResource ReportPrimaryButtonStyle}" />
                                             </Grid>
                                         </StackPanel>
@@ -502,13 +502,13 @@
                                                 Margin="0,0,0,12"
                                                 FontWeight="SemiBold"
                                                 Style="{StaticResource ReportValueTextStyle}"
-                                                Text="打印操作" />
+                                                Text="{DynamicResource ReportPreview.PrintOperation}" />
                                             <StackPanel Orientation="Horizontal">
                                                 <Button
                                                     Width="110"
                                                     Margin="0,0,10,0"
                                                     Command="{Binding PrintCommand}"
-                                                    Content="打印"
+                                                    Content="{DynamicResource Print}"
                                                     Style="{StaticResource ReportSecondaryButtonStyle}" />
                                             </StackPanel>
 
@@ -537,7 +537,7 @@
                                     VerticalAlignment="Center"
                                     Background="{StaticResource ReportAccentBrush}"
                                     CornerRadius="2" />
-                                <TextBlock Style="{StaticResource ReportSectionTitleTextStyle}" Text="报告文档预览" />
+                                <TextBlock Style="{StaticResource ReportSectionTitleTextStyle}" Text="{DynamicResource ReportPreview.DocumentPreview}" />
                             </StackPanel>
 
                             <Border
@@ -559,12 +559,12 @@
                                     <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                                         <Button
                                             Click="PreviousPageButton_OnClick"
-                                            Content="上一页"
+                                            Content="{DynamicResource PreviousPage}"
                                             Style="{StaticResource ReportToolbarTextButtonStyle}" />
                                         <Button
                                             Margin="16,0,0,0"
                                             Click="NextPageButton_OnClick"
-                                            Content="下一页"
+                                            Content="{DynamicResource NextPage}"
                                             Style="{StaticResource ReportToolbarTextButtonStyle}" />
                                     </StackPanel>
                                     <TextBlock
@@ -572,16 +572,16 @@
                                         Grid.Column="1"
                                         Margin="24,0,0,0"
                                         VerticalAlignment="Center"
-                                        Visibility="Collapsed"
                                         Style="{StaticResource ReportHintTextStyle}"
-                                        Text="1 / 1" />
+                                        Text="1 / 1"
+                                        Visibility="Collapsed" />
                                     <StackPanel
                                         Grid.Column="3"
                                         VerticalAlignment="Center"
                                         Orientation="Horizontal">
                                         <Button
                                             Click="ZoomOutButton_OnClick"
-                                            Content="缩小"
+                                            Content="{DynamicResource ReportPreview.ZoomOut}"
                                             Style="{StaticResource ReportToolbarTextButtonStyle}" />
                                         <TextBlock
                                             x:Name="ZoomPercentTextBlock"
@@ -590,12 +590,12 @@
                                             Text="100%" />
                                         <Button
                                             Click="ZoomInButton_OnClick"
-                                            Content="放大"
+                                            Content="{DynamicResource ReportPreview.ZoomIn}"
                                             Style="{StaticResource ReportToolbarTextButtonStyle}" />
                                         <Button
                                             Margin="18,0,0,0"
                                             Click="FitWidthButton_OnClick"
-                                            Content="适合宽度"
+                                            Content="{DynamicResource ReportPreview.FitWidth}"
                                             Style="{StaticResource ReportToolbarTextButtonStyle}" />
                                     </StackPanel>
                                 </Grid>

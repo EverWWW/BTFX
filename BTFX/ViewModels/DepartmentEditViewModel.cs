@@ -16,6 +16,7 @@ namespace BTFX.ViewModels;
 public class DepartmentEditViewModel : ObservableObject
 {
     private readonly IDepartmentService _departmentService;
+    private readonly ILocalizationService _localizationService;
     private readonly Department? _originalDepartment;
 
     /// <summary>
@@ -26,7 +27,7 @@ public class DepartmentEditViewModel : ObservableObject
     /// <summary>
     /// 对话框标题
     /// </summary>
-    public string Title => IsNewDepartment ? "添加科室" : "编辑科室";
+    public string Title => _localizationService.GetString(IsNewDepartment ? "AddDepartment" : "EditDepartment");
 
     private string _name = string.Empty;
     /// <summary>
@@ -117,6 +118,8 @@ public class DepartmentEditViewModel : ObservableObject
     public DepartmentEditViewModel(IDepartmentService departmentService, Department? department = null)
     {
         _departmentService = departmentService;
+        _localizationService = App.Services?.GetService(typeof(ILocalizationService)) as ILocalizationService
+            ?? throw new InvalidOperationException("Localization service is not available.");
         _originalDepartment = department;
 
         CancelCommand = new RelayCommand(Cancel);
@@ -185,12 +188,12 @@ public class DepartmentEditViewModel : ObservableObject
             }
             else
             {
-                ValidationError = "保存失败，请重试";
+                ValidationError = _localizationService.GetString("SaveRetryError");
             }
         }
         catch (Exception ex)
         {
-            ValidationError = $"保存出错: {ex.Message}";
+            ValidationError = string.Format(_localizationService.GetString("SaveExceptionFormat"), ex.Message);
         }
         finally
         {
@@ -208,25 +211,25 @@ public class DepartmentEditViewModel : ObservableObject
 
         if (string.IsNullOrWhiteSpace(Name))
         {
-            ValidationError = "科室名称不能为空";
+            ValidationError = _localizationService.GetString("DepartmentNameRequired");
             return false;
         }
 
         if (Name.Length > Constants.DEPARTMENT_NAME_MAX_LENGTH)
         {
-            ValidationError = $"科室名称不能超过{Constants.DEPARTMENT_NAME_MAX_LENGTH}个字符";
+            ValidationError = string.Format(_localizationService.GetString("DepartmentNameMaxLengthError"), Constants.DEPARTMENT_NAME_MAX_LENGTH);
             return false;
         }
 
         if (!string.IsNullOrWhiteSpace(Code) && Code.Trim().Length > 20)
         {
-            ValidationError = "科室代码不能超过20个字符";
+            ValidationError = _localizationService.GetString("DepartmentCodeMaxLengthError");
             return false;
         }
 
         if (!string.IsNullOrWhiteSpace(Description) && Description.Trim().Length > 200)
         {
-            ValidationError = "科室描述不能超过200个字符";
+            ValidationError = _localizationService.GetString("DepartmentDescriptionMaxLengthError");
             return false;
         }
 
@@ -237,7 +240,7 @@ public class DepartmentEditViewModel : ObservableObject
         
         if (nameExists)
         {
-            ValidationError = "科室名称已存在";
+            ValidationError = _localizationService.GetString("DepartmentNameExists");
             return false;
         }
 
@@ -246,7 +249,7 @@ public class DepartmentEditViewModel : ObservableObject
         {
             if (Phone.Length < Constants.PHONE_MIN_LENGTH || Phone.Length > Constants.PHONE_MAX_LENGTH)
             {
-                ValidationError = $"电话号码长度应在{Constants.PHONE_MIN_LENGTH}-{Constants.PHONE_MAX_LENGTH}位之间";
+                ValidationError = string.Format(_localizationService.GetString("PhoneLengthRangeError"), Constants.PHONE_MIN_LENGTH, Constants.PHONE_MAX_LENGTH);
                 return false;
             }
         }

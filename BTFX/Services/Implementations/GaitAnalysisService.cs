@@ -61,6 +61,7 @@ public class GaitAnalysisService : IGaitAnalysisService
 
     private readonly ISettingsService _settingsService;
     private readonly IAnalysisOutputReader _analysisOutputReader;
+    private readonly ILocalizationService _localizationService;
     private readonly ILogHelper? _logHelper;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
     private readonly object _stdoutStatusLock = new();
@@ -94,10 +95,12 @@ public class GaitAnalysisService : IGaitAnalysisService
     public GaitAnalysisService(
         ISettingsService settingsService,
         IAnalysisOutputReader analysisOutputReader,
+        ILocalizationService localizationService,
         ILogHelper? logHelper = null)
     {
         _settingsService = settingsService;
         _analysisOutputReader = analysisOutputReader;
+        _localizationService = localizationService;
         _logHelper = logHelper;
     }
 
@@ -170,7 +173,7 @@ public class GaitAnalysisService : IGaitAnalysisService
             using var timeoutCts = new CancellationTokenSource(timeoutMs);
             _linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token);
 
-            RaiseProgress(requestId, "pending", 0, "任务已接收");
+            RaiseProgress(requestId, "pending", 0, L("GaitAnalysis.Stage.Pending"));
 
             var exePath = GetAlgorithmExePath();
             RaiseLog($"算法程序路径: {exePath}");
@@ -222,7 +225,7 @@ public class GaitAnalysisService : IGaitAnalysisService
                 }
             }
 
-            RaiseProgress(requestId, "processing", 95, "算法计算完成，正在生成分析预览");
+            RaiseProgress(requestId, "processing", 95, L("GaitAnalysis.Stage.Finalizing"));
             await Task.Run(
                 async () => await TryCreateAnalysisPreviewVideoAsync(runtimeDir, logDir, _linkedCts.Token),
                 _linkedCts.Token);
@@ -254,7 +257,7 @@ public class GaitAnalysisService : IGaitAnalysisService
                     analysisDuration);
             }
 
-            RaiseProgress(requestId, "processing", 98, "正在归档分析结果");
+            RaiseProgress(requestId, "processing", 98, L("GaitAnalysis.Stage.ResultGenerationOk"));
             await Task.Run(() => ArchiveSuccessfulRuntimeDirectory(runtimeDir, archiveDir), _linkedCts.Token);
             var archivedConfigPath = MapPathToArchive(runtimeDir, archiveDir, configPath);
             var archivedSummaryPath = MapPathToArchive(runtimeDir, archiveDir, outputReadResult.SummaryPath);
@@ -273,7 +276,7 @@ public class GaitAnalysisService : IGaitAnalysisService
                 result.AnnotatedVideoPath = archivedPreviewPath;
             }
 
-            RaiseProgress(requestId, "completed", 100, "分析完成");
+            RaiseProgress(requestId, "completed", 100, L("GaitAnalysis.Stage.Completed"));
             RaiseLog($"分析完成，耗时: {analysisDuration:F1}s");
 
             return result;
@@ -1534,7 +1537,7 @@ public class GaitAnalysisService : IGaitAnalysisService
             {
                 displayStatus = "processing";
                 displayProgress = 95;
-                displayText = "算法计算完成，正在整理结果";
+                displayText = L("GaitAnalysis.Stage.Finalizing");
             }
 
             RaiseProgress(effectiveRequestId, displayStatus, displayProgress, displayText, errorCode);
@@ -1572,10 +1575,10 @@ public class GaitAnalysisService : IGaitAnalysisService
         }
     }
 
-    private static string GetDisplayStatusMessage(TaskStatusMessage message, string status)
+    private string GetDisplayStatusMessage(TaskStatusMessage message, string status)
     {
         if (!string.IsNullOrWhiteSpace(message.CurrentStage)
-            && TryGetChineseStageMessage(message.CurrentStage, out var stageText))
+            && TryGetLocalizedStageMessage(message.CurrentStage, out var stageText))
         {
             return stageText;
         }
@@ -1585,26 +1588,32 @@ public class GaitAnalysisService : IGaitAnalysisService
             : (!string.IsNullOrWhiteSpace(message.CurrentStage) ? message.CurrentStage : status);
     }
 
-    private static bool TryGetChineseStageMessage(string stage, out string text)
+    private string L(string key)
+    {
+        var value = _localizationService.GetString(key);
+        return string.IsNullOrWhiteSpace(value) ? key : value;
+    }
+
+    private bool TryGetLocalizedStageMessage(string stage, out string text)
     {
         text = stage.Trim().ToLowerInvariant() switch
         {
-            "pending" => "任务已接收",
-            "processing" => "正在分析",
-            "pose_estimation_side" => "正在进行侧面人体关键点识别",
-            "pose_estimation_side_ok" => "侧面人体关键点识别完成",
-            "pose_estimation_front" => "正在进行正面人体关键点识别",
-            "pose_estimation_front_ok" => "正面人体关键点识别完成",
-            "gait_event_detection" => "正在检测步态事件",
-            "gait_event_detection_ok" => "步态事件检测完成",
-            "spatiotemporal_parameters" => "正在计算时空参数",
-            "spatiotemporal_parameters_ok" => "时空参数计算完成",
-            "joint_angle_analysis" => "正在计算关节角度",
-            "joint_angle_analysis_ok" => "关节角度计算完成",
-            "result_generation" => "正在生成分析结果",
-            "result_generation_ok" => "分析结果生成完成",
-            "completed" => "分析完成",
-            "failed" => "分析失败",
+            "pending" => L("GaitAnalysis.Stage.Pending"),
+            "processing" => L("GaitAnalysis.Stage.Processing"),
+            "pose_estimation_side" => L("GaitAnalysis.Stage.PoseSide"),
+            "pose_estimation_side_ok" => L("GaitAnalysis.Stage.PoseSideOk"),
+            "pose_estimation_front" => L("GaitAnalysis.Stage.PoseFront"),
+            "pose_estimation_front_ok" => L("GaitAnalysis.Stage.PoseFrontOk"),
+            "gait_event_detection" => L("GaitAnalysis.Stage.GaitEvent"),
+            "gait_event_detection_ok" => L("GaitAnalysis.Stage.GaitEventOk"),
+            "spatiotemporal_parameters" => L("GaitAnalysis.Stage.Spatiotemporal"),
+            "spatiotemporal_parameters_ok" => L("GaitAnalysis.Stage.SpatiotemporalOk"),
+            "joint_angle_analysis" => L("GaitAnalysis.Stage.JointAngle"),
+            "joint_angle_analysis_ok" => L("GaitAnalysis.Stage.JointAngleOk"),
+            "result_generation" => L("GaitAnalysis.Stage.ResultGeneration"),
+            "result_generation_ok" => L("GaitAnalysis.Stage.ResultGenerationOk"),
+            "completed" => L("GaitAnalysis.Stage.Completed"),
+            "failed" => L("GaitAnalysis.Stage.Failed"),
             _ => string.Empty
         };
 
@@ -1645,9 +1654,7 @@ public class GaitAnalysisService : IGaitAnalysisService
             return string.Empty;
         }
 
-        return TryGetChineseStageMessage(stage, out var text)
-            ? text
-            : NormalizeWhitespace(stage);
+        return NormalizeWhitespace(stage);
     }
 
     private static string ToUserFriendlyAnalysisError(string? rawMessage)

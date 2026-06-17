@@ -405,7 +405,7 @@
                                 FontSize="22"
                                 Foreground="#BBBBBB"
                                 IsHitTestVisible="False"
-                                Text="输入姓名">
+                                Text="{DynamicResource EnterName}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Visibility" Value="Collapsed" />
@@ -947,7 +947,7 @@
 
                                     <Button
                                         Grid.Column="0"
-                                        Width="160"
+                                        Width="180"
                                         Height="48"
                                         HorizontalAlignment="Left"
                                         Background="#FFFFFF"
