@@ -1,4 +1,6 @@
 ﻿using System.Windows;
+using System.Globalization;
+using System.Windows.Markup;
 using BTFX.Common;
 using BTFX.Services.Interfaces;
 
@@ -54,6 +56,12 @@ public class LocalizationService : ILocalizationService
         // 加载新的语言资源字典
         try
         {
+            var culture = new CultureInfo(cultureName == "zh" ? "zh-CN" : "en-US");
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = culture;
+            CultureInfo.DefaultThreadCurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentUICulture = culture;
+
             var newDict = new ResourceDictionary { Source = resourceUri };
             Application.Current.Resources.MergedDictionaries.Add(newDict);
 
@@ -69,6 +77,8 @@ public class LocalizationService : ILocalizationService
                 {
                     try
                     {
+                        window.Language = XmlLanguage.GetLanguage(culture.IetfLanguageTag);
+
                         // 触发资源更新
                         window.UpdateLayout();
 

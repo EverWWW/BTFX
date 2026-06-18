@@ -71,7 +71,18 @@ public partial class CameraCaptureDialog : UserControl
 
     private void CloseButton_OnClick(object sender, System.Windows.RoutedEventArgs e)
     {
-        ExitConfirmOverlay.Visibility = System.Windows.Visibility.Visible;
+        var title = TryFindResource("CameraCapture.ExitConfirmTitle")?.ToString() ?? "Confirm Exit";
+        var message = TryFindResource("CameraCapture.ExitConfirmMessage")?.ToString() ?? "Exit video capture?";
+        var result = System.Windows.MessageBox.Show(
+            message,
+            title,
+            System.Windows.MessageBoxButton.OKCancel,
+            System.Windows.MessageBoxImage.Question);
+
+        if (result == System.Windows.MessageBoxResult.OK)
+        {
+            DialogHost.CloseDialogCommand.Execute(null, this);
+        }
     }
 
     private void CancelExitButton_OnClick(object sender, System.Windows.RoutedEventArgs e)

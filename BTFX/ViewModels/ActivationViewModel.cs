@@ -15,6 +15,7 @@ public partial class ActivationViewModel : ObservableObject
     private readonly IActivationService _activationService;
     private readonly INavigationService _navigationService;
     private readonly IAppUpdateService _appUpdateService;
+    private readonly ILocalizationService _localizationService;
     private readonly SoftKey _machineInfo;
 
     [ObservableProperty]
@@ -48,7 +49,7 @@ public partial class ActivationViewModel : ObservableObject
     private string _licenseKey = string.Empty;
 
     [ObservableProperty]
-    private string _message = "在线激活需要填写产品编号；离线激活只需填写激活码。";
+    private string _message = string.Empty;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ActivateOnlineCommand))]
@@ -58,11 +59,13 @@ public partial class ActivationViewModel : ObservableObject
     public ActivationViewModel(
         IActivationService activationService,
         INavigationService navigationService,
-        IAppUpdateService appUpdateService)
+        IAppUpdateService appUpdateService,
+        ILocalizationService localizationService)
     {
         _activationService = activationService;
         _navigationService = navigationService;
         _appUpdateService = appUpdateService;
+        _localizationService = localizationService;
         _machineInfo = _activationService.GetCurrentMachineInfo();
 
         EquipmentName = _machineInfo.EquipmentName ?? Constants.APP_DISPLAY_NAME;
@@ -73,6 +76,7 @@ public partial class ActivationViewModel : ObservableObject
         DiskId = _machineInfo.HdId ?? string.Empty;
         BiosId = _machineInfo.BiosId ?? string.Empty;
         MacAddress = _machineInfo.MacAddress ?? string.Empty;
+        Message = _localizationService.GetString("Activation.InitialMessage");
     }
 
     [RelayCommand]
@@ -84,7 +88,7 @@ public partial class ActivationViewModel : ObservableObject
         }
 
         Clipboard.SetText(MachineCode);
-        Message = "机器码已复制。";
+        Message = _localizationService.GetString("Activation.MachineCodeCopied");
     }
 
     [RelayCommand]
@@ -92,16 +96,16 @@ public partial class ActivationViewModel : ObservableObject
     {
         var lines = new[]
         {
-            $"软件名称：{EquipmentName}",
-            $"产品型号：{EquipmentModel}",
-            $"CPU编号：{CpuId}",
-            $"硬盘信息：{DiskId}",
-            $"BIOS编号：{BiosId}",
-            $"机器码：{MachineCode}"
+            $"{_localizationService.GetString("Activation.SoftwareName")}: {EquipmentName}",
+            $"{_localizationService.GetString("Activation.ProductModel")}: {EquipmentModel}",
+            $"{_localizationService.GetString("Activation.CpuId")}: {CpuId}",
+            $"{_localizationService.GetString("Activation.DiskInfo")}: {DiskId}",
+            $"{_localizationService.GetString("Activation.BiosId")}: {BiosId}",
+            $"{_localizationService.GetString("Activation.MachineCode")}: {MachineCode}"
         };
 
         Clipboard.SetText(string.Join(Environment.NewLine, lines));
-        Message = "设备信息已复制，可用于离线生成激活码。";
+        Message = _localizationService.GetString("Activation.DeviceInfoCopied");
     }
 
     [RelayCommand(CanExecute = nameof(CanActivate))]
@@ -110,7 +114,7 @@ public partial class ActivationViewModel : ObservableObject
         try
         {
             IsActivating = true;
-            Message = "正在进行在线激活，请稍候...";
+            Message = _localizationService.GetString("Activation.ActivatingOnline");
             var result = await _activationService.ActivateOnlineAsync(ProductCode);
             await HandleActivationResultAsync(result);
         }
@@ -145,11 +149,11 @@ public partial class ActivationViewModel : ObservableObject
         Message = result.Message;
         if (!result.IsSuccess)
         {
-            MessageBox.Show(result.Message, "激活失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(result.Message, _localizationService.GetString("Activation.FailedTitle"), MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
-        MessageBox.Show(result.Message, "激活成功", MessageBoxButton.OK, MessageBoxImage.Information);
+        MessageBox.Show(result.Message, _localizationService.GetString("Activation.SuccessTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
         _navigationService.NavigateTo<LoginViewModel>();
         _ = _appUpdateService.CheckForUpdatesAsync();
         await Task.CompletedTask;

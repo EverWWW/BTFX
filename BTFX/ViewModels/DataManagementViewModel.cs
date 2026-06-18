@@ -597,7 +597,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             catch (Exception ex)
             {
                 _logHelper?.Error($"打开详情对话框失败：ID={item.Record.Id}", ex);
-                MessageBox.Show($"打开详情弹窗失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(_localizationService.GetString("DataManagement.OpenDetailFailedFormat", ex.Message), _localizationService.GetString("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -619,7 +619,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             var decision = await _measurementWorkflowResumeService.DecideAsync(item.Record, _cancellationTokenSource.Token);
             if (!decision.CanResume)
             {
-                MessageBox.Show(decision.Message, "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(decision.Message, _localizationService.GetString("Tip"), MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -629,7 +629,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             _logHelper?.Error($"继续处理测量失败：ID={item.Record.Id}", ex);
-            MessageBox.Show($"继续处理失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(_localizationService.GetString("DataManagement.ResumeFailedFormat", ex.Message), _localizationService.GetString("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -688,17 +688,20 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             {
                 var dialog = new Microsoft.Win32.SaveFileDialog
                 {
-                    Title = "导出测量结果包",
-                    Filter = "BTFX测量结果包 (*.btfxpkg)|*.btfxpkg",
-                    FileName = $"测量结果包_{item.Record.Patient?.Name}_{item.Record.MeasurementDate:yyyyMMdd_HHmmss}.btfxpkg"
+                    Title = _localizationService.GetString("DataManagement.ExportArchive.Title"),
+                    Filter = _localizationService.GetString("DataManagement.ArchiveFilter"),
+                    FileName = _localizationService.GetString(
+                        "DataManagement.ArchiveFileNameFormat",
+                        item.Record.Patient?.Name ?? "--",
+                        item.Record.MeasurementDate)
                 };
 
                 if (dialog.ShowDialog() == true)
                 {
                     var result = await RunWithProgressDialogAsync(
-                        "导出测量结果包",
-                        "正在导出",
-                        "正在准备测量结果包...",
+                        _localizationService.GetString("DataManagement.ExportArchive.Title"),
+                        _localizationService.GetString("DataManagement.ExportArchive.Stage"),
+                        _localizationService.GetString("DataManagement.ExportArchive.Message"),
                         (progress, token) => _exportImportService.ExportMeasurementArchiveAsync(
                             new List<MeasurementRecord> { item.Record },
                             dialog.FileName,
@@ -707,23 +710,23 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
 
                     if (result.Success)
                     {
-                        System.Windows.MessageBox.Show(result.Message, "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                        System.Windows.MessageBox.Show(result.Message, _localizationService.GetString("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                         _logHelper?.Information($"导出测量结果包：ID={item.Record.Id}, 文件={dialog.FileName}");
                     }
                     else
                     {
-                        System.Windows.MessageBox.Show(result.Message, "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                        System.Windows.MessageBox.Show(result.Message, _localizationService.GetString("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                     }
                 }
             }
             catch (OperationCanceledException)
             {
-                System.Windows.MessageBox.Show("导出已取消。", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                System.Windows.MessageBox.Show(_localizationService.GetString("DataManagement.ExportCanceled"), _localizationService.GetString("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
                 _logHelper?.Error($"导出测量结果包失败：ID={item.Record.Id}", ex);
-                System.Windows.MessageBox.Show($"导出失败：{ex.Message}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"{_localizationService.GetString("ExportFailed")}: {ex.Message}", _localizationService.GetString("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -864,7 +867,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
 
         if (_globalSelectedIds.Count == 0)
         {
-            System.Windows.MessageBox.Show("请先选择要导出的记录", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            System.Windows.MessageBox.Show(_localizationService.GetString("DataManagement.SelectExportFirst"), _localizationService.GetString("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
             return;
         }
 
@@ -872,9 +875,9 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
         {
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
-                Title = "批量导出测量结果包",
-                Filter = "BTFX测量结果包 (*.btfxpkg)|*.btfxpkg|ZIP结果包 (*.zip)|*.zip",
-                FileName = $"测量结果包_批量导出_{DateTime.Now:yyyyMMdd_HHmmss}.btfxpkg"
+                Title = _localizationService.GetString("DataManagement.ExportArchive.BatchTitle"),
+                Filter = _localizationService.GetString("DataManagement.ArchiveFilterBatch"),
+                FileName = _localizationService.GetString("DataManagement.BatchArchiveFileNameFormat", DateTime.Now)
             };
 
             if (dialog.ShowDialog() == true)
@@ -883,9 +886,9 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
                 var allRecords = await _measurementService.GetMeasurementsByIdsAsync(_globalSelectedIds.ToList());
 
                 var result = await RunWithProgressDialogAsync(
-                    "批量导出结果包",
-                    "正在导出",
-                    "正在准备批量测量结果包...",
+                    _localizationService.GetString("DataManagement.ExportArchive.BatchTitle"),
+                    _localizationService.GetString("DataManagement.ExportArchive.Stage"),
+                    _localizationService.GetString("DataManagement.ExportArchive.BatchMessage"),
                     (progress, token) => _exportImportService.ExportMeasurementArchiveAsync(
                         allRecords,
                         dialog.FileName,
@@ -894,23 +897,23 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
 
                 if (result.Success)
                 {
-                    System.Windows.MessageBox.Show(result.Message, "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show(result.Message, _localizationService.GetString("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                     _logHelper?.Information($"批量导出测量结果包：{_globalSelectedIds.Count}条, 文件={dialog.FileName}");
                 }
                 else
                 {
-                    System.Windows.MessageBox.Show(result.Message, "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show(result.Message, _localizationService.GetString("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
             }
         }
         catch (OperationCanceledException)
         {
-            System.Windows.MessageBox.Show("批量导出已取消。", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            System.Windows.MessageBox.Show(_localizationService.GetString("DataManagement.BatchExportCanceled"), _localizationService.GetString("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
             _logHelper?.Error($"批量导出测量数据失败", ex);
-            System.Windows.MessageBox.Show($"批量导出失败：{ex.Message}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            System.Windows.MessageBox.Show($"{_localizationService.GetString("ExportFailed")}: {ex.Message}", _localizationService.GetString("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
         }
 
@@ -926,8 +929,8 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
         {
             var dialog = new Microsoft.Win32.OpenFileDialog
             {
-                Title = "导入测量结果包",
-                Filter = "BTFX测量结果包 (*.btfxpkg;*.zip)|*.btfxpkg;*.zip"
+                Title = _localizationService.GetString("DataManagement.ImportArchive.Title"),
+                Filter = _localizationService.GetString("DataManagement.ArchiveFilterWithZip")
             };
 
             if (dialog.ShowDialog(Application.Current.MainWindow) != true)
@@ -936,9 +939,9 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             }
 
             var result = await RunWithProgressDialogAsync(
-                "导入测量结果包",
-                "正在导入",
-                "正在读取测量结果包...",
+                _localizationService.GetString("DataManagement.ImportArchive.Title"),
+                _localizationService.GetString("DataManagement.ImportArchive.Stage"),
+                _localizationService.GetString("DataManagement.ImportArchive.Message"),
                 (progress, token) => _exportImportService.ImportMeasurementArchiveAsync(
                     dialog.FileName,
                     progress,
@@ -949,22 +952,22 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
                 _globalSelectedIds.Clear();
                 SelectedCount = 0;
                 await LoadDataAsync();
-                System.Windows.MessageBox.Show(result.Message, "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                System.Windows.MessageBox.Show(result.Message, _localizationService.GetString("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 _logHelper?.Information($"导入测量结果包成功：{dialog.FileName}, Count={result.ImportedCount}");
             }
             else
             {
-                System.Windows.MessageBox.Show(result.Message, "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                System.Windows.MessageBox.Show(result.Message, _localizationService.GetString("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
         catch (OperationCanceledException)
         {
-            System.Windows.MessageBox.Show("导入已取消。", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            System.Windows.MessageBox.Show(_localizationService.GetString("DataManagement.ImportCanceled"), _localizationService.GetString("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
             _logHelper?.Error("导入测量结果包失败", ex);
-            System.Windows.MessageBox.Show($"导入失败：{ex.Message}", "错误", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            System.Windows.MessageBox.Show($"{_localizationService.GetString("ImportFailed")}: {ex.Message}", _localizationService.GetString("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
         finally
         {
@@ -996,7 +999,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
         try
         {
             var result = await Task.Run(() => operation(progress, operationCts.Token), operationCts.Token);
-            progressViewModel.MarkCompleted("操作已完成。");
+            progressViewModel.MarkCompleted(GetGlobalString("OperationProgress.CompletedMessage"));
             await Task.Delay(650);
             DialogHost.Close("RootDialog");
             await dialogTask;
@@ -1005,7 +1008,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
         }
         catch (OperationCanceledException)
         {
-            progressViewModel.MarkFailed("操作已取消。");
+            progressViewModel.MarkFailed(GetGlobalString("OperationProgress.CanceledMessage"));
             await Task.Delay(350);
             DialogHost.Close("RootDialog");
             await dialogTask;
@@ -1014,12 +1017,24 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
         }
         catch
         {
-            progressViewModel.MarkFailed("操作执行失败。");
+            progressViewModel.MarkFailed(GetGlobalString("OperationProgress.FailedMessage"));
             await Task.Delay(350);
             DialogHost.Close("RootDialog");
             await dialogTask;
             RestoreMainWindowIfMinimized();
             throw;
+        }
+    }
+
+    private static string GetGlobalString(string key)
+    {
+        try
+        {
+            return Application.Current.FindResource(key)?.ToString() ?? key;
+        }
+        catch
+        {
+            return key;
         }
     }
 
@@ -1384,3 +1399,4 @@ public class StatusOption
     /// </summary>
     public string Display { get; set; } = string.Empty;
 }
+

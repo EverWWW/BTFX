@@ -406,12 +406,14 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="150" />
-                                <ColumnDefinition Width="170" />
-                                <ColumnDefinition Width="64" />
+                                <ColumnDefinition Width="120" />
+                                <ColumnDefinition Width="42" />
+                                <ColumnDefinition Width="150" />
+                                <ColumnDefinition Width="120" />
+                                <ColumnDefinition Width="42" />
                                 <ColumnDefinition Width="150" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
@@ -419,72 +421,72 @@
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.Column="0"
-                                Margin="0,0,16,8"
+                                Margin="0,0,16,12"
                                 Style="{StaticResource InfoLabelTextStyle}"
                                 Text="{DynamicResource LogsLast30DaysLabel}" />
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.Column="1"
-                                Margin="0,0,0,8"
+                                Margin="0,0,0,12"
                                 Style="{StaticResource InfoValueTextStyle}"
                                 Text="{Binding LogRangeCount}" />
                             <TextBlock
                                 Grid.Row="1"
                                 Grid.Column="0"
-                                Margin="0,0,16,8"
+                                Margin="0,0,16,0"
                                 Style="{StaticResource InfoLabelTextStyle}"
                                 Text="{DynamicResource LogInfoLabel}" />
                             <TextBlock
                                 Grid.Row="1"
                                 Grid.Column="1"
-                                Margin="0,0,0,8"
+                                Margin="0"
                                 Style="{StaticResource InfoValueTextStyle}"
                                 Text="{Binding LogInformationCount}" />
                             <TextBlock
-                                Grid.Row="2"
-                                Grid.Column="0"
+                                Grid.Row="1"
+                                Grid.Column="3"
                                 Margin="0,0,16,0"
                                 Style="{StaticResource InfoLabelTextStyle}"
                                 Text="{DynamicResource LogWarningLabel}" />
                             <TextBlock
-                                Grid.Row="2"
-                                Grid.Column="1"
+                                Grid.Row="1"
+                                Grid.Column="4"
                                 Margin="0"
                                 Style="{StaticResource InfoValueTextStyle}"
                                 Text="{Binding LogWarningCount}" />
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.Column="3"
-                                Margin="0,0,16,8"
+                                Margin="0,0,16,12"
                                 Style="{StaticResource InfoLabelTextStyle}"
                                 Text="{DynamicResource LogErrorLabel}" />
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.Column="4"
-                                Margin="0,0,0,8"
+                                Margin="0,0,0,12"
                                 Style="{StaticResource InfoValueTextStyle}"
                                 Text="{Binding LogErrorCount}" />
                             <TextBlock
-                                Grid.Row="1"
-                                Grid.Column="3"
-                                Margin="0,0,16,8"
+                                Grid.Row="0"
+                                Grid.Column="6"
+                                Margin="0,0,16,12"
                                 Style="{StaticResource InfoLabelTextStyle}"
                                 Text="{DynamicResource LogFilesLabel}" />
                             <TextBlock
-                                Grid.Row="1"
-                                Grid.Column="4"
-                                Margin="0,0,0,8"
+                                Grid.Row="0"
+                                Grid.Column="7"
+                                Margin="0,0,0,12"
                                 Style="{StaticResource InfoValueTextStyle}"
                                 Text="{Binding LogFileCount}" />
                             <TextBlock
-                                Grid.Row="2"
-                                Grid.Column="3"
+                                Grid.Row="1"
+                                Grid.Column="6"
                                 Margin="0,0,16,0"
                                 Style="{StaticResource InfoLabelTextStyle}"
                                 Text="{DynamicResource TotalSizeLabel}" />
                             <TextBlock
-                                Grid.Row="2"
-                                Grid.Column="4"
+                                Grid.Row="1"
+                                Grid.Column="7"
                                 Style="{StaticResource InfoValueTextStyle}"
                                 Text="{Binding LogTotalSize}" />
                         </Grid>

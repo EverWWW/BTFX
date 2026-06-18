@@ -39,12 +39,12 @@ public static class Constants
     /// <summary>
     /// 应用显示名称
     /// </summary>
-    public const string APP_DISPLAY_NAME = "步态智能分析系统";
+    public const string APP_DISPLAY_NAME = "步态信息采集系统";
 
     /// <summary>
     /// 应用英文显示名称
     /// </summary>
-    public const string APP_DISPLAY_NAME_EN = "Gait Intelligent Analysis System";
+    public const string APP_DISPLAY_NAME_EN = "Gait Information Collection System";
 
     /// <summary>
     /// 激活系统使用的软件型号

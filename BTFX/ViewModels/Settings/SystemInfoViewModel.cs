@@ -1,4 +1,4 @@
-using BTFX.Common;
+﻿using BTFX.Common;
 using BTFX.Services.Interfaces;
 using BTFX.Views.Dialogs;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -11,7 +11,7 @@ using BtfxConstants = BTFX.Common.Constants;
 namespace BTFX.ViewModels.Settings;
 
 /// <summary>
-/// 系统信息视图模型
+/// System information view model.
 /// </summary>
 public partial class SystemInfoViewModel : ObservableObject
 {
@@ -39,7 +39,7 @@ public partial class SystemInfoViewModel : ObservableObject
     private string _currentUserRole = string.Empty;
 
     [ObservableProperty]
-    private string _logStatistics = "正在加载...";
+    private string _logStatistics = "Loading...";
 
     [ObservableProperty]
     private string _logRangeCount = "--";
@@ -107,7 +107,7 @@ public partial class SystemInfoViewModel : ObservableObject
             CurrentUsername = currentUser?.Name ?? _localizationService.GetString("Guest");
             CurrentUserRole = GetLocalizedRole(currentUser?.Role);
 
-            // 使用正确的数据库路径：BaseDirectory/Data/Database/BTFX.db
+            // Use BaseDirectory/Data/Database/BTFX.db.
             var baseDir = AppDomain.CurrentDomain.BaseDirectory;
             DatabasePath = System.IO.Path.Combine(baseDir, BtfxConstants.DATABASE_DIRECTORY, BtfxConstants.DATABASE_FILENAME);
 
@@ -123,20 +123,20 @@ public partial class SystemInfoViewModel : ObservableObject
                 DatabaseSize = "--";
             }
 
-            // 使用正确的日志目录路径：BaseDirectory/Data/Logs
+            // Use BaseDirectory/Data/Logs.
             LogDirectory = NormalizeDirectoryPath(System.IO.Path.Combine(baseDir, BtfxConstants.LOG_DIRECTORY));
             System.IO.Directory.CreateDirectory(LogDirectory);
 
-            _logHelper?.Information($"日志目录设置为: {LogDirectory}, 存在={System.IO.Directory.Exists(LogDirectory)}");
+            _logHelper?.Information($"Log directory set to {LogDirectory}, exists={System.IO.Directory.Exists(LogDirectory)}");
         }
         catch (Exception ex)
         {
-            _logHelper?.Error("加载系统信息失败", ex);
+            _logHelper?.Error("Failed to load system information", ex);
         }
     }
 
     /// <summary>
-    /// 获取本地化的角色名称
+    /// Gets the localized role name.
     /// </summary>
     private string GetLocalizedRole(Common.UserRole? role)
     {
@@ -158,7 +158,7 @@ public partial class SystemInfoViewModel : ObservableObject
             var updateInfo = await _appUpdateService.CheckForUpdatesAsync(true);
             if (updateInfo is null)
             {
-                System.Windows.MessageBox.Show("当前已是最新版本。", "检查更新",
+                System.Windows.MessageBox.Show(_localizationService.GetString("Update.NoUpdate"), _localizationService.GetString("CheckForUpdates"),
                     System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 return;
             }
@@ -166,19 +166,19 @@ public partial class SystemInfoViewModel : ObservableObject
             if (string.IsNullOrWhiteSpace(updateInfo.PackageUrl))
             {
                 System.Windows.MessageBox.Show(
-                    $"发现新版本 {updateInfo.Version}，但更新包地址为空，请联系管理员检查更新配置。",
-                    "检查更新",
+                    string.Format(_localizationService.GetString("Update.PackageUrlEmptyFormat"), updateInfo.Version),
+                    _localizationService.GetString("CheckForUpdates"),
                     System.Windows.MessageBoxButton.OK,
                     System.Windows.MessageBoxImage.Warning);
                 return;
             }
 
             var message = string.IsNullOrWhiteSpace(updateInfo.Detail)
-                ? $"发现新版本 {updateInfo.Version}。\n\n是否下载并安装更新？"
-                : $"发现新版本 {updateInfo.Version}。\n\n更新内容：\n{updateInfo.Detail}\n\n是否下载并安装更新？";
+                ? string.Format(_localizationService.GetString("Update.FoundMessageFormat"), updateInfo.Version)
+                : string.Format(_localizationService.GetString("Update.FoundMessageWithDetailFormat"), updateInfo.Version, updateInfo.Detail);
             var confirm = System.Windows.MessageBox.Show(
                 message,
-                "发现新版本",
+                _localizationService.GetString("Update.FoundTitle"),
                 System.Windows.MessageBoxButton.YesNo,
                 System.Windows.MessageBoxImage.Information);
             if (confirm != System.Windows.MessageBoxResult.Yes)
@@ -187,14 +187,14 @@ public partial class SystemInfoViewModel : ObservableObject
             }
 
             var installerPath = await RunWithProgressDialogAsync(
-                "下载更新",
-                "准备下载",
-                "正在准备下载更新包...",
+                _localizationService.GetString("Update.DownloadTitle"),
+                _localizationService.GetString("Update.PreparingDownload"),
+                _localizationService.GetString("Update.PreparingDownloadMessage"),
                 (progress, token) => _appUpdateService.DownloadUpdatePackageAsync(updateInfo, progress, token));
 
             var installConfirm = System.Windows.MessageBox.Show(
-                "更新包下载完成。点击确定后将启动安装程序并关闭当前软件。",
-                "安装更新",
+                _localizationService.GetString("Update.DownloadCompletedMessage"),
+                _localizationService.GetString("Update.InstallTitle"),
                 System.Windows.MessageBoxButton.OKCancel,
                 System.Windows.MessageBoxImage.Information);
             if (installConfirm == System.Windows.MessageBoxResult.OK)
@@ -204,13 +204,13 @@ public partial class SystemInfoViewModel : ObservableObject
         }
         catch (OperationCanceledException)
         {
-            System.Windows.MessageBox.Show("更新下载已取消。", "检查更新",
+            System.Windows.MessageBox.Show(_localizationService.GetString("Update.DownloadCanceled"), _localizationService.GetString("CheckForUpdates"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
-            _logHelper?.Error("检查或下载更新失败", ex);
-            System.Windows.MessageBox.Show($"检查或下载更新失败：{ex.Message}", "检查更新",
+            _logHelper?.Error("Failed to check or download update", ex);
+            System.Windows.MessageBox.Show(string.Format(_localizationService.GetString("Update.CheckFailedFormat"), ex.Message), _localizationService.GetString("CheckForUpdates"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
         finally
@@ -231,7 +231,7 @@ public partial class SystemInfoViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            _logHelper?.Error("显示关于对话框失败", ex);
+            _logHelper?.Error("Failed to show about dialog", ex);
         }
     }
 
@@ -256,7 +256,7 @@ public partial class SystemInfoViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            _logHelper?.Error("打开日志目录失败", ex);
+            _logHelper?.Error("Failed to open log directory", ex);
         }
     }
 
@@ -284,7 +284,7 @@ public partial class SystemInfoViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            _logHelper?.Error("打开数据库目录失败", ex);
+            _logHelper?.Error("Failed to open database directory", ex);
         }
     }
 
@@ -295,8 +295,8 @@ public partial class SystemInfoViewModel : ObservableObject
         {
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
-                Title = "导出日志",
-                Filter = "文本文件 (*.txt)|*.txt|CSV文件 (*.csv)|*.csv",
+                Title = _localizationService.GetString("ExportLogs"),
+                Filter = _localizationService.GetString("LogExportFilter"),
                 FileName = $"BTFX_Logs_{DateTime.Now:yyyyMMdd_HHmmss}",
                 DefaultExt = ".txt"
             };
@@ -319,14 +319,14 @@ public partial class SystemInfoViewModel : ObservableObject
                 exportedCount = await logExportHelper.ExportLogsAsync(dialog.FileName, startDate, endDate);
             }
 
-            System.Windows.MessageBox.Show($"日志导出完成！\n共导出 {exportedCount} 条记录\n文件：{dialog.FileName}", "提示",
+            System.Windows.MessageBox.Show(string.Format(_localizationService.GetString("LogExportSuccessFormat"), exportedCount, dialog.FileName), _localizationService.GetString("Tip"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-            _logHelper?.Information($"日志导出完成：{exportedCount} 条记录");
+            _logHelper?.Information($"Log export completed: {exportedCount} records");
         }
         catch (Exception ex)
         {
-            _logHelper?.Error("日志导出失败", ex);
-            System.Windows.MessageBox.Show($"日志导出失败：{ex.Message}", "错误",
+            _logHelper?.Error("Log export failed", ex);
+            System.Windows.MessageBox.Show(string.Format(_localizationService.GetString("LogExportFailedFormat"), ex.Message), _localizationService.GetString("Error"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
         finally
@@ -339,8 +339,8 @@ public partial class SystemInfoViewModel : ObservableObject
     private async Task CleanupLogsAsync()
     {
         var result = System.Windows.MessageBox.Show(
-            $"确定要清理 {LogCleanupDays} 天前的日志吗？\n此操作不可撤销！",
-            "确认清理",
+            string.Format(_localizationService.GetString("ConfirmCleanupLogs"), LogCleanupDays),
+            _localizationService.GetString("Confirm"),
             System.Windows.MessageBoxButton.YesNo,
             System.Windows.MessageBoxImage.Warning);
 
@@ -353,17 +353,17 @@ public partial class SystemInfoViewModel : ObservableObject
             var logExportHelper = new LogExportHelper(LogDirectory);
             var deletedCount = await logExportHelper.CleanupOldLogsAsync(LogCleanupDays);
 
-            System.Windows.MessageBox.Show($"日志清理完成！\n共删除 {deletedCount} 个日志文件", "提示",
+            System.Windows.MessageBox.Show(string.Format(_localizationService.GetString("LogCleanupSuccessFormat"), deletedCount), _localizationService.GetString("Tip"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-            _logHelper?.Information($"日志清理完成：删除 {deletedCount} 个文件");
+            _logHelper?.Information($"Log cleanup completed: {deletedCount} files deleted");
 
-            // 刷新日志统计
+            // Refresh log statistics.
             await LoadLogStatisticsAsync();
         }
         catch (Exception ex)
         {
-            _logHelper?.Error("日志清理失败", ex);
-            System.Windows.MessageBox.Show($"日志清理失败：{ex.Message}", "错误",
+            _logHelper?.Error("Log cleanup failed", ex);
+            System.Windows.MessageBox.Show(string.Format(_localizationService.GetString("LogCleanupFailedFormat"), ex.Message), _localizationService.GetString("Error"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
         finally
@@ -373,7 +373,7 @@ public partial class SystemInfoViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 加载日志统计
+    /// Loads log statistics.
     /// </summary>
     [RelayCommand]
     private async Task LoadLogStatisticsAsync()
@@ -382,7 +382,7 @@ public partial class SystemInfoViewModel : ObservableObject
         {
             if (!System.IO.Directory.Exists(LogDirectory))
             {
-                LogStatistics = "日志目录不存在";
+                LogStatistics = _localizationService.GetString("LogDirectoryMissing");
                 return;
             }
 
@@ -393,18 +393,34 @@ public partial class SystemInfoViewModel : ObservableObject
             LogTodayCount = stats.TotalCount;
 
 
-            LogStatistics = $"近30天：共 {stats.TotalCount} 条日志\n" +
-                           $"信息: {stats.InformationCount}  警告: {stats.WarningCount}  错误: {stats.ErrorCount}\n" +
-                           $"日志文件: {stats.FileCount} 个，总大小: {stats.TotalSizeBytes / 1024.0:F1} KB";
+            LogStatistics = string.Format(
+                _localizationService.GetString("LogStatisticsSummaryFormat"),
+                stats.TotalCount,
+                stats.InformationCount,
+                stats.WarningCount,
+                stats.ErrorCount,
+                stats.FileCount,
+                stats.TotalSizeBytes / 1024.0);
         }
         catch (Exception ex)
         {
-            LogStatistics = "加载统计失败";
-            _logHelper?.Error("加载日志统计失败", ex);
+            LogStatistics = _localizationService.GetString("LogStatisticsLoadFailed");
+            _logHelper?.Error("Failed to load log statistics", ex);
         }
     }
 
-    [RelayCommand]
+    private static string GetGlobalString(string key)
+    {
+        try
+        {
+            return System.Windows.Application.Current.FindResource(key)?.ToString() ?? key;
+        }
+        catch
+        {
+            return key;
+        }
+    }
+
     private async Task RefreshLogStatisticsAsync()
     {
         await LoadLogStatisticsAsync();
@@ -420,11 +436,11 @@ public partial class SystemInfoViewModel : ObservableObject
         }
 
         var offset = matches.Count >= 7 ? 1 : 0;
-        LogRangeCount = $"{matches[offset].Value} 条";
-        LogInformationCount = $"{matches[offset + 1].Value} 条";
-        LogWarningCount = $"{matches[offset + 2].Value} 条";
-        LogErrorCount = $"{matches[offset + 3].Value} 条";
-        LogFileCount = $"{matches[offset + 4].Value} 个";
+        LogRangeCount = string.Format(_localizationService.GetString("LogRecordCountFormat"), matches[offset].Value);
+        LogInformationCount = string.Format(_localizationService.GetString("LogRecordCountFormat"), matches[offset + 1].Value);
+        LogWarningCount = string.Format(_localizationService.GetString("LogRecordCountFormat"), matches[offset + 2].Value);
+        LogErrorCount = string.Format(_localizationService.GetString("LogRecordCountFormat"), matches[offset + 3].Value);
+        LogFileCount = string.Format(_localizationService.GetString("LogFileCountFormat"), matches[offset + 4].Value);
         LogTotalSize = matches.Count > offset + 5 ? $"{matches[offset + 5].Value} KB" : "--";
     }
 
@@ -462,7 +478,7 @@ public partial class SystemInfoViewModel : ObservableObject
         try
         {
             var result = await operation(progress, operationCts.Token);
-            progressViewModel.MarkCompleted("操作已完成。");
+            progressViewModel.MarkCompleted(GetGlobalString("OperationProgress.CompletedMessage"));
             await Task.Delay(650);
             DialogHost.Close("RootDialog");
             await dialogTask;
@@ -470,7 +486,7 @@ public partial class SystemInfoViewModel : ObservableObject
         }
         catch (OperationCanceledException)
         {
-            progressViewModel.MarkFailed("操作已取消。");
+            progressViewModel.MarkFailed(GetGlobalString("OperationProgress.CanceledMessage"));
             await Task.Delay(350);
             DialogHost.Close("RootDialog");
             await dialogTask;
@@ -478,7 +494,7 @@ public partial class SystemInfoViewModel : ObservableObject
         }
         catch
         {
-            progressViewModel.MarkFailed("操作执行失败。");
+            progressViewModel.MarkFailed(GetGlobalString("OperationProgress.FailedMessage"));
             await Task.Delay(350);
             DialogHost.Close("RootDialog");
             await dialogTask;
@@ -486,3 +502,4 @@ public partial class SystemInfoViewModel : ObservableObject
         }
     }
 }
+

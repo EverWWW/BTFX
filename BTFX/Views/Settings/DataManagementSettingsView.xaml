@@ -43,9 +43,8 @@
         <Style x:Key="CardFieldLabelStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
             <Setter Property="FontSize" Value="16" />
-            <Setter Property="Foreground" Value="#666666" />
-            <Setter Property="Margin" Value="0,0,0,8" />
-        </Style>
+      <Setter Property="Foreground" Value="#666666" />
+    </Style>
 
         <Style
             x:Key="CompactOutlinedTextBoxStyle"
@@ -535,12 +534,17 @@
                         Padding="24,14"
                         Background="Transparent"
                         CornerRadius="8">
-                        <StackPanel
-                            VerticalAlignment="Center"
-                            Orientation="Horizontal">
-                            <TextBlock Style="{StaticResource CardFieldLabelStyle}" VerticalAlignment="Center" Text="{DynamicResource RecordedVideoStorageUsage}" />
-                            <TextBlock Style="{StaticResource CardFieldLabelStyle}" VerticalAlignment="Center" Text="：" />
+                        <Grid VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+              <TextBlock Grid.Column="0" Style="{StaticResource CardFieldLabelStyle}" VerticalAlignment="Center" Text="{DynamicResource RecordedVideoStorageUsage}" />
+                            <TextBlock Grid.Column="1" Style="{StaticResource CardFieldLabelStyle}" Text="：" VerticalAlignment="Center" />
                             <TextBlock
+                                Grid.Column="2"
                                 VerticalAlignment="Center"
                                 FontFamily="{StaticResource AppFont}"
                                 FontSize="22"
@@ -548,6 +552,7 @@
                                 Foreground="#403B5B"
                                 Text="{Binding RecordedVideoStorageDisplay}" />
                             <Button
+                                Grid.Column="3"
                                 Margin="16,0,0,0"
                                 Command="{Binding OpenRecordedVideoFolderCommand}"
                                 Style="{StaticResource SecondaryActionButtonStyle}">
@@ -557,7 +562,7 @@
                                     Foreground="#403B5B"
                                     Text="{DynamicResource MA.Common.OpenFolder}" />
                             </Button>
-                        </StackPanel>
+                        </Grid>
                     </Border>
 
                     <Border
@@ -565,12 +570,17 @@
                         Padding="24,14"
                         Background="Transparent"
                         CornerRadius="8">
-                        <StackPanel
-                            VerticalAlignment="Center"
-                            Orientation="Horizontal">
-                          <TextBlock Style="{StaticResource CardFieldLabelStyle}"  VerticalAlignment="Center" Text="{DynamicResource AnalysisResultStorageUsage}" />
-                          <TextBlock Style="{StaticResource CardFieldLabelStyle}" VerticalAlignment="Center"  Text="：" />
+                        <Grid VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                          <TextBlock Grid.Column="0" Style="{StaticResource CardFieldLabelStyle}"  VerticalAlignment="Center" Text="{DynamicResource AnalysisResultStorageUsage}" />
+                          <TextBlock Grid.Column="1" Style="{StaticResource CardFieldLabelStyle}" VerticalAlignment="Center"  Text="：" />
                             <TextBlock
+                                Grid.Column="2"
                                 VerticalAlignment="Center"
                                 FontFamily="{StaticResource AppFont}"
                                 FontSize="22"
@@ -578,6 +588,7 @@
                                 Foreground="#403B5B"
                                 Text="{Binding AnalysisResultStorageDisplay}" />
                             <Button
+                                Grid.Column="3"
                                 Margin="16,0,0,0"
                                 Command="{Binding OpenAnalysisResultFolderCommand}"
                                 Style="{StaticResource SecondaryActionButtonStyle}">
@@ -587,7 +598,7 @@
                                     Foreground="#403B5B"
                                     Text="{DynamicResource MA.Common.OpenFolder}" />
                             </Button>
-                        </StackPanel>
+                        </Grid>
                     </Border>
                 </Grid>
             </Border>

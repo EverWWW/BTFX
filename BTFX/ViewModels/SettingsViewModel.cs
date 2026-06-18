@@ -19,6 +19,7 @@ public partial class SettingsViewModel : ObservableObject
 {
     private readonly ISessionService _sessionService;
     private readonly ICameraCaptureSettingsService _cameraCaptureSettingsService;
+    private readonly ILocalizationService _localizationService;
     private readonly ILogHelper? _logHelper;
     private CameraCaptureSettings _cameraCaptureSettings = new();
 
@@ -125,10 +126,12 @@ public partial class SettingsViewModel : ObservableObject
         Settings.DepartmentManagementViewModel departmentManagementViewModel,
         Settings.UnitSettingsViewModel unitSettingsViewModel,
         Settings.DataManagementSettingsViewModel dataManagementSettingsViewModel,
-        Settings.SystemInfoViewModel systemInfoViewModel)
+        Settings.SystemInfoViewModel systemInfoViewModel,
+        ILocalizationService localizationService)
     {
         _sessionService = sessionService;
         _cameraCaptureSettingsService = cameraCaptureSettingsService;
+        _localizationService = localizationService;
 
         // 注入子 ViewModel
         GeneralSettingsViewModel = generalSettingsViewModel;
@@ -184,8 +187,8 @@ public partial class SettingsViewModel : ObservableObject
                     {
                         var dialog = new OpenFileDialog
                         {
-                            Title = "选择相机配置软件",
-                            Filter = "可执行文件 (*.exe)|*.exe|所有文件 (*.*)|*.*"
+                            Title = _localizationService.GetString("DeviceSettings.SelectCameraConfigTool"),
+                            Filter = _localizationService.GetString("DeviceSettings.ExecutableFilter")
                         };
 
                         if (dialog.ShowDialog() == true)
@@ -200,7 +203,11 @@ public partial class SettingsViewModel : ObservableObject
                     {
                         if (string.IsNullOrWhiteSpace(ExternalCameraConfigToolPath) || !File.Exists(ExternalCameraConfigToolPath))
                         {
-                            System.Windows.MessageBox.Show("请先配置有效的相机配置软件路径。", "提示", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                            System.Windows.MessageBox.Show(
+                                _localizationService.GetString("DeviceSettings.InvalidCameraConfigToolPath"),
+                                _localizationService.GetString("Tip"),
+                                System.Windows.MessageBoxButton.OK,
+                                System.Windows.MessageBoxImage.Information);
                             return;
                         }
 

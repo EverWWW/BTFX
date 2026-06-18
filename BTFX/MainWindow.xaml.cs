@@ -232,10 +232,10 @@ public partial class MainWindow : Window
                 {
                     DataContext = new ConfirmDialogViewModel
                     {
-                        Title = "停止分析",
-                        Message = "当前分析任务正在运行，关闭窗口会停止本次分析。是否确认停止分析并退出软件？",
-                        ConfirmText = "确定",
-                        CancelText = "取消",
+                        Title = FindResource("StopAnalysis")?.ToString() ?? "Stop Analysis",
+                        Message = FindResource("StopAnalysisOnExitMessage")?.ToString() ?? "An analysis task is running. Stop analysis and exit?",
+                        ConfirmText = FindResource("Confirm")?.ToString() ?? "Confirm",
+                        CancelText = FindResource("Cancel")?.ToString() ?? "Cancel",
                         IsCancelVisible = true
                     }
                 },
@@ -256,10 +256,10 @@ public partial class MainWindow : Window
             {
                 DataContext = new ConfirmDialogViewModel
                 {
-                    Title = FindResource("ConfirmExit")?.ToString() ?? "确认退出",
-                    Message = FindResource("ExitConfirmMessage")?.ToString() ?? "确认退出系统？",
-                    ConfirmText = "确定",
-                    CancelText = "取消",
+                    Title = FindResource("ConfirmExit")?.ToString() ?? "Confirm Exit",
+                    Message = FindResource("ExitConfirmMessage")?.ToString() ?? "Exit the system?",
+                    ConfirmText = FindResource("Confirm")?.ToString() ?? "Confirm",
+                    CancelText = FindResource("Cancel")?.ToString() ?? "Cancel",
                     IsCancelVisible = true
                 }
             },

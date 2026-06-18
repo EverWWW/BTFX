@@ -15,6 +15,7 @@ public partial class LoginViewModel : ObservableObject
     private readonly INavigationService _navigationService;
     private readonly ISessionService _sessionService;
     private readonly ISettingsService _settingsService;
+    private readonly ILocalizationService _localizationService;
     private readonly ILogHelper? _logHelper;
 
     [ObservableProperty]
@@ -48,12 +49,14 @@ public partial class LoginViewModel : ObservableObject
         IAuthenticationService authenticationService,
         INavigationService navigationService,
         ISessionService sessionService,
-        ISettingsService settingsService)
+        ISettingsService settingsService,
+        ILocalizationService localizationService)
     {
         _authenticationService = authenticationService;
         _navigationService = navigationService;
         _sessionService = sessionService;
         _settingsService = settingsService;
+        _localizationService = localizationService;
 
         // 尝试获取日志服务（可选）
         try
@@ -154,14 +157,14 @@ public partial class LoginViewModel : ObservableObject
 
             if (user == null)
             {
-                ErrorMessage = "账号或密码不正确";
+                ErrorMessage = _localizationService.GetString("LoginFailed");
                 _logHelper?.Warning($"登录失败：账号或密码不正确 - 账号: {Username}");
                 return;
             }
 
             if (!user.IsEnabled)
             {
-                ErrorMessage = "该账户已被禁用";
+                ErrorMessage = _localizationService.GetString("AccountDisabled");
                 _logHelper?.Warning($"登录失败：账户已禁用 - 账号: {Username}");
                 return;
             }
@@ -221,7 +224,7 @@ public partial class LoginViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ErrorMessage = "登录失败，请稍后重试";
+            ErrorMessage = _localizationService.GetString("LoginFailedRetry");
             _logHelper?.Error("登录异常", ex, new Dictionary<string, object>
             {
                 ["Username"] = Username
@@ -244,21 +247,21 @@ public partial class LoginViewModel : ObservableObject
         // 检查前后空格
         if (Username != username || Password != password)
         {
-            ErrorMessage = "账号或密码不正确";
+            ErrorMessage = _localizationService.GetString("LoginFailed");
             return false;
         }
 
         // 验证账号长度
         if (username.Length < Constants.USERNAME_MIN_LENGTH || username.Length > Constants.USERNAME_MAX_LENGTH)
         {
-            ErrorMessage = "账号或密码不正确";
+            ErrorMessage = _localizationService.GetString("LoginFailed");
             return false;
         }
 
         // 验证密码长度
         if (password.Length < Constants.PASSWORD_MIN_LENGTH || password.Length > Constants.PASSWORD_MAX_LENGTH)
         {
-            ErrorMessage = "账号或密码不正确";
+            ErrorMessage = _localizationService.GetString("LoginFailed");
             return false;
         }
 

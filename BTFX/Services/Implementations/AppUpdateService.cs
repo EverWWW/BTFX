@@ -16,12 +16,17 @@ namespace BTFX.Services.Implementations;
 public class AppUpdateService : IAppUpdateService
 {
     private readonly ISettingsService _settingsService;
+    private readonly ILocalizationService _localizationService;
     private readonly ILogHelper? _logHelper;
     private readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(5) };
 
-    public AppUpdateService(ISettingsService settingsService, ILogHelper? logHelper = null)
+    public AppUpdateService(
+        ISettingsService settingsService,
+        ILocalizationService localizationService,
+        ILogHelper? logHelper = null)
     {
         _settingsService = settingsService;
+        _localizationService = localizationService;
         _logHelper = logHelper;
     }
 
@@ -81,7 +86,7 @@ public class AppUpdateService : IAppUpdateService
         }
         catch (Exception ex)
         {
-            _logHelper?.Warning($"检查在线更新失败：{ex.Message}");
+            _logHelper?.Warning($"Check online update failed: {ex.Message}");
             return null;
         }
     }
@@ -93,10 +98,10 @@ public class AppUpdateService : IAppUpdateService
     {
         if (string.IsNullOrWhiteSpace(updateInfo.PackageUrl))
         {
-            throw new InvalidOperationException("更新包地址为空。");
+            throw new InvalidOperationException(L("Update.PackageUrlRequired"));
         }
 
-        progress?.Report(new OperationProgressInfo(5, "准备下载", "正在连接更新服务器..."));
+        progress?.Report(new OperationProgressInfo(5, L("Update.PreparingDownload"), L("Update.ConnectingServer")));
 
         var downloadDirectory = Path.Combine(Path.GetTempPath(), Constants.APP_NAME, "Updates");
         Directory.CreateDirectory(downloadDirectory);
@@ -125,21 +130,21 @@ public class AppUpdateService : IAppUpdateService
             if (totalBytes is > 0)
             {
                 var percent = 10 + readBytes * 80.0 / totalBytes.Value;
-                progress?.Report(new OperationProgressInfo(percent, "正在下载", $"已下载 {FormatBytes(readBytes)} / {FormatBytes(totalBytes.Value)}"));
+                progress?.Report(new OperationProgressInfo(percent, L("Update.Downloading"), L("Update.DownloadedFormat", FormatBytes(readBytes), FormatBytes(totalBytes.Value))));
             }
             else
             {
-                progress?.Report(new OperationProgressInfo(50, "正在下载", $"已下载 {FormatBytes(readBytes)}", true));
+                progress?.Report(new OperationProgressInfo(50, L("Update.Downloading"), L("Update.DownloadedUnknownTotalFormat", FormatBytes(readBytes)), true));
             }
         }
 
-        progress?.Report(new OperationProgressInfo(95, "下载完成", "正在校验更新包..."));
+        progress?.Report(new OperationProgressInfo(95, L("Update.DownloadCompleted"), L("Update.VerifyingPackage")));
         if (!File.Exists(localPath) || new FileInfo(localPath).Length == 0)
         {
-            throw new InvalidOperationException("更新包下载失败或文件为空。");
+            throw new InvalidOperationException(L("Update.PackageEmpty"));
         }
 
-        progress?.Report(new OperationProgressInfo(100, "下载完成", $"更新包已保存到 {localPath}"));
+        progress?.Report(new OperationProgressInfo(100, L("Update.DownloadCompleted"), L("Update.PackageSavedFormat", localPath)));
         return localPath;
     }
 
@@ -147,7 +152,7 @@ public class AppUpdateService : IAppUpdateService
     {
         if (!File.Exists(installerPath))
         {
-            throw new FileNotFoundException("更新安装包不存在。", installerPath);
+            throw new FileNotFoundException(L("Update.InstallerMissing"), installerPath);
         }
 
         Process.Start(new ProcessStartInfo
@@ -165,16 +170,28 @@ public class AppUpdateService : IAppUpdateService
         _settingsService.SaveSettings();
     }
 
-    private static void ShowUpdatePrompt(AppUpdateInfo updateInfo)
+    private void ShowUpdatePrompt(AppUpdateInfo updateInfo)
     {
         var message = string.IsNullOrWhiteSpace(updateInfo.Detail)
-            ? $"发现新版本 {updateInfo.Version}。\n\n更新包：{updateInfo.PackageUrl}"
-            : $"发现新版本 {updateInfo.Version}。\n\n更新内容：\n{updateInfo.Detail}\n\n更新包：{updateInfo.PackageUrl}";
+            ? L("Update.AutoFoundMessageFormat", updateInfo.Version, updateInfo.PackageUrl)
+            : L("Update.AutoFoundMessageWithDetailFormat", updateInfo.Version, updateInfo.Detail, updateInfo.PackageUrl);
 
         Application.Current.Dispatcher.Invoke(() =>
         {
-            MessageBox.Show(message, "发现新版本", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(message, L("Update.FoundTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
         });
+    }
+
+    private string L(string key)
+    {
+        var value = _localizationService.GetString(key);
+        return string.IsNullOrWhiteSpace(value) ? key : value;
+    }
+
+    private string L(string key, params object[] args)
+    {
+        var value = _localizationService.GetString(key, args);
+        return string.IsNullOrWhiteSpace(value) ? key : value;
     }
 
     private static string ResolvePackageUrl(string updateXmlUrl, string packageUrl)

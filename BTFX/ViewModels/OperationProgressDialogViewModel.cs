@@ -1,4 +1,5 @@
 using System.Windows.Threading;
+using System.Windows;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -53,7 +54,7 @@ public partial class OperationProgressDialogViewModel : ObservableObject
     [ObservableProperty]
     private bool _isCancelling;
 
-    public string ProgressText => IsIndeterminate ? "处理中" : $"{Math.Round(Progress)}%";
+    public string ProgressText => IsIndeterminate ? GetString("Processing") : $"{Math.Round(Progress)}%";
 
     partial void OnProgressChanged(double value)
     {
@@ -79,7 +80,7 @@ public partial class OperationProgressDialogViewModel : ObservableObject
         IsCancelling = false;
         IsIndeterminate = false;
         SetTargetProgress(100);
-        Stage = "完成";
+        Stage = GetString("Success");
         Message = message;
     }
 
@@ -88,7 +89,7 @@ public partial class OperationProgressDialogViewModel : ObservableObject
         CanCancel = false;
         IsCancelling = false;
         IsIndeterminate = false;
-        Stage = "失败";
+        Stage = GetString("Failed");
         Message = message;
     }
 
@@ -102,9 +103,21 @@ public partial class OperationProgressDialogViewModel : ObservableObject
 
         IsCancelling = true;
         CanCancel = false;
-        Stage = "正在取消";
-        Message = "正在停止当前操作，请稍候...";
+        Stage = GetString("OperationProgress.Stopping");
+        Message = GetString("OperationProgress.StoppingMessage");
         _cancellationTokenSource.Cancel();
+    }
+
+    private static string GetString(string key)
+    {
+        try
+        {
+            return Application.Current.FindResource(key)?.ToString() ?? key;
+        }
+        catch
+        {
+            return key;
+        }
     }
 
     private bool CanExecuteCancel() => CanCancel && !IsCancelling;

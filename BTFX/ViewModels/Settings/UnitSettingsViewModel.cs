@@ -62,8 +62,8 @@ public partial class UnitSettingsViewModel : ObservableObject
     {
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
-            Title = "选择Logo图片",
-            Filter = "图片文件 (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg",
+            Title = _localizationService.GetString("SelectLogoImage"),
+            Filter = _localizationService.GetString("ImageFileFilter"),
             Multiselect = false
         };
 
@@ -73,8 +73,8 @@ public partial class UnitSettingsViewModel : ObservableObject
             if (fileInfo.Length > BtfxConstants.LOGO_MAX_SIZE_KB * 1024)
             {
                 System.Windows.MessageBox.Show(
-                    $"Logo文件大小不能超过{BtfxConstants.LOGO_MAX_SIZE_KB}KB",
-                    "提示",
+                    _localizationService.GetString("LogoFileTooLargeFormat", BtfxConstants.LOGO_MAX_SIZE_KB),
+                    _localizationService.GetString("Tip"),
                     System.Windows.MessageBoxButton.OK,
                     System.Windows.MessageBoxImage.Warning);
                 return;
@@ -103,14 +103,14 @@ public partial class UnitSettingsViewModel : ObservableObject
             _settingsService.CurrentSettings.Unit.LogoPath = LogoPath;
             _settingsService.SaveSettings();
 
-            System.Windows.MessageBox.Show("单位设置已保存！", "提示",
+            System.Windows.MessageBox.Show(_localizationService.GetString("UnitSettingsSaved"), _localizationService.GetString("Tip"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
             _logHelper?.Information("保存单位设置");
         }
         catch (Exception ex)
         {
             _logHelper?.Error("保存单位设置失败", ex);
-            System.Windows.MessageBox.Show($"保存失败：{ex.Message}", "错误",
+            System.Windows.MessageBox.Show($"{_localizationService.GetString("SaveFailed")}: {ex.Message}", _localizationService.GetString("Error"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
         finally

@@ -664,7 +664,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             _logHelper?.Error($"打开报告预览弹窗失败：ReportId={item.Report.Id}", ex);
-            MessageBox.Show($"打开报告预览失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(L("Report.OpenPreviewFailedFormat", ex.Message), L("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -703,7 +703,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             {
                 if (!CanGenerateReport)
                 {
-                    await ShowNoticeDialogAsync("提示", "当前账号没有生成报告权限。");
+                    await ShowNoticeDialogAsync(L("Tip"), L("Report.NoGeneratePermission"));
                     return;
                 }
 
@@ -713,7 +713,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                     : await analysisService.GetLatestAnalysisResultAsync(report.MeasurementId);
                 if (latestResult?.Success != true)
                 {
-                    await ShowNoticeDialogAsync("提示", "该测量还没有可用的分析结果，请先完成测量分析。");
+                    await ShowNoticeDialogAsync(L("Tip"), L("Report.NoAnalysisResultForGeneration"));
                     return;
                 }
 
@@ -723,7 +723,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
                 if (regenerated is null)
                 {
-                    await ShowNoticeDialogAsync("提示", "报告生成失败，请确认该测量已有可用分析结果。");
+                    await ShowNoticeDialogAsync(L("Tip"), L("Report.GenerateFailedNoResult"));
                     return;
                 }
 
@@ -745,7 +745,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             _logHelper?.Error($"继续处理报告失败：ReportId={item.Report.Id}", ex);
-            MessageBox.Show($"继续处理报告失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(L("Report.ResumeFailedFormat", ex.Message), L("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
@@ -756,7 +756,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             var fullReport = await _reportService.GetReportWithAnalysisDataAsync(reportId);
             if (fullReport is null)
             {
-                MessageBox.Show("未找到报告数据，无法打开预览。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(L("Report.NoDataForPreview"), L("Tip"), MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -805,7 +805,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         // 检查是否已有报告
         if (HasExistingReport)
         {
-            var result = await ShowConfirmDialogAsync("确认覆盖", "该测量数据已有报告，是否覆盖？");
+            var result = await ShowConfirmDialogAsync(L("Confirm"), L("ConfirmOverwriteReport"));
 
             if (!result) return;
         }
@@ -834,7 +834,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                     CurrentModeIndex = 0;
                 });
 
-                await ShowNoticeDialogAsync("提示", "报告生成成功！");
+                await ShowNoticeDialogAsync(L("Tip"), L("Report.GenerateSuccess"));
 
                 // 刷新报告列表
                 await LoadReportsAsync();
@@ -855,7 +855,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             if (!_disposed && !App.IsShuttingDown)
             {
                 _logHelper?.Error("生成报告失败", ex);
-                await ShowNoticeDialogAsync("错误", $"生成报告失败：{ex.Message}");
+                await ShowNoticeDialogAsync(L("Error"), L("Report.GenerateFailedFormat", ex.Message));
             }
         }
         finally
@@ -876,8 +876,8 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                 {
                     Title = title,
                     Message = message,
-                    ConfirmText = "确定",
-                    CancelText = "取消",
+                    ConfirmText = GetGlobalString("Confirm"),
+                    CancelText = GetGlobalString("Cancel"),
                     IsCancelVisible = true,
                     IconKind = iconKind
                 }
@@ -899,7 +899,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                 {
                     Title = title,
                     Message = message,
-                    ConfirmText = "确定",
+                    ConfirmText = GetGlobalString("Confirm"),
                     IsCancelVisible = false,
                     IconKind = "InformationOutline"
                 }
@@ -926,7 +926,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
             if (success)
             {
-                System.Windows.MessageBox.Show("保存成功！", "提示",
+                System.Windows.MessageBox.Show(L("SaveSuccess"), L("Tip"),
                     System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 _logHelper?.Information($"保存报告成功：ID={_currentPreviewReport.Id}");
 
@@ -938,7 +938,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             if (!App.IsShuttingDown)
             {
                 _logHelper?.Error($"保存报告失败：ID={_currentPreviewReport?.Id}", ex);
-                System.Windows.MessageBox.Show($"保存失败：{ex.Message}", "错误",
+                System.Windows.MessageBox.Show(L("SaveFailedError", ex.Message), L("Error"),
                     System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
@@ -973,14 +973,14 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             var fullReport = await _reportService.GetReportWithAnalysisDataAsync(reportId);
             if (!HasUsableReportDataSource(fullReport))
             {
-                await ShowNoticeDialogAsync("提示", "该报告关联的测量或分析结果不可用，无法导出。");
+                await ShowNoticeDialogAsync(L("Tip"), L("Report.ExportUnavailable"));
                 return;
             }
 
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
-                Title = "导出报告",
-                Filter = "PDF文件 (*.pdf)|*.pdf",
+                Title = L("Report.ExportTitle"),
+                Filter = L("Report.PdfFilter"),
                 FileName = $"报告_{fullReport!.ReportNumber}"
             };
 
@@ -995,11 +995,11 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                 if (success)
                 {
                     await LoadReportsAsync();
-                    System.Windows.MessageBox.Show($"报告已导出至：\n{fileName}", "导出成功",
+                    System.Windows.MessageBox.Show(L("Report.ExportSuccessFormat", fileName), L("ReportPreview.Export.SuccessTitle"),
                         System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                     _logHelper?.Information($"导出报告PDF成功：ID={reportId}, 文件={fileName}");
 
-                    var openResult = System.Windows.MessageBox.Show("是否打开导出的文件？", "提示",
+                    var openResult = System.Windows.MessageBox.Show(L("Report.OpenExportedFile"), L("Tip"),
                         System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question);
                     if (openResult == System.Windows.MessageBoxResult.Yes)
                     {
@@ -1012,7 +1012,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                 }
                 else
                 {
-                    System.Windows.MessageBox.Show("PDF导出失败，请确认报告数据完整且输出目录可写。", "错误",
+                    System.Windows.MessageBox.Show(L("Report.ExportPdfFailed"), L("Error"),
                         System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
             }
@@ -1022,7 +1022,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             if (!_disposed && !App.IsShuttingDown)
             {
                 _logHelper?.Error($"导出报告PDF失败：ID={reportId}", ex);
-                System.Windows.MessageBox.Show($"导出失败：{ex.Message}", "错误",
+                System.Windows.MessageBox.Show($"{L("ExportFailed")}: {ex.Message}", L("Error"),
                     System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
@@ -1128,7 +1128,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         try
         {
             var result = await operation(progress, operationCts.Token);
-            progressViewModel.MarkCompleted("操作已完成。");
+            progressViewModel.MarkCompleted(GetGlobalString("OperationProgress.CompletedMessage"));
             await Task.Delay(650);
             DialogHost.Close("RootDialog");
             await dialogTask;
@@ -1136,7 +1136,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         }
         catch (OperationCanceledException)
         {
-            progressViewModel.MarkFailed("操作已取消。");
+            progressViewModel.MarkFailed(GetGlobalString("OperationProgress.CanceledMessage"));
             await Task.Delay(350);
             DialogHost.Close("RootDialog");
             await dialogTask;
@@ -1144,7 +1144,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         }
         catch
         {
-            progressViewModel.MarkFailed("操作执行失败。");
+            progressViewModel.MarkFailed(GetGlobalString("OperationProgress.FailedMessage"));
             await Task.Delay(350);
             DialogHost.Close("RootDialog");
             await dialogTask;
@@ -1162,6 +1162,18 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         var start = Math.Clamp(index / (double)total, 0, 1);
         var end = Math.Clamp((index + 1d) / total, 0, 1);
         return Math.Clamp((start + (end - start) * Math.Clamp(innerRatio, 0, 1)) * 100, 0, 100);
+    }
+
+    private static string GetGlobalString(string key)
+    {
+        try
+        {
+            return Application.Current.FindResource(key)?.ToString() ?? key;
+        }
+        catch
+        {
+            return key;
+        }
     }
 
     private static string BuildReportPdfFileName(Report report)
@@ -1210,7 +1222,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             var fullReport = await _reportService.GetReportWithAnalysisDataAsync(reportId);
             if (!HasUsableReportDataSource(fullReport))
             {
-                await ShowNoticeDialogAsync("提示", "该报告关联的测量或分析结果不可用，无法打印。");
+                await ShowNoticeDialogAsync(L("Tip"), L("Report.PrintUnavailable"));
                 return;
             }
 
@@ -1236,7 +1248,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             }
             else if (!App.IsShuttingDown)
             {
-                System.Windows.MessageBox.Show("打印失败或已取消", "提示",
+                System.Windows.MessageBox.Show(L("Report.PrintFailedOrCanceled"), L("Tip"),
                     System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             }
         }
@@ -1245,7 +1257,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             if (!_disposed && !App.IsShuttingDown)
             {
                 _logHelper?.Error($"打印报告失败：ID={reportId}", ex);
-                System.Windows.MessageBox.Show($"打印失败：{ex.Message}", "错误",
+                System.Windows.MessageBox.Show(L("Report.PrintFailedFormat", ex.Message), L("Error"),
                     System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
@@ -1264,8 +1276,8 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         if (item == null || _disposed || App.IsShuttingDown) return;
 
         var result = await ShowConfirmDialogAsync(
-            "确认删除",
-            $"确定要删除报告 {item.Report.ReportNumber} 吗？此操作不可恢复！",
+            L("ConfirmDelete"),
+            L("Report.DeleteConfirmFormat", item.Report.ReportNumber),
             "TrashCanOutline");
 
         if (!result) return;
@@ -1291,7 +1303,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
                 if (!App.IsShuttingDown)
                 {
-                    await ShowNoticeDialogAsync("提示", "删除成功！");
+                    await ShowNoticeDialogAsync(L("Tip"), L("DeleteSuccess"));
                 }
             }
         }
@@ -1300,7 +1312,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             if (!_disposed && !App.IsShuttingDown)
             {
                 _logHelper?.Error($"删除报告失败：ID={item.Report.Id}", ex);
-                await ShowNoticeDialogAsync("错误", $"删除失败：{ex.Message}");
+                await ShowNoticeDialogAsync(L("Error"), L("DeleteFailedError"));
             }
         }
     }
@@ -1318,13 +1330,13 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
         if (!CanExportReport)
         {
-            await ShowNoticeDialogAsync("提示", "当前账号没有导出报告权限。");
+            await ShowNoticeDialogAsync(L("Tip"), L("Report.NoExportPermission"));
             return;
         }
 
         var dialog = new Microsoft.Win32.OpenFolderDialog
         {
-            Title = "选择报告导出目录",
+            Title = L("Report.ExportFolderTitle"),
             Multiselect = false
         };
 
@@ -1341,16 +1353,16 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
         if (selectedReports.Count == 0)
         {
-            await ShowNoticeDialogAsync("提示", "没有找到可导出的选中报告。");
+            await ShowNoticeDialogAsync(L("Tip"), L("Report.NoSelectedExportableReport"));
             return;
         }
 
         try
         {
             var result = await RunWithProgressDialogAsync(
-                "批量导出报告",
-                "准备导出",
-                "正在准备报告导出任务...",
+                L("Report.BatchExportTitle"),
+                L("Report.BatchExportStage"),
+                L("Report.BatchExportPreparing"),
                 async (progress, token) =>
                 {
                     var successCount = 0;
@@ -1366,8 +1378,8 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
                         progress.Report(new OperationProgressInfo(
                             CalculateBatchProgress(i, selectedReports.Count, 0),
-                            "导出报告",
-                            $"正在导出 {report.ReportNumber}..."));
+                            L("Report.BatchExportStage"),
+                            L("Report.BatchExportItemFormat", report.ReportNumber)));
 
                         var success = await ExportReportPdfToFileAsync(report.Id, filePath, progress, i, selectedReports.Count);
                         if (success)
@@ -1382,8 +1394,8 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
                         progress.Report(new OperationProgressInfo(
                             CalculateBatchProgress(i, selectedReports.Count, 1),
-                            "导出报告",
-                            $"已完成 {i + 1}/{selectedReports.Count} 个报告。"));
+                            L("Report.BatchExportStage"),
+                            L("Report.BatchExportProgressFormat", i + 1, selectedReports.Count)));
                     }
 
                     return new BatchReportExportResult(successCount, failedReports.Count, failedReports, dialog.FolderName);
@@ -1394,29 +1406,29 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             if (result.FailedCount == 0)
             {
                 System.Windows.MessageBox.Show(
-                    $"成功导出 {result.SuccessCount} 个报告。\n目录：{result.OutputDirectory}",
-                    "导出完成",
+                    L("Report.BatchExportSuccessFormat", result.SuccessCount, result.OutputDirectory),
+                    L("ExportCompleted"),
                     System.Windows.MessageBoxButton.OK,
                     System.Windows.MessageBoxImage.Information);
             }
             else
             {
                 System.Windows.MessageBox.Show(
-                    $"成功导出 {result.SuccessCount} 个报告，失败 {result.FailedCount} 个。\n失败报告：{string.Join("、", result.FailedReports.Take(5))}",
-                    "导出完成",
+                    L("Report.BatchExportPartialFormat", result.SuccessCount, result.FailedCount, string.Join(", ", result.FailedReports.Take(5))),
+                    L("ExportCompleted"),
                     System.Windows.MessageBoxButton.OK,
                     System.Windows.MessageBoxImage.Warning);
             }
         }
         catch (OperationCanceledException)
         {
-            System.Windows.MessageBox.Show("批量导出已取消。", "提示",
+            System.Windows.MessageBox.Show(L("Report.BatchExportCanceled"), L("Tip"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
             _logHelper?.Error("批量导出报告失败", ex);
-            System.Windows.MessageBox.Show($"批量导出失败：{ex.Message}", "错误",
+            System.Windows.MessageBox.Show($"{L("ExportFailed")}: {ex.Message}", L("Error"),
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
         }
     }
@@ -2477,3 +2489,4 @@ public partial class ReportItem : ObservableObject
 }
 
 #endregion
+

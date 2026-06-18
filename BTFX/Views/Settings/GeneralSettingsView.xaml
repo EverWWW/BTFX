@@ -277,8 +277,6 @@
                 <RowDefinition Height="200" />
                 <RowDefinition Height="20" />
                 <RowDefinition Height="200" />
-                <RowDefinition Height="20" />
-                <RowDefinition Height="200" />
             </Grid.RowDefinitions>
 
             <Border
@@ -317,83 +315,6 @@
 
             <Border
                 Grid.Row="3"
-                Height="200"
-                Style="{StaticResource SettingsSectionCardStyle}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <StackPanel Orientation="Horizontal">
-                        <Border
-                            Width="4"
-                            Height="16"
-                            Margin="0,0,12,0"
-                            VerticalAlignment="Center"
-                            Background="#E4004A"
-                            CornerRadius="2" />
-                        <TextBlock Style="{StaticResource SettingsSectionTitleTextStyle}" Text="{DynamicResource ThemeSettings}" />
-                    </StackPanel>
-
-                    <Grid
-                        Grid.Row="1"
-                        Margin="0,20,0,0"
-                        VerticalAlignment="Center">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="320" />
-                            <ColumnDefinition Width="72" />
-                            <ColumnDefinition Width="92" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <ComboBox
-                            Width="320"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            DisplayMemberPath="Display"
-                            ItemsSource="{Binding ThemeOptions}"
-                            SelectedItem="{Binding SelectedTheme}"
-                            Style="{StaticResource SettingsComboBoxStyle}" />
-
-                        <TextBlock
-                            Grid.Column="2"
-                            VerticalAlignment="Center"
-                            FontFamily="{StaticResource AppFont}"
-                            FontSize="24"
-                            Foreground="#403B5B"
-                            Text="{DynamicResource ThemeColorSettings}" />
-
-                        <Border
-                            Grid.Column="3"
-                            Padding="18,8"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            Background="#FFFFFF"
-                            CornerRadius="18">
-                            <ItemsControl ItemsSource="{Binding ThemeColorOptions}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Horizontal" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Button
-                                            Command="{Binding DataContext.ApplyThemeColorCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                            CommandParameter="{Binding}"
-                                            Style="{StaticResource ThemeColorButtonStyle}"
-                                            ToolTip="{Binding DisplayName}" />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </Border>
-                    </Grid>
-                </Grid>
-            </Border>
-
-            <Border
-                Grid.Row="5"
                 Height="200"
                 Style="{StaticResource SettingsSectionCardStyle}">
                 <Grid>

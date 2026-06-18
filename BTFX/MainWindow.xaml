@@ -44,7 +44,7 @@
                 controls:TitleBarControl.CloseClicked="TitleBar_CloseClicked"
                 LogoutCommand="{Binding LogoutCommand}"
                 MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"
-                UserDisplayName="{Binding UserDisplayName, FallbackValue=游客}"
+                UserDisplayName="{Binding UserDisplayName}"
                 Visibility="{Binding IsLoginView, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
 
             <Grid Grid.Row="1">

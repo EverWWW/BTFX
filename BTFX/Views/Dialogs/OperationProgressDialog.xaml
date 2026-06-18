@@ -164,7 +164,7 @@
                     LineHeight="30"
                     LineStackingStrategy="BlockLineHeight"
                     Padding="0,2,0,6"
-                    Text="操作执行期间请稍候，取消后已写入的临时文件会保留在本地目录中。"
+                    Text="{DynamicResource OperationProgress.CancelHint}"
                     TextWrapping="Wrap"
                     Visibility="{Binding CanCancel, Converter={StaticResource BooleanToVisibilityConverter}}" />
             </Grid>
@@ -174,7 +174,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Command="{Binding CancelCommand}"
-                Content="取消"
+                Content="{DynamicResource Cancel}"
                 Style="{StaticResource ProgressDialogCancelButtonStyle}"
                 Visibility="{Binding CanCancel, Converter={StaticResource BooleanToVisibilityConverter}}" />
         </Grid>
