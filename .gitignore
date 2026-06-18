@@ -182,6 +182,10 @@ publish/
 # Installer packages
 BTFX/Installer/Output/
 
+# Local verification and algorithm sample outputs
+build-verify/
+gait_analysis_results/
+
 # Publish Web Output
 *.[Pp]ublish.xml
 *.azurePubxml

@@ -231,32 +231,6 @@ public partial class SettingsViewModel : ObservableObject
         }
 
         /// <summary>
-        /// 主题选项
-        /// </summary>
-        public class ThemeOption
-        {
-            public AppTheme Value { get; set; }
-            public string Display { get; set; } = string.Empty;
-            public string IconKind { get; set; } = string.Empty;
-        }
-
-        /// <summary>
-        /// 主题色选项
-        /// </summary>
-        public class ThemeColorOption : ObservableObject
-        {
-            public string ColorHex { get; set; } = string.Empty;
-            public string DisplayName { get; set; } = string.Empty;
-
-            private bool _isSelected;
-            public bool IsSelected
-            {
-                get => _isSelected;
-                set => SetProperty(ref _isSelected, value);
-            }
-        }
-
-        /// <summary>
         /// 科室列表项
         /// </summary>
         public partial class DepartmentItem : ObservableObject

@@ -886,93 +886,6 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     private bool CanStartAnalyze() => IsReady && AllPrerequisitesMet;
 
     /// <summary>
-    /// 临时测试用分析流程：固定 5 秒后生成成功结果。
-    /// </summary>
-    public async Task RunTemporaryAnalysisAsync()
-    {
-        if (CurrentMeasurement == null || CurrentPatient == null)
-        {
-            _logHelper?.Warning("临时分析失败：缺少测量记录或患者信息");
-            return;
-        }
-
-        if (IsRunning)
-        {
-            return;
-        }
-
-        _analysisCts?.Cancel();
-        _analysisCts?.Dispose();
-        _analysisCts = new CancellationTokenSource();
-        var token = _analysisCts.Token;
-
-        try
-        {
-            AnalysisState = AnalysisState.Running;
-            Progress = 0;
-            CurrentStage = L("MA.Step4.Stage.Preparing");
-            StatusMessage = L("MA.Step4.Stage.Preparing");
-            TaskLogs.Clear();
-            IsLogExpanded = true;
-            AnalysisResult = null;
-            GaitEventResult = null;
-            KinematicResult = null;
-            QualityResult = null;
-            HasChartData = false;
-            HasVideoError = false;
-            VideoErrorMessage = null;
-            AddLog("启动临时测试分析流程");
-            await UpdateCurrentMeasurementStatusAsync(MeasurementStatus.InProgress, "测量状态已更新为分析中");
-
-            _analysisStartTime = DateTime.Now;
-            StartElapsedTimer();
-
-            var stages = new[]
-            {
-                (Progress: 10, Stage: L("MA.Step4.Stage.Initializing"), Message: L("MA.Step4.Stage.Initializing")),
-                (Progress: 30, Stage: L("MA.Step4.Stage.KeypointDetection"), Message: L("MA.Step4.Stage.KeypointDetection")),
-                (Progress: 55, Stage: L("MA.Step4.Stage.GaitEventDetection"), Message: L("MA.Step4.Stage.GaitEventDetection")),
-                (Progress: 80, Stage: L("MA.Step4.Stage.ParameterCalculation"), Message: L("MA.Step4.Stage.ParameterCalculation")),
-                (Progress: 100, Stage: L("MA.Step4.Stage.OutputResult"), Message: L("MA.Step4.Stage.OutputResult"))
-            };
-
-            foreach (var stage in stages)
-            {
-                token.ThrowIfCancellationRequested();
-                Progress = stage.Progress;
-                CurrentStage = stage.Stage;
-                StatusMessage = stage.Message;
-                AddLog(stage.Message);
-                await Task.Delay(TimeSpan.FromSeconds(1), token);
-            }
-
-            StopElapsedTimer();
-            ElapsedTime = TimeSpan.FromSeconds(5);
-            var result = BuildTemporaryAnalysisResult();
-            await OnAnalysisCompletedAsync(result);
-        }
-        catch (OperationCanceledException)
-        {
-            StopElapsedTimer();
-            AnalysisState = AnalysisState.Ready;
-            await UpdateCurrentMeasurementStatusAsync(MeasurementStatus.Pending, "临时分析已取消，测量状态已恢复为待处理");
-            AddLog("临时分析已取消");
-            AnalysisCanceledRequested?.Invoke();
-        }
-        catch (Exception ex)
-        {
-            StopElapsedTimer();
-            await OnAnalysisFailedAsync(null, ex.Message);
-            _logHelper?.Error("临时分析过程异常", ex);
-        }
-        finally
-        {
-            _analysisCts?.Dispose();
-            _analysisCts = null;
-        }
-    }
-
-    /// <summary>
     /// 取消分析
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanCancelAnalyze))]
@@ -1165,10 +1078,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     /// </summary>
     public void UpdateVideoTimeFromPlayer(TimeSpan position)
     {
-        _videoCurrentTime = position;
-        OnPropertyChanged(nameof(VideoCurrentTime));
-        OnPropertyChanged(nameof(VideoCurrentTimeSeconds));
-        OnPropertyChanged(nameof(CurrentTimeDisplay));
+        VideoCurrentTime = position;
         UpdateTrackerLinePosition(position.TotalSeconds);
     }
 
@@ -1397,69 +1307,6 @@ public partial class Step4AnalyzeViewModel : ObservableObject
             .ToArray();
         var sanitized = new string(chars).Trim(' ', '.', '_');
         return string.IsNullOrWhiteSpace(sanitized) ? "measurement" : sanitized;
-    }
-
-    private AnalysisResult BuildTemporaryAnalysisResult()
-    {
-        var outputDir = CurrentMeasurement is null
-            ? Path.Combine(GetAnalysisRootDirectory(), $"temporary_{DateTime.Now:yyyyMMdd_HHmmss}")
-            : CreateAnalysisOutputDirectory(CurrentMeasurement);
-        Directory.CreateDirectory(outputDir);
-
-        var previewVideoPath = GetTemporaryPreviewVideoPath();
-
-        return new AnalysisResult
-        {
-            MeasurementId = CurrentMeasurement?.Id ?? 0,
-            RequestId = $"TEMP_{DateTime.Now:yyyyMMdd_HHmmss}",
-            ProtocolVersion = "temp",
-            AlgorithmVersion = "temp-5s",
-            ModelVersion = "temp",
-            TaskStatus = "completed",
-            Success = true,
-            OutputDirectory = outputDir,
-            AnnotatedVideoPath = previewVideoPath,
-            AnnotatedVideoDurationS = null,
-            AnalysisDurationSeconds = 5,
-            CreatedAt = DateTime.Now,
-            GaitCycleDurationS = 1.12,
-            StanceTimeS = 0.68,
-            SwingTimeS = 0.44,
-            DoubleSupportTimeS = 0.18,
-            SingleSupportTimeS = 0.50,
-            StepLengthM = 0.62,
-            StrideLengthM = 1.24,
-            GaitSpeedMPerS = 1.10,
-            KinematicSummary = new KinematicSummary
-            {
-                HipRomDeg = 38.5,
-                KneeRomDeg = 56.2,
-                AnkleRomDeg = 24.8,
-                PelvisCoronalRomDeg = 7.4
-            },
-            QualityControl = new QualityControlInfo
-            {
-                MeanKeypointConfidence = 0.91,
-                ValidFrameRatio = 0.96,
-                OcclusionWarning = false,
-                MissingPointWarning = false
-            },
-            CsvFiles = []
-        };
-    }
-
-    private string? GetTemporaryPreviewVideoPath()
-    {
-        var side = CurrentMeasurement?.SideVideoPath;
-        if (!string.IsNullOrWhiteSpace(side) && File.Exists(side))
-        {
-            return side;
-        }
-
-        var front = CurrentMeasurement?.FrontVideoPath;
-        return !string.IsNullOrWhiteSpace(front) && File.Exists(front)
-            ? front
-            : null;
     }
 
     /// <summary>

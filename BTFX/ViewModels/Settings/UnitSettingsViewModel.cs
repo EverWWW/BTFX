@@ -44,7 +44,7 @@ public partial class UnitSettingsViewModel : ObservableObject
         {
             var settings = _settingsService.CurrentSettings;
             UnitName = settings.Unit.Name;
-            LogoPath = settings.Unit.LogoPath;
+            LogoPath = settings.Unit.LogoPath ?? string.Empty;
         }
         catch (Exception ex)
         {

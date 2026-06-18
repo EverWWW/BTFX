@@ -339,7 +339,10 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             if (_cancellationTokenSource.Token.IsCancellationRequested) return;
 
             // 在UI线程更新属性和集合
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher == null) return;
+
+            await dispatcher.InvokeAsync(() =>
             {
                 if (_disposed) return;
 

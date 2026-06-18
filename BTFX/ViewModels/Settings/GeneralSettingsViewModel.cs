@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Windows.Media;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -16,7 +15,6 @@ public partial class GeneralSettingsViewModel : ObservableObject
 {
     private readonly ISettingsService _settingsService;
     private readonly ILocalizationService _localizationService;
-    private readonly IThemeService _themeService;
     private readonly ILogHelper? _logHelper;
     private bool _isInitializing = true;
 
@@ -26,48 +24,18 @@ public partial class GeneralSettingsViewModel : ObservableObject
     [ObservableProperty]
     private LanguageOption? _selectedLanguage;
 
-    [ObservableProperty]
-    private ThemeOption? _selectedTheme;
-
     public ObservableCollection<LanguageOption> LanguageOptions { get; } =
     [
         new() { Value = Common.AppLanguage.ChineseSimplified, Display = "中文" },
         new() { Value = Common.AppLanguage.English, Display = "English" }
     ];
 
-    public ObservableCollection<ThemeOption> ThemeOptions { get; } =
-    [
-        new() { Value = Common.AppTheme.Light, Display = "浅色模式", IconKind = "WhiteBalanceSunny" },
-        new() { Value = Common.AppTheme.Dark, Display = "深色模式", IconKind = "WeatherNight" }
-    ];
-
-    /// <summary>
-    /// 可选主题色列表
-    /// </summary>
-    public ObservableCollection<ThemeColorOption> ThemeColorOptions { get; } =
-    [
-        new() { ColorHex = "#403B5B", DisplayName = "深紫灰" },
-        new() { ColorHex = "#1677FF", DisplayName = "经典蓝" },
-        new() { ColorHex = "#3B82F6", DisplayName = "亮蓝" },
-        new() { ColorHex = "#10B981", DisplayName = "青绿" },
-        new() { ColorHex = "#22C55E", DisplayName = "草绿" },
-        new() { ColorHex = "#F97316", DisplayName = "橙色" },
-        new() { ColorHex = "#F59E0B", DisplayName = "琥珀" },
-        new() { ColorHex = "#EC4899", DisplayName = "玫红" },
-        new() { ColorHex = "#8B5CF6", DisplayName = "紫罗兰" },
-        new() { ColorHex = "#A855F7", DisplayName = "亮紫" },
-        new() { ColorHex = "#DC2626", DisplayName = "深红" },
-        new() { ColorHex = "#64748B", DisplayName = "蓝灰" }
-    ];
-
     public GeneralSettingsViewModel(
         ISettingsService settingsService,
-        ILocalizationService localizationService,
-        IThemeService themeService)
+        ILocalizationService localizationService)
     {
         _settingsService = settingsService;
         _localizationService = localizationService;
-        _themeService = themeService;
 
         try { _logHelper = App.Services?.GetService(typeof(ILogHelper)) as ILogHelper; } catch { }
 
@@ -81,14 +49,6 @@ public partial class GeneralSettingsViewModel : ObservableObject
         {
             var settings = _settingsService.CurrentSettings;
             SelectedLanguage = LanguageOptions.FirstOrDefault(x => x.Value == settings.Application.Language);
-            SelectedTheme = ThemeOptions.FirstOrDefault(x => x.Value == settings.Application.Theme);
-
-            // 加载主题色选中状态
-            var savedColor = settings.Application.PrimaryColor;
-            foreach (var option in ThemeColorOptions)
-            {
-                option.IsSelected = string.Equals(option.ColorHex, savedColor, StringComparison.OrdinalIgnoreCase);
-            }
         }
         catch (Exception ex)
         {
@@ -103,46 +63,6 @@ public partial class GeneralSettingsViewModel : ObservableObject
         _settingsService.CurrentSettings.Application.Language = value.Value;
         _settingsService.SaveSettings();
         _logHelper?.Information($"切换语言: {value.Display}");
-    }
-
-    partial void OnSelectedThemeChanged(ThemeOption? value)
-    {
-        if (_isInitializing || value == null) return;
-        _themeService.ApplyTheme(value.Value);
-        _settingsService.CurrentSettings.Application.Theme = value.Value;
-        _settingsService.SaveSettings();
-        _logHelper?.Information($"切换主题: {value.Display}");
-    }
-
-    /// <summary>
-    /// 应用主题色
-    /// </summary>
-    [RelayCommand]
-    private void ApplyThemeColor(ThemeColorOption? colorOption)
-    {
-        if (_isInitializing || colorOption == null) return;
-
-        try
-        {
-            var color = (Color)ColorConverter.ConvertFromString(colorOption.ColorHex);
-            _themeService.SetPrimaryColor(color);
-
-            // 更新选中状态
-            foreach (var option in ThemeColorOptions)
-            {
-                option.IsSelected = option == colorOption;
-            }
-
-            // 保存配置
-            _settingsService.CurrentSettings.Application.PrimaryColor = colorOption.ColorHex;
-            _settingsService.SaveSettings();
-
-            _logHelper?.Information($"切换主题色: {colorOption.DisplayName} ({colorOption.ColorHex})");
-        }
-        catch (Exception ex)
-        {
-            _logHelper?.Error("切换主题色失败", ex);
-        }
     }
 
     [RelayCommand]

@@ -13,9 +13,9 @@
     <FileVersion>1.0.0.1</FileVersion>
     <AssemblyVersion>1.0.0.1</AssemblyVersion>
     <Company>BTFX Team</Company>
-    <Product>步态智能分析系统</Product>
+    <Product>步态信息采集系统</Product>
     <Copyright>Copyright © 2024-2026</Copyright>
-    <Description>步态智能分析系统 - Gait Intelligent Analysis System</Description>
+    <Description>步态信息采集系统 - Gait Information Collection System</Description>
 
     <!-- 应用程序图标（需要准备 app.ico 文件后取消注释） -->
     <ApplicationIcon>Resources\Images\Logo\app.ico</ApplicationIcon>
@@ -222,25 +222,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
-    <None Update="gait_analysis\Config_front.toml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </None>
-    <None Update="gait_analysis\Config_side.toml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </None>
-    <None Update="gait_analysis\*.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </None>
-    <None Update="gait_analysis\logs.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="gait_analysis\_internal.zip">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </None>
     <None Update="gait_analysis_gpu\Config_front.toml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -254,14 +235,5 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
   </ItemGroup>
-
-  <Target Name="ExtractGaitAnalysisRuntimeAfterBuild" AfterTargets="Build">
-    <Exec Condition="Exists('$(TargetDir)gait_analysis\_internal.zip') And !Exists('$(TargetDir)gait_analysis\_internal')" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;Expand-Archive -LiteralPath '$(TargetDir)gait_analysis\_internal.zip' -DestinationPath '$(TargetDir)gait_analysis' -Force&quot;" />
-  </Target>
-
-  <Target Name="ExtractGaitAnalysisRuntimeAfterPublish" AfterTargets="Publish">
-    <Exec Condition="Exists('$(PublishDir)gait_analysis\_internal.zip') And !Exists('$(PublishDir)gait_analysis\_internal')" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;Expand-Archive -LiteralPath '$(PublishDir)gait_analysis\_internal.zip' -DestinationPath '$(PublishDir)gait_analysis' -Force&quot;" />
-    <Delete Files="$(PublishDir)gait_analysis\_internal.zip" Condition="Exists('$(PublishDir)gait_analysis\_internal')" />
-  </Target>
 
 </Project>

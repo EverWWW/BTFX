@@ -54,11 +54,11 @@ public partial class NavigationItem : ObservableObject
         /// </summary>
         public void UpdateTitleFromResource()
         {
-            if (!string.IsNullOrEmpty(_resourceKey))
+            if (!string.IsNullOrEmpty(ResourceKey))
             {
                 try
                 {
-                    var resource = Application.Current.FindResource(_resourceKey);
+                    var resource = Application.Current.FindResource(ResourceKey);
                     if (resource != null)
                     {
                         Title = resource.ToString() ?? Title;
