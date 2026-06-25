@@ -13,6 +13,7 @@
     <PackageReference Include="SqlSugarCore" Version="5.1.4.187" />
     <!-- 数据库驱动 -->
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
     <PackageReference Include="MySqlConnector" Version="2.4.0" />
     <!-- DI 和日志 -->

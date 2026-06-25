@@ -1270,6 +1270,7 @@
     <system:String x:Key="MA.Task.History">History</system:String>
     <system:String x:Key="MA.Task.NoTask">No task.</system:String>
     <system:String x:Key="MA.Task.Analyzing">Analyzing...</system:String>
+    <system:String x:Key="MA.Step4.Run.Cancel">Stop Analysis</system:String>
 
     <!--  Dialog  -->
     <system:String x:Key="MA.Dialog.VideoIncomplete.Title">Incomplete Video</system:String>

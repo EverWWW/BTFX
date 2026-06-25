@@ -764,9 +764,44 @@ public partial class Step4AnalyzeViewModel : ObservableObject
             exePath = Path.Combine(Constants.ALGORITHM_DIRECTORY, Constants.ALGORITHM_EXE_FILENAME);
         }
 
-        return Path.IsPathRooted(exePath)
+        var resolvedPath = Path.IsPathRooted(exePath)
             ? exePath
             : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exePath);
+
+        if (File.Exists(resolvedPath))
+        {
+            return resolvedPath;
+        }
+
+        var directory = Path.GetDirectoryName(resolvedPath);
+        if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory))
+        {
+            var preferredPath = Path.Combine(directory, Constants.ALGORITHM_EXE_FILENAME);
+            if (File.Exists(preferredPath))
+            {
+                return preferredPath;
+            }
+
+            var fallbackPath = Directory.GetFiles(directory, "*.exe", SearchOption.TopDirectoryOnly).FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(fallbackPath))
+            {
+                return fallbackPath;
+            }
+        }
+
+        var algorithmDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Constants.ALGORITHM_DIRECTORY);
+        if (Directory.Exists(algorithmDirectory))
+        {
+            var fallbackPath = Directory.GetFiles(algorithmDirectory, "*.exe", SearchOption.TopDirectoryOnly)
+                .FirstOrDefault(path => string.Equals(Path.GetFileName(path), Constants.ALGORITHM_EXE_FILENAME, StringComparison.OrdinalIgnoreCase))
+                ?? Directory.GetFiles(algorithmDirectory, "*.exe", SearchOption.TopDirectoryOnly).FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(fallbackPath))
+            {
+                return fallbackPath;
+            }
+        }
+
+        return resolvedPath;
     }
 
     private static bool IsKnownCpuAlgorithmPath(string? exePath)

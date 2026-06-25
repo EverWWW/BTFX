@@ -1270,6 +1270,7 @@
     <system:String x:Key="MA.Task.History">历史任务</system:String>
     <system:String x:Key="MA.Task.NoTask">暂无任务。</system:String>
     <system:String x:Key="MA.Task.Analyzing">正在分析...</system:String>
+    <system:String x:Key="MA.Step4.Run.Cancel">停止分析</system:String>
 
     <!--  Dialog 弹窗  -->
     <system:String x:Key="MA.Dialog.VideoIncomplete.Title">视频不完整</system:String>
