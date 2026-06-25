@@ -1234,6 +1234,7 @@
                                                         x:Name="AnalysisPreviewMediaElement"
                                                         LoadedBehavior="Manual"
                                                         MediaEnded="AnalysisPreviewMediaElement_OnMediaEnded"
+                                                        MediaFailed="AnalysisPreviewMediaElement_OnMediaFailed"
                                                         MediaOpened="AnalysisPreviewMediaElement_OnMediaOpened"
                                                         Source="{Binding AnnotatedVideoUri}"
                                                         Stretch="Uniform"
@@ -1262,8 +1263,70 @@
                                                             FontFamily="{StaticResource AppFont}"
                                                             FontSize="14"
                                                             Foreground="#D2DDE8"
-                                                            Text="{DynamicResource AnalysisDetail.NoAnnotatedVideo}" />
+                                                            Text="{Binding AnalysisPreviewStatusText}" />
+                                                        <Border
+                                                            Width="420"
+                                                            Height="8"
+                                                            Margin="0,20,0,0"
+                                                            HorizontalAlignment="Center"
+                                                            Background="#334A5D70"
+                                                            CornerRadius="4"
+                                                            Visibility="{Binding IsAnalysisPreviewGenerating, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                            <ProgressBar
+                                                                Height="8"
+                                                                Background="Transparent"
+                                                                BorderThickness="0"
+                                                                Foreground="#E4004A"
+                                                                IsIndeterminate="True" />
+                                                        </Border>
                                                     </StackPanel>
+                                                    <Button
+                                                        x:Name="AnalysisPreviewOverlayPlayButton"
+                                                        Width="96"
+                                                        Height="96"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Background="#66000000"
+                                                        BorderBrush="#99FFFFFF"
+                                                        BorderThickness="1"
+                                                        Click="AnalysisPreviewPlayButton_OnClick"
+                                                        Cursor="Hand"
+                                                        Padding="0"
+                                                        RenderTransformOrigin="0.5,0.5"
+                                                        Visibility="Collapsed">
+                                                        <Button.Template>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border
+                                                                    x:Name="OverlayButtonBorder"
+                                                                    Background="{TemplateBinding Background}"
+                                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                                    CornerRadius="48">
+                                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                </Border>
+                                                                <ControlTemplate.Triggers>
+                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                        <Setter TargetName="OverlayButtonBorder" Property="Background" Value="#88000000" />
+                                                                        <Setter TargetName="OverlayButtonBorder" Property="BorderBrush" Value="#FFFFFFFF" />
+                                                                    </Trigger>
+                                                                    <Trigger Property="IsPressed" Value="True">
+                                                                        <Setter TargetName="OverlayButtonBorder" Property="Background" Value="#AA000000" />
+                                                                        <Setter TargetName="OverlayButtonBorder" Property="RenderTransform">
+                                                                            <Setter.Value>
+                                                                                <ScaleTransform ScaleX="0.96" ScaleY="0.96" />
+                                                                            </Setter.Value>
+                                                                        </Setter>
+                                                                    </Trigger>
+                                                                </ControlTemplate.Triggers>
+                                                            </ControlTemplate>
+                                                        </Button.Template>
+                                                        <materialDesign:PackIcon
+                                                            Width="54"
+                                                            Height="54"
+                                                            Margin="6,0,0,0"
+                                                            Foreground="White"
+                                                            Kind="Play" />
+                                                    </Button>
                                                 </Grid>
                                             </Border>
                                         </Grid>
@@ -1402,6 +1465,26 @@
                     </TabControl>
                 </Grid>
             </Grid>
+        </Border>
+        <Border
+            Background="#CCFFFFFF"
+            CornerRadius="8"
+            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar
+                    Width="220"
+                    Height="8"
+                    IsIndeterminate="True"
+                    Foreground="{StaticResource PrimaryPurpleBrush}" />
+                <TextBlock
+                    Margin="0,18,0,0"
+                    HorizontalAlignment="Center"
+                    FontFamily="{StaticResource AppFont}"
+                    FontSize="18"
+                    FontWeight="SemiBold"
+                    Foreground="{StaticResource PrimaryTextBrush}"
+                    Text="{DynamicResource AnalysisDetail.Loading}" />
+            </StackPanel>
         </Border>
     </Grid>
 </UserControl>

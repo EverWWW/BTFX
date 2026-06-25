@@ -33,6 +33,7 @@
     <system:String x:Key="Yes">是</system:String>
     <system:String x:Key="No">否</system:String>
     <system:String x:Key="Unknown">未知</system:String>
+    <system:String x:Key="UnknownPatient">未知患者</system:String>
     <system:String x:Key="Tip">提示</system:String>
 
     <!--  MainContainerView  -->
@@ -257,6 +258,7 @@
     <system:String x:Key="Report.ExportReport">导出报告</system:String>
     <system:String x:Key="Report.PrintReport">打印报告</system:String>
     <system:String x:Key="Report.ExportTitle">导出报告</system:String>
+    <system:String x:Key="Report.FileNamePrefix">报告</system:String>
     <system:String x:Key="Report.ExportFolderTitle">选择报告导出目录</system:String>
     <system:String x:Key="Report.PdfFilter">PDF文件 (*.pdf)|*.pdf</system:String>
     <system:String x:Key="Report.ExportUnavailable">该报告关联的测量或分析结果不可用，无法导出。</system:String>
@@ -280,6 +282,14 @@
     <system:String x:Key="Report.BatchExportSuccessFormat">成功导出 {0} 个报告。&#x0a;目录：{1}</system:String>
     <system:String x:Key="Report.BatchExportPartialFormat">成功导出 {0} 个报告，失败 {1} 个。&#x0a;失败报告：{2}</system:String>
     <system:String x:Key="Report.BatchExportCanceled">批量导出已取消。</system:String>
+    <system:String x:Key="Report.ExportProgress.ReadStage">读取报告数据</system:String>
+    <system:String x:Key="Report.ExportProgress.ReadMessage">正在读取报告 {0}...</system:String>
+    <system:String x:Key="Report.ExportProgress.PreviewStage">生成报告预览</system:String>
+    <system:String x:Key="Report.ExportProgress.PreviewMessage">正在生成 {0} 的预览文档...</system:String>
+    <system:String x:Key="Report.ExportProgress.WriteStage">导出PDF</system:String>
+    <system:String x:Key="Report.ExportProgress.WriteMessage">正在写入 {0}...</system:String>
+    <system:String x:Key="Report.ExportProgress.SaveStage">保存导出记录</system:String>
+    <system:String x:Key="Report.ExportProgress.SaveMessage">正在更新报告导出路径 {0}...</system:String>
     <system:String x:Key="Report.OpenPreviewFailedFormat">打开报告预览失败：{0}</system:String>
     <system:String x:Key="Report.ResumeFailedFormat">继续处理报告失败：{0}</system:String>
     <system:String x:Key="Report.NoDataForPreview">未找到报告数据，无法打开预览。</system:String>
@@ -513,6 +523,10 @@
     <system:String x:Key="AnalysisDetail.ChartArea">曲线图预留区域</system:String>
     <system:String x:Key="AnalysisDetail.VideoPreviewArea">视频预览区域</system:String>
     <system:String x:Key="AnalysisDetail.NoAnnotatedVideo">暂无可播放的分析标注视频</system:String>
+    <system:String x:Key="AnalysisDetail.Loading">正在加载分析详情...</system:String>
+    <system:String x:Key="AnalysisDetail.PreviewGenerating">分析预览视频正在生成，请稍候...</system:String>
+    <system:String x:Key="AnalysisDetail.PreviewGeneratePending">分析预览视频尚未生成，正在后台准备...</system:String>
+    <system:String x:Key="AnalysisDetail.PreviewGenerateFailed">分析预览视频生成失败，请稍后重新打开详情页重试</system:String>
     <system:String x:Key="AnalysisDetail.LeftKnee">左膝</system:String>
     <system:String x:Key="AnalysisDetail.RightKnee">右膝</system:String>
     <system:String x:Key="AnalysisDetail.LeftHip">左髋</system:String>
@@ -772,6 +786,47 @@
     <system:String x:Key="DataManagement.ExportArchive.BatchMessage">正在准备批量测量结果包...</system:String>
     <system:String x:Key="DataManagement.ImportArchive.Stage">正在导入</system:String>
     <system:String x:Key="DataManagement.ImportArchive.Message">正在读取测量结果包...</system:String>
+    <system:String x:Key="ArchiveExport.NoMeasurements">没有可导出的测量记录。</system:String>
+    <system:String x:Key="ArchiveExport.DefaultMeasurementName">测量 {0}</system:String>
+    <system:String x:Key="ArchiveExport.SuccessFormat">成功导出 {0} 条测量结果。</system:String>
+    <system:String x:Key="ArchiveExport.FailedFormat">导出失败：{0}</system:String>
+    <system:String x:Key="ArchiveExport.Progress.PrepareStage">准备导出</system:String>
+    <system:String x:Key="ArchiveExport.Progress.PrepareMessage">正在准备测量结果包...</system:String>
+    <system:String x:Key="ArchiveExport.Progress.ReadMeasurementStage">读取测量数据</system:String>
+    <system:String x:Key="ArchiveExport.Progress.ReadMeasurementMessage">正在读取 {0} 的基础信息...</system:String>
+    <system:String x:Key="ArchiveExport.Progress.WriteSnapshotStage">写入基础信息</system:String>
+    <system:String x:Key="ArchiveExport.Progress.WriteSnapshotMessage">正在写入患者、测量和报告快照...</system:String>
+    <system:String x:Key="ArchiveExport.Progress.PackageAnalysisStage">打包分析文件</system:String>
+    <system:String x:Key="ArchiveExport.Progress.PackageAnalysisMessage">正在打包分析结果 {0}...</system:String>
+    <system:String x:Key="ArchiveExport.Progress.NoResultFiles">没有需要写入的结果文件。</system:String>
+    <system:String x:Key="ArchiveExport.Progress.WriteResultFileStage">写入结果文件</system:String>
+    <system:String x:Key="ArchiveExport.Progress.WriteResultFileMessage">正在写入 {0}...</system:String>
+    <system:String x:Key="ArchiveExport.Progress.WriteResultCompleteStage">结果文件写入完成</system:String>
+    <system:String x:Key="ArchiveExport.Progress.WriteResultCompleteMessage">已写入 {0} 个结果文件。</system:String>
+    <system:String x:Key="ArchiveExport.Progress.MeasurementCompleteStage">测量打包完成</system:String>
+    <system:String x:Key="ArchiveExport.Progress.MeasurementCompleteMessage">已完成 {0}。</system:String>
+    <system:String x:Key="ArchiveExport.Progress.CompleteStage">导出完成</system:String>
+    <system:String x:Key="ArchiveExport.Progress.CompleteMessage">测量结果包已生成。</system:String>
+    <system:String x:Key="ArchiveImport.FileMissing">结果包文件不存在。</system:String>
+    <system:String x:Key="ArchiveImport.InvalidPackage">结果包格式无效或没有测量记录。</system:String>
+    <system:String x:Key="ArchiveImport.PackageValidationMessage">由测量结果包导入，原始视频未随包导入。</system:String>
+    <system:String x:Key="ArchiveImport.ImportedRemark">由测量结果包导入，包内不包含原始视频；如需重新分析，请重新采集或上传视频。</system:String>
+    <system:String x:Key="ArchiveImport.SuccessFormat">成功导入 {0} 条测量结果。</system:String>
+    <system:String x:Key="ArchiveImport.NoImportedMeasurements">没有成功导入任何测量结果。</system:String>
+    <system:String x:Key="ArchiveImport.FailedFormat">导入失败：{0}</system:String>
+    <system:String x:Key="ArchiveImport.Progress.PrepareStage">准备导入</system:String>
+    <system:String x:Key="ArchiveImport.Progress.PrepareMessage">正在读取测量结果包...</system:String>
+    <system:String x:Key="ArchiveImport.Progress.ImportMeasurementStage">导入测量数据</system:String>
+    <system:String x:Key="ArchiveImport.Progress.ImportMeasurementMessage">正在导入 {0}...</system:String>
+    <system:String x:Key="ArchiveImport.Progress.RestoreFilesStage">恢复结果文件</system:String>
+    <system:String x:Key="ArchiveImport.Progress.RestoreAnalysisMessage">正在恢复分析结果 {0}...</system:String>
+    <system:String x:Key="ArchiveImport.Progress.RestoreFileMessage">正在恢复 {0}...</system:String>
+    <system:String x:Key="ArchiveImport.Progress.RestoreCompleteStage">结果文件恢复完成</system:String>
+    <system:String x:Key="ArchiveImport.Progress.RestoreCompleteMessage">已恢复 {0} 个结果文件。</system:String>
+    <system:String x:Key="ArchiveImport.Progress.MeasurementCompleteStage">测量导入完成</system:String>
+    <system:String x:Key="ArchiveImport.Progress.MeasurementCompleteMessage">已完成 {0}。</system:String>
+    <system:String x:Key="ArchiveImport.Progress.CompleteStage">导入完成</system:String>
+    <system:String x:Key="ArchiveImport.Progress.CompleteMessage">测量结果包已导入。</system:String>
     <system:String x:Key="DataManagement.ExportCanceled">导出已取消。</system:String>
     <system:String x:Key="DataManagement.BatchExportCanceled">批量导出已取消。</system:String>
     <system:String x:Key="DataManagement.ImportCanceled">导入已取消。</system:String>
@@ -1000,6 +1055,7 @@
 
     <!--  Step3 回放检查  -->
     <system:String x:Key="MA.Step3.Title">回放检查</system:String>
+    <system:String x:Key="MA.Step3.PreviewQualityHint">流畅预览模式：画面已压缩，不影响原始视频质量</system:String>
     <system:String x:Key="MA.Step3.FrontView">正面视角</system:String>
     <system:String x:Key="MA.Step3.SideView">侧面视角</system:String>
     <system:String x:Key="MA.Step3.Player.Placeholder">视频区域（待接入播放器）</system:String>

@@ -1145,17 +1145,14 @@ public partial class Step4AnalyzeViewModel : ObservableObject
                 result.Id = savedId;
                 AddLog($"分析结果已保存 (ID: {savedId})");
 
-                AddLog("正在生成分析结果包...");
-                var packageResult = await _analysisPackageService.CreatePackageAsync(result, CurrentMeasurement);
-                AddLog(packageResult.Success
-                    ? $"分析结果包已生成: {Path.GetFileName(packageResult.PackagePath)}"
-                    : $"⚠ {packageResult.Message}");
-
                 // 更新测量记录状态为已完成
                 if (CurrentMeasurement is not null)
                 {
                     await UpdateCurrentMeasurementStatusAsync(MeasurementStatus.Completed, "测量状态已更新为已完成");
                 }
+
+                StartPackageGeneration(result, CurrentMeasurement);
+                StartAnalysisPreviewGeneration(result);
             }
             else
             {
@@ -1207,6 +1204,52 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         }
 
         _logHelper?.Information($"分析完成，结果 ID: {result.Id}，视频可用: {!HasVideoError}，曲线可用: {HasChartData}");
+    }
+
+    private void StartAnalysisPreviewGeneration(AnalysisResult result)
+    {
+        if (string.IsNullOrWhiteSpace(result.OutputDirectory) || !Directory.Exists(result.OutputDirectory))
+        {
+            return;
+        }
+
+        AddLog("分析详情预览视频将在后台生成");
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var previewPath = await _analysisService.EnsureAnalysisPreviewVideoAsync(result.OutputDirectory);
+                AddLog(!string.IsNullOrWhiteSpace(previewPath) && File.Exists(previewPath)
+                    ? $"分析详情预览视频已生成: {Path.GetFileName(previewPath)}"
+                    : "⚠ 分析详情预览视频后台生成失败");
+            }
+            catch (Exception ex)
+            {
+                AddLog($"⚠ 分析详情预览视频后台生成失败: {ex.Message}");
+                _logHelper?.Error("分析详情预览视频后台生成失败", ex);
+            }
+        });
+    }
+
+    private void StartPackageGeneration(AnalysisResult result, MeasurementRecord? measurement)
+    {
+        AddLog("分析结果包将在后台生成");
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(5));
+                var packageResult = await _analysisPackageService.CreatePackageAsync(result, measurement);
+                AddLog(packageResult.Success
+                    ? $"分析结果包已生成: {Path.GetFileName(packageResult.PackagePath)}"
+                    : $"⚠ {packageResult.Message}");
+            }
+            catch (Exception ex)
+            {
+                AddLog($"⚠ 分析结果包后台生成失败: {ex.Message}");
+                _logHelper?.Error("分析结果包后台生成失败", ex);
+            }
+        });
     }
 
     /// <summary>
@@ -1401,29 +1444,36 @@ public partial class Step4AnalyzeViewModel : ObservableObject
 
         var gaitCycle = root["gait_cycle"] as JsonObject;
         var sp = root["spatiotemporal_parameters"] as JsonObject;
+        var phaseMetrics = GaitPhaseMetricsCalculator.Calculate(gaitCycle);
+        var fps = ReadDouble(root["video_info"] as JsonObject, "fps");
+        var eventPhaseMetrics = GaitPhaseMetricsCalculator.CalculateFromEvents(root["gait_events"] as JsonObject, fps);
         result.GaitCycleDurationS ??= ReadDouble(gaitCycle, "mean_cycle_duration_sec")
             ?? ReadDouble(gaitCycle, "cycle_time_sec")
             ?? AverageCycleDuration(gaitCycle);
-        result.StanceTimeS ??= ReadDouble(sp, "mean_stance_time_sec");
-        result.SwingTimeS ??= ReadDouble(sp, "mean_swing_time_sec");
-        result.DoubleSupportTimeS ??= ReadDouble(sp, "mean_double_support_time_sec");
-        result.SingleSupportTimeS ??= ReadDouble(sp, "mean_single_support_time_sec");
+        result.StanceTimeS ??= ReadDouble(sp, "mean_stance_time_sec") ?? phaseMetrics.MeanStanceTimeSec ?? eventPhaseMetrics.MeanStanceTimeSec;
+        result.SwingTimeS ??= ReadDouble(sp, "mean_swing_time_sec") ?? phaseMetrics.MeanSwingTimeSec ?? eventPhaseMetrics.MeanSwingTimeSec;
+        result.DoubleSupportTimeS ??= ReadDouble(sp, "mean_double_support_time_sec") ?? phaseMetrics.MeanDoubleSupportTimeSec;
+        result.SingleSupportTimeS ??= ReadDouble(sp, "mean_single_support_time_sec") ?? phaseMetrics.MeanSingleSupportTimeSec;
         result.StepLengthM ??= ReadDouble(sp, "mean_step_length_m");
         result.StrideLengthM ??= ReadDouble(sp, "mean_stride_length_m");
         result.GaitSpeedMPerS ??= ReadDouble(sp, "gait_velocity_m_per_sec") ?? ReadDouble(sp, "gait_speed_m_per_s");
+        result.LeftStanceRatioPct ??= ReadDouble(root, "left_stance_ratio_pct") ?? eventPhaseMetrics.LeftStanceRatioPct;
+        result.RightStanceRatioPct ??= ReadDouble(root, "right_stance_ratio_pct") ?? eventPhaseMetrics.RightStanceRatioPct;
+        result.LeftSwingRatioPct ??= ReadDouble(root, "left_swing_ratio_pct") ?? eventPhaseMetrics.LeftSwingRatioPct;
+        result.RightSwingRatioPct ??= ReadDouble(root, "right_swing_ratio_pct") ?? eventPhaseMetrics.RightSwingRatioPct;
 
         var jointAngles = root["joint_angles"] as JsonObject;
         var segmentAngles = root["segment_angles"] as JsonObject;
         result.KinematicSummary ??= new KinematicSummary();
         result.KinematicSummary.HipRomDeg ??= Average(
-            ReadDouble(jointAngles?["left_hip"] as JsonObject, "rom_deg"),
-            ReadDouble(jointAngles?["right_hip"] as JsonObject, "rom_deg"));
+            ReadJointRom(jointAngles, "left_hip", "left hip"),
+            ReadJointRom(jointAngles, "right_hip", "right hip"));
         result.KinematicSummary.KneeRomDeg ??= Average(
-            ReadDouble(jointAngles?["left_knee"] as JsonObject, "rom_deg"),
-            ReadDouble(jointAngles?["right_knee"] as JsonObject, "rom_deg"));
+            ReadJointRom(jointAngles, "left_knee", "left knee"),
+            ReadJointRom(jointAngles, "right_knee", "right knee"));
         result.KinematicSummary.AnkleRomDeg ??= Average(
-            ReadDouble(jointAngles?["left_ankle"] as JsonObject, "rom_deg"),
-            ReadDouble(jointAngles?["right_ankle"] as JsonObject, "rom_deg"));
+            ReadJointRom(jointAngles, "left_ankle", "left ankle"),
+            ReadJointRom(jointAngles, "right_ankle", "right ankle"));
         result.KinematicSummary.PelvisCoronalRomDeg ??= Difference(
             ReadDouble(segmentAngles?["pelvis_tilt_deg"] as JsonObject, "max"),
             ReadDouble(segmentAngles?["pelvis_tilt_deg"] as JsonObject, "min"));
@@ -1443,18 +1493,65 @@ public partial class Step4AnalyzeViewModel : ObservableObject
 
     private static double? AverageCycleDuration(JsonObject? gaitCycle)
     {
-        if (gaitCycle?["cycles"] is not JsonArray cycles)
+        var cycles = EnumerateCycles(gaitCycle).ToArray();
+        if (cycles.Length == 0)
         {
             return null;
         }
 
         var durations = cycles
-            .OfType<JsonObject>()
             .Select(cycle => ReadDouble(cycle, "duration_sec"))
             .Where(value => value.HasValue)
             .Select(value => value!.Value)
             .ToArray();
         return durations.Length == 0 ? null : durations.Average();
+    }
+
+    private static IEnumerable<JsonObject> EnumerateCycles(JsonObject? gaitCycle)
+    {
+        if (gaitCycle is null)
+        {
+            yield break;
+        }
+
+        foreach (var key in new[] { "cycles", "left_cycles", "right_cycles" })
+        {
+            if (gaitCycle[key] is not JsonArray cycles)
+            {
+                continue;
+            }
+
+            foreach (var node in cycles.OfType<JsonObject>())
+            {
+                yield return node;
+            }
+        }
+    }
+
+    private static double? ReadJointRom(JsonObject? jointAngles, params string[] names)
+    {
+        var joint = ReadObject(jointAngles, names);
+        return ReadDouble(joint, "rom_deg")
+               ?? Difference(ReadDouble(joint, "max_flexion_deg"), ReadDouble(joint, "min_flexion_deg"))
+               ?? Difference(ReadDouble(joint, "max"), ReadDouble(joint, "min"));
+    }
+
+    private static JsonObject? ReadObject(JsonObject? obj, params string[] names)
+    {
+        if (obj is null)
+        {
+            return null;
+        }
+
+        foreach (var name in names)
+        {
+            if (obj[name] is JsonObject value)
+            {
+                return value;
+            }
+        }
+
+        return null;
     }
 
     private static double? Average(double? left, double? right)

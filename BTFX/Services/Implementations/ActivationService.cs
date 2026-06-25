@@ -45,13 +45,18 @@ public class ActivationService : IActivationService
         get
         {
             var saved = ReadLicenseFile();
-            if (saved == null)
+            if (saved == null || string.IsNullOrWhiteSpace(saved.LicenseKey))
+            {
+                return false;
+            }
+
+            if (!string.Equals(saved.LicenseKey, GenerateLicenseKey(saved), StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
             var current = GetCurrentMachineInfo();
-            return string.Equals(saved.LicenseKey, GenerateLicenseKey(current), StringComparison.OrdinalIgnoreCase);
+            return IsSameActivatedMachine(saved, current);
         }
     }
 
@@ -215,6 +220,82 @@ public class ActivationService : IActivationService
     {
         var json = JsonSerializer.Serialize(softKey, JsonOptions);
         File.WriteAllBytes(_licenseFilePath, ZipString(EncodeBase62(json)));
+    }
+
+    private static bool IsSameActivatedMachine(SoftKey saved, SoftKey current)
+    {
+        if (!string.Equals(saved.EquipmentModel, current.EquipmentModel, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var checkedStableHardware = false;
+        if (IsRealHardwareValue(saved.CpuId, "CPU") && IsRealHardwareValue(current.CpuId, "CPU"))
+        {
+            checkedStableHardware = true;
+            if (!string.Equals(saved.CpuId, current.CpuId, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+        }
+
+        if (IsRealHardwareValue(saved.BiosId, "BIOS") && IsRealHardwareValue(current.BiosId, "BIOS"))
+        {
+            checkedStableHardware = true;
+            if (!string.Equals(saved.BiosId, current.BiosId, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+        }
+
+        if (checkedStableHardware)
+        {
+            return true;
+        }
+
+        return SameNonEmpty(saved.UniqCode, current.UniqCode)
+            || SameNonEmpty(saved.HdId, current.HdId)
+            || SameNonEmpty(saved.MacAddress, current.MacAddress);
+    }
+
+    private static bool SameNonEmpty(string? left, string? right)
+    {
+        return !string.IsNullOrWhiteSpace(left)
+            && !string.IsNullOrWhiteSpace(right)
+            && string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsRealHardwareValue(string? value, string fallback)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var normalized = value.Trim();
+        if (string.Equals(normalized, fallback, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var knownPlaceholders = new[]
+        {
+            "Default string",
+            "To Be Filled By O.E.M.",
+            "To be filled by O.E.M.",
+            "System Serial Number",
+            "None",
+            "Unknown",
+            "Not Specified",
+            "Not Available"
+        };
+
+        if (knownPlaceholders.Any(x => string.Equals(normalized, x, StringComparison.OrdinalIgnoreCase)))
+        {
+            return false;
+        }
+
+        return normalized.Any(ch => ch != '0' && ch != '-' && ch != '_');
     }
 
     private static string QueryFirst(string wmiClass, string property)

@@ -1,5 +1,6 @@
 ﻿using BTFX.ViewModels;
 using MaterialDesignThemes.Wpf;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -21,6 +22,7 @@ public partial class MeasurementDetailDialog
     private bool _isAnalysisPreviewPlaying;
     private bool _isDraggingAnalysisPreviewSlider;
     private bool _isAnalysisPreviewCompleted;
+    private bool _isAnalysisPreviewMediaReady;
 
     public MeasurementDetailDialog()
     {
@@ -44,6 +46,7 @@ public partial class MeasurementDetailDialog
         if (e.OldValue is GaitAnalysisDetailViewModel oldAnalysisVm)
         {
             oldAnalysisVm.CloseRequested -= OnCloseRequested;
+            oldAnalysisVm.PropertyChanged -= OnAnalysisViewModelPropertyChanged;
         }
 
         if (e.NewValue is MeasurementDetailViewModel newVm)
@@ -54,10 +57,21 @@ public partial class MeasurementDetailDialog
         if (e.NewValue is GaitAnalysisDetailViewModel newAnalysisVm)
         {
             newAnalysisVm.CloseRequested += OnCloseRequested;
+            newAnalysisVm.PropertyChanged += OnAnalysisViewModelPropertyChanged;
         }
 
         _currentMeasurementViewModel = e.NewValue as MeasurementDetailViewModel;
         _currentAnalysisViewModel = e.NewValue as GaitAnalysisDetailViewModel;
+        UpdateAnalysisPreviewOverlayButton();
+    }
+
+    private void OnAnalysisViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(GaitAnalysisDetailViewModel.HasAnnotatedVideo)
+            or nameof(GaitAnalysisDetailViewModel.AnnotatedVideoUri))
+        {
+            _ = Dispatcher.BeginInvoke(ResetAnalysisPreviewMedia, DispatcherPriority.Background);
+        }
     }
 
     private void OnCloseRequested()
@@ -99,6 +113,10 @@ public partial class MeasurementDetailDialog
                  && ReferenceEquals(selectedVideoItem, VideoPreviewTabItem))
         {
             ResetVideoPreviewScrollToTop();
+            _ = Dispatcher.BeginInvoke(new Action(() =>
+            {
+                _currentAnalysisViewModel?.EnsureAnalysisPreviewReady();
+            }), DispatcherPriority.Background);
         }
     }
 
@@ -174,6 +192,7 @@ public partial class MeasurementDetailDialog
 
     private void AnalysisPreviewMediaElement_OnMediaOpened(object sender, RoutedEventArgs e)
     {
+        _isAnalysisPreviewMediaReady = true;
         AnalysisPreviewMediaElement.SpeedRatio = 1.0;
         var duration = AnalysisPreviewMediaElement.NaturalDuration.HasTimeSpan
             ? AnalysisPreviewMediaElement.NaturalDuration.TimeSpan
@@ -197,6 +216,15 @@ public partial class MeasurementDetailDialog
         }
     }
 
+    private void AnalysisPreviewMediaElement_OnMediaFailed(object sender, ExceptionRoutedEventArgs e)
+    {
+        _isAnalysisPreviewMediaReady = false;
+        _isAnalysisPreviewCompleted = false;
+        SetAnalysisPreviewPlaying(false);
+        AnalysisPreviewProgressSlider.Value = 0;
+        AnalysisPreviewCurrentTimeText.Text = FormatPlaybackTime(TimeSpan.Zero);
+    }
+
     private void AnalysisPreviewMediaElement_OnMediaEnded(object sender, RoutedEventArgs e)
     {
         _isAnalysisPreviewCompleted = true;
@@ -210,7 +238,7 @@ public partial class MeasurementDetailDialog
 
     private void AnalysisPreviewPlayButton_OnClick(object sender, RoutedEventArgs e)
     {
-        if (_currentAnalysisViewModel?.HasAnnotatedVideo != true)
+        if (_currentAnalysisViewModel?.HasAnnotatedVideo != true || !_isAnalysisPreviewMediaReady)
         {
             return;
         }
@@ -290,7 +318,7 @@ public partial class MeasurementDetailDialog
 
     private void SeekAnalysisPreview(double seconds)
     {
-        if (_currentAnalysisViewModel?.HasAnnotatedVideo != true)
+        if (_currentAnalysisViewModel?.HasAnnotatedVideo != true || !_isAnalysisPreviewMediaReady)
         {
             return;
         }
@@ -307,6 +335,7 @@ public partial class MeasurementDetailDialog
     {
         _isAnalysisPreviewPlaying = isPlaying;
         AnalysisPreviewPlayIcon.Kind = isPlaying ? PackIconKind.Pause : PackIconKind.Play;
+        UpdateAnalysisPreviewOverlayButton();
         if (isPlaying)
         {
             _analysisPreviewTimer.Start();
@@ -315,6 +344,43 @@ public partial class MeasurementDetailDialog
         {
             _analysisPreviewTimer.Stop();
         }
+    }
+
+    private void UpdateAnalysisPreviewOverlayButton()
+    {
+        if (AnalysisPreviewOverlayPlayButton is null)
+        {
+            return;
+        }
+
+        AnalysisPreviewOverlayPlayButton.Visibility =
+            _currentAnalysisViewModel?.HasAnnotatedVideo == true && _isAnalysisPreviewMediaReady && !_isAnalysisPreviewPlaying
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+    }
+
+    private void ResetAnalysisPreviewMedia()
+    {
+        if (AnalysisPreviewMediaElement is null)
+        {
+            return;
+        }
+
+        _isAnalysisPreviewMediaReady = false;
+        _isAnalysisPreviewCompleted = false;
+        SetAnalysisPreviewPlaying(false);
+        AnalysisPreviewProgressSlider.Value = 0;
+        AnalysisPreviewCurrentTimeText.Text = FormatPlaybackTime(TimeSpan.Zero);
+        _currentAnalysisViewModel?.SetVideoPlaybackTime(0);
+
+        AnalysisPreviewMediaElement.Stop();
+        AnalysisPreviewMediaElement.SetCurrentValue(MediaElement.SourceProperty, null);
+        if (_currentAnalysisViewModel?.AnnotatedVideoUri is { } uri)
+        {
+            AnalysisPreviewMediaElement.SetCurrentValue(MediaElement.SourceProperty, uri);
+        }
+
+        UpdateAnalysisPreviewOverlayButton();
     }
 
     private static string FormatPlaybackTime(TimeSpan time)
@@ -365,6 +431,11 @@ public partial class MeasurementDetailDialog
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
+        if (_currentAnalysisViewModel is not null)
+        {
+            _currentAnalysisViewModel.PropertyChanged -= OnAnalysisViewModelPropertyChanged;
+        }
+
         _analysisPreviewTimer.Stop();
         _analysisPreviewTimer.Tick -= AnalysisPreviewTimer_OnTick;
         AnalysisPreviewMediaElement.Stop();

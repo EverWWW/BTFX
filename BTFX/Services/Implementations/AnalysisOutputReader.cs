@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using BTFX.Helpers;
 using BTFX.Models.Analysis;
 using BTFX.Services.Interfaces;
 
@@ -75,6 +76,9 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
         var jointAngles = root["joint_angles"] as JsonObject;
         var quality = root["quality_control"] as JsonObject;
         var status = ReadString(root, "status");
+        var phaseMetrics = GaitPhaseMetricsCalculator.Calculate(gaitCycle);
+        var fps = ReadDouble(root["video_info"] as JsonObject, "fps");
+        var eventPhaseMetrics = GaitPhaseMetricsCalculator.CalculateFromEvents(root["gait_events"] as JsonObject, fps);
 
         var summary = new AnalysisSummary
         {
@@ -101,10 +105,14 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
                 StrideLengthM = ReadDouble(spatiotemporal, "mean_stride_length_m"),
                 CadenceStepPerMin = ReadDouble(spatiotemporal, "cadence_step_per_min"),
                 GaitSpeedMPerS = ReadDouble(spatiotemporal, "gait_velocity_m_per_sec") ?? ReadDouble(spatiotemporal, "gait_speed_m_per_s"),
-                StanceTimeS = ReadDouble(spatiotemporal, "mean_stance_time_sec"),
-                SwingTimeS = ReadDouble(spatiotemporal, "mean_swing_time_sec"),
-                DoubleSupportTimeS = ReadDouble(spatiotemporal, "mean_double_support_time_sec"),
-                SingleSupportTimeS = ReadDouble(spatiotemporal, "mean_single_support_time_sec")
+                StanceTimeS = ReadDouble(spatiotemporal, "mean_stance_time_sec") ?? phaseMetrics.MeanStanceTimeSec ?? eventPhaseMetrics.MeanStanceTimeSec,
+                SwingTimeS = ReadDouble(spatiotemporal, "mean_swing_time_sec") ?? phaseMetrics.MeanSwingTimeSec ?? eventPhaseMetrics.MeanSwingTimeSec,
+                DoubleSupportTimeS = ReadDouble(spatiotemporal, "mean_double_support_time_sec") ?? phaseMetrics.MeanDoubleSupportTimeSec,
+                SingleSupportTimeS = ReadDouble(spatiotemporal, "mean_single_support_time_sec") ?? phaseMetrics.MeanSingleSupportTimeSec,
+                LeftStanceRatioPct = ReadDouble(root, "left_stance_ratio_pct") ?? eventPhaseMetrics.LeftStanceRatioPct,
+                RightStanceRatioPct = ReadDouble(root, "right_stance_ratio_pct") ?? eventPhaseMetrics.RightStanceRatioPct,
+                LeftSwingRatioPct = ReadDouble(root, "left_swing_ratio_pct") ?? eventPhaseMetrics.LeftSwingRatioPct,
+                RightSwingRatioPct = ReadDouble(root, "right_swing_ratio_pct") ?? eventPhaseMetrics.RightSwingRatioPct
             },
             KinematicSummary = new KinematicSummaryDto
             {
@@ -345,17 +353,38 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
 
     private static double? AverageCycleDuration(JsonObject? gaitCycle)
     {
-        if (gaitCycle?["cycles"] is not JsonArray cycles || cycles.Count == 0)
+        var cycles = EnumerateCycles(gaitCycle).ToArray();
+        if (cycles.Length == 0)
         {
             return null;
         }
 
         var values = cycles
-            .OfType<JsonObject>()
             .Select(cycle => ReadDouble(cycle, "duration_sec"))
             .Where(value => value.HasValue)
             .Select(value => value!.Value)
             .ToList();
         return values.Count == 0 ? null : values.Average();
+    }
+
+    private static IEnumerable<JsonObject> EnumerateCycles(JsonObject? gaitCycle)
+    {
+        if (gaitCycle is null)
+        {
+            yield break;
+        }
+
+        foreach (var key in new[] { "cycles", "left_cycles", "right_cycles" })
+        {
+            if (gaitCycle[key] is not JsonArray cycles)
+            {
+                continue;
+            }
+
+            foreach (var node in cycles.OfType<JsonObject>())
+            {
+                yield return node;
+            }
+        }
     }
 }

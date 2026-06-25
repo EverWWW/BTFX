@@ -326,18 +326,36 @@
                     <RowDefinition Height="36" />
                 </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0" Orientation="Horizontal">
-                    <Border
-                        Width="3"
-                        Height="16"
-                        VerticalAlignment="Center"
-                        Background="#F2306A"
-                        CornerRadius="2" />
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <Border
+                            Width="3"
+                            Height="16"
+                            VerticalAlignment="Center"
+                            Background="#F2306A"
+                            CornerRadius="2" />
+                        <TextBlock
+                            Margin="8,0,0,0"
+                            Style="{StaticResource ReviewTitleTextStyle}"
+                            Text="{DynamicResource MA.Step3.Title}" />
+                    </StackPanel>
+
                     <TextBlock
-                        Margin="8,0,0,0"
-                        Style="{StaticResource ReviewTitleTextStyle}"
-                        Text="{DynamicResource MA.Step3.Title}" />
-                </StackPanel>
+                        Grid.Column="1"
+                        Margin="16,0,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        FontFamily="{StaticResource AppFont}"
+                        FontSize="13"
+                        Foreground="#999999"
+                        Text="{DynamicResource MA.Step3.PreviewQualityHint}"
+                        TextTrimming="CharacterEllipsis" />
+                </Grid>
 
                 <Border
                     Grid.Row="2"
@@ -386,6 +404,54 @@
                             FontFamily="{StaticResource AppFont}"
                             FontSize="14"
                             Foreground="#EAEAEA" />
+
+                        <Button
+                            x:Name="ReviewOverlayPlayButton"
+                            Width="96"
+                            Height="96"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Background="#66000000"
+                            BorderBrush="#99FFFFFF"
+                            BorderThickness="1"
+                            Click="PlayPauseButton_OnClick"
+                            Cursor="Hand"
+                            Padding="0"
+                            RenderTransformOrigin="0.5,0.5"
+                            Visibility="Collapsed">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border
+                                        x:Name="OverlayButtonBorder"
+                                        Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        CornerRadius="48">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="OverlayButtonBorder" Property="Background" Value="#88000000" />
+                                            <Setter TargetName="OverlayButtonBorder" Property="BorderBrush" Value="#FFFFFFFF" />
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="OverlayButtonBorder" Property="Background" Value="#AA000000" />
+                                            <Setter TargetName="OverlayButtonBorder" Property="RenderTransform">
+                                                <Setter.Value>
+                                                    <ScaleTransform ScaleX="0.96" ScaleY="0.96" />
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <materialDesign:PackIcon
+                                Width="54"
+                                Height="54"
+                                Margin="6,0,0,0"
+                                Foreground="White"
+                                Kind="Play" />
+                        </Button>
                     </Grid>
                 </Border>
 

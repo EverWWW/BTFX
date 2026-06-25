@@ -981,7 +981,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
             {
                 Title = L("Report.ExportTitle"),
                 Filter = L("Report.PdfFilter"),
-                FileName = $"报告_{fullReport!.ReportNumber}"
+                FileName = $"{L("Report.FileNamePrefix")}_{fullReport!.ReportNumber}"
             };
 
             if (dialog.ShowDialog(Application.Current.MainWindow) == true)
@@ -1041,8 +1041,8 @@ public partial class ReportViewModel : ObservableObject, IDisposable
     {
         progress?.Report(new OperationProgressInfo(
             CalculateBatchProgress(index, total, 0.05),
-            "读取报告数据",
-            $"正在读取报告 {Path.GetFileNameWithoutExtension(fileName)}..."));
+            L("Report.ExportProgress.ReadStage"),
+            L("Report.ExportProgress.ReadMessage", Path.GetFileNameWithoutExtension(fileName))));
 
         var report = await _reportService.GetReportWithAnalysisDataAsync(reportId);
         if (!HasUsableReportDataSource(report))
@@ -1053,8 +1053,8 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
         progress?.Report(new OperationProgressInfo(
             CalculateBatchProgress(index, total, 0.35),
-            "生成报告预览",
-            $"正在生成 {Path.GetFileName(fileName)} 的预览文档..."));
+            L("Report.ExportProgress.PreviewStage"),
+            L("Report.ExportProgress.PreviewMessage", Path.GetFileName(fileName))));
 
         var originalStatus = report!.Status;
         report.Status = ReportStatus.Completed;
@@ -1067,8 +1067,8 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
         progress?.Report(new OperationProgressInfo(
             CalculateBatchProgress(index, total, 0.55),
-            "导出PDF",
-            $"正在写入 {Path.GetFileName(fileName)}..."));
+            L("Report.ExportProgress.WriteStage"),
+            L("Report.ExportProgress.WriteMessage", Path.GetFileName(fileName))));
 
         var success = PrintHelper.ExportDocumentToPdf(previewDocument, fileName);
 
@@ -1080,8 +1080,8 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
         progress?.Report(new OperationProgressInfo(
             CalculateBatchProgress(index, total, 0.82),
-            "保存导出记录",
-            $"正在更新报告导出路径 {Path.GetFileName(fileName)}..."));
+            L("Report.ExportProgress.SaveStage"),
+            L("Report.ExportProgress.SaveMessage", Path.GetFileName(fileName))));
 
         report.PdfFilePath = fileName;
         report.Status = ReportStatus.Completed;
@@ -1176,11 +1176,11 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         }
     }
 
-    private static string BuildReportPdfFileName(Report report)
+    private string BuildReportPdfFileName(Report report)
     {
-        var patientName = report.Patient?.Name ?? report.MeasurementRecord?.Patient?.Name ?? "未知患者";
+        var patientName = report.Patient?.Name ?? report.MeasurementRecord?.Patient?.Name ?? L("UnknownPatient");
         var dateText = report.ReportDate == default ? DateTime.Now.ToString("yyyyMMdd_HHmmss") : report.ReportDate.ToString("yyyyMMdd_HHmmss");
-        return MakeSafeFileName($"报告_{report.ReportNumber}_{patientName}_{dateText}.pdf");
+        return MakeSafeFileName($"{L("Report.FileNamePrefix")}_{report.ReportNumber}_{patientName}_{dateText}.pdf");
     }
 
     private static string GetAvailableFilePath(string filePath)

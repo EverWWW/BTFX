@@ -22,6 +22,7 @@ namespace BTFX.Services.Implementations;
 public class ExportImportService : IExportImportService
 {
     private readonly ILogHelper? _logHelper;
+    private readonly ILocalizationService? _localizationService;
     private static readonly JsonSerializerOptions ArchiveJsonOptions = new()
     {
         WriteIndented = true
@@ -32,6 +33,7 @@ public class ExportImportService : IExportImportService
         try
         {
             _logHelper = App.Services?.GetService(typeof(ILogHelper)) as ILogHelper;
+            _localizationService = App.Services?.GetService(typeof(ILocalizationService)) as ILocalizationService;
         }
         catch { }
     }
@@ -51,7 +53,7 @@ public class ExportImportService : IExportImportService
                 年龄 = p.Age?.ToString() ?? "",
                 电话 = p.Phone,
                 证件号 = p.IdNumber ?? "",
-                住院号 = p.HospitalNumber ?? "",
+                就诊号 = p.HospitalNumber ?? "",
                 身高cm = p.Height?.ToString("F1") ?? "",
                 体重kg = p.Weight?.ToString("F1") ?? "",
                 地址 = p.Address ?? "",
@@ -123,11 +125,11 @@ public class ExportImportService : IExportImportService
     {
         try
         {
-            ReportProgress(progress, 0, "准备导出", "正在准备测量结果包...");
+            ReportProgress(progress, 0, L("ArchiveExport.Progress.PrepareStage"), L("ArchiveExport.Progress.PrepareMessage"));
 
             if (measurements.Count == 0)
             {
-                return new(false, "没有可导出的测量记录。", 0, filePath);
+                return new(false, L("ArchiveExport.NoMeasurements"), 0, filePath);
             }
 
             var directory = Path.GetDirectoryName(filePath);
@@ -161,8 +163,8 @@ public class ExportImportService : IExportImportService
                 ReportProgress(
                     progress,
                     measurementStart,
-                    "读取测量数据",
-                    $"正在读取 {measurement.MeasurementName ?? $"测量 {measurement.Id}"} 的基础信息...");
+                    L("ArchiveExport.Progress.ReadMeasurementStage"),
+                    L("ArchiveExport.Progress.ReadMeasurementMessage", measurement.MeasurementName ?? L("ArchiveExport.DefaultMeasurementName", measurement.Id)));
 
                 var patient = await db.GetByIdAsync<Patient>(measurement.PatientId) ?? measurement.Patient;
                 var gaitParameters = await db.GetFirstAsync<GaitParameters>(g => g.MeasurementRecordId == measurement.Id);
@@ -186,7 +188,7 @@ public class ExportImportService : IExportImportService
                 WriteJsonEntry(archive, $"{measurementRoot}/measurement.json", CreateMeasurementSnapshot(measurement));
                 WriteJsonEntry(archive, $"{measurementRoot}/gait_parameters.json", gaitParameters);
                 WriteJsonEntry(archive, $"{measurementRoot}/reports.json", reports.Select(CreateReportSnapshot).ToList());
-                ReportProgress(progress, measurementStart + (measurementEnd - measurementStart) * 0.22, "写入基础信息", "正在写入患者、测量和报告快照...");
+                ReportProgress(progress, measurementStart + (measurementEnd - measurementStart) * 0.22, L("ArchiveExport.Progress.WriteSnapshotStage"), L("ArchiveExport.Progress.WriteSnapshotMessage"));
 
                 var rawVideoPaths = new HashSet<string>(
                     new[]
@@ -206,8 +208,8 @@ public class ExportImportService : IExportImportService
                     ReportProgress(
                         progress,
                         analysisStart,
-                        "打包分析文件",
-                        $"正在打包分析结果 {result.RequestId}...");
+                        L("ArchiveExport.Progress.PackageAnalysisStage"),
+                        L("ArchiveExport.Progress.PackageAnalysisMessage", result.RequestId));
 
                     var analysisRoot = $"{measurementRoot}/analysis_results/{result.Id}";
                     var csvFiles = await db.Queryable<AnalysisCsvFile>()
@@ -248,14 +250,14 @@ public class ExportImportService : IExportImportService
                     });
                 }
 
-                ReportProgress(progress, measurementEnd, "测量打包完成", $"已完成 {manifestMeasurement.MeasurementName}。");
+                ReportProgress(progress, measurementEnd, L("ArchiveExport.Progress.MeasurementCompleteStage"), L("ArchiveExport.Progress.MeasurementCompleteMessage", manifestMeasurement.MeasurementName));
                 manifest.Measurements.Add(manifestMeasurement);
             }
 
             WriteJsonEntry(archive, "manifest.json", manifest);
-            ReportProgress(progress, 100, "导出完成", "测量结果包已生成。");
+            ReportProgress(progress, 100, L("ArchiveExport.Progress.CompleteStage"), L("ArchiveExport.Progress.CompleteMessage"));
             _logHelper?.Information($"测量结果包导出完成：{filePath}, Count={measurements.Count}");
-            return new(true, $"成功导出 {measurements.Count} 条测量结果。", measurements.Count, filePath);
+            return new(true, L("ArchiveExport.SuccessFormat", measurements.Count), measurements.Count, filePath);
         }
         catch (OperationCanceledException)
         {
@@ -264,7 +266,7 @@ public class ExportImportService : IExportImportService
         catch (Exception ex)
         {
             _logHelper?.Error($"测量结果包导出失败：{filePath}", ex);
-            return new(false, $"导出失败：{ex.Message}", 0, filePath);
+            return new(false, L("ArchiveExport.FailedFormat", ex.Message), 0, filePath);
         }
     }
 
@@ -276,18 +278,18 @@ public class ExportImportService : IExportImportService
     {
         try
         {
-            ReportProgress(progress, 0, "准备导入", "正在读取测量结果包...");
+            ReportProgress(progress, 0, L("ArchiveImport.Progress.PrepareStage"), L("ArchiveImport.Progress.PrepareMessage"));
 
             if (!File.Exists(filePath))
             {
-                return new(false, "结果包文件不存在。", 0, []);
+                return new(false, L("ArchiveImport.FileMissing"), 0, []);
             }
 
             using var archive = ZipFile.OpenRead(filePath);
             var manifest = ReadJsonEntry<MeasurementArchiveManifest>(archive, "manifest.json");
             if (manifest is null || manifest.Measurements.Count == 0)
             {
-                return new(false, "结果包格式无效或没有测量记录。", 0, []);
+                return new(false, L("ArchiveImport.InvalidPackage"), 0, []);
             }
 
             using var db = DatabaseFactory.CreateSqliteSugarHelper();
@@ -310,8 +312,8 @@ public class ExportImportService : IExportImportService
                 ReportProgress(
                     progress,
                     measurementStart,
-                    "导入测量数据",
-                    $"正在导入 {item.MeasurementName}...");
+                    L("ArchiveImport.Progress.ImportMeasurementStage"),
+                    L("ArchiveImport.Progress.ImportMeasurementMessage", item.MeasurementName));
 
                 var measurementRoot = $"measurements/{item.OriginalMeasurementId}";
                 var patient = ReadJsonEntry<Patient>(archive, $"{measurementRoot}/patient.json");
@@ -343,7 +345,7 @@ public class ExportImportService : IExportImportService
                 measurement.FrontVideoPath = null;
                 measurement.VideoImportMode = VideoImportMode.Import;
                 measurement.MeasurementFolderPath = Path.Combine("Data", "ImportedResults", Path.GetFileName(importRoot), $"measurement_{oldMeasurementId}");
-                measurement.Remark = AppendArchiveRemark(measurement.Remark);
+                measurement.Remark = AppendArchiveRemark(measurement.Remark, L("ArchiveImport.ImportedRemark"));
                 measurement.CreatedAt = DateTime.Now;
                 measurement.UpdatedAt = DateTime.Now;
                 var newMeasurementId = (int)await db.InsertReturnIdentityAsync(measurement);
@@ -373,8 +375,8 @@ public class ExportImportService : IExportImportService
                     ReportProgress(
                         progress,
                         analysisStart,
-                        "恢复结果文件",
-                        $"正在恢复分析结果 {analysis.RequestId}...");
+                        L("ArchiveImport.Progress.RestoreFilesStage"),
+                        L("ArchiveImport.Progress.RestoreAnalysisMessage", analysis.RequestId));
 
                     var resultDir = Path.Combine(importRoot, $"measurement_{oldMeasurementId}", $"analysis_{analysis.OriginalAnalysisResultId}");
                     Directory.CreateDirectory(resultDir);
@@ -388,8 +390,8 @@ public class ExportImportService : IExportImportService
                         ReportProgress(
                             progress,
                             CalculateProgress(analysisStart, analysisEnd, fileIndex, fileMaps.Count),
-                            "恢复结果文件",
-                            $"正在恢复 {Path.GetFileName(fileMap.RelativePath)}...");
+                            L("ArchiveImport.Progress.RestoreFilesStage"),
+                            L("ArchiveImport.Progress.RestoreFileMessage", Path.GetFileName(fileMap.RelativePath)));
 
                         var extractedPath = ExtractArchiveFile(archive, fileMap.EntryName, resultDir, fileMap.RelativePath);
                         if (!string.IsNullOrWhiteSpace(extractedPath) && !string.IsNullOrWhiteSpace(fileMap.OriginalPath))
@@ -397,7 +399,7 @@ public class ExportImportService : IExportImportService
                             oldToNewFilePath[fileMap.OriginalPath] = extractedPath;
                         }
                     }
-                    ReportProgress(progress, analysisEnd, "结果文件恢复完成", $"已恢复 {fileMaps.Count} 个结果文件。");
+                    ReportProgress(progress, analysisEnd, L("ArchiveImport.Progress.RestoreCompleteStage"), L("ArchiveImport.Progress.RestoreCompleteMessage", fileMaps.Count));
 
                     var oldAnalysisResultId = result.Id;
                     result.Id = 0;
@@ -409,7 +411,7 @@ public class ExportImportService : IExportImportService
                     result.PackagePath = null;
                     result.PackageCreatedAt = null;
                     result.PackageValidationStatus = "Imported";
-                    result.PackageValidationMessage = "由测量结果包导入，原始视频未随包导入。";
+                    result.PackageValidationMessage = L("ArchiveImport.PackageValidationMessage");
                     result.CreatedAt = DateTime.Now;
                     var newAnalysisResultId = (int)await db.InsertReturnIdentityAsync(result);
                     oldToNewAnalysisIds[oldAnalysisResultId] = newAnalysisResultId;
@@ -467,13 +469,13 @@ public class ExportImportService : IExportImportService
                 }
 
                 _logHelper?.Information($"测量结果包导入完成：OldMeasurementId={oldMeasurementId}, NewMeasurementId={newMeasurementId}, OldPatientId={oldPatientId}, NewPatientId={newPatientId}");
-                ReportProgress(progress, measurementEnd, "测量导入完成", $"已完成 {item.MeasurementName}。");
+                ReportProgress(progress, measurementEnd, L("ArchiveImport.Progress.MeasurementCompleteStage"), L("ArchiveImport.Progress.MeasurementCompleteMessage", item.MeasurementName));
             }
 
-            ReportProgress(progress, 100, "导入完成", "测量结果包已导入。");
+            ReportProgress(progress, 100, L("ArchiveImport.Progress.CompleteStage"), L("ArchiveImport.Progress.CompleteMessage"));
             return importedIds.Count > 0
-                ? new(true, $"成功导入 {importedIds.Count} 条测量结果。", importedIds.Count, importedIds)
-                : new(false, "没有成功导入任何测量结果。", 0, importedIds);
+                ? new(true, L("ArchiveImport.SuccessFormat", importedIds.Count), importedIds.Count, importedIds)
+                : new(false, L("ArchiveImport.NoImportedMeasurements"), 0, importedIds);
         }
         catch (OperationCanceledException)
         {
@@ -482,7 +484,7 @@ public class ExportImportService : IExportImportService
         catch (Exception ex)
         {
             _logHelper?.Error($"测量结果包导入失败：{filePath}", ex);
-            return new(false, $"导入失败：{ex.Message}", 0, []);
+            return new(false, L("ArchiveImport.FailedFormat", ex.Message), 0, []);
         }
     }
 
@@ -644,21 +646,35 @@ public class ExportImportService : IExportImportService
         var now = DateTime.Now;
         return new Patient
         {
-            Name = getField("姓名").Trim(),
-            Gender = ParseGender(getField("性别")),
-            BirthDate = ParseDate(getField("出生日期")),
-            Phone = Truncate(getField("电话"), 12),
-            IdNumber = EmptyToNull(Truncate(getField("证件号"), 20)),
-            HospitalNumber = EmptyToNull(Truncate(getField("住院号"), 20)),
-            Height = ParseDouble(getField("身高cm")),
-            Weight = ParseDouble(getField("体重kg")),
-            Address = EmptyToNull(getField("地址")),
-            MedicalHistory = EmptyToNull(getField("病史")),
-            Remark = EmptyToNull(getField("备注")),
+            Name = FirstField(getField, "姓名", "Name", "Patient Name").Trim(),
+            Gender = ParseGender(FirstField(getField, "性别", "Gender", "Sex")),
+            BirthDate = ParseDate(FirstField(getField, "出生日期", "Birth Date", "BirthDate", "Date of Birth")),
+            Phone = Truncate(FirstField(getField, "电话", "手机号", "Phone", "Mobile", "Phone Number"), 12),
+            IdNumber = EmptyToNull(Truncate(FirstField(getField, "证件号", "身份证号", "ID Number", "Identity Number", "ID"), 20)),
+            HospitalNumber = EmptyToNull(Truncate(FirstField(getField, "就诊号", "住院号", "Visit Number", "Visit No.", "Hospital Number", "Medical Record Number"), 20)),
+            Height = ParseDouble(FirstField(getField, "身高cm", "身高(CM)", "身高(cm)", "Height(cm)", "Height (cm)", "Height")),
+            Weight = ParseDouble(FirstField(getField, "体重kg", "体重(KG)", "体重(kg)", "Weight(kg)", "Weight (kg)", "Weight")),
+            Address = EmptyToNull(FirstField(getField, "地址", "Address")),
+            MedicalHistory = EmptyToNull(FirstField(getField, "病史", "Medical History", "MedicalHistory")),
+            Remark = EmptyToNull(FirstField(getField, "备注", "Remark", "Notes")),
             Status = PatientStatus.Active,
             CreatedAt = now,
             UpdatedAt = now
         };
+    }
+
+    private static string FirstField(Func<string, string> getField, params string[] names)
+    {
+        foreach (var name in names)
+        {
+            var value = getField(name);
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return string.Empty;
     }
 
     private static string GetField(Dictionary<string, int> headerMap, string[] values, string name)
@@ -695,7 +711,8 @@ public class ExportImportService : IExportImportService
 
     private static Gender ParseGender(string value)
     {
-        return value.Trim() == "女" ? Gender.Female : Gender.Male;
+        var normalized = value.Trim().ToLowerInvariant();
+        return normalized is "女" or "female" or "f" or "woman" ? Gender.Female : Gender.Male;
     }
 
     private static DateTime? ParseDate(string value)
@@ -801,7 +818,7 @@ public class ExportImportService : IExportImportService
         return JsonSerializer.Deserialize<T>(stream, ArchiveJsonOptions);
     }
 
-    private static List<MeasurementArchiveFile> AddAnalysisFilesToArchive(
+    private List<MeasurementArchiveFile> AddAnalysisFilesToArchive(
         ZipArchive archive,
         AnalysisResult result,
         List<AnalysisCsvFile> csvFiles,
@@ -849,7 +866,7 @@ public class ExportImportService : IExportImportService
 
         if (candidates.Count == 0)
         {
-            ReportProgress(progress, endProgress, "打包分析文件", "没有需要写入的结果文件。");
+            ReportProgress(progress, endProgress, L("ArchiveExport.Progress.PackageAnalysisStage"), L("ArchiveExport.Progress.NoResultFiles"));
             return fileMaps;
         }
 
@@ -861,13 +878,13 @@ public class ExportImportService : IExportImportService
             ReportProgress(
                 progress,
                 CalculateProgress(startProgress, endProgress, i, candidates.Count),
-                "写入结果文件",
-                $"正在写入 {Path.GetFileName(path)}...");
+                L("ArchiveExport.Progress.WriteResultFileStage"),
+                L("ArchiveExport.Progress.WriteResultFileMessage", Path.GetFileName(path)));
 
             AddFileToArchive(archive, path, $"{analysisRoot}/files/{ToArchivePath(relativePath)}", relativePath, role, fileMaps, added);
         }
 
-        ReportProgress(progress, endProgress, "结果文件写入完成", $"已写入 {fileMaps.Count} 个结果文件。");
+        ReportProgress(progress, endProgress, L("ArchiveExport.Progress.WriteResultCompleteStage"), L("ArchiveExport.Progress.WriteResultCompleteMessage", fileMaps.Count));
         return fileMaps;
     }
 
@@ -1092,9 +1109,9 @@ public class ExportImportService : IExportImportService
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 
-    private static string AppendArchiveRemark(string? remark)
+    private static string AppendArchiveRemark(string? remark, string importedNote)
     {
-        const string note = "由测量结果包导入，包内不包含原始视频；如需重新分析，请重新采集或上传视频。";
+        var note = importedNote;
         return string.IsNullOrWhiteSpace(remark) ? note : $"{remark}\n{note}";
     }
 
@@ -1188,6 +1205,18 @@ public class ExportImportService : IExportImportService
         bool isIndeterminate = false)
     {
         progress?.Report(new OperationProgressInfo(Math.Clamp(percent, 0, 100), stage, message, isIndeterminate));
+    }
+
+    private string L(string key, params object[] args)
+    {
+        if (_localizationService is null)
+        {
+            return args.Length == 0 ? key : string.Format(key, args);
+        }
+
+        return args.Length == 0
+            ? _localizationService.GetString(key)
+            : _localizationService.GetString(key, args);
     }
 
     private static double CalculateProgress(double start, double end, int index, int total)
@@ -1352,16 +1381,16 @@ public class ExportImportService : IExportImportService
     /// <summary>
     /// 获取状态文本
     /// </summary>
-    private static string GetStatusText(MeasurementStatus status)
+    private string GetStatusText(MeasurementStatus status)
     {
         return status switch
         {
-            MeasurementStatus.Pending => "待处理",
-            MeasurementStatus.InProgress => "分析中",
-            MeasurementStatus.Completed => "已完成",
-            MeasurementStatus.Cancelled => "待处理",
-            MeasurementStatus.Failed => "分析失败",
-            _ => "未知"
+            MeasurementStatus.Pending => L("DataManagement.Status.Pending"),
+            MeasurementStatus.InProgress => L("DataManagement.Status.InProgress"),
+            MeasurementStatus.Completed => L("DataManagement.Status.Completed"),
+            MeasurementStatus.Cancelled => L("DataManagement.Status.Pending"),
+            MeasurementStatus.Failed => L("DataManagement.Status.Failed"),
+            _ => L("Unknown")
         };
     }
 
@@ -1420,7 +1449,7 @@ public class PatientExportModel
     public string 年龄 { get; set; } = "";
     public string 电话 { get; set; } = "";
     public string 证件号 { get; set; } = "";
-    public string 住院号 { get; set; } = "";
+    public string 就诊号 { get; set; } = "";
     public string 身高cm { get; set; } = "";
     public string 体重kg { get; set; } = "";
     public string 地址 { get; set; } = "";

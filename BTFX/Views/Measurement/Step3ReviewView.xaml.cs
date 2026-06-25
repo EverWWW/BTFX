@@ -34,6 +34,7 @@ public partial class Step3ReviewView : UserControl
     private bool _isPreparingPreview;
     private bool _isPlaybackReady;
     private bool _pendingPlayAfterPrepare;
+    private int _mediaLoadVersion;
     private double _clockBaseSeconds;
     private double _playbackStartSeconds;
     private double _durationSeconds;
@@ -114,7 +115,7 @@ public partial class Step3ReviewView : UserControl
 
             if (vm.HasDualVideo)
             {
-                var combinedPath = await PrepareCombinedPreviewVideoAsync(vm.FrontVideoPath, vm.SideVideoPath);
+                var combinedPath = await PrepareCombinedPreviewVideoAsync(vm.SideVideoPath, vm.FrontVideoPath);
                 SetPreviewMediaSource(DualPreviewMediaElement, combinedPath);
             }
             else if (vm.HasFrontVideo)
@@ -163,6 +164,7 @@ public partial class Step3ReviewView : UserControl
 
         _activeMediaElement = element;
         _isPlaybackReady = false;
+        var loadVersion = ++_mediaLoadVersion;
         _clockBaseSeconds = 0;
         SetSliderValue(0);
         UpdateTimeText(0);
@@ -172,6 +174,25 @@ public partial class Step3ReviewView : UserControl
         element.Volume = 0;
         element.Play();
         WriteLog($"SetPreviewMediaSource source='{path}'");
+        _ = FailMediaLoadIfTimedOutAsync(loadVersion, path);
+    }
+
+    private async Task FailMediaLoadIfTimedOutAsync(int loadVersion, string path)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(15));
+        var activePath = _activeMediaElement?.Source?.LocalPath;
+        if (loadVersion != _mediaLoadVersion ||
+            _isPlaybackReady ||
+            !string.Equals(activePath, path, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        _isPreparingPreview = false;
+        _isPlaybackReady = false;
+        SetPlaybackControlsEnabled(false);
+        SetPlaybackStatusResource("MA.Step3.Status.PreviewLoadFailed");
+        WriteLog($"Preview media load timeout. Source='{path}'");
     }
 
     private async void PreviewMediaElement_OnMediaOpened(object sender, RoutedEventArgs e)
@@ -206,6 +227,7 @@ public partial class Step3ReviewView : UserControl
         UpdateTimeText(0);
         _isPreparingPreview = false;
         _isPlaybackReady = true;
+        _mediaLoadVersion++;
         SetPlaybackStatus(string.Empty);
         SetPlaybackControlsEnabled(true);
         WriteLog($"Preview media opened. Duration={_durationSeconds:F3}");
@@ -242,6 +264,7 @@ public partial class Step3ReviewView : UserControl
 
         _isPreparingPreview = false;
         _isPlaybackReady = false;
+        _mediaLoadVersion++;
         SetPlaybackControlsEnabled(false);
         SetPlaybackStatusResource("MA.Step3.Status.PreviewLoadFailed");
         WriteLog($"Preview media failed: {e.ErrorException}");
@@ -255,6 +278,7 @@ public partial class Step3ReviewView : UserControl
             mediaElement.Source = null;
         }
 
+        _mediaLoadVersion++;
         _activeMediaElement = null;
     }
 
@@ -384,7 +408,7 @@ public partial class Step3ReviewView : UserControl
         }
     }
 
-    private async Task<string?> PrepareCombinedPreviewVideoAsync(string? frontPath, string? sidePath)
+    private async Task<string?> PrepareCombinedPreviewVideoAsync(string? sidePath, string? frontPath)
     {
         if (string.IsNullOrWhiteSpace(frontPath) || string.IsNullOrWhiteSpace(sidePath) ||
             !File.Exists(frontPath) || !File.Exists(sidePath))
@@ -428,15 +452,15 @@ public partial class Step3ReviewView : UserControl
             };
 
             const string filter =
-                "[0:v]scale=620:340:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2:black,fps=24,setpts=PTS-STARTPTS[left];" +
-                "[1:v]scale=620:340:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2:black,fps=24,setpts=PTS-STARTPTS[right];" +
+                "[0:v]scale=-2:360,pad=iw+16:ih+16:8:8:black,fps=24,setpts=PTS-STARTPTS[left];" +
+                "[1:v]scale=-2:360,pad=iw+16:ih+16:8:8:black,fps=24,setpts=PTS-STARTPTS[right];" +
                 "[left][right]hstack=inputs=2[v]";
 
             process.StartInfo.ArgumentList.Add("-y");
             process.StartInfo.ArgumentList.Add("-i");
-            process.StartInfo.ArgumentList.Add(frontPath);
-            process.StartInfo.ArgumentList.Add("-i");
             process.StartInfo.ArgumentList.Add(sidePath);
+            process.StartInfo.ArgumentList.Add("-i");
+            process.StartInfo.ArgumentList.Add(frontPath);
             process.StartInfo.ArgumentList.Add("-filter_complex");
             process.StartInfo.ArgumentList.Add(filter);
             process.StartInfo.ArgumentList.Add("-map");
@@ -461,7 +485,7 @@ public partial class Step3ReviewView : UserControl
             process.StartInfo.ArgumentList.Add("+faststart");
             process.StartInfo.ArgumentList.Add(tempPath);
 
-            WriteLog($"PrepareCombinedPreviewVideoAsync transcode start. Front='{frontPath}', Side='{sidePath}', Proxy='{proxyPath}', Ffmpeg='{ffmpegPath}'");
+            WriteLog($"PrepareCombinedPreviewVideoAsync transcode start. Side='{sidePath}', Front='{frontPath}', Proxy='{proxyPath}', Ffmpeg='{ffmpegPath}'");
             process.Start();
             var stderrTask = process.StandardError.ReadToEndAsync();
             await process.WaitForExitAsync();
@@ -529,7 +553,7 @@ public partial class Step3ReviewView : UserControl
     {
         var front = new FileInfo(frontPath);
         var side = new FileInfo(sidePath);
-        const string previewCacheVersion = "combined-preview-v2-bordered-1280x360-24fps";
+        const string previewCacheVersion = "combined-preview-v4-side-left-front-right-dynamic-gap-24fps";
         var key = string.Join(
             "|",
             previewCacheVersion,
@@ -547,6 +571,9 @@ public partial class Step3ReviewView : UserControl
     {
         var candidates = new[]
         {
+            Path.Combine(AppContext.BaseDirectory, "ffmpeg", "ffmpeg.exe"),
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffmpeg", "ffmpeg.exe"),
+            Path.Combine(AppContext.BaseDirectory, "ffmpeg.exe"),
             @"D:\ffmpeg\bin\ffmpeg.exe",
             @"C:\ffmpeg\bin\ffmpeg.exe",
             "ffmpeg.exe"
@@ -1132,6 +1159,7 @@ public partial class Step3ReviewView : UserControl
         PlayPauseButton.IsEnabled = isEnabled;
         ProgressSlider.IsEnabled = isEnabled;
         SpeedComboBox.IsEnabled = isEnabled;
+        UpdateOverlayPlayButton();
     }
 
     private void SetPlaybackStatus(string status)
@@ -1151,6 +1179,19 @@ public partial class Step3ReviewView : UserControl
     private void UpdatePlayIcon()
     {
         PlayPauseIcon.Kind = _isPlaying ? PackIconKind.Pause : PackIconKind.Play;
+        UpdateOverlayPlayButton();
+    }
+
+    private void UpdateOverlayPlayButton()
+    {
+        if (ReviewOverlayPlayButton is null)
+        {
+            return;
+        }
+
+        ReviewOverlayPlayButton.Visibility = _isPlaybackReady && !_isPlaying
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private static string FormatTime(double seconds)

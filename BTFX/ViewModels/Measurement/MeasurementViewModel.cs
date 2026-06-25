@@ -419,14 +419,15 @@ public partial class MeasurementViewModel : ObservableObject
             }
 
             var viewModel = App.Services.GetRequiredService<GaitAnalysisDetailViewModel>();
-            await viewModel.InitializeAsync(CurrentMeasurement);
 
             var dialog = new Views.Dialogs.MeasurementDetailDialog
             {
                 DataContext = viewModel
             };
 
-            await DialogHost.Show(dialog, "RootDialog");
+            var dialogTask = DialogHost.Show(dialog, "RootDialog");
+            _ = viewModel.InitializeAsync(CurrentMeasurement);
+            await dialogTask;
             _logHelper?.Information($"从测量分析步骤打开分析详情：MeasurementId={CurrentMeasurement.Id}");
         }
         catch (Exception ex)

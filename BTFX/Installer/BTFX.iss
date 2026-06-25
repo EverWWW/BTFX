@@ -39,7 +39,7 @@ Compression=lzma2/ultra64
 SolidCompression=yes
 LZMAUseSeparateProcess=yes
 
-; SetupIconFile=Assets\installer.ico
+SetupIconFile=..\Resources\Images\Icon.ico
 
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog

@@ -32,6 +32,11 @@ public interface IGaitAnalysisService
     Task<bool> ValidateEnvironmentAsync();
 
     /// <summary>
+    /// Ensure the stitched analysis preview video exists. Generates it on demand when missing.
+    /// </summary>
+    Task<string?> EnsureAnalysisPreviewVideoAsync(string outputDirectory, CancellationToken ct = default);
+
+    /// <summary>
     /// 保存分析结果到数据库（主表 + 子表，事务写入）
     /// </summary>
     /// <param name="result">分析结果（含导航属性 KinematicSummary/CsvFiles/QualityControl）</param>

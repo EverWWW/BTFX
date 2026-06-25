@@ -80,6 +80,12 @@ public partial class ActivationViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void CloseApplication()
+    {
+        Application.Current.Shutdown();
+    }
+
+    [RelayCommand]
     private void CopyMachineCode()
     {
         if (string.IsNullOrWhiteSpace(MachineCode))

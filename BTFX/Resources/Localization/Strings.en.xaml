@@ -33,6 +33,7 @@
     <system:String x:Key="Yes">Yes</system:String>
     <system:String x:Key="No">No</system:String>
     <system:String x:Key="Unknown">Unknown</system:String>
+    <system:String x:Key="UnknownPatient">Unknown Patient</system:String>
     <system:String x:Key="Tip">Notice</system:String>
 
     <!--  MainContainerView  -->
@@ -256,6 +257,7 @@
     <system:String x:Key="Report.ExportReport">Export Report</system:String>
     <system:String x:Key="Report.PrintReport">Print Report</system:String>
     <system:String x:Key="Report.ExportTitle">Export Report</system:String>
+    <system:String x:Key="Report.FileNamePrefix">Report</system:String>
     <system:String x:Key="Report.ExportFolderTitle">Select Report Export Directory</system:String>
     <system:String x:Key="Report.PdfFilter">PDF file (*.pdf)|*.pdf</system:String>
     <system:String x:Key="Report.ExportUnavailable">The measurement or analysis result associated with this report is unavailable, so it cannot be exported.</system:String>
@@ -279,6 +281,14 @@
     <system:String x:Key="Report.BatchExportSuccessFormat">Successfully exported {0} reports.&#x0a;Directory: {1}</system:String>
     <system:String x:Key="Report.BatchExportPartialFormat">Successfully exported {0} reports, failed {1}.&#x0a;Failed reports: {2}</system:String>
     <system:String x:Key="Report.BatchExportCanceled">Batch export canceled.</system:String>
+    <system:String x:Key="Report.ExportProgress.ReadStage">Reading Report Data</system:String>
+    <system:String x:Key="Report.ExportProgress.ReadMessage">Reading report {0}...</system:String>
+    <system:String x:Key="Report.ExportProgress.PreviewStage">Generating Report Preview</system:String>
+    <system:String x:Key="Report.ExportProgress.PreviewMessage">Generating preview document for {0}...</system:String>
+    <system:String x:Key="Report.ExportProgress.WriteStage">Exporting PDF</system:String>
+    <system:String x:Key="Report.ExportProgress.WriteMessage">Writing {0}...</system:String>
+    <system:String x:Key="Report.ExportProgress.SaveStage">Saving Export Record</system:String>
+    <system:String x:Key="Report.ExportProgress.SaveMessage">Updating exported report path {0}...</system:String>
     <system:String x:Key="Report.OpenPreviewFailedFormat">Failed to open report preview: {0}</system:String>
     <system:String x:Key="Report.ResumeFailedFormat">Failed to continue report processing: {0}</system:String>
     <system:String x:Key="Report.NoDataForPreview">Report data was not found, so preview cannot be opened.</system:String>
@@ -512,6 +522,10 @@
     <system:String x:Key="AnalysisDetail.ChartArea">Chart Area</system:String>
     <system:String x:Key="AnalysisDetail.VideoPreviewArea">Video Preview Area</system:String>
     <system:String x:Key="AnalysisDetail.NoAnnotatedVideo">No playable annotated analysis video</system:String>
+    <system:String x:Key="AnalysisDetail.Loading">Loading analysis details...</system:String>
+    <system:String x:Key="AnalysisDetail.PreviewGenerating">Analysis preview video is being generated. Please wait...</system:String>
+    <system:String x:Key="AnalysisDetail.PreviewGeneratePending">Analysis preview video is not ready yet. Preparing in the background...</system:String>
+    <system:String x:Key="AnalysisDetail.PreviewGenerateFailed">Failed to generate the analysis preview video. Reopen details later to retry.</system:String>
     <system:String x:Key="AnalysisDetail.LeftKnee">Left Knee</system:String>
     <system:String x:Key="AnalysisDetail.RightKnee">Right Knee</system:String>
     <system:String x:Key="AnalysisDetail.LeftHip">Left Hip</system:String>
@@ -720,6 +734,7 @@
     <system:String x:Key="SaveFailed">Failed to save</system:String>
     <system:String x:Key="DeleteSuccess">Deleted successfully</system:String>
     <system:String x:Key="DeleteFailed">Failed to delete</system:String>
+    <system:String x:Key="BuiltInUserDeleteNotAllowed">Built-in accounts cannot be deleted.</system:String>
     <system:String x:Key="OperationSuccess">Operation successful</system:String>
     <system:String x:Key="OperationFailed">Operation failed</system:String>
     <system:String x:Key="NoData">No data available</system:String>
@@ -770,6 +785,47 @@
     <system:String x:Key="DataManagement.ExportArchive.BatchMessage">Preparing batch measurement result package...</system:String>
     <system:String x:Key="DataManagement.ImportArchive.Stage">Importing</system:String>
     <system:String x:Key="DataManagement.ImportArchive.Message">Reading measurement result package...</system:String>
+    <system:String x:Key="ArchiveExport.NoMeasurements">No measurement records are available for export.</system:String>
+    <system:String x:Key="ArchiveExport.DefaultMeasurementName">Measurement {0}</system:String>
+    <system:String x:Key="ArchiveExport.SuccessFormat">Successfully exported {0} measurement result(s).</system:String>
+    <system:String x:Key="ArchiveExport.FailedFormat">Export failed: {0}</system:String>
+    <system:String x:Key="ArchiveExport.Progress.PrepareStage">Preparing Export</system:String>
+    <system:String x:Key="ArchiveExport.Progress.PrepareMessage">Preparing measurement result package...</system:String>
+    <system:String x:Key="ArchiveExport.Progress.ReadMeasurementStage">Reading Measurement Data</system:String>
+    <system:String x:Key="ArchiveExport.Progress.ReadMeasurementMessage">Reading basic information for {0}...</system:String>
+    <system:String x:Key="ArchiveExport.Progress.WriteSnapshotStage">Writing Basic Information</system:String>
+    <system:String x:Key="ArchiveExport.Progress.WriteSnapshotMessage">Writing patient, measurement, and report snapshots...</system:String>
+    <system:String x:Key="ArchiveExport.Progress.PackageAnalysisStage">Packaging Analysis Files</system:String>
+    <system:String x:Key="ArchiveExport.Progress.PackageAnalysisMessage">Packaging analysis result {0}...</system:String>
+    <system:String x:Key="ArchiveExport.Progress.NoResultFiles">No result files need to be written.</system:String>
+    <system:String x:Key="ArchiveExport.Progress.WriteResultFileStage">Writing Result Files</system:String>
+    <system:String x:Key="ArchiveExport.Progress.WriteResultFileMessage">Writing {0}...</system:String>
+    <system:String x:Key="ArchiveExport.Progress.WriteResultCompleteStage">Result Files Written</system:String>
+    <system:String x:Key="ArchiveExport.Progress.WriteResultCompleteMessage">Wrote {0} result file(s).</system:String>
+    <system:String x:Key="ArchiveExport.Progress.MeasurementCompleteStage">Measurement Packaged</system:String>
+    <system:String x:Key="ArchiveExport.Progress.MeasurementCompleteMessage">Completed {0}.</system:String>
+    <system:String x:Key="ArchiveExport.Progress.CompleteStage">Export Complete</system:String>
+    <system:String x:Key="ArchiveExport.Progress.CompleteMessage">Measurement result package has been created.</system:String>
+    <system:String x:Key="ArchiveImport.FileMissing">Result package file does not exist.</system:String>
+    <system:String x:Key="ArchiveImport.InvalidPackage">The result package is invalid or contains no measurement records.</system:String>
+    <system:String x:Key="ArchiveImport.PackageValidationMessage">Imported from a measurement result package. Raw videos were not included.</system:String>
+    <system:String x:Key="ArchiveImport.ImportedRemark">Imported from a measurement result package. Raw videos are not included in the package. Re-analysis requires capturing or uploading videos again.</system:String>
+    <system:String x:Key="ArchiveImport.SuccessFormat">Successfully imported {0} measurement result(s).</system:String>
+    <system:String x:Key="ArchiveImport.NoImportedMeasurements">No measurement results were imported successfully.</system:String>
+    <system:String x:Key="ArchiveImport.FailedFormat">Import failed: {0}</system:String>
+    <system:String x:Key="ArchiveImport.Progress.PrepareStage">Preparing Import</system:String>
+    <system:String x:Key="ArchiveImport.Progress.PrepareMessage">Reading measurement result package...</system:String>
+    <system:String x:Key="ArchiveImport.Progress.ImportMeasurementStage">Importing Measurement Data</system:String>
+    <system:String x:Key="ArchiveImport.Progress.ImportMeasurementMessage">Importing {0}...</system:String>
+    <system:String x:Key="ArchiveImport.Progress.RestoreFilesStage">Restoring Result Files</system:String>
+    <system:String x:Key="ArchiveImport.Progress.RestoreAnalysisMessage">Restoring analysis result {0}...</system:String>
+    <system:String x:Key="ArchiveImport.Progress.RestoreFileMessage">Restoring {0}...</system:String>
+    <system:String x:Key="ArchiveImport.Progress.RestoreCompleteStage">Result Files Restored</system:String>
+    <system:String x:Key="ArchiveImport.Progress.RestoreCompleteMessage">Restored {0} result file(s).</system:String>
+    <system:String x:Key="ArchiveImport.Progress.MeasurementCompleteStage">Measurement Imported</system:String>
+    <system:String x:Key="ArchiveImport.Progress.MeasurementCompleteMessage">Completed {0}.</system:String>
+    <system:String x:Key="ArchiveImport.Progress.CompleteStage">Import Complete</system:String>
+    <system:String x:Key="ArchiveImport.Progress.CompleteMessage">Measurement result package has been imported.</system:String>
     <system:String x:Key="DataManagement.ExportCanceled">Export canceled.</system:String>
     <system:String x:Key="DataManagement.BatchExportCanceled">Batch export canceled.</system:String>
     <system:String x:Key="DataManagement.ImportCanceled">Import canceled.</system:String>
@@ -999,6 +1055,7 @@
 
     <!--  Step3 Review  -->
     <system:String x:Key="MA.Step3.Title">Review</system:String>
+    <system:String x:Key="MA.Step3.PreviewQualityHint">Smooth preview mode: image quality is compressed and does not affect the original video quality</system:String>
     <system:String x:Key="MA.Step3.FrontView">Front View</system:String>
     <system:String x:Key="MA.Step3.SideView">Side View</system:String>
     <system:String x:Key="MA.Step3.Player.Placeholder">Video Area (Player Pending)</system:String>

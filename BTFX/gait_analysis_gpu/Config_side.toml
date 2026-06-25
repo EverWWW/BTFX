@@ -1,12 +1,12 @@
 #可修改
 [base]
-video_input = ['1C.mp4']  #相对路径绝对路径都可以
+video_input = ['36-side.mp4']  #相对路径绝对路径都可以
 first_person_height = 1.75  #测试人身高
 time_range = []  #可自行选择分析视频开始和结束的秒数
 show_realtime_results = false  #是否实时显示分析结果
-save_vid = true  #是否保存分析后的带标记点的视频
+save_vid = true #是否保存分析后的带标记点的视频
 save_img = false  #是否保存逐帧图片；true的话运行时间会加长
-result_dir = '1'   #视频分析结果保存路径；如果为空，则在当前目录下
+result_dir = '36'   #视频分析结果保存路径；如果为空，则在当前目录下
 
 
 
@@ -26,12 +26,12 @@ slowmo_factor = 1
 pose_model = 'Body_with_feet'
 mode = 'balanced'
 det_frequency = 16
-device = 'CUDA'   # CPU
+device = 'CUDA'   # CUDA
 backend = 'onnxruntime'
 tracking_mode = 'sports2d'
-keypoint_likelihood_threshold = 0.3
-average_likelihood_threshold = 0.5
-keypoint_number_threshold = 0.3
+keypoint_likelihood_threshold = 0.5  
+average_likelihood_threshold = 0.7
+keypoint_number_threshold = 0.5
 max_distance = 250
 max_unseen_time = 1.0
 [px_to_meters_conversion]
@@ -40,7 +40,7 @@ make_c3d = false
 save_calib = false
 floor_angle = 'auto'
 xy_origin = ['auto']
-perspective_value = 10
+perspective_value = 4
 perspective_unit = 'distance_m'
 distortions = [0.0, 0.0, 0.0, 0.0, 0.0]
 calib_file = ''

@@ -202,5 +202,29 @@ public class AnalysisResult
     [SugarColumn(IsIgnore = true)]
     public double? GaitSpeedMPerS { get; set; }
 
+    /// <summary>
+    /// 左侧站立相占比（%）
+    /// </summary>
+    [SugarColumn(IsIgnore = true)]
+    public double? LeftStanceRatioPct { get; set; }
+
+    /// <summary>
+    /// 右侧站立相占比（%）
+    /// </summary>
+    [SugarColumn(IsIgnore = true)]
+    public double? RightStanceRatioPct { get; set; }
+
+    /// <summary>
+    /// 左侧摆动相占比（%）
+    /// </summary>
+    [SugarColumn(IsIgnore = true)]
+    public double? LeftSwingRatioPct { get; set; }
+
+    /// <summary>
+    /// 右侧摆动相占比（%）
+    /// </summary>
+    [SugarColumn(IsIgnore = true)]
+    public double? RightSwingRatioPct { get; set; }
+
     #endregion
 }

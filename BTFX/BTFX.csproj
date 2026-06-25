@@ -18,7 +18,7 @@
     <Description>步态信息采集系统 - Gait Information Collection System</Description>
 
     <!-- 应用程序图标（需要准备 app.ico 文件后取消注释） -->
-    <ApplicationIcon>Resources\Images\Logo\app.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\Images\Icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <!-- 发布配置 -->
@@ -230,7 +230,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
-    <None Update="gait_analysis_gpu\gait_analysis_gpu.exe">
+    <None Update="gait_analysis_gpu\*.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>

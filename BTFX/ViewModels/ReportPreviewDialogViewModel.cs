@@ -1327,18 +1327,20 @@ internal sealed class ReportAnalysisSnapshot
             : ReadDouble(videoInfo, "duration_sec") ?? VideoDurationSec;
 
         var gaitCycle = root["gait_cycle"] as JsonObject;
-        CycleCount = ReadInt(gaitCycle, "cycle_count") ?? CycleCount;
+        CycleCount = ReadInt(gaitCycle, "cycle_count") ?? ReadInt(gaitCycle, "total_cycle_count") ?? CycleCount;
         MeanCycleDurationSec = AverageCycleDuration(gaitCycle) ?? MeanCycleDurationSec;
 
         var sp = root["spatiotemporal_parameters"] as JsonObject;
+        var phaseMetrics = GaitPhaseMetricsCalculator.Calculate(gaitCycle);
+        var eventPhaseMetrics = GaitPhaseMetricsCalculator.CalculateFromEvents(root["gait_events"] as JsonObject, VideoFps);
         CadenceStepPerMin = ReadDouble(sp, "cadence_step_per_min") ?? CadenceStepPerMin;
         GaitSpeedMPerS = ReadDouble(sp, "gait_velocity_m_per_sec") ?? GaitSpeedMPerS;
         MeanStepLengthM = ReadDouble(sp, "mean_step_length_m") ?? MeanStepLengthM;
         MeanStrideLengthM = ReadDouble(sp, "mean_stride_length_m") ?? MeanStrideLengthM;
-        MeanStanceTimeSec = ReadDouble(sp, "mean_stance_time_sec") ?? MeanStanceTimeSec;
-        MeanSwingTimeSec = ReadDouble(sp, "mean_swing_time_sec") ?? MeanSwingTimeSec;
-        MeanDoubleSupportTimeSec = ReadDouble(sp, "mean_double_support_time_sec") ?? MeanDoubleSupportTimeSec;
-        MeanSingleSupportTimeSec = ReadDouble(sp, "mean_single_support_time_sec") ?? MeanSingleSupportTimeSec;
+        MeanStanceTimeSec = ReadDouble(sp, "mean_stance_time_sec") ?? phaseMetrics.MeanStanceTimeSec ?? eventPhaseMetrics.MeanStanceTimeSec ?? MeanStanceTimeSec;
+        MeanSwingTimeSec = ReadDouble(sp, "mean_swing_time_sec") ?? phaseMetrics.MeanSwingTimeSec ?? eventPhaseMetrics.MeanSwingTimeSec ?? MeanSwingTimeSec;
+        MeanDoubleSupportTimeSec = ReadDouble(sp, "mean_double_support_time_sec") ?? phaseMetrics.MeanDoubleSupportTimeSec ?? MeanDoubleSupportTimeSec;
+        MeanSingleSupportTimeSec = ReadDouble(sp, "mean_single_support_time_sec") ?? phaseMetrics.MeanSingleSupportTimeSec ?? MeanSingleSupportTimeSec;
 
         var joint = root["joint_angles"] as JsonObject;
         LeftHipRomDeg = ReadJointRom(joint, "left_hip", "left hip") ?? LeftHipRomDeg;
@@ -1360,8 +1362,8 @@ internal sealed class ReportAnalysisSnapshot
 
         LeftStrideMeanM = ReadDouble(root, "left_stride_mean_m") ?? LeftStrideMeanM;
         RightStrideMeanM = ReadDouble(root, "right_stride_mean_m") ?? RightStrideMeanM;
-        LeftStanceRatioPct = ReadDouble(root, "left_stance_ratio_pct") ?? LeftStanceRatioPct;
-        RightStanceRatioPct = ReadDouble(root, "right_stance_ratio_pct") ?? RightStanceRatioPct;
+        LeftStanceRatioPct = ReadDouble(root, "left_stance_ratio_pct") ?? eventPhaseMetrics.LeftStanceRatioPct ?? LeftStanceRatioPct;
+        RightStanceRatioPct = ReadDouble(root, "right_stance_ratio_pct") ?? eventPhaseMetrics.RightStanceRatioPct ?? RightStanceRatioPct;
         ValidFrameRatio = ReadDouble(root["quality_control"] as JsonObject, "valid_frame_ratio") ?? ValidFrameRatio;
     }
 
@@ -1531,18 +1533,39 @@ internal sealed class ReportAnalysisSnapshot
 
     private static double? AverageCycleDuration(JsonObject? gaitCycle)
     {
-        if (gaitCycle?["cycles"] is not JsonArray cycles || cycles.Count == 0)
+        var cycles = EnumerateCycles(gaitCycle).ToArray();
+        if (cycles.Length == 0)
         {
             return null;
         }
 
         var values = cycles
-            .OfType<JsonObject>()
             .Select(cycle => ReadDouble(cycle, "duration_sec"))
             .Where(value => value.HasValue)
             .Select(value => value!.Value)
             .ToArray();
         return values.Length == 0 ? null : values.Average();
+    }
+
+    private static IEnumerable<JsonObject> EnumerateCycles(JsonObject? gaitCycle)
+    {
+        if (gaitCycle is null)
+        {
+            yield break;
+        }
+
+        foreach (var key in new[] { "cycles", "left_cycles", "right_cycles" })
+        {
+            if (gaitCycle[key] is not JsonArray cycles)
+            {
+                continue;
+            }
+
+            foreach (var node in cycles.OfType<JsonObject>())
+            {
+                yield return node;
+            }
+        }
     }
 
     private static double? CalculateSymmetryScore(ReportAnalysisSnapshot snapshot)

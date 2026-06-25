@@ -31,6 +31,8 @@ public class GaitAnalysisService : IGaitAnalysisService
     private const string AnalysisFailedDirectoryName = "AnalysisFailed";
     private const string PreviewDirectoryName = "preview";
     private const string AnalysisPreviewVideoFileName = "analysis_preview.mp4";
+    private const string AnalysisPreviewGeneratingFileName = "analysis_preview.generating";
+    private const string AnalysisPreviewFailedFileName = "analysis_preview.failed";
     private const int MinimumAlgorithmTimeoutMinutes = 30;
     private const string SideInputFileName = "side.mp4";
     private const string FrontInputFileName = "front.mp4";
@@ -65,6 +67,7 @@ public class GaitAnalysisService : IGaitAnalysisService
     private readonly ILogHelper? _logHelper;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
     private readonly object _stdoutStatusLock = new();
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, Task<string?>> _previewGenerationTasks = new(StringComparer.OrdinalIgnoreCase);
 
     private Process? _currentProcess;
     private CancellationTokenSource? _linkedCts;
@@ -79,6 +82,11 @@ public class GaitAnalysisService : IGaitAnalysisService
         public static PreviewFrameRangeMetadata Empty { get; } = new(null, new(null, null), new(null, null));
     }
     private sealed record PreviewVideoProbe(double? Fps, double? DurationSeconds, int? FrameCount);
+    private enum PreviewEncoderMode
+    {
+        NvidiaNvenc,
+        CpuLibx264
+    }
 
     /// <inheritdoc/>
     public bool IsAnalysisRunning => _isRunning;
@@ -226,9 +234,6 @@ public class GaitAnalysisService : IGaitAnalysisService
             }
 
             RaiseProgress(requestId, "processing", 95, L("GaitAnalysis.Stage.Finalizing"));
-            await Task.Run(
-                async () => await TryCreateAnalysisPreviewVideoAsync(runtimeDir, logDir, _linkedCts.Token),
-                _linkedCts.Token);
 
             AnalysisOutputReadResult outputReadResult;
             try
@@ -314,6 +319,26 @@ public class GaitAnalysisService : IGaitAnalysisService
         }
 
         return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    public Task<string?> EnsureAnalysisPreviewVideoAsync(string outputDirectory, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(outputDirectory) || !Directory.Exists(outputDirectory))
+        {
+            return Task.FromResult<string?>(null);
+        }
+
+        var previewPath = GetAnalysisPreviewPath(outputDirectory);
+        if (File.Exists(previewPath))
+        {
+            return Task.FromResult<string?>(previewPath);
+        }
+
+        var key = Path.GetFullPath(outputDirectory);
+        return _previewGenerationTasks.GetOrAdd(
+            key,
+            _ => Task.Run(() => GenerateAnalysisPreviewInBackgroundAsync(outputDirectory, ct), CancellationToken.None));
     }
 
     #region 私有方法 - 配置构建
@@ -566,10 +591,44 @@ public class GaitAnalysisService : IGaitAnalysisService
 
     private void ArchiveSuccessfulRuntimeDirectory(string runtimeDir, string archiveDir)
     {
-        Directory.CreateDirectory(archiveDir);
-        CopyDirectory(runtimeDir, archiveDir, overwrite: true);
-        TryDeleteDirectory(runtimeDir);
+        if (!TryMoveRuntimeDirectory(runtimeDir, archiveDir))
+        {
+            Directory.CreateDirectory(archiveDir);
+            CopyDirectory(runtimeDir, archiveDir, overwrite: true);
+            TryDeleteDirectory(runtimeDir);
+        }
+
         RaiseLog($"算法输出已归档: {archiveDir}");
+    }
+
+    private bool TryMoveRuntimeDirectory(string runtimeDir, string archiveDir)
+    {
+        try
+        {
+            if (!Directory.Exists(runtimeDir))
+            {
+                return false;
+            }
+
+            if (Directory.Exists(archiveDir))
+            {
+                if (Directory.EnumerateFileSystemEntries(archiveDir).Any())
+                {
+                    return false;
+                }
+
+                Directory.Delete(archiveDir);
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(archiveDir)!);
+            Directory.Move(runtimeDir, archiveDir);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Warning($"移动算法运行目录失败，回退复制归档: {ex.Message}");
+            return false;
+        }
     }
 
     private static string EnsureUniqueDirectoryPath(string path)
@@ -825,6 +884,167 @@ public class GaitAnalysisService : IGaitAnalysisService
         }
     }
 
+    private async Task<string?> GenerateAnalysisPreviewInBackgroundAsync(string outputDir, CancellationToken ct)
+    {
+        var key = Path.GetFullPath(outputDir);
+        var previewDir = Path.Combine(outputDir, PreviewDirectoryName);
+        var logDir = Path.Combine(outputDir, LogDirectoryName);
+        Directory.CreateDirectory(previewDir);
+        Directory.CreateDirectory(logDir);
+
+        var generatingPath = Path.Combine(previewDir, AnalysisPreviewGeneratingFileName);
+        var failedPath = Path.Combine(previewDir, AnalysisPreviewFailedFileName);
+
+        try
+        {
+            File.Delete(failedPath);
+            await File.WriteAllTextAsync(generatingPath, DateTime.Now.ToString("O", CultureInfo.InvariantCulture), ct);
+            string? result = null;
+            for (var attempt = 1; attempt <= 3; attempt++)
+            {
+                result = await TryCreateAnalysisPreviewVideoAsync(outputDir, logDir, ct);
+                if (!string.IsNullOrWhiteSpace(result) && File.Exists(result))
+                {
+                    break;
+                }
+
+                if (attempt < 3)
+                {
+                    _logHelper?.Warning($"分析详情拼接预览第 {attempt} 次生成失败，稍后重试。");
+                    await Task.Delay(TimeSpan.FromSeconds(3), ct);
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(result) || !File.Exists(result))
+            {
+                await File.WriteAllTextAsync(failedPath, DateTime.Now.ToString("O", CultureInfo.InvariantCulture), CancellationToken.None);
+            }
+
+            return result;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Warning($"后台生成分析详情拼接预览失败: {ex.Message}");
+            try
+            {
+                await File.WriteAllTextAsync(failedPath, ex.Message, CancellationToken.None);
+            }
+            catch
+            {
+                // 记录失败标记不应影响主流程。
+            }
+
+            return null;
+        }
+        finally
+        {
+            try
+            {
+                File.Delete(generatingPath);
+            }
+            catch
+            {
+                // 临时标记清理失败不影响下次按需生成。
+            }
+
+            _previewGenerationTasks.TryRemove(key, out _);
+        }
+    }
+
+    private static string GetAnalysisPreviewPath(string outputDirectory)
+    {
+        return Path.Combine(outputDirectory, PreviewDirectoryName, AnalysisPreviewVideoFileName);
+    }
+
+    private static ProcessStartInfo CreateFfmpegStartInfo(string ffmpegPath)
+    {
+        return new ProcessStartInfo
+        {
+            FileName = ffmpegPath,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8
+        };
+    }
+
+    private static void AddPreviewEncodingArguments(ProcessStartInfo startInfo, PreviewEncoderMode encoderMode)
+    {
+        startInfo.ArgumentList.Add("-c:v");
+        if (encoderMode == PreviewEncoderMode.NvidiaNvenc)
+        {
+            startInfo.ArgumentList.Add("h264_nvenc");
+            startInfo.ArgumentList.Add("-preset");
+            startInfo.ArgumentList.Add("p4");
+            startInfo.ArgumentList.Add("-cq");
+            startInfo.ArgumentList.Add("28");
+            startInfo.ArgumentList.Add("-b:v");
+            startInfo.ArgumentList.Add("0");
+        }
+        else
+        {
+            startInfo.ArgumentList.Add("libx264");
+            startInfo.ArgumentList.Add("-preset");
+            startInfo.ArgumentList.Add("veryfast");
+            startInfo.ArgumentList.Add("-crf");
+            startInfo.ArgumentList.Add("23");
+        }
+    }
+
+    private static string GetPreviewEncoderName(PreviewEncoderMode encoderMode)
+    {
+        return encoderMode == PreviewEncoderMode.NvidiaNvenc ? "h264_nvenc" : "libx264";
+    }
+
+    private static async Task<int> RunFfmpegProcessAsync(ProcessStartInfo startInfo, string logPath, CancellationToken ct)
+    {
+        AppendProcessLog(logPath, $"ffmpeg command: {startInfo.FileName} {string.Join(" ", startInfo.ArgumentList.Select(QuoteArgument))}");
+
+        using var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
+        process.OutputDataReceived += (_, e) =>
+        {
+            if (!string.IsNullOrWhiteSpace(e.Data))
+            {
+                AppendProcessLog(logPath, e.Data);
+            }
+        };
+        process.ErrorDataReceived += (_, e) =>
+        {
+            if (!string.IsNullOrWhiteSpace(e.Data))
+            {
+                AppendProcessLog(logPath, e.Data);
+            }
+        };
+
+        process.Start();
+        try
+        {
+            process.PriorityClass = ProcessPriorityClass.BelowNormal;
+        }
+        catch
+        {
+            // 降低优先级失败不影响预览生成。
+        }
+
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+        await process.WaitForExitAsync(ct);
+        return process.ExitCode;
+    }
+
+    private static string QuoteArgument(string argument)
+    {
+        return argument.Contains(' ', StringComparison.Ordinal) || argument.Contains(';', StringComparison.Ordinal)
+            ? $"\"{argument.Replace("\"", "\\\"", StringComparison.Ordinal)}\""
+            : argument;
+    }
+
     private async Task<string?> TryCreateAnalysisPreviewVideoAsync(string outputDir, string logDir, CancellationToken ct)
     {
         try
@@ -880,71 +1100,51 @@ public class GaitAnalysisService : IGaitAnalysisService
                     previewLogPath,
                     ct);
 
-            var startInfo = new ProcessStartInfo
+            async Task<bool> RunPreviewEncodeAsync(PreviewEncoderMode encoderMode)
             {
-                FileName = ffmpegPath,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                StandardOutputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8
-            };
-
-            startInfo.ArgumentList.Add("-y");
-            startInfo.ArgumentList.Add("-i");
-            startInfo.ArgumentList.Add(sidePreviewSource);
-            if (!string.IsNullOrWhiteSpace(frontPreviewSource))
-            {
+                TryDeleteFile(previewPath);
+                var startInfo = CreateFfmpegStartInfo(ffmpegPath);
+                startInfo.ArgumentList.Add("-y");
                 startInfo.ArgumentList.Add("-i");
-                startInfo.ArgumentList.Add(frontPreviewSource);
+                startInfo.ArgumentList.Add(sidePreviewSource);
+                if (!string.IsNullOrWhiteSpace(frontPreviewSource))
+                {
+                    startInfo.ArgumentList.Add("-i");
+                    startInfo.ArgumentList.Add(frontPreviewSource);
+                }
+
+                startInfo.ArgumentList.Add("-filter_complex");
+                startInfo.ArgumentList.Add(string.IsNullOrWhiteSpace(frontPreviewSource)
+                    ? "[0:v]scale=-2:720,pad=iw+16:ih+16:8:8:black,format=yuv420p[v]"
+                    : "[0:v]scale=-2:720,pad=iw+16:ih+16:8:8:black[s];[1:v]scale=-2:720,pad=iw+16:ih+16:8:8:black[f];[s][f]hstack=inputs=2,format=yuv420p[v]");
+                startInfo.ArgumentList.Add("-map");
+                startInfo.ArgumentList.Add("[v]");
+                startInfo.ArgumentList.Add("-an");
+                AddPreviewEncodingArguments(startInfo, encoderMode);
+                startInfo.ArgumentList.Add("-movflags");
+                startInfo.ArgumentList.Add("+faststart");
+                startInfo.ArgumentList.Add(previewPath);
+
+                var exitCode = await RunFfmpegProcessAsync(startInfo, previewLogPath, ct);
+                return exitCode == 0 && File.Exists(previewPath);
             }
 
-            startInfo.ArgumentList.Add("-filter_complex");
-            startInfo.ArgumentList.Add(string.IsNullOrWhiteSpace(frontPreviewSource)
-                ? "[0:v]scale=-2:720,pad=iw+16:ih+16:8:8:black,format=yuv420p[v]"
-                : "[0:v]scale=-2:720,pad=iw+16:ih+16:8:8:black[s];[1:v]scale=-2:720,pad=iw+16:ih+16:8:8:black[f];[s][f]hstack=inputs=2,format=yuv420p[v]");
-            startInfo.ArgumentList.Add("-map");
-            startInfo.ArgumentList.Add("[v]");
-            startInfo.ArgumentList.Add("-an");
-            startInfo.ArgumentList.Add("-c:v");
-            startInfo.ArgumentList.Add("libx264");
-            startInfo.ArgumentList.Add("-preset");
-            startInfo.ArgumentList.Add("veryfast");
-            startInfo.ArgumentList.Add("-crf");
-            startInfo.ArgumentList.Add("23");
-            startInfo.ArgumentList.Add("-movflags");
-            startInfo.ArgumentList.Add("+faststart");
-            startInfo.ArgumentList.Add(previewPath);
-
-            using var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
-            process.OutputDataReceived += (_, e) =>
+            var usedEncoder = PreviewEncoderMode.NvidiaNvenc;
+            var success = await RunPreviewEncodeAsync(usedEncoder);
+            if (!success)
             {
-                if (!string.IsNullOrWhiteSpace(e.Data))
-                {
-                    AppendProcessLog(previewLogPath, e.Data);
-                }
-            };
-            process.ErrorDataReceived += (_, e) =>
-            {
-                if (!string.IsNullOrWhiteSpace(e.Data))
-                {
-                    AppendProcessLog(previewLogPath, e.Data);
-                }
-            };
+                RaiseLog("NVENC 生成分析详情拼接预览失败，已回退 CPU 编码。");
+                usedEncoder = PreviewEncoderMode.CpuLibx264;
+                success = await RunPreviewEncodeAsync(usedEncoder);
+            }
 
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-            await process.WaitForExitAsync(ct);
-
-            if (process.ExitCode == 0 && File.Exists(previewPath))
+            if (success)
             {
-                RaiseLog($"分析详情拼接预览已生成: {previewPath}");
+                RaiseLog($"分析详情拼接预览已生成: {previewPath}，编码器: {GetPreviewEncoderName(usedEncoder)}");
                 return previewPath;
             }
 
-            RaiseLog($"分析详情拼接预览生成失败，退出码: {process.ExitCode}，日志: {previewLogPath}", isError: true);
+            RaiseLog($"分析详情拼接预览生成失败，日志: {previewLogPath}", isError: true);
             return null;
         }
         catch (OperationCanceledException)
@@ -991,6 +1191,11 @@ public class GaitAnalysisService : IGaitAnalysisService
                 return annotatedVideo;
             }
 
+            if (ShouldSkipPreviewPadding(originalProbe, annotatedProbe, frameRange, viewName))
+            {
+                return annotatedVideo;
+            }
+
             var headFrameCount = Math.Clamp(firstFrame, 0, originalFrames.Value);
             var metadataTailStartFrame = Math.Clamp(lastFrame + 1, 0, originalFrames.Value);
             var expectedTailFrameCount = Math.Max(0, originalFrames.Value - headFrameCount - annotatedFrames.Value);
@@ -1006,84 +1211,85 @@ public class GaitAnalysisService : IGaitAnalysisService
             }
 
             var restoredPath = Path.Combine(previewDir, $"{viewName}_restored_preview_source.mp4");
-            var startInfo = new ProcessStartInfo
+            async Task<bool> RunRestoreEncodeAsync(PreviewEncoderMode encoderMode)
             {
-                FileName = ffmpegPath,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                StandardOutputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8
-            };
+                TryDeleteFile(restoredPath);
+                var startInfo = CreateFfmpegStartInfo(ffmpegPath);
 
-            startInfo.ArgumentList.Add("-y");
-            var filters = new List<string>();
-            var concatLabels = new List<string>();
-            var inputIndex = 0;
+                startInfo.ArgumentList.Add("-y");
+                var filters = new List<string>();
+                var concatLabels = new List<string>();
+                var inputIndex = 0;
 
-            if (hasHeadPadding)
-            {
+                if (hasHeadPadding)
+                {
+                    startInfo.ArgumentList.Add("-i");
+                    startInfo.ArgumentList.Add(originalVideo);
+                    filters.Add($"[{inputIndex}:v]trim=start_frame=0:end_frame={headFrameCount},setpts=PTS-STARTPTS,scale=-2:720,setsar=1[v{concatLabels.Count}]");
+                    concatLabels.Add($"[v{concatLabels.Count}]");
+                    inputIndex++;
+                }
+
                 startInfo.ArgumentList.Add("-i");
-                startInfo.ArgumentList.Add(originalVideo);
-                filters.Add($"[{inputIndex}:v]trim=start_frame=0:end_frame={headFrameCount},setpts=PTS-STARTPTS,scale=-2:720,setsar=1[v{concatLabels.Count}]");
+                startInfo.ArgumentList.Add(annotatedVideo);
+                filters.Add($"[{inputIndex}:v]setpts=PTS-STARTPTS,scale=-2:720,setsar=1[v{concatLabels.Count}]");
                 concatLabels.Add($"[v{concatLabels.Count}]");
                 inputIndex++;
+
+                if (hasTailPadding)
+                {
+                    startInfo.ArgumentList.Add("-i");
+                    startInfo.ArgumentList.Add(originalVideo);
+                    filters.Add($"[{inputIndex}:v]trim=start_frame={tailStartFrame},setpts=PTS-STARTPTS,scale=-2:720,setsar=1[v{concatLabels.Count}]");
+                    concatLabels.Add($"[v{concatLabels.Count}]");
+                }
+
+                filters.Add($"{string.Concat(concatLabels)}concat=n={concatLabels.Count}:v=1:a=0,format=yuv420p[v]");
+                startInfo.ArgumentList.Add("-filter_complex");
+                startInfo.ArgumentList.Add(string.Join(";", filters));
+                startInfo.ArgumentList.Add("-map");
+                startInfo.ArgumentList.Add("[v]");
+                startInfo.ArgumentList.Add("-an");
+                AddPreviewEncodingArguments(startInfo, encoderMode);
+                startInfo.ArgumentList.Add("-movflags");
+                startInfo.ArgumentList.Add("+faststart");
+                startInfo.ArgumentList.Add(restoredPath);
+
+                var exitCode = await RunFfmpegProcessAsync(startInfo, previewLogPath, ct);
+                return exitCode == 0 && File.Exists(restoredPath);
             }
 
-            startInfo.ArgumentList.Add("-i");
-            startInfo.ArgumentList.Add(annotatedVideo);
-            filters.Add($"[{inputIndex}:v]setpts=PTS-STARTPTS,scale=-2:720,setsar=1[v{concatLabels.Count}]");
-            concatLabels.Add($"[v{concatLabels.Count}]");
-            inputIndex++;
-
-            if (hasTailPadding)
+            var usedEncoder = PreviewEncoderMode.NvidiaNvenc;
+            var success = await RunRestoreEncodeAsync(usedEncoder);
+            if (!success)
             {
-                startInfo.ArgumentList.Add("-i");
-                startInfo.ArgumentList.Add(originalVideo);
-                filters.Add($"[{inputIndex}:v]trim=start_frame={tailStartFrame},setpts=PTS-STARTPTS,scale=-2:720,setsar=1[v{concatLabels.Count}]");
-                concatLabels.Add($"[v{concatLabels.Count}]");
+                RaiseLog($"{viewName} 分析预览视频 NVENC 补齐失败，已回退 CPU 编码。");
+                usedEncoder = PreviewEncoderMode.CpuLibx264;
+                success = await RunRestoreEncodeAsync(usedEncoder);
             }
 
-            filters.Add($"{string.Concat(concatLabels)}concat=n={concatLabels.Count}:v=1:a=0,format=yuv420p[v]");
-            startInfo.ArgumentList.Add("-filter_complex");
-            startInfo.ArgumentList.Add(string.Join(";", filters));
-            startInfo.ArgumentList.Add("-map");
-            startInfo.ArgumentList.Add("[v]");
-            startInfo.ArgumentList.Add("-an");
-            startInfo.ArgumentList.Add("-c:v");
-            startInfo.ArgumentList.Add("libx264");
-            startInfo.ArgumentList.Add("-preset");
-            startInfo.ArgumentList.Add("veryfast");
-            startInfo.ArgumentList.Add("-crf");
-            startInfo.ArgumentList.Add("23");
-            startInfo.ArgumentList.Add("-movflags");
-            startInfo.ArgumentList.Add("+faststart");
-            startInfo.ArgumentList.Add(restoredPath);
-
-            using var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
-            process.OutputDataReceived += (_, e) =>
+            if (success)
             {
-                if (!string.IsNullOrWhiteSpace(e.Data))
+                var restoredProbe = ProbePreviewVideo(ffmpegPath, restoredPath);
+                var frameTolerance = GetPreviewFrameTolerance(originalProbe);
+                if (restoredProbe.FrameCount is > 0
+                    && restoredProbe.FrameCount.Value > originalFrames.Value + frameTolerance)
                 {
-                    AppendProcessLog(previewLogPath, e.Data);
+                    TryDeleteFile(restoredPath);
+                    RaiseLog($"{viewName} 分析预览补齐产物帧数超过原始视频，已回退使用算法标注视频。");
+                    return annotatedVideo;
                 }
-            };
-            process.ErrorDataReceived += (_, e) =>
-            {
-                if (!string.IsNullOrWhiteSpace(e.Data))
-                {
-                    AppendProcessLog(previewLogPath, e.Data);
-                }
-            };
 
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-            await process.WaitForExitAsync(ct);
-            if (process.ExitCode == 0 && File.Exists(restoredPath))
-            {
-                RaiseLog($"{viewName} 分析预览视频已按原始输入帧范围补齐。");
+                if (restoredProbe.DurationSeconds is > 0
+                    && originalProbe.DurationSeconds is > 0
+                    && restoredProbe.DurationSeconds.Value > originalProbe.DurationSeconds.Value + 0.25)
+                {
+                    TryDeleteFile(restoredPath);
+                    RaiseLog($"{viewName} 分析预览补齐产物时长超过原始视频，已回退使用算法标注视频。");
+                    return annotatedVideo;
+                }
+
+                RaiseLog($"{viewName} 分析预览视频已按原始输入帧范围补齐，编码器: {GetPreviewEncoderName(usedEncoder)}。");
                 return restoredPath;
             }
 
@@ -1098,6 +1304,72 @@ public class GaitAnalysisService : IGaitAnalysisService
         {
             RaiseLog($"{viewName} 分析预览视频补齐异常，使用算法原始标注视频: {ex.Message}", isError: true);
             return annotatedVideo;
+        }
+    }
+
+    private void RaisePreviewPaddingSkippedLog(string viewName, string reason)
+    {
+        RaiseLog($"{viewName} 分析预览视频跳过补齐: {reason}");
+    }
+
+    private bool ShouldSkipPreviewPadding(
+        PreviewVideoProbe originalProbe,
+        PreviewVideoProbe annotatedProbe,
+        PreviewFrameRange frameRange,
+        string viewName)
+    {
+        if (originalProbe.FrameCount is not { } originalFrames
+            || annotatedProbe.FrameCount is not { } annotatedFrames
+            || frameRange.First is not { } firstFrame
+            || frameRange.Last is not { } lastFrame)
+        {
+            return false;
+        }
+
+        var frameTolerance = GetPreviewFrameTolerance(originalProbe);
+        if (annotatedFrames >= originalFrames - frameTolerance)
+        {
+            RaisePreviewPaddingSkippedLog(viewName, "算法标注视频已接近原始视频完整长度。");
+            return true;
+        }
+
+        var metadataFrameCount = Math.Max(0, lastFrame - firstFrame + 1);
+        var metadataMismatchTolerance = Math.Max(frameTolerance, (int)Math.Ceiling(annotatedFrames * 0.05));
+        if (metadataFrameCount > 0
+            && Math.Abs(metadataFrameCount - annotatedFrames) > metadataMismatchTolerance
+            && annotatedFrames >= originalFrames * 0.8)
+        {
+            RaisePreviewPaddingSkippedLog(viewName, $"有效帧范围长度({metadataFrameCount})与标注视频帧数({annotatedFrames})不一致。");
+            return true;
+        }
+
+        if (firstFrame + annotatedFrames > originalFrames + frameTolerance)
+        {
+            RaisePreviewPaddingSkippedLog(viewName, "有效起始帧与标注视频帧数相加超过原始视频长度。");
+            return true;
+        }
+
+        return false;
+    }
+
+    private static int GetPreviewFrameTolerance(PreviewVideoProbe probe)
+    {
+        var fpsTolerance = probe.Fps is > 0 ? (int)Math.Ceiling(probe.Fps.Value * 0.15) : 5;
+        return Math.Max(5, fpsTolerance);
+    }
+
+    private static void TryDeleteFile(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch
+        {
+            // 删除失败不影响预览回退。
         }
     }
 
@@ -1859,6 +2131,10 @@ public class GaitAnalysisService : IGaitAnalysisService
             result.StepLengthM = gep.StepLengthM;
             result.StrideLengthM = gep.StrideLengthM;
             result.GaitSpeedMPerS = gep.GaitSpeedMPerS;
+            result.LeftStanceRatioPct = gep.LeftStanceRatioPct;
+            result.RightStanceRatioPct = gep.RightStanceRatioPct;
+            result.LeftSwingRatioPct = gep.LeftSwingRatioPct;
+            result.RightSwingRatioPct = gep.RightSwingRatioPct;
         }
 
         return result;
@@ -2054,6 +2330,10 @@ public class GaitAnalysisService : IGaitAnalysisService
                         gaitParams.StepLengthM = result.StepLengthM;
                         gaitParams.StrideLengthM = result.StrideLengthM;
                         gaitParams.GaitSpeedMPerS = result.GaitSpeedMPerS;
+                        gaitParams.StancePhaseLeft = result.LeftStanceRatioPct ?? gaitParams.StancePhaseLeft;
+                        gaitParams.StancePhaseRight = result.RightStanceRatioPct ?? gaitParams.StancePhaseRight;
+                        gaitParams.SwingPhaseLeft = result.LeftSwingRatioPct ?? gaitParams.SwingPhaseLeft;
+                        gaitParams.SwingPhaseRight = result.RightSwingRatioPct ?? gaitParams.SwingPhaseRight;
                         await db.UpdateAsync(gaitParams);
                     }
                 }

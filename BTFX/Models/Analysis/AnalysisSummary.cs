@@ -84,6 +84,18 @@ public class GaitEventParametersDto
 
     [JsonPropertyName("single_support_time_s")]
     public double? SingleSupportTimeS { get; set; }
+
+    [JsonPropertyName("left_stance_ratio_pct")]
+    public double? LeftStanceRatioPct { get; set; }
+
+    [JsonPropertyName("right_stance_ratio_pct")]
+    public double? RightStanceRatioPct { get; set; }
+
+    [JsonPropertyName("left_swing_ratio_pct")]
+    public double? LeftSwingRatioPct { get; set; }
+
+    [JsonPropertyName("right_swing_ratio_pct")]
+    public double? RightSwingRatioPct { get; set; }
 }
 
 /// <summary>

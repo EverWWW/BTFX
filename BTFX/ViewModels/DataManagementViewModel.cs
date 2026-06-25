@@ -336,6 +336,19 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
                 CurrentPage,
                 _pageSize);
 
+            var correctedTotalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)_pageSize));
+            if (CurrentPage > correctedTotalPages)
+            {
+                CurrentPage = correctedTotalPages;
+                (records, totalCount) = await _measurementService.GetMeasurementsPagedAsync(
+                    FilterPatientName,
+                    FilterStartDate,
+                    FilterEndDate,
+                    SelectedStatusOption?.Value,
+                    CurrentPage,
+                    _pageSize);
+            }
+
             if (_cancellationTokenSource.Token.IsCancellationRequested) return;
 
             // 在UI线程更新属性和集合
@@ -349,12 +362,6 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
                 TotalRecords = totalCount;
                 TotalPages = (int)Math.Ceiling(totalCount / (double)_pageSize);
                 if (TotalPages < 1) TotalPages = 1;
-
-                // 确保当前页有效
-                if (CurrentPage > TotalPages)
-                {
-                    CurrentPage = TotalPages;
-                }
 
                 // 转换为视图项
                 MeasurementRecords.Clear();

@@ -153,6 +153,12 @@ public partial class DataManagementSettingsViewModel : ObservableObject
         AnalysisResultStorageDisplay = FormatDirectorySize(GetAnalysisResultDirectory());
     }
 
+    [RelayCommand]
+    private void RefreshVideoStorage()
+    {
+        RefreshVideoStorageInfo();
+    }
+
     private static string GetRecordedVideoDirectory()
     {
         return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "video");
