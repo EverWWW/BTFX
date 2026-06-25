@@ -53,6 +53,10 @@ public class SettingsService : ISettingsService
             {
                 var json = File.ReadAllText(_configFilePath);
                 CurrentSettings = JsonSerializer.Deserialize<AppSettings>(json, _jsonOptions) ?? new AppSettings();
+                if (EnsureDefaultSettings())
+                {
+                    SaveSettings();
+                }
             }
             else
             {
@@ -65,7 +69,55 @@ public class SettingsService : ISettingsService
         {
             System.Diagnostics.Debug.WriteLine($"加载配置失败: {ex.Message}");
             CurrentSettings = new AppSettings();
+            EnsureDefaultSettings();
         }
+    }
+
+    private bool EnsureDefaultSettings()
+    {
+        var changed = false;
+        if (CurrentSettings.Application == null)
+        {
+            CurrentSettings.Application = new ApplicationSettings();
+            changed = true;
+        }
+        if (CurrentSettings.Database == null)
+        {
+            CurrentSettings.Database = new DatabaseSettings();
+            changed = true;
+        }
+        if (CurrentSettings.AutoBackup == null)
+        {
+            CurrentSettings.AutoBackup = new AutoBackupSettings();
+            changed = true;
+        }
+        if (CurrentSettings.Unit == null)
+        {
+            CurrentSettings.Unit = new UnitSettings();
+            changed = true;
+        }
+        if (CurrentSettings.Credentials == null)
+        {
+            CurrentSettings.Credentials = new CredentialsSettings();
+            changed = true;
+        }
+        if (CurrentSettings.Algorithm == null)
+        {
+            CurrentSettings.Algorithm = new AlgorithmSettings();
+            changed = true;
+        }
+        if (CurrentSettings.Update == null)
+        {
+            CurrentSettings.Update = new UpdateSettings();
+            changed = true;
+        }
+        if (CurrentSettings.ProductInfo == null)
+        {
+            CurrentSettings.ProductInfo = new ProductInfoSettings();
+            changed = true;
+        }
+
+        return changed;
     }
 
     /// <summary>
@@ -275,6 +327,7 @@ public class SettingsService : ISettingsService
                 {
                     public ApplicationSettings? Application { get; set; }
                     public UnitSettings? Unit { get; set; }
+                    public ProductInfoSettings? ProductInfo { get; set; }
                     public string ExportTime { get; set; } = string.Empty;
                     public string AppVersion { get; set; } = string.Empty;
                 }
@@ -291,6 +344,7 @@ public class SettingsService : ISettingsService
                         {
                             Application = CurrentSettings.Application,
                             Unit = CurrentSettings.Unit,
+                            ProductInfo = CurrentSettings.ProductInfo,
                             ExportTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
                             AppVersion = Constants.VERSION_FULL
                         };
@@ -335,6 +389,11 @@ public class SettingsService : ISettingsService
                         if (importedSettings.Unit != null)
                         {
                             CurrentSettings.Unit = importedSettings.Unit;
+                        }
+
+                        if (importedSettings.ProductInfo != null)
+                        {
+                            CurrentSettings.ProductInfo = importedSettings.ProductInfo;
                         }
 
                         SaveSettings();

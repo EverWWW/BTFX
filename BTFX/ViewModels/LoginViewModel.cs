@@ -1,5 +1,6 @@
 ﻿using BTFX.Common;
 using BTFX.Services.Interfaces;
+using BTFX.Views.Dialogs;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ToolHelper.LoggingDiagnostics.Abstractions;
@@ -40,7 +41,7 @@ public partial class LoginViewModel : ObservableObject
     private bool _isLoggingIn;
 
     [ObservableProperty]
-    private string _version = Constants.VERSION_DISPLAY;
+    private string _version = string.Empty;
 
     /// <summary>
     /// 构造函数
@@ -68,6 +69,25 @@ public partial class LoginViewModel : ObservableObject
 
         // 加载记住的密码
         LoadRememberedCredentials();
+        RefreshVersion();
+        _localizationService.LanguageChanged += (_, _) => RefreshVersion();
+    }
+
+    private void RefreshVersion()
+    {
+        var releaseVersion = _settingsService.CurrentSettings.ProductInfo.ReleaseVersion?.Trim();
+        if (string.IsNullOrWhiteSpace(releaseVersion))
+        {
+            releaseVersion = Constants.VERSION_DISPLAY;
+        }
+
+        Version = string.Format(_localizationService.GetString("Login.VersionFormat"), releaseVersion);
+    }
+
+    [RelayCommand]
+    private async Task ShowAboutAsync()
+    {
+        await MaterialDesignThemes.Wpf.DialogHost.Show(new AboutDialog(), "RootDialog");
     }
 
     /// <summary>

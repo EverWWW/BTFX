@@ -512,6 +512,7 @@ public partial class App : Application
 
         // ========== ViewModel 注册 ==========
         services.AddTransient<MainWindowViewModel>();
+        services.AddTransient<AboutDialogViewModel>();
         services.AddTransient<ActivationViewModel>();
         services.AddTransient<LoginViewModel>();
         services.AddTransient<PatientSelectionViewModel>();

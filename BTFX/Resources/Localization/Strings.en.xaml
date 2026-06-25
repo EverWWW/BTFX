@@ -682,7 +682,11 @@
     <system:String x:Key="AboutUs">About Us</system:String>
     <system:String x:Key="About.ReleaseVersion">Release Version</system:String>
     <system:String x:Key="About.InternalVersion">Internal Version</system:String>
-    <system:String x:Key="About.ProtocolVersion">Protocol Version</system:String>
+    <system:String x:Key="About.CompanyName">Company</system:String>
+    <system:String x:Key="About.EquipmentModel">Device Model</system:String>
+    <system:String x:Key="About.Website">Website</system:String>
+    <system:String x:Key="About.ToggleInternalVersion">Show/Hide internal version</system:String>
+    <system:String x:Key="Login.VersionFormat">Version {0}</system:String>
 
     <system:String x:Key="AddUser">Add User</system:String>
     <system:String x:Key="EditUser">Edit User</system:String>

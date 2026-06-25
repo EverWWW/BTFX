@@ -683,7 +683,11 @@
     <system:String x:Key="AboutUs">关于我们</system:String>
     <system:String x:Key="About.ReleaseVersion">发布版本</system:String>
     <system:String x:Key="About.InternalVersion">内部版本</system:String>
-    <system:String x:Key="About.ProtocolVersion">协议版本</system:String>
+    <system:String x:Key="About.CompanyName">公司名称</system:String>
+    <system:String x:Key="About.EquipmentModel">设备型号</system:String>
+    <system:String x:Key="About.Website">公司网址</system:String>
+    <system:String x:Key="About.ToggleInternalVersion">显示/隐藏内部版本</system:String>
+    <system:String x:Key="Login.VersionFormat">版本 {0}</system:String>
 
     <system:String x:Key="AddUser">添加用户</system:String>
     <system:String x:Key="EditUser">编辑用户</system:String>

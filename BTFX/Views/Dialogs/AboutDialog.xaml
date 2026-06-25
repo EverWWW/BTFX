@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
     x:Class="BTFX.Views.Dialogs.AboutDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,16 +6,16 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Width="620"
+    Width="720"
     Height="560"
     d:DesignHeight="560"
-    d:DesignWidth="620"
+    d:DesignWidth="720"
     FontFamily="{StaticResource AppFont}"
     mc:Ignorable="d">
 
     <UserControl.Resources>
         <Style x:Key="InfoLabelStyle" TargetType="TextBlock">
-            <Setter Property="Width" Value="120" />
+            <Setter Property="Width" Value="160" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="FontSize" Value="18" />
             <Setter Property="FontWeight" Value="Medium" />
@@ -55,6 +55,28 @@
                 </Trigger>
                 <Trigger Property="IsPressed" Value="True">
                     <Setter Property="Opacity" Value="0.78" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="WebsiteLinkButtonStyle" TargetType="Button">
+            <Setter Property="Margin" Value="18,0,0,0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="0.75" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -141,12 +163,12 @@
                             FontSize="26"
                             FontWeight="Bold"
                             Foreground="#333333"
-                            Text="{x:Static common:Constants.APP_DISPLAY_NAME}" />
+                            Text="{Binding SoftwareName}" />
                         <TextBlock
                             Margin="0,8,0,0"
                             FontSize="16"
                             Foreground="#666666"
-                            Text="{x:Static common:Constants.APP_DISPLAY_NAME_EN}" />
+                            Text="{Binding SoftwareNameSecondary}" />
                     </StackPanel>
                 </Grid>
 
@@ -161,23 +183,113 @@
                             <RowDefinition Height="34" />
                             <RowDefinition Height="34" />
                             <RowDefinition Height="34" />
+                            <RowDefinition Height="34" />
+                            <RowDefinition Height="34" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="160" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource InfoLabelStyle}" Text="{DynamicResource Activation.SoftwareVersion}" />
-                        <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource InfoValueStyle}" Text="{x:Static common:Constants.VERSION_FULL}" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Style="{StaticResource InfoLabelStyle}"
+                            Text="{DynamicResource About.CompanyName}" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Style="{StaticResource InfoValueStyle}"
+                            Text="{Binding CompanyName}" />
 
-                        <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource InfoLabelStyle}" Text="{DynamicResource About.ReleaseVersion}" />
-                        <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource InfoValueStyle}" Text="{x:Static common:Constants.VERSION_DISPLAY}" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Style="{StaticResource InfoLabelStyle}"
+                            Text="{DynamicResource Activation.SoftwareName}" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Style="{StaticResource InfoValueStyle}"
+                            Text="{Binding SoftwareName}" />
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource InfoLabelStyle}" Text="{DynamicResource About.InternalVersion}" />
-                        <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource InfoValueStyle}" Text="{x:Static common:Constants.VERSION_INTERNAL}" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Style="{StaticResource InfoLabelStyle}"
+                            Text="{DynamicResource About.EquipmentModel}" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Style="{StaticResource InfoValueStyle}"
+                            Text="{Binding EquipmentModel}" />
 
-                        <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource InfoLabelStyle}" Text="{DynamicResource About.ProtocolVersion}" />
-                        <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource InfoValueStyle}" Text="{x:Static common:Constants.PROTOCOL_VERSION}" />
+                        <TextBlock
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            Style="{StaticResource InfoLabelStyle}"
+                            Text="{DynamicResource About.ReleaseVersion}" />
+                        <Grid Grid.Row="3" Grid.Column="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="36" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Style="{StaticResource InfoValueStyle}" Text="{Binding ReleaseVersion}" />
+                            <Button
+                                Grid.Column="1"
+                                Width="28"
+                                Height="28"
+                                Margin="8,0,0,0"
+                                Padding="0"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Command="{Binding ToggleInternalVersionCommand}"
+                                Cursor="Hand"
+                                ToolTip="{DynamicResource About.ToggleInternalVersion}">
+                                <materialDesign:PackIcon
+                                    Width="18"
+                                    Height="18"
+                                    Foreground="#403B5B"
+                                    Kind="InformationOutline" />
+                            </Button>
+                            <TextBlock
+                                Grid.Column="2"
+                                Margin="18,0,0,0"
+                                Style="{StaticResource InfoValueStyle}"
+                                Text="{Binding InternalVersion}"
+                                Visibility="{Binding IsInternalVersionVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        </Grid>
+
+                        <TextBlock
+                            Grid.Row="4"
+                            Grid.Column="0"
+                            Style="{StaticResource InfoLabelStyle}"
+                            Text="{DynamicResource Activation.SoftwareVersion}" />
+                        <TextBlock
+                            Grid.Row="4"
+                            Grid.Column="1"
+                            Style="{StaticResource InfoValueStyle}"
+                            Text="{Binding SoftwareVersion}" />
+
+                        <TextBlock
+                            Grid.Row="5"
+                            Grid.Column="0"
+                            Style="{StaticResource InfoLabelStyle}"
+                            Text="{DynamicResource About.Website}" />
+                        <Button
+                            Grid.Row="5"
+                            Grid.Column="1"
+                            Command="{Binding OpenWebsiteCommand}"
+                            Style="{StaticResource WebsiteLinkButtonStyle}">
+                            <TextBlock
+                                FontSize="18"
+                                FontWeight="Medium"
+                                Foreground="#403B5B"
+                                Text="{Binding Website}"
+                                TextDecorations="Underline"
+                                TextTrimming="CharacterEllipsis" />
+                        </Button>
                     </Grid>
                 </Border>
 

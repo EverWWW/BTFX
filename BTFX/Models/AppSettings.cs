@@ -41,6 +41,11 @@ public class AppSettings
     /// 在线更新配置
     /// </summary>
     public UpdateSettings Update { get; set; } = new();
+
+    /// <summary>
+    /// 产品显示信息
+    /// </summary>
+    public ProductInfoSettings ProductInfo { get; set; } = new();
 }
 
 /// <summary>
@@ -62,6 +67,57 @@ public class ApplicationSettings
     /// 主题色（十六进制颜色值，如 #FF009EDB）
     /// </summary>
     public string PrimaryColor { get; set; } = "#FF009EDB";
+}
+
+/// <summary>
+/// 产品显示信息设置
+/// </summary>
+public class ProductInfoSettings
+{
+    /// <summary>
+    /// 中文公司名称
+    /// </summary>
+    public string CompanyNameZh { get; set; } = "河南翔宇医疗设备股份有限公司";
+
+    /// <summary>
+    /// 英文公司名称
+    /// </summary>
+    public string CompanyNameEn { get; set; } = "Sunnyou Medical Co., Ltd.";
+
+    /// <summary>
+    /// 中文软件名称
+    /// </summary>
+    public string SoftwareNameZh { get; set; } = Constants.APP_DISPLAY_NAME;
+
+    /// <summary>
+    /// 英文软件名称
+    /// </summary>
+    public string SoftwareNameEn { get; set; } = Constants.APP_DISPLAY_NAME_EN;
+
+    /// <summary>
+    /// 设备型号
+    /// </summary>
+    public string EquipmentModel { get; set; } = Constants.ACTIVATION_PRODUCT_MODEL;
+
+    /// <summary>
+    /// 发布版本
+    /// </summary>
+    public string ReleaseVersion { get; set; } = Constants.VERSION_DISPLAY;
+
+    /// <summary>
+    /// 软件版本
+    /// </summary>
+    public string SoftwareVersion { get; set; } = Constants.VERSION_FULL;
+
+    /// <summary>
+    /// 内部版本
+    /// </summary>
+    public string InternalVersion { get; set; } = "V1.0.0.20260625_alpha01";
+
+    /// <summary>
+    /// 公司网址
+    /// </summary>
+    public string Website { get; set; } = "https://www.xyyl.com/";
 }
 
 /// <summary>

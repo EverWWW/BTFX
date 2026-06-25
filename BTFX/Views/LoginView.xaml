@@ -155,6 +155,35 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="LoginAboutButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="ButtonBorder"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="14">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#F1EFF7" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#E8E4F1" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <Grid MouseLeftButtonDown="LoginBackground_MouseLeftButtonDown">
@@ -186,6 +215,32 @@
                     <!-- 右侧登录区约 770/1620 ≈ 47.5% -->
                     <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
+
+                <StackPanel
+                    Grid.ColumnSpan="2"
+                    Panel.ZIndex="10"
+                    Margin="0,0,28,20"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Orientation="Horizontal">
+                    <Button
+                        Margin="0,0,6,0"
+                        Command="{Binding ShowAboutCommand}"
+                        Style="{StaticResource LoginAboutButtonStyle}"
+                        ToolTip="{DynamicResource AboutUs}">
+                        <materialDesign:PackIcon
+                            Width="18"
+                            Height="18"
+                            Foreground="#999999"
+                            Kind="InformationOutline" />
+                    </Button>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="14"
+                        Foreground="#999999"
+                        Opacity="0.85"
+                        Text="{Binding Version}" />
+                </StackPanel>
 
                 <!-- ========== 左侧展示区 ========== -->
                 <Border
@@ -455,14 +510,5 @@
 
             </Grid>
         </Border>
-
-        <TextBlock
-            Margin="24"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            FontSize="12"
-            Foreground="#999999"
-            Opacity="0.8"
-            Text="{Binding Version}" />
     </Grid>
 </UserControl>
