@@ -24,6 +24,7 @@ namespace BTFX.ViewModels;
 public partial class ReportPreviewDialogViewModel : ObservableObject
 {
     private readonly ILocalizationService _localizationService;
+    private readonly IReportReferenceRangeService _referenceRangeService;
     private Report? _report;
     private FlowDocument? _previewDocument;
     private string _previewStatus;
@@ -36,9 +37,12 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
     private bool _includeCurveCharts = true;
     private string _selectedExportFormat = "PDF";
 
-    public ReportPreviewDialogViewModel(ILocalizationService localizationService)
+    public ReportPreviewDialogViewModel(
+        ILocalizationService localizationService,
+        IReportReferenceRangeService referenceRangeService)
     {
         _localizationService = localizationService;
+        _referenceRangeService = referenceRangeService;
         _previewStatus = L("AnalysisDetail.ReportPreview.Status.NotLoaded");
         _localizationService.LanguageChanged += OnLanguageChanged;
     }
@@ -46,6 +50,8 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
     private string L(string key) => _localizationService.GetString(key);
 
     private string L(string key, params object[] args) => _localizationService.GetString(key, args);
+
+    private string Reference(string key) => _referenceRangeService.GetReferenceText(key);
 
     private void OnLanguageChanged(object? sender, AppLanguage language)
     {
@@ -377,15 +383,15 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         {
             AddClinicalParameterSection(document, L("Report.Section.Spatiotemporal"), L("ReportPreview.Description.Spatiotemporal"),
             [
-                (L("ReportPreview.Param.GaitCycle"), FormatSeconds(data.MeanCycleDurationSec), "s", L("ReportPreview.Ref.GaitCycle")),
-                (L("ReportPreview.Param.MeanStepLength"), FormatMeters(data.MeanStepLengthM), "m", L("ReportPreview.Ref.StepLength")),
-                (L("ReportPreview.Param.MeanStrideLength"), FormatMeters(data.MeanStrideLengthM), "m", L("ReportPreview.Ref.StrideLength")),
-                (L("ReportPreview.Param.MeanCadence"), FormatNumber(data.CadenceStepPerMin, "F1"), "step/min", L("ReportPreview.Ref.Cadence")),
-                (L("ReportPreview.Param.MeanGaitSpeed"), FormatNumber(data.GaitSpeedMPerS, "F2"), "m/s", L("ReportPreview.Ref.GaitSpeed")),
-                (L("ReportPreview.Param.StanceTime"), FormatNumber(data.MeanStanceTimeSec, "F2"), "s", L("ReportPreview.Ref.StanceTime")),
-                (L("ReportPreview.Param.SwingTime"), FormatNumber(data.MeanSwingTimeSec, "F2"), "s", L("ReportPreview.Ref.SwingTime")),
-                (L("ReportPreview.Param.DoubleSupportTime"), FormatNumber(data.MeanDoubleSupportTimeSec, "F2"), "s", L("ReportPreview.Ref.DoubleSupportTime")),
-                (L("ReportPreview.Param.SingleSupportTime"), FormatNumber(data.MeanSingleSupportTimeSec, "F2"), "s", L("ReportPreview.Ref.SingleSupportTime"))
+                (L("ReportPreview.Param.GaitCycle"), FormatSeconds(data.MeanCycleDurationSec), "s", Reference("GaitCycle")),
+                (L("ReportPreview.Param.MeanStepLength"), FormatMeters(data.MeanStepLengthM), "m", Reference("MeanStepLength")),
+                (L("ReportPreview.Param.MeanStrideLength"), FormatMeters(data.MeanStrideLengthM), "m", Reference("MeanStrideLength")),
+                (L("ReportPreview.Param.MeanCadence"), FormatNumber(data.CadenceStepPerMin, "F1"), "step/min", Reference("MeanCadence")),
+                (L("ReportPreview.Param.MeanGaitSpeed"), FormatNumber(data.GaitSpeedMPerS, "F2"), "m/s", Reference("MeanGaitSpeed")),
+                (L("ReportPreview.Param.StanceTime"), FormatNumber(data.MeanStanceTimeSec, "F2"), "s", Reference("StanceTime")),
+                (L("ReportPreview.Param.SwingTime"), FormatNumber(data.MeanSwingTimeSec, "F2"), "s", Reference("SwingTime")),
+                (L("ReportPreview.Param.DoubleSupportTime"), FormatNumber(data.MeanDoubleSupportTimeSec, "F2"), "s", Reference("DoubleSupportTime")),
+                (L("ReportPreview.Param.SingleSupportTime"), FormatNumber(data.MeanSingleSupportTimeSec, "F2"), "s", Reference("SingleSupportTime"))
             ]);
         }
 
@@ -393,20 +399,20 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         {
             var kinematicItems = new List<(string Name, string Value, string Unit, string Reference)>
             {
-                (L("ReportPreview.Param.LeftHipRom"), FormatNumber(data.LeftHipRomDeg, "F1"), "°", "--"),
-                (L("ReportPreview.Param.RightHipRom"), FormatNumber(data.RightHipRomDeg, "F1"), "°", "--"),
-                (L("ReportPreview.Param.LeftKneeRom"), FormatNumber(data.LeftKneeRomDeg, "F1"), "°", "--"),
-                (L("ReportPreview.Param.RightKneeRom"), FormatNumber(data.RightKneeRomDeg, "F1"), "°", "--"),
-                (L("ReportPreview.Param.LeftAnkleRom"), FormatNumber(data.LeftAnkleRomDeg, "F1"), "°", "--"),
-                (L("ReportPreview.Param.RightAnkleRom"), FormatNumber(data.RightAnkleRomDeg, "F1"), "°", "--"),
-                (L("ReportPreview.Param.HipAverageRom"), FormatNumber(data.HipRomDeg, "F1"), "°", "--"),
-                (L("ReportPreview.Param.KneeAverageRom"), FormatNumber(data.KneeRomDeg, "F1"), "°", "--"),
-                (L("ReportPreview.Param.AnkleAverageRom"), FormatNumber(data.AnkleRomDeg, "F1"), "°", "--")
+                (L("ReportPreview.Param.LeftHipRom"), FormatNumber(data.LeftHipRomDeg, "F1"), "°", Reference("LeftHipRom")),
+                (L("ReportPreview.Param.RightHipRom"), FormatNumber(data.RightHipRomDeg, "F1"), "°", Reference("RightHipRom")),
+                (L("ReportPreview.Param.LeftKneeRom"), FormatNumber(data.LeftKneeRomDeg, "F1"), "°", Reference("LeftKneeRom")),
+                (L("ReportPreview.Param.RightKneeRom"), FormatNumber(data.RightKneeRomDeg, "F1"), "°", Reference("RightKneeRom")),
+                (L("ReportPreview.Param.LeftAnkleRom"), FormatNumber(data.LeftAnkleRomDeg, "F1"), "°", Reference("LeftAnkleRom")),
+                (L("ReportPreview.Param.RightAnkleRom"), FormatNumber(data.RightAnkleRomDeg, "F1"), "°", Reference("RightAnkleRom")),
+                (L("ReportPreview.Param.HipAverageRom"), FormatNumber(data.HipRomDeg, "F1"), "°", Reference("HipAverageRom")),
+                (L("ReportPreview.Param.KneeAverageRom"), FormatNumber(data.KneeRomDeg, "F1"), "°", Reference("KneeAverageRom")),
+                (L("ReportPreview.Param.AnkleAverageRom"), FormatNumber(data.AnkleRomDeg, "F1"), "°", Reference("AnkleAverageRom"))
             };
 
             if (data.IsDualVideoMode)
             {
-                kinematicItems.Add((L("ReportPreview.Param.PelvisCoronalAngle"), FormatNumber(data.PelvisCoronalRomDeg, "F1"), "°", "--"));
+                kinematicItems.Add((L("ReportPreview.Param.PelvisCoronalAngle"), FormatNumber(data.PelvisCoronalRomDeg, "F1"), "°", Reference("PelvisCoronalAngle")));
             }
 
             AddClinicalParameterSection(document, L("Report.Section.Kinematic"), L("ReportPreview.Description.Kinematic"),
@@ -417,13 +423,13 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         {
             AddClinicalParameterSection(document, L("Report.Section.TrunkPelvis"), L("ReportPreview.Description.TrunkPelvis"),
             [
-                (L("ReportPreview.Param.TrunkTiltMean"), FormatNumber(data.TrunkTiltMeanDeg, "F1"), "°", "--"),
-                (L("ReportPreview.Param.TrunkTiltMax"), FormatNumber(data.TrunkTiltMaxDeg, "F1"), "°", "--"),
-                (L("ReportPreview.Param.TrunkTiltMin"), FormatNumber(data.TrunkTiltMinDeg, "F1"), "°", "--"),
-                (L("ReportPreview.Param.TrunkTiltRom"), FormatNumber(data.TrunkTiltRomDeg, "F1"), "°", "--"),
-                (L("ReportPreview.Param.PelvisTiltMean"), FormatNumber(data.PelvisTiltMeanDeg, "F1"), "°", "--"),
-                (L("ReportPreview.Param.PelvisTiltMax"), FormatNumber(data.PelvisTiltMaxDeg, "F1"), "°", "--"),
-                (L("ReportPreview.Param.PelvisRom"), FormatNumber(data.PelvisRomDeg, "F1"), "°", "--")
+                (L("ReportPreview.Param.TrunkTiltMean"), FormatNumber(data.TrunkTiltMeanDeg, "F1"), "°", Reference("TrunkTiltMean")),
+                (L("ReportPreview.Param.TrunkTiltMax"), FormatNumber(data.TrunkTiltMaxDeg, "F1"), "°", Reference("TrunkTiltMax")),
+                (L("ReportPreview.Param.TrunkTiltMin"), FormatNumber(data.TrunkTiltMinDeg, "F1"), "°", Reference("TrunkTiltMin")),
+                (L("ReportPreview.Param.TrunkTiltRom"), FormatNumber(data.TrunkTiltRomDeg, "F1"), "°", Reference("TrunkTiltRom")),
+                (L("ReportPreview.Param.PelvisTiltMean"), FormatNumber(data.PelvisTiltMeanDeg, "F1"), "°", Reference("PelvisTiltMean")),
+                (L("ReportPreview.Param.PelvisTiltMax"), FormatNumber(data.PelvisTiltMaxDeg, "F1"), "°", Reference("PelvisTiltMax")),
+                (L("ReportPreview.Param.PelvisRom"), FormatNumber(data.PelvisRomDeg, "F1"), "°", Reference("PelvisRom"))
             ]);
         }
 
@@ -431,14 +437,14 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         {
             AddClinicalParameterSection(document, L("Report.Section.Symmetry"), L("ReportPreview.Description.Symmetry"),
             [
-                (L("ReportPreview.Param.StrideDiff"), FormatNumber(AbsDiff(data.LeftStrideMeanM, data.RightStrideMeanM), "F2"), "m", "--"),
-                (L("ReportPreview.Param.StrideDiffPercent"), FormatNumber(DiffPercent(data.LeftStrideMeanM, data.RightStrideMeanM), "F1"), "%", "--"),
-                (L("ReportPreview.Param.StanceRatioDiff"), FormatNumber(AbsDiff(data.LeftStanceRatioPct, data.RightStanceRatioPct), "F1"), "%", "--"),
-                (L("ReportPreview.Param.StanceRatioDiffPercent"), FormatNumber(DiffPercent(data.LeftStanceRatioPct, data.RightStanceRatioPct), "F1"), "%", "--"),
-                (L("ReportPreview.Param.KneeRomDiff"), FormatNumber(AbsDiff(data.LeftKneeRomDeg, data.RightKneeRomDeg), "F1"), "°", "--"),
-                (L("ReportPreview.Param.HipRomDiff"), FormatNumber(AbsDiff(data.LeftHipRomDeg, data.RightHipRomDeg), "F1"), "°", "--"),
-                (L("ReportPreview.Param.AnkleRomDiff"), FormatNumber(AbsDiff(data.LeftAnkleRomDeg, data.RightAnkleRomDeg), "F1"), "°", "--"),
-                (L("ReportPreview.Param.SymmetryScore"), FormatNumber(data.SymmetryScore, "F1"), L("ReportPreview.Unit.Score"), "--")
+                (L("ReportPreview.Param.StrideDiff"), FormatNumber(AbsDiff(data.LeftStrideMeanM, data.RightStrideMeanM), "F2"), "m", Reference("StrideDiff")),
+                (L("ReportPreview.Param.StrideDiffPercent"), FormatNumber(DiffPercent(data.LeftStrideMeanM, data.RightStrideMeanM), "F1"), "%", Reference("StrideDiffPercent")),
+                (L("ReportPreview.Param.StanceRatioDiff"), FormatNumber(AbsDiff(data.LeftStanceRatioPct, data.RightStanceRatioPct), "F1"), "%", Reference("StanceRatioDiff")),
+                (L("ReportPreview.Param.StanceRatioDiffPercent"), FormatNumber(DiffPercent(data.LeftStanceRatioPct, data.RightStanceRatioPct), "F1"), "%", Reference("StanceRatioDiffPercent")),
+                (L("ReportPreview.Param.KneeRomDiff"), FormatNumber(AbsDiff(data.LeftKneeRomDeg, data.RightKneeRomDeg), "F1"), "°", Reference("KneeRomDiff")),
+                (L("ReportPreview.Param.HipRomDiff"), FormatNumber(AbsDiff(data.LeftHipRomDeg, data.RightHipRomDeg), "F1"), "°", Reference("HipRomDiff")),
+                (L("ReportPreview.Param.AnkleRomDiff"), FormatNumber(AbsDiff(data.LeftAnkleRomDeg, data.RightAnkleRomDeg), "F1"), "°", Reference("AnkleRomDiff")),
+                (L("ReportPreview.Param.SymmetryScore"), FormatNumber(data.SymmetryScore, "F1"), L("ReportPreview.Unit.Score"), Reference("SymmetryScore"))
             ]);
         }
 
@@ -446,12 +452,12 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         {
             AddClinicalParameterSection(document, L("Report.Section.SideParameters"), L("ReportPreview.Description.SideParameters"),
             [
-                (L("ReportPreview.Param.LeftStride"), FormatMeters(data.LeftStrideMeanM), "m", "--"),
-                (L("ReportPreview.Param.RightStride"), FormatMeters(data.RightStrideMeanM), "m", "--"),
-                (L("ReportPreview.Param.LeftStanceRatio"), FormatNumber(data.LeftStanceRatioPct, "F1"), "%", "--"),
-                (L("ReportPreview.Param.RightStanceRatio"), FormatNumber(data.RightStanceRatioPct, "F1"), "%", "--"),
-                (L("ReportPreview.Param.LeftSwingRatio"), FormatNumber(ComplementPercent(data.LeftStanceRatioPct), "F1"), "%", "--"),
-                (L("ReportPreview.Param.RightSwingRatio"), FormatNumber(ComplementPercent(data.RightStanceRatioPct), "F1"), "%", "--")
+                (L("ReportPreview.Param.LeftStride"), FormatMeters(data.LeftStrideMeanM), "m", Reference("LeftStride")),
+                (L("ReportPreview.Param.RightStride"), FormatMeters(data.RightStrideMeanM), "m", Reference("RightStride")),
+                (L("ReportPreview.Param.LeftStanceRatio"), FormatNumber(data.LeftStanceRatioPct, "F1"), "%", Reference("LeftStanceRatio")),
+                (L("ReportPreview.Param.RightStanceRatio"), FormatNumber(data.RightStanceRatioPct, "F1"), "%", Reference("RightStanceRatio")),
+                (L("ReportPreview.Param.LeftSwingRatio"), FormatNumber(ComplementPercent(data.LeftStanceRatioPct), "F1"), "%", Reference("LeftSwingRatio")),
+                (L("ReportPreview.Param.RightSwingRatio"), FormatNumber(ComplementPercent(data.RightStanceRatioPct), "F1"), "%", Reference("RightSwingRatio"))
             ]);
         }
 

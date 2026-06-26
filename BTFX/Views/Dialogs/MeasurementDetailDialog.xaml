@@ -43,6 +43,127 @@
             <Setter Property="DefaultTrackerTemplate" Value="{StaticResource AnalysisPlotTrackerTemplate}" />
         </Style>
 
+        <Style x:Key="AnalysisPreviewSpeedComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Width" Value="62" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Right" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ComboBoxItem">
+                        <Setter Property="SnapsToDevicePixels" Value="True" />
+                        <Setter Property="OverridesDefaultStyle" Value="True" />
+                        <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+                        <Setter Property="FontSize" Value="12" />
+                        <Setter Property="Foreground" Value="#FFFFFF" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ComboBoxItem">
+                                    <Border
+                                        x:Name="ItemBorder"
+                                        Padding="10,6"
+                                        Background="Transparent"
+                                        CornerRadius="4">
+                                        <ContentPresenter
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsHighlighted" Value="True">
+                                            <Setter TargetName="ItemBorder" Property="Background" Value="#777777" />
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="ItemBorder" Property="Background" Value="#7C7C7C" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid
+                            Width="{TemplateBinding Width}"
+                            Height="{TemplateBinding Height}"
+                            SnapsToDevicePixels="True">
+                            <ToggleButton
+                                Width="{TemplateBinding Width}"
+                                Height="{TemplateBinding Height}"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                ClickMode="Press"
+                                Cursor="Hand"
+                                Focusable="False"
+                                IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                OverridesDefaultStyle="True">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border
+                                            x:Name="OuterBorder"
+                                            Background="Transparent"
+                                            CornerRadius="6">
+                                            <Path
+                                                Width="8"
+                                                Height="5"
+                                                Margin="0,0,4,0"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                Data="M0,0 L4,4 L8,0"
+                                                Fill="Transparent"
+                                                Stroke="#FFFFFF"
+                                                StrokeThickness="1.2" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <ContentPresenter
+                                Margin="0,0,18,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Content="{TemplateBinding SelectionBoxItem}"
+                                ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                IsHitTestVisible="False" />
+                            <Popup
+                                AllowsTransparency="True"
+                                Focusable="False"
+                                IsOpen="{TemplateBinding IsDropDownOpen}"
+                                Placement="Bottom"
+                                PopupAnimation="Fade">
+                                <Border
+                                    Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                    Margin="0,4,0,0"
+                                    Padding="4"
+                                    Background="#646464"
+                                    BorderBrush="#777777"
+                                    BorderThickness="1"
+                                    CornerRadius="6">
+                                    <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="TitleTextStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
             <Setter Property="FontSize" Value="20" />
@@ -1345,7 +1466,7 @@
                                             </Grid.ColumnDefinitions>
                                             <Border
                                                 Grid.ColumnSpan="4"
-                                                Height="40"
+                                                Height="56"
                                                 Background="#646464"
                                                 CornerRadius="8" />
                                             <Button
@@ -1372,16 +1493,26 @@
                                                     Foreground="White"
                                                     Kind="Play" />
                                             </Button>
-                                            <TextBlock
-                                                x:Name="AnalysisPreviewCurrentTimeText"
+                                            <StackPanel
                                                 Grid.Column="1"
                                                 Width="70"
-                                                VerticalAlignment="Center"
-                                                FontFamily="{StaticResource AppFont}"
-                                                FontSize="12"
-                                                Foreground="White"
-                                                Text="0:00"
-                                                TextAlignment="Center" />
+                                                VerticalAlignment="Center">
+                                                <TextBlock
+                                                    x:Name="AnalysisPreviewCurrentTimeText"
+                                                    FontFamily="{StaticResource AppFont}"
+                                                    FontSize="12"
+                                                    Foreground="White"
+                                                    Text="0:00"
+                                                    TextAlignment="Center" />
+                                                <TextBlock
+                                                    x:Name="AnalysisPreviewDurationText"
+                                                    Margin="0,2,0,0"
+                                                    FontFamily="{StaticResource AppFont}"
+                                                    FontSize="12"
+                                                    Foreground="#EAEAEA"
+                                                    Text="{Binding VideoDurationPlaybackDisplay}"
+                                                    TextAlignment="Center" />
+                                            </StackPanel>
                                             <Slider
                                                 x:Name="AnalysisPreviewProgressSlider"
                                                 Grid.Column="2"
@@ -1393,16 +1524,26 @@
                                                 Maximum="1"
                                                 Minimum="0"
                                                 Value="0" />
-                                            <TextBlock
-                                                x:Name="AnalysisPreviewDurationText"
+                                            <ComboBox
+                                                x:Name="AnalysisPreviewSpeedComboBox"
                                                 Grid.Column="3"
-                                                Width="70"
+                                                Margin="0,0,8,0"
+                                                HorizontalAlignment="Right"
                                                 VerticalAlignment="Center"
-                                                FontFamily="{StaticResource AppFont}"
-                                                FontSize="12"
-                                                Foreground="White"
-                                                Text="{Binding VideoDurationPlaybackDisplay}"
-                                                TextAlignment="Center" />
+                                                PreviewMouseWheel="AnalysisPreviewSpeedComboBox_OnPreviewMouseWheel"
+                                                SelectedIndex="3"
+                                                SelectionChanged="AnalysisPreviewSpeedComboBox_OnSelectionChanged"
+                                                Style="{StaticResource AnalysisPreviewSpeedComboBoxStyle}">
+                                                <ComboBoxItem Content="0.1x" Tag="0.1" />
+                                                <ComboBoxItem Content="0.25x" Tag="0.25" />
+                                                <ComboBoxItem Content="0.5x" Tag="0.5" />
+                                                <ComboBoxItem Content="1x" Tag="1" />
+                                                <ComboBoxItem Content="1.5x" Tag="1.5" />
+                                                <ComboBoxItem Content="2x" Tag="2" />
+                                                <ComboBoxItem Content="4x" Tag="4" />
+                                                <ComboBoxItem Content="8x" Tag="8" />
+                                                <ComboBoxItem Content="10x" Tag="10" />
+                                            </ComboBox>
                                         </Grid>
                                     </Border>
 

@@ -1,0 +1,162 @@
+{
+  "GaitCycle": {
+    "min": 0.9,
+    "max": 1.2
+  },
+  "MeanStepLength": {
+    "min": 0.55,
+    "max": 0.75
+  },
+  "MeanStrideLength": {
+    "min": 1.1,
+    "max": 1.5
+  },
+  "MeanCadence": {
+    "min": 100,
+    "max": 120
+  },
+  "MeanGaitSpeed": {
+    "min": 1.0,
+    "max": 1.4
+  },
+  "StanceTime": {
+    "min": 0.6,
+    "max": 0.8
+  },
+  "SwingTime": {
+    "min": 0.3,
+    "max": 0.45
+  },
+  "DoubleSupportTime": {
+    "min": 0.15,
+    "max": 0.25
+  },
+  "SingleSupportTime": {
+    "min": 0.4,
+    "max": 0.55
+  },
+  "LeftHipRom": {
+    "min": null,
+    "max": null
+  },
+  "RightHipRom": {
+    "min": null,
+    "max": null
+  },
+  "LeftKneeRom": {
+    "min": null,
+    "max": null
+  },
+  "RightKneeRom": {
+    "min": null,
+    "max": null
+  },
+  "LeftAnkleRom": {
+    "min": null,
+    "max": null
+  },
+  "RightAnkleRom": {
+    "min": null,
+    "max": null
+  },
+  "HipAverageRom": {
+    "min": null,
+    "max": null
+  },
+  "KneeAverageRom": {
+    "min": null,
+    "max": null
+  },
+  "AnkleAverageRom": {
+    "min": null,
+    "max": null
+  },
+  "PelvisCoronalAngle": {
+    "min": null,
+    "max": null
+  },
+  "TrunkTiltMean": {
+    "min": null,
+    "max": null
+  },
+  "TrunkTiltMax": {
+    "min": null,
+    "max": null
+  },
+  "TrunkTiltMin": {
+    "min": null,
+    "max": null
+  },
+  "TrunkTiltRom": {
+    "min": null,
+    "max": null
+  },
+  "PelvisTiltMean": {
+    "min": null,
+    "max": null
+  },
+  "PelvisTiltMax": {
+    "min": null,
+    "max": null
+  },
+  "PelvisRom": {
+    "min": null,
+    "max": null
+  },
+  "StrideDiff": {
+    "min": null,
+    "max": null
+  },
+  "StrideDiffPercent": {
+    "min": null,
+    "max": null
+  },
+  "StanceRatioDiff": {
+    "min": null,
+    "max": null
+  },
+  "StanceRatioDiffPercent": {
+    "min": null,
+    "max": null
+  },
+  "KneeRomDiff": {
+    "min": null,
+    "max": null
+  },
+  "HipRomDiff": {
+    "min": null,
+    "max": null
+  },
+  "AnkleRomDiff": {
+    "min": null,
+    "max": null
+  },
+  "SymmetryScore": {
+    "min": null,
+    "max": null
+  },
+  "LeftStride": {
+    "min": null,
+    "max": null
+  },
+  "RightStride": {
+    "min": null,
+    "max": null
+  },
+  "LeftStanceRatio": {
+    "min": 60,
+    "max": 70
+  },
+  "RightStanceRatio": {
+    "min": 60,
+    "max": 70
+  },
+  "LeftSwingRatio": {
+    "min": 30,
+    "max": 40
+  },
+  "RightSwingRatio": {
+    "min": 30,
+    "max": 40
+  }
+}

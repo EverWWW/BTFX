@@ -1311,7 +1311,7 @@
     <system:String x:Key="AnalysisDetail.ReportPreview.Sections">Included Sections</system:String>
     <system:String x:Key="AnalysisDetail.ReportPreview.Status">Preview Status</system:String>
     <system:String x:Key="AnalysisDetail.ReportPreview.UpdatedAt">Last updated: {0}</system:String>
-    <system:String x:Key="AnalysisDetail.ReportPreview.BackToConfig">Back to Configuration</system:String>
+    <system:String x:Key="AnalysisDetail.ReportPreview.BackToConfig">Back</system:String>
     <system:String x:Key="AnalysisDetail.ReportPreview.Close">Close Preview</system:String>
     <system:String x:Key="AnalysisDetail.ReportPreview.EmptyValue">--</system:String>
     <system:String x:Key="AnalysisDetail.ReportPreview.SourceValue">AnalysisResult #{0}</system:String>

@@ -1,6 +1,7 @@
 ﻿using BTFX.ViewModels;
 using MaterialDesignThemes.Wpf;
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -23,6 +24,7 @@ public partial class MeasurementDetailDialog
     private bool _isDraggingAnalysisPreviewSlider;
     private bool _isAnalysisPreviewCompleted;
     private bool _isAnalysisPreviewMediaReady;
+    private double _analysisPreviewSpeedRatio = 1.0;
 
     public MeasurementDetailDialog()
     {
@@ -193,7 +195,7 @@ public partial class MeasurementDetailDialog
     private void AnalysisPreviewMediaElement_OnMediaOpened(object sender, RoutedEventArgs e)
     {
         _isAnalysisPreviewMediaReady = true;
-        AnalysisPreviewMediaElement.SpeedRatio = 1.0;
+        ApplyAnalysisPreviewSpeed();
         var duration = AnalysisPreviewMediaElement.NaturalDuration.HasTimeSpan
             ? AnalysisPreviewMediaElement.NaturalDuration.TimeSpan
             : TimeSpan.Zero;
@@ -256,7 +258,7 @@ public partial class MeasurementDetailDialog
                 SeekAnalysisPreview(0);
             }
 
-            AnalysisPreviewMediaElement.SpeedRatio = 1.0;
+            ApplyAnalysisPreviewSpeed();
             AnalysisPreviewMediaElement.Play();
             SetAnalysisPreviewPlaying(true);
         }
@@ -329,6 +331,34 @@ public partial class MeasurementDetailDialog
         AnalysisPreviewCurrentTimeText.Text = FormatPlaybackTime(AnalysisPreviewMediaElement.Position);
         AnalysisPreviewProgressSlider.Value = seconds;
         _currentAnalysisViewModel?.SetVideoPlaybackTime(seconds);
+    }
+
+    private void AnalysisPreviewSpeedComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (AnalysisPreviewSpeedComboBox.SelectedItem is not ComboBoxItem item
+            || item.Tag is null
+            || !double.TryParse(item.Tag.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var speed))
+        {
+            return;
+        }
+
+        _analysisPreviewSpeedRatio = Math.Clamp(speed, 0.1, 10.0);
+        ApplyAnalysisPreviewSpeed();
+    }
+
+    private void AnalysisPreviewSpeedComboBox_OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        e.Handled = true;
+    }
+
+    private void ApplyAnalysisPreviewSpeed()
+    {
+        if (AnalysisPreviewMediaElement is null)
+        {
+            return;
+        }
+
+        AnalysisPreviewMediaElement.SpeedRatio = _analysisPreviewSpeedRatio;
     }
 
     private void SetAnalysisPreviewPlaying(bool isPlaying)

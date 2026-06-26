@@ -492,6 +492,7 @@ public partial class App : Application
         services.AddSingleton<IBackupService, BackupService>();
         services.AddSingleton<IActivationService, ActivationService>();
         services.AddSingleton<IAppUpdateService, AppUpdateService>();
+        services.AddSingleton<IReportReferenceRangeService, ReportReferenceRangeService>();
 
         // ========== Transient 服务 ==========
         services.AddTransient<IPatientService, PatientService>();
