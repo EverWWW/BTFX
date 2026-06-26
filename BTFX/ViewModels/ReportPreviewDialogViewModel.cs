@@ -1274,6 +1274,7 @@ internal sealed class ReportAnalysisSnapshot
         if (!string.IsNullOrWhiteSpace(resultPath) && File.Exists(resultPath))
         {
             snapshot.LoadResultJson(resultPath);
+            snapshot.ValidFrameRatio = ReadFrameCoverageRatio(resultPath, report.AnalysisResult?.OutputDirectory) ?? snapshot.ValidFrameRatio;
         }
 
         snapshot.ApplyPreferredVideoMetadata(report);
@@ -1284,9 +1285,21 @@ internal sealed class ReportAnalysisSnapshot
             snapshot.AngleFrames.AddRange(ParseAngleCsv(csvPath, snapshot.VideoFps ?? 30d, snapshot.VideoDurationSec));
         }
 
-        snapshot.ValidFrameRatio ??= EstimateValidFrameRatio(snapshot.AngleFrames.Count, snapshot.VideoFrameCount, snapshot.VideoFps, snapshot.VideoDurationSec);
         snapshot.SymmetryScore = CalculateSymmetryScore(snapshot);
         return snapshot;
+    }
+
+    private static double? ReadFrameCoverageRatio(string resultPath, string? outputDirectory)
+    {
+        try
+        {
+            var root = JsonNode.Parse(File.ReadAllText(resultPath))?.AsObject();
+            return AnalysisFrameCoverageHelper.FromResultJson(root, outputDirectory)?.Ratio;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private void LoadFromReportNavigation(Report report)
@@ -1585,22 +1598,6 @@ internal sealed class ReportAnalysisSnapshot
             DiffPercent(snapshot.LeftAnkleRomDeg, snapshot.RightAnkleRomDeg)
         }.Where(value => value.HasValue).Select(value => value!.Value).ToArray();
         return differences.Length == 0 ? null : Math.Clamp(100d - differences.Average(), 0d, 100d);
-    }
-
-    private static double? EstimateValidFrameRatio(int angleFrameCount, int? videoFrameCount, double? fps, double? durationSec)
-    {
-        if (angleFrameCount <= 0)
-        {
-            return null;
-        }
-
-        var totalFrames = videoFrameCount is > 0
-            ? videoFrameCount.Value
-            : fps is > 0 && durationSec is > 0
-                ? fps.Value * durationSec.Value
-                : 0d;
-
-        return totalFrames <= 0 ? null : Math.Clamp(angleFrameCount / totalFrames, 0d, 1d);
     }
 
     private static double? Average(double? left, double? right)

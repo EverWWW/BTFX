@@ -149,6 +149,8 @@ public class QualityControlDisplay
     /// </summary>
     public string ValidFrameRatioDisplay { get; set; } = "--";
 
+    public string CompletenessHint { get; set; } = "--";
+
     /// <summary>
     /// 有效帧比例是否达标
     /// </summary>

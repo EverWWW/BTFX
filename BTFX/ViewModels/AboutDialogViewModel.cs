@@ -43,7 +43,7 @@ public partial class AboutDialogViewModel : ObservableObject
 
     public string SoftwareVersion => UseValue(ProductInfo.SoftwareVersion, Constants.VERSION_FULL);
 
-    public string InternalVersion => UseValue(ProductInfo.InternalVersion, "V1.0.0.20260625_alpha01");
+    public string InternalVersion => UseValue(ProductInfo.InternalVersion, Constants.VERSION_INTERNAL);
 
     public string Website => UseValue(ProductInfo.Website, "https://www.xyyl.com/");
 

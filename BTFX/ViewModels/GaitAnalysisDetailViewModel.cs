@@ -634,28 +634,26 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     {
         get
         {
-            if (AnalysisResult?.QualityControl is null)
+            if (_detailData.ValidFrameRatio is double ratio)
             {
-                return _detailData.ValidFrameRatio is double ratio
-                    ? L("AnalysisDetail.ValidFrameRatioText", ratio.ToString("P0", CultureInfo.CurrentCulture))
-                    : "--";
+                return L("AnalysisDetail.ValidFrameRatioText", ratio.ToString("P0", CultureInfo.CurrentCulture));
             }
 
-            if (AnalysisResult.QualityControl.ValidFrameRatio is double validFrameRatio)
+            if (AnalysisResult?.QualityControl?.ValidFrameRatio is double validFrameRatio)
             {
                 return L("AnalysisDetail.ValidFrameRatioText", validFrameRatio.ToString("P0", CultureInfo.CurrentCulture));
             }
 
-            return L("AnalysisDetail.QualityGenerated");
+            return AnalysisResult?.QualityControl is null ? "--" : L("AnalysisDetail.QualityGenerated");
         }
     }
 
     /// <summary>
     /// 有效帧比例摘要。
     /// </summary>
-    public string ValidFrameRatioDisplay => AnalysisResult?.QualityControl?.ValidFrameRatio is double validFrameRatio
-        ? validFrameRatio.ToString("P0")
-        : (_detailData.ValidFrameRatio is double ratio ? ratio.ToString("P0") : "--");
+    public string ValidFrameRatioDisplay => _detailData.ValidFrameRatio is double ratio
+        ? ratio.ToString("P0")
+        : (AnalysisResult?.QualityControl?.ValidFrameRatio is double validFrameRatio ? validFrameRatio.ToString("P0") : "--");
 
     /// <summary>
     /// 平均步速。
@@ -730,14 +728,36 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// 标注视频摘要。
     /// </summary>
-    public string AnnotatedVideoDisplay => string.IsNullOrWhiteSpace(_annotatedVideoPath)
-        ? "--"
-        : Path.GetFileName(_annotatedVideoPath) ?? "--";
+    public string AnnotatedVideoDisplay
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(_annotatedVideoPath) && File.Exists(_annotatedVideoPath))
+            {
+                return Path.GetFileName(_annotatedVideoPath) ?? "--";
+            }
+
+            if (IsAnalysisPreviewGenerating)
+            {
+                return L("AnalysisDetail.PreviewGeneratingShort");
+            }
+
+            return HasAnalysisPreviewFailedMarker()
+                ? L("AnalysisDetail.PreviewGenerateFailedShort")
+                : "--";
+        }
+    }
 
     public bool IsAnalysisPreviewGenerating
     {
         get => _isAnalysisPreviewGenerating;
-        private set => SetProperty(ref _isAnalysisPreviewGenerating, value);
+        private set
+        {
+            if (SetProperty(ref _isAnalysisPreviewGenerating, value))
+            {
+                OnPropertyChanged(nameof(AnnotatedVideoDisplay));
+            }
+        }
     }
 
     public string AnalysisPreviewStatusText
@@ -1445,7 +1465,6 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             if (!string.IsNullOrWhiteSpace(jointAngleCsv) && File.Exists(jointAngleCsv))
             {
                 _angleFrames = ParseAngleCsv(jointAngleCsv, _detailData.VideoFps ?? 30d, _detailData.VideoDurationSec);
-                _detailData.ValidFrameRatio ??= EstimateValidFrameRatio(_angleFrames, _detailData.VideoFps, _detailData.VideoDurationSec);
             }
 
             BuildRealPlotModels();
@@ -1524,7 +1543,8 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         _detailData.RightStrideMeanM = ReadDouble(root, "right_stride_mean_m");
         _detailData.LeftStanceRatioPct = ReadDouble(root, "left_stance_ratio_pct") ?? eventPhaseMetrics.LeftStanceRatioPct;
         _detailData.RightStanceRatioPct = ReadDouble(root, "right_stance_ratio_pct") ?? eventPhaseMetrics.RightStanceRatioPct;
-        _detailData.ValidFrameRatio = ReadDouble(root["quality_control"] as JsonObject, "valid_frame_ratio");
+        _detailData.ValidFrameRatio = AnalysisFrameCoverageHelper.FromResultJson(root, AnalysisResult?.OutputDirectory)?.Ratio
+            ?? ReadDouble(root["quality_control"] as JsonObject, "valid_frame_ratio");
     }
 
     private void BuildRealPlotModels()
@@ -1693,12 +1713,22 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         IsAnalysisPreviewGenerating = File.Exists(generatingPath);
         AnalysisPreviewStatusText = IsAnalysisPreviewGenerating
             ? L("AnalysisDetail.PreviewGenerating")
-            : L("AnalysisDetail.PreviewGeneratePending");
+            : HasAnalysisPreviewFailedMarker()
+                ? L("AnalysisDetail.PreviewGenerateFailed")
+                : L("AnalysisDetail.PreviewGeneratePending");
+        OnPropertyChanged(nameof(AnnotatedVideoDisplay));
     }
 
     private static string GetAnalysisPreviewPath(string outputDirectory)
     {
         return Path.Combine(outputDirectory, "preview", "analysis_preview.mp4");
+    }
+
+    private bool HasAnalysisPreviewFailedMarker()
+    {
+        var outputDirectory = AnalysisResult?.OutputDirectory;
+        return !string.IsNullOrWhiteSpace(outputDirectory)
+               && File.Exists(Path.Combine(outputDirectory, "preview", "analysis_preview.failed"));
     }
 
     private static bool IsSingleViewOutput(string? outputDirectory)
@@ -1876,22 +1906,6 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
                 FormatSeconds(endFrame.HasValue ? endFrame.Value / safeFps : null),
                 FormatSeconds(duration)));
         }
-    }
-
-    private static double? EstimateValidFrameRatio(IReadOnlyCollection<AnalysisAngleFrame> angleFrames, double? fps, double? durationSec)
-    {
-        if (angleFrames.Count == 0 || fps is not > 0 || durationSec is not > 0)
-        {
-            return null;
-        }
-
-        var totalFrames = fps.Value * durationSec.Value;
-        if (totalFrames <= 0)
-        {
-            return null;
-        }
-
-        return Math.Clamp(angleFrames.Count / totalFrames, 0d, 1d);
     }
 
     private static double ParseCsvDouble(string[] parts, int index)

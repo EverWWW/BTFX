@@ -253,6 +253,13 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         }
     }
 
+    public string ResultCompletenessHintDisplay => QualityResult?.CompletenessHint ?? L("MA.Step4.ResultCompleteness.NoData");
+
+    partial void OnQualityResultChanged(QualityControlDisplay? value)
+    {
+        OnPropertyChanged(nameof(ResultCompletenessHintDisplay));
+    }
+
     public string ResultStatusDisplay
     {
         get
@@ -748,81 +755,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
 
     private static string ResolveAlgorithmExePath(string? configuredPath)
     {
-        var exePath = string.IsNullOrWhiteSpace(configuredPath)
-            ? Path.Combine(Constants.ALGORITHM_DIRECTORY, Constants.ALGORITHM_EXE_FILENAME)
-            : configuredPath;
-
-        if (string.Equals(exePath, Path.Combine("Algorithm", Constants.ALGORITHM_EXE_FILENAME), StringComparison.OrdinalIgnoreCase))
-        {
-            exePath = Path.Combine(Constants.ALGORITHM_DIRECTORY, Constants.ALGORITHM_EXE_FILENAME);
-        }
-
-        if (string.Equals(exePath, Path.Combine("gait_analysis", "Gait_analysis.exe"), StringComparison.OrdinalIgnoreCase)
-            || string.Equals(exePath, Path.Combine("gait_analysis", "gait_analysis.exe"), StringComparison.OrdinalIgnoreCase)
-            || IsKnownCpuAlgorithmPath(exePath))
-        {
-            exePath = Path.Combine(Constants.ALGORITHM_DIRECTORY, Constants.ALGORITHM_EXE_FILENAME);
-        }
-
-        var resolvedPath = Path.IsPathRooted(exePath)
-            ? exePath
-            : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exePath);
-
-        if (File.Exists(resolvedPath))
-        {
-            return resolvedPath;
-        }
-
-        var directory = Path.GetDirectoryName(resolvedPath);
-        if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory))
-        {
-            var preferredPath = Path.Combine(directory, Constants.ALGORITHM_EXE_FILENAME);
-            if (File.Exists(preferredPath))
-            {
-                return preferredPath;
-            }
-
-            var fallbackPath = Directory.GetFiles(directory, "*.exe", SearchOption.TopDirectoryOnly).FirstOrDefault();
-            if (!string.IsNullOrWhiteSpace(fallbackPath))
-            {
-                return fallbackPath;
-            }
-        }
-
-        var algorithmDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Constants.ALGORITHM_DIRECTORY);
-        if (Directory.Exists(algorithmDirectory))
-        {
-            var fallbackPath = Directory.GetFiles(algorithmDirectory, "*.exe", SearchOption.TopDirectoryOnly)
-                .FirstOrDefault(path => string.Equals(Path.GetFileName(path), Constants.ALGORITHM_EXE_FILENAME, StringComparison.OrdinalIgnoreCase))
-                ?? Directory.GetFiles(algorithmDirectory, "*.exe", SearchOption.TopDirectoryOnly).FirstOrDefault();
-            if (!string.IsNullOrWhiteSpace(fallbackPath))
-            {
-                return fallbackPath;
-            }
-        }
-
-        return resolvedPath;
-    }
-
-    private static bool IsKnownCpuAlgorithmPath(string? exePath)
-    {
-        if (string.IsNullOrWhiteSpace(exePath))
-        {
-            return false;
-        }
-
-        var fileName = Path.GetFileName(exePath);
-        if (!string.Equals(fileName, "Gait_analysis.exe", StringComparison.OrdinalIgnoreCase)
-            && !string.Equals(fileName, "gait_analysis.exe", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        var directoryName = Path.GetFileName(Path.GetDirectoryName(exePath)?.TrimEnd(
-            Path.DirectorySeparatorChar,
-            Path.AltDirectorySeparatorChar));
-        return string.Equals(directoryName, "gait_analysis", StringComparison.OrdinalIgnoreCase)
-               || string.Equals(directoryName, "Algorithm", StringComparison.OrdinalIgnoreCase);
+        return AlgorithmExecutableResolver.Resolve(configuredPath);
     }
 
     #region 命令
@@ -1421,44 +1354,37 @@ public partial class Step4AnalyzeViewModel : ObservableObject
             };
         }
 
-        var validFrameRatio = result.QualityControl?.ValidFrameRatio ?? EstimateValidFrameRatio(result);
+        var coverage = ReadFrameCoverage(result);
+        var validFrameRatio = coverage?.Ratio ?? result.QualityControl?.ValidFrameRatio;
         QualityResult = new QualityControlDisplay
         {
             ValidFrameRatio = validFrameRatio ?? 0,
-            ValidFrameRatioDisplay = validFrameRatio.HasValue ? $"{validFrameRatio.Value * 100:F0}%" : "--"
+            ValidFrameRatioDisplay = validFrameRatio.HasValue ? $"{validFrameRatio.Value * 100:F0}%" : "--",
+            CompletenessHint = coverage is null
+                ? L("MA.Step4.ResultCompleteness.NoData")
+                : coverage.IsComplete
+                    ? L("MA.Step4.ResultCompleteness.Complete")
+                    : L("MA.Step4.ResultCompleteness.Partial")
         };
         OnPropertyChanged(nameof(ResultCadenceDisplay));
+        OnPropertyChanged(nameof(ResultCompletenessHintDisplay));
     }
 
-    private double? EstimateValidFrameRatio(AnalysisResult result)
+    private static AnalysisFrameCoverage? ReadFrameCoverage(AnalysisResult result)
     {
         try
         {
-            var csvPath = result.CsvFiles?
-                .FirstOrDefault(file => file.FileType == CsvFileType.JointAngle && File.Exists(file.FilePath))
-                ?.FilePath;
-
-            if (string.IsNullOrWhiteSpace(csvPath))
+            var resultJsonPath = ResolveResultJsonPath(result);
+            if (string.IsNullOrWhiteSpace(resultJsonPath))
             {
                 return null;
             }
 
-            var validFrameCount = File.ReadLines(csvPath)
-                .Skip(1)
-                .Count(line => !string.IsNullOrWhiteSpace(line));
-            if (validFrameCount <= 0)
-            {
-                return null;
-            }
-
-            var totalFrameCount = TryReadTotalFrameCount(result);
-            return totalFrameCount is > 0
-                ? Math.Clamp(validFrameCount / totalFrameCount.Value, 0d, 1d)
-                : null;
+            var root = JsonNode.Parse(File.ReadAllText(resultJsonPath))?.AsObject();
+            return AnalysisFrameCoverageHelper.FromResultJson(root, result.OutputDirectory);
         }
-        catch (Exception ex)
+        catch
         {
-            _logHelper?.Warning($"估算有效帧比例失败：{ex.Message}");
             return null;
         }
     }
@@ -1594,28 +1520,6 @@ public partial class Step4AnalyzeViewModel : ObservableObject
 
     private static double? Difference(double? left, double? right)
         => left.HasValue && right.HasValue ? Math.Abs(left.Value - right.Value) : null;
-
-    private static double? TryReadTotalFrameCount(AnalysisResult result)
-    {
-        var resultJsonPath = ResolveResultJsonPath(result);
-
-        if (string.IsNullOrWhiteSpace(resultJsonPath))
-        {
-            return null;
-        }
-
-        var root = JsonNode.Parse(File.ReadAllText(resultJsonPath))?.AsObject();
-        var videoInfo = root?["video_info"] as JsonObject;
-        var frameCount = ReadDouble(videoInfo, "frame_count");
-        if (frameCount is > 0)
-        {
-            return frameCount;
-        }
-
-        var fps = ReadDouble(videoInfo, "fps");
-        var durationSec = ReadDouble(videoInfo, "duration_sec");
-        return fps is > 0 && durationSec is > 0 ? fps.Value * durationSec.Value : null;
-    }
 
     private static double? ReadDouble(JsonObject? obj, string key)
     {

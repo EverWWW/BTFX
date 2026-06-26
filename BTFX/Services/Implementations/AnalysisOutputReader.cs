@@ -80,6 +80,7 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
         var fps = ReadDouble(root["video_info"] as JsonObject, "fps");
         var eventPhaseMetrics = GaitPhaseMetricsCalculator.CalculateFromEvents(root["gait_events"] as JsonObject, fps);
 
+        var frameCoverageRatio = AnalysisFrameCoverageHelper.FromResultJson(root, outputDirectory)?.Ratio;
         var summary = new AnalysisSummary
         {
             RequestId = ReadString(root, "task_id") ?? ReadString(root, "request_id") ?? $"RESULT_{DateTime.Now:yyyyMMdd_HHmmss}",
@@ -139,7 +140,7 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
             QualityControl = new QualityControlDto
             {
                 MeanKeypointConfidence = ReadDouble(quality, "mean_keypoint_confidence") ?? ReadDouble(root, "keypoint_confidence"),
-                ValidFrameRatio = ReadDouble(quality, "valid_frame_ratio") ?? ReadDouble(root, "valid_frame_ratio") ?? ReadDouble(root, "valid_frame_percent"),
+                ValidFrameRatio = frameCoverageRatio ?? ReadDouble(quality, "valid_frame_ratio") ?? ReadDouble(root, "valid_frame_ratio") ?? ReadDouble(root, "valid_frame_percent"),
                 OcclusionWarning = ReadBool(quality, "occlusion_warning") ?? false,
                 MissingPointWarning = ReadBool(quality, "missing_point_warning") ?? false
             }

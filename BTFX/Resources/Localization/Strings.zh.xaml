@@ -525,8 +525,10 @@
     <system:String x:Key="AnalysisDetail.NoAnnotatedVideo">暂无可播放的分析标注视频</system:String>
     <system:String x:Key="AnalysisDetail.Loading">正在加载分析详情...</system:String>
     <system:String x:Key="AnalysisDetail.PreviewGenerating">分析预览视频正在生成，请稍候...</system:String>
+    <system:String x:Key="AnalysisDetail.PreviewGeneratingShort">预览视频生成中</system:String>
     <system:String x:Key="AnalysisDetail.PreviewGeneratePending">分析预览视频尚未生成，正在后台准备...</system:String>
     <system:String x:Key="AnalysisDetail.PreviewGenerateFailed">分析预览视频生成失败，请稍后重新打开详情页重试</system:String>
+    <system:String x:Key="AnalysisDetail.PreviewGenerateFailedShort">预览视频生成失败</system:String>
     <system:String x:Key="AnalysisDetail.LeftKnee">左膝</system:String>
     <system:String x:Key="AnalysisDetail.RightKnee">右膝</system:String>
     <system:String x:Key="AnalysisDetail.LeftHip">左髋</system:String>
@@ -1113,7 +1115,10 @@
     <system:String x:Key="MA.Step4.PatientWeight">体重</system:String>
     <system:String x:Key="MA.Step4.ResultCompleteness">结果完整性</system:String>
     <system:String x:Key="MA.Step4.ResultCompletenessHint">当前仅显示软件可计算的结果完整性信息。</system:String>
-    <system:String x:Key="MA.Step4.ValidFrameRatioInline">有效帧比例</system:String>
+    <system:String x:Key="MA.Step4.ResultCompleteness.NoData">暂无有效识别区间信息</system:String>
+    <system:String x:Key="MA.Step4.ResultCompleteness.Complete">有效识别区间完整</system:String>
+    <system:String x:Key="MA.Step4.ResultCompleteness.Partial">有效识别区间不完整，预览已补齐</system:String>
+    <system:String x:Key="MA.Step4.ValidFrameRatioInline">有效识别帧比例</system:String>
     <system:String x:Key="MA.Step4.KeyGaitParameters">关键步态参数</system:String>
     <system:String x:Key="MA.Step4.Mode.Dual">双视角模式</system:String>
     <system:String x:Key="MA.Step4.Mode.Single">单视角模式</system:String>
@@ -1195,7 +1200,7 @@
     <!--  Step4 质量评估  -->
     <system:String x:Key="MA.Step4.Quality.Title">质量评估</system:String>
     <system:String x:Key="MA.Step4.Quality.Confidence">关键点置信度</system:String>
-    <system:String x:Key="MA.Step4.Quality.ValidFrameRatio">有效帧比例</system:String>
+    <system:String x:Key="MA.Step4.Quality.ValidFrameRatio">有效识别帧比例</system:String>
     <system:String x:Key="MA.Step4.Quality.Occlusion">遮挡检测</system:String>
     <system:String x:Key="MA.Step4.Quality.MissingPoints">丢点检测</system:String>
     <system:String x:Key="MA.Step4.Quality.None">无</system:String>

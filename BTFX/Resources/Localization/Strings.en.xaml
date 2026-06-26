@@ -524,8 +524,10 @@
     <system:String x:Key="AnalysisDetail.NoAnnotatedVideo">No playable annotated analysis video</system:String>
     <system:String x:Key="AnalysisDetail.Loading">Loading analysis details...</system:String>
     <system:String x:Key="AnalysisDetail.PreviewGenerating">Analysis preview video is being generated. Please wait...</system:String>
+    <system:String x:Key="AnalysisDetail.PreviewGeneratingShort">Preview generating</system:String>
     <system:String x:Key="AnalysisDetail.PreviewGeneratePending">Analysis preview video is not ready yet. Preparing in the background...</system:String>
     <system:String x:Key="AnalysisDetail.PreviewGenerateFailed">Failed to generate the analysis preview video. Reopen details later to retry.</system:String>
+    <system:String x:Key="AnalysisDetail.PreviewGenerateFailedShort">Preview failed</system:String>
     <system:String x:Key="AnalysisDetail.LeftKnee">Left Knee</system:String>
     <system:String x:Key="AnalysisDetail.RightKnee">Right Knee</system:String>
     <system:String x:Key="AnalysisDetail.LeftHip">Left Hip</system:String>
@@ -1113,7 +1115,10 @@
     <system:String x:Key="MA.Step4.PatientWeight">Weight</system:String>
     <system:String x:Key="MA.Step4.ResultCompleteness">Result Completeness</system:String>
     <system:String x:Key="MA.Step4.ResultCompletenessHint">Only result completeness information calculated by the software is shown.</system:String>
-    <system:String x:Key="MA.Step4.ValidFrameRatioInline">Valid frame ratio</system:String>
+    <system:String x:Key="MA.Step4.ResultCompleteness.NoData">No valid recognition range</system:String>
+    <system:String x:Key="MA.Step4.ResultCompleteness.Complete">Recognition range complete</system:String>
+    <system:String x:Key="MA.Step4.ResultCompleteness.Partial">Recognition range incomplete; preview padded</system:String>
+    <system:String x:Key="MA.Step4.ValidFrameRatioInline">Valid recognition frame ratio</system:String>
     <system:String x:Key="MA.Step4.KeyGaitParameters">Key Gait Parameters</system:String>
     <system:String x:Key="MA.Step4.Mode.Dual">Dual-view Mode</system:String>
     <system:String x:Key="MA.Step4.Mode.Single">Single-view Mode</system:String>
@@ -1195,7 +1200,7 @@
     <!--  Step4 Quality Assessment  -->
     <system:String x:Key="MA.Step4.Quality.Title">Quality Assessment</system:String>
     <system:String x:Key="MA.Step4.Quality.Confidence">Keypoint Confidence</system:String>
-    <system:String x:Key="MA.Step4.Quality.ValidFrameRatio">Valid Frame Ratio</system:String>
+    <system:String x:Key="MA.Step4.Quality.ValidFrameRatio">Valid Recognition Frame Ratio</system:String>
     <system:String x:Key="MA.Step4.Quality.Occlusion">Occlusion Detection</system:String>
     <system:String x:Key="MA.Step4.Quality.MissingPoints">Missing Points Detection</system:String>
     <system:String x:Key="MA.Step4.Quality.None">None</system:String>

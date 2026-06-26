@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using BTFX.Common;
 using BTFX.Data;
+using BTFX.Helpers;
 using BTFX.Models;
 using BTFX.Models.Analysis;
 using BTFX.Services.Interfaces;
@@ -36,10 +37,6 @@ public class GaitAnalysisService : IGaitAnalysisService
     private const int MinimumAlgorithmTimeoutMinutes = 30;
     private const string SideInputFileName = "side.mp4";
     private const string FrontInputFileName = "front.mp4";
-    private const string PreferredAlgorithmExeFileName = Constants.ALGORITHM_EXE_FILENAME;
-    private const string CpuAlgorithmDirectoryName = "gait_analysis";
-    private const string CpuAlgorithmExeFileName = "Gait_analysis.exe";
-    private const string LegacyAlgorithmExeFileName = "gait_analysis.exe";
     private static readonly string[] AlgorithmStatusFiles =
     [
         "status.json",
@@ -359,81 +356,15 @@ public class GaitAnalysisService : IGaitAnalysisService
     private string GetAlgorithmExePath()
     {
         var settings = _settingsService.CurrentSettings.Algorithm;
-        var exePath = settings.ExePath;
-        var oldDefaultPath = Path.Combine("Algorithm", Constants.ALGORITHM_EXE_FILENAME);
-        var cpuDefaultPath = Path.Combine(CpuAlgorithmDirectoryName, CpuAlgorithmExeFileName);
-        var cpuLegacyPath = Path.Combine(CpuAlgorithmDirectoryName, LegacyAlgorithmExeFileName);
-        if (string.Equals(exePath, oldDefaultPath, StringComparison.OrdinalIgnoreCase)
-            || string.Equals(exePath, cpuDefaultPath, StringComparison.OrdinalIgnoreCase)
-            || string.Equals(exePath, cpuLegacyPath, StringComparison.OrdinalIgnoreCase)
-            || IsKnownCpuAlgorithmPath(exePath))
+        var exePath = AlgorithmExecutableResolver.Resolve(settings.ExePath);
+        var configPath = AlgorithmExecutableResolver.ToConfigPath(exePath);
+        if (!string.Equals(settings.ExePath, configPath, StringComparison.OrdinalIgnoreCase))
         {
-            exePath = Path.Combine(Constants.ALGORITHM_DIRECTORY, Constants.ALGORITHM_EXE_FILENAME);
-            settings.ExePath = exePath;
+            settings.ExePath = configPath;
             _settingsService.SaveSettings();
-        }
-
-        // 若为相对路径，则基于应用程序目录解析
-        if (!Path.IsPathRooted(exePath))
-        {
-            exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, exePath);
-        }
-
-        if (File.Exists(exePath))
-        {
-            return exePath;
-        }
-
-        var directory = Path.GetDirectoryName(exePath) ?? AppDomain.CurrentDomain.BaseDirectory;
-        var preferredPath = Path.Combine(directory, PreferredAlgorithmExeFileName);
-        if (File.Exists(preferredPath))
-        {
-            settings.ExePath = Path.GetRelativePath(AppDomain.CurrentDomain.BaseDirectory, preferredPath);
-            _settingsService.SaveSettings();
-            return preferredPath;
-        }
-
-        var legacyPath = Path.Combine(directory, LegacyAlgorithmExeFileName);
-        if (File.Exists(legacyPath))
-        {
-            return legacyPath;
-        }
-
-        var algorithmDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Constants.ALGORITHM_DIRECTORY);
-        var fallbackExe = Directory.Exists(algorithmDirectory)
-            ? Directory.GetFiles(algorithmDirectory, "*.exe", SearchOption.TopDirectoryOnly)
-                .FirstOrDefault(path => string.Equals(Path.GetFileName(path), PreferredAlgorithmExeFileName, StringComparison.OrdinalIgnoreCase))
-                ?? Directory.GetFiles(algorithmDirectory, "*.exe", SearchOption.TopDirectoryOnly).FirstOrDefault()
-            : null;
-        if (!string.IsNullOrWhiteSpace(fallbackExe) && File.Exists(fallbackExe))
-        {
-            settings.ExePath = Path.GetRelativePath(AppDomain.CurrentDomain.BaseDirectory, fallbackExe);
-            _settingsService.SaveSettings();
-            return fallbackExe;
         }
 
         return exePath;
-    }
-
-    private static bool IsKnownCpuAlgorithmPath(string? exePath)
-    {
-        if (string.IsNullOrWhiteSpace(exePath))
-        {
-            return false;
-        }
-
-        var fileName = Path.GetFileName(exePath);
-        if (!string.Equals(fileName, CpuAlgorithmExeFileName, StringComparison.OrdinalIgnoreCase)
-            && !string.Equals(fileName, LegacyAlgorithmExeFileName, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        var directoryName = Path.GetFileName(Path.GetDirectoryName(exePath)?.TrimEnd(
-            Path.DirectorySeparatorChar,
-            Path.AltDirectorySeparatorChar));
-        return string.Equals(directoryName, CpuAlgorithmDirectoryName, StringComparison.OrdinalIgnoreCase)
-               || string.Equals(directoryName, "Algorithm", StringComparison.OrdinalIgnoreCase);
     }
 
     private string EnsureAlgorithmRuntimeReady()

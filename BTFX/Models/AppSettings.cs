@@ -112,7 +112,7 @@ public class ProductInfoSettings
     /// <summary>
     /// 内部版本
     /// </summary>
-    public string InternalVersion { get; set; } = "V1.0.0.20260625_alpha01";
+    public string InternalVersion { get; set; } = "V1.0.0.20260626_alpha01";
 
     /// <summary>
     /// 公司网址
@@ -231,9 +231,9 @@ public class CredentialsSettings
 public class AlgorithmSettings
 {
     /// <summary>
-    /// 算法程序路径（默认 Algorithm/gait_analysis.exe）
+    /// 算法程序路径或目录
     /// </summary>
-    public string ExePath { get; set; } = System.IO.Path.Combine(Constants.ALGORITHM_DIRECTORY, Constants.ALGORITHM_EXE_FILENAME);
+    public string ExePath { get; set; } = Constants.ALGORITHM_DIRECTORY;
 
     /// <summary>
     /// 分析超时时间（分钟）

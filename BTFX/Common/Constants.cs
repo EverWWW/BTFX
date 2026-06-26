@@ -25,7 +25,7 @@ public static class Constants
     /// <summary>
     /// 内部版本号（用于开发测试）
     /// </summary>
-    public const string VERSION_INTERNAL = "V1.0.0.20260108_alpha01";
+    public const string VERSION_INTERNAL = "V1.0.0.20260626_alpha01";
 
     #endregion
 
@@ -364,11 +364,6 @@ public static class Constants
     /// 算法程序默认目录
     /// </summary>
     public const string ALGORITHM_DIRECTORY = "gait_analysis_gpu";
-
-    /// <summary>
-    /// 算法程序默认文件名
-    /// </summary>
-    public const string ALGORITHM_EXE_FILENAME = "gait_analysis_gpu.exe";
 
     /// <summary>
     /// 算法默认超时时间（分钟）
