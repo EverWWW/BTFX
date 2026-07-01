@@ -32,6 +32,7 @@ public partial class MeasurementViewModel : ObservableObject
     private readonly ILocalizationService _localizationService;
     private readonly ILogHelper? _logHelper;
     private CancellationTokenSource? _captureCancellation;
+    private string _lastDefaultMeasurementName = string.Empty;
 
     /// <summary>
     /// Step4 分析评估子 ViewModel
@@ -579,7 +580,8 @@ public partial class MeasurementViewModel : ObservableObject
     /// </summary>
     private void ResetMeasurementFields()
     {
-        MeasurementName = L("MA.Step1.DefaultMeasurementNameFormat", DateTime.Now);
+        _lastDefaultMeasurementName = L("MA.Step1.DefaultMeasurementNameFormat", DateTime.Now);
+        MeasurementName = _lastDefaultMeasurementName;
         SelectedMeasurementType = MeasurementType.NormalWalk;
         Remark = string.Empty;
         SelectedVideoSpec = VideoSpec.P1080_30fps;
@@ -915,9 +917,66 @@ public partial class MeasurementViewModel : ObservableObject
     /// 重置测量表单
     /// </summary>
     [RelayCommand]
-    private void ResetMeasurement()
+    private async Task ResetMeasurementAsync()
     {
+        if (HasMeasurementInput())
+        {
+            var result = await DialogHost.Show(
+                new Views.Dialogs.ConfirmDialog
+                {
+                    DataContext = new ConfirmDialogViewModel
+                    {
+                        Title = L("MA.Step1.Dialog.ResetMeasurementTitle"),
+                        Message = L("MA.Step1.Dialog.ResetMeasurementMessage"),
+                        ConfirmText = L("Confirm"),
+                        CancelText = L("Cancel"),
+                        IconKind = "Refresh"
+                    }
+                },
+                "RootDialog");
+
+            if (result is not true)
+            {
+                return;
+            }
+        }
+
+        ResetMeasurementDraft();
+        _logHelper?.Information("重置新建测量表单");
+    }
+
+    private bool HasMeasurementInput()
+    {
+        return HasMeasurementRecord
+            || HasSideVideo
+            || HasFrontVideo
+            || !string.IsNullOrWhiteSpace(SideVideoPath)
+            || !string.IsNullOrWhiteSpace(FrontVideoPath)
+            || SideVideoInfo.HasFile
+            || FrontVideoInfo.HasFile
+            || !string.IsNullOrWhiteSpace(Remark)
+            || !string.Equals(MeasurementName, _lastDefaultMeasurementName, StringComparison.Ordinal)
+            || SelectedMeasurementType != MeasurementType.NormalWalk
+            || Math.Abs(WalkwayLength - 6.0) > 0.0001
+            || SelectedAnalysisMode != AnalysisVideoMode.Dual;
+    }
+
+    private void ResetMeasurementDraft()
+    {
+        CurrentStep = 1;
+        HasMeasurementRecord = false;
+        HasFrontVideo = false;
+        HasSideVideo = false;
+        CurrentMeasurement = null;
+        FrontVideoPath = null;
+        SideVideoPath = null;
+        FrontVideoInfo.Clear();
+        SideVideoInfo.Clear();
         ResetMeasurementFields();
+        AnalyzeViewModel.CurrentMeasurement = null;
+        AnalyzeViewModel.CurrentPatient = CurrentPatient;
+        AnalyzeViewModel.RefreshPrerequisites();
+        RefreshVideoValidationState();
     }
 
     #endregion

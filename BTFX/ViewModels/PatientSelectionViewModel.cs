@@ -124,6 +124,7 @@ public partial class PatientSelectionViewModel : ObservableObject
         var user = _sessionService.CurrentUser;
         CanAddPatient = user?.Role == UserRole.Administrator || user?.Role == UserRole.Operator;
         CanImportExport = user?.Role == UserRole.Administrator || user?.Role == UserRole.Operator;
+        _localizationService.LanguageChanged += OnLanguageChanged;
 
         // Load patients
         _ = LoadPatientsAsync();
@@ -139,6 +140,18 @@ public partial class PatientSelectionViewModel : ObservableObject
     {
         var value = _localizationService.GetString(key, args);
         return string.IsNullOrWhiteSpace(value) ? key : value;
+    }
+
+    private void OnLanguageChanged(object? sender, AppLanguage language)
+    {
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            RefreshCurrentUserInfo();
+            foreach (var row in PatientRows)
+            {
+                row.GenderDisplay = GetGenderDisplay(row.Patient.Gender);
+            }
+        });
     }
 
     private void RefreshCurrentUserInfo()
@@ -216,6 +229,7 @@ public partial class PatientSelectionViewModel : ObservableObject
             {
                 DisplayIndex = startIndex + i,
                 Patient = pageData[i],
+                GenderDisplay = GetGenderDisplay(pageData[i].Gender),
                 IsChecked = _selectedPatientIds.Contains(pageData[i].Id)
             });
         }
@@ -981,6 +995,16 @@ public partial class PatientSelectionViewModel : ObservableObject
             UserRole.Operator => L("Operator"),
             UserRole.Guest => L("Guest"),
             _ => L("Unknown")
+        };
+    }
+
+    private string GetGenderDisplay(Gender gender)
+    {
+        return gender switch
+        {
+            Gender.Male => L("Male"),
+            Gender.Female => L("Female"),
+            _ => "--"
         };
     }
 }

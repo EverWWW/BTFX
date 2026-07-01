@@ -1024,6 +1024,8 @@
     <system:String x:Key="MA.Step1.Dialog.VideoValidationFailedMessage">{0} failed validation: {1}</system:String>
     <system:String x:Key="MA.Step1.Dialog.VideoConsistencyWarningTitle">Video Consistency Warning</system:String>
     <system:String x:Key="MA.Step1.Dialog.VideoConsistencyWarningMessage">{0}&#x0a;&#x0a;You will need to confirm the shared valid segment later. Continue to review?</system:String>
+    <system:String x:Key="MA.Step1.Dialog.ResetMeasurementTitle">Confirm Reset</system:String>
+    <system:String x:Key="MA.Step1.Dialog.ResetMeasurementMessage">Resetting will clear the current measurement information and selected videos. Continue?</system:String>
     <system:String x:Key="MA.Step1.DefaultMeasurementNameFormat">Measurement_{0:yyyyMMdd_HHmmss}</system:String>
 
     <!--  Step2 Import/Capture  -->

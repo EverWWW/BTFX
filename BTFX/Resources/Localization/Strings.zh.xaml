@@ -1024,6 +1024,8 @@
     <system:String x:Key="MA.Step1.Dialog.VideoValidationFailedMessage">{0}未通过校验：{1}</system:String>
     <system:String x:Key="MA.Step1.Dialog.VideoConsistencyWarningTitle">视频一致性警告</system:String>
     <system:String x:Key="MA.Step1.Dialog.VideoConsistencyWarningMessage">{0}&#x0a;&#x0a;后续需要确认两个视频的共同有效片段。是否继续进入回放检查？</system:String>
+    <system:String x:Key="MA.Step1.Dialog.ResetMeasurementTitle">确认重置</system:String>
+    <system:String x:Key="MA.Step1.Dialog.ResetMeasurementMessage">重置后将清空当前测量信息和已选择的视频，是否继续？</system:String>
     <system:String x:Key="MA.Step1.DefaultMeasurementNameFormat">测量_{0:yyyyMMdd_HHmmss}</system:String>
 
     <!--  Step2 导入/采集  -->

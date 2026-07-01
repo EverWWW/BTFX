@@ -592,7 +592,7 @@
                                             FontFamily="{StaticResource AppFont}"
                                             FontSize="20"
                                             Foreground="#333333"
-                                            Text="{Binding Patient.GenderDisplay}" />
+                                            Text="{Binding GenderDisplay}" />
                                         <TextBlock
                                             Grid.Column="4"
                                             HorizontalAlignment="Center"

@@ -1282,7 +1282,12 @@ public partial class MeasurementRecordItem : ObservableObject
     /// <summary>
     /// 性别显示
     /// </summary>
-    public string GenderDisplay => Record.Patient?.GenderDisplay ?? "--";
+    public string GenderDisplay => Record.Patient?.Gender switch
+    {
+        Gender.Male => L("Male"),
+        Gender.Female => L("Female"),
+        _ => "--"
+    };
 
     /// <summary>
     /// 年龄
