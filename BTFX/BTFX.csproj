@@ -54,6 +54,13 @@
     <PackageReference Include="OxyPlot.Wpf" Version="2.2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="GxIAPINET">
+      <HintPath>..\DaHengDevelopment\Samples\CSharp\x64\DoNET\.NET6.0\GxIAPINET.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
   <!-- 项目引用 -->
 
   <!-- 资源文件 -->

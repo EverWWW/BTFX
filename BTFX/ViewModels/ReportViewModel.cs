@@ -2034,7 +2034,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                     sb.AppendLine("【步态参数】");
                     sb.AppendLine($"步幅（左）：{gait.StrideLengthLeft?.ToString("F2") ?? "--"} cm");
                     sb.AppendLine($"步幅（右）：{gait.StrideLengthRight?.ToString("F2") ?? "--"} cm");
-                    sb.AppendLine($"步频：{gait.Cadence?.ToString("F1") ?? "--"} steps/min");
+                    sb.AppendLine($"步频：{gait.Cadence?.ToString("F1") ?? "--"} {L("CadenceUnit")}");
                     sb.AppendLine($"步速：{gait.Velocity?.ToString("F2") ?? "--"} m/s");
                     sb.AppendLine($"左脚支撑相：{gait.StancePhaseLeft?.ToString("F1") ?? "--"} %");
                     sb.AppendLine($"右脚支撑相：{gait.StancePhaseRight?.ToString("F1") ?? "--"} %");
@@ -2154,7 +2154,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
         {
             new(L("Report.Metric.GaitCycle"), FormatNumber(data.MeanCycleDurationSec ?? analysis?.GaitCycleDurationS ?? gait?.GaitCycleDurationS, "F2"), "s"),
             new(L("Report.Metric.AverageStepLength"), FormatNumber(data.MeanStepLengthM ?? analysis?.StepLengthM ?? gait?.StepLengthM, "F2"), "m"),
-            new(L("Report.Metric.AverageCadence"), FormatNumber(data.CadenceStepPerMin ?? gait?.Cadence, "F1"), "step/min"),
+            new(L("Report.Metric.AverageCadence"), FormatNumber(data.CadenceStepPerMin ?? gait?.Cadence, "F1"), L("CadenceUnit")),
             new(L("Report.Metric.AverageGaitSpeed"), FormatNumber(data.GaitSpeedMPerS ?? analysis?.GaitSpeedMPerS ?? gait?.GaitSpeedMPerS ?? gait?.Velocity, "F2"), "m/s"),
             new(L("Report.Metric.ValidFrameRatio"), FormatPercent(data.ValidFrameRatio ?? quality?.ValidFrameRatio), string.Empty)
         };
@@ -2389,11 +2389,8 @@ public partial class ReportItem : ObservableObject
     /// </summary>
     public string StatusDisplay => Report.Status switch
     {
-        ReportStatus.Draft => "待生成",
-        ReportStatus.Completed => "已生成",
-        ReportStatus.Printed => "已生成",
-        ReportStatus.Outdated => "需重新生成",
-        _ => "待生成"
+        ReportStatus.Draft or ReportStatus.Completed or ReportStatus.Printed or ReportStatus.Outdated => L("Report.Status.Viewable"),
+        _ => L("Report.Status.Unknown")
     };
 
     /// <summary>
@@ -2473,6 +2470,7 @@ public partial class ReportItem : ObservableObject
         OnPropertyChanged(nameof(ExportHint));
         OnPropertyChanged(nameof(PrintHint));
         OnPropertyChanged(nameof(PrimaryActionText));
+        OnPropertyChanged(nameof(StatusDisplay));
     }
 
     private string L(string key)

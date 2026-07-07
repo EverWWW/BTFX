@@ -112,11 +112,12 @@
     <system:String x:Key="Male">Male</system:String>
     <system:String x:Key="Female">Female</system:String>
     <system:String x:Key="Age">Age</system:String>
+    <system:String x:Key="AgeWithUnit">Age (years)</system:String>
     <system:String x:Key="BirthDate">Birth Date</system:String>
   <system:String x:Key="PleaseSelectDate">Select a date</system:String>
     <system:String x:Key="Phone">Phone</system:String>
     <system:String x:Key="MobilePhone">Mobile Phone</system:String>
-    <system:String x:Key="IdNumber">ID Number</system:String>
+    <system:String x:Key="IdNumber">ID</system:String>
     <system:String x:Key="VisitNumber">Visit Number</system:String>
     <system:String x:Key="Height">Height</system:String>
     <system:String x:Key="HeightCm">Height (cm)</system:String>
@@ -175,6 +176,8 @@
     <system:String x:Key="NameLengthError">Name must be between 2 and 50 characters</system:String>
     <system:String x:Key="PhoneLengthError">Phone must be between 8 and 20 characters</system:String>
     <system:String x:Key="IdNumberLengthError">ID number must be 15 or 18 characters</system:String>
+    <system:String x:Key="IdNumberFormatError">ID number can contain only digits or X</system:String>
+    <system:String x:Key="BirthDateFutureError">Birth date cannot be later than today</system:String>
     <system:String x:Key="HeightRangeError">Height must be between 50 and 250 cm</system:String>
     <system:String x:Key="WeightRangeError">Weight must be between 20 and 300 kg</system:String>
     <system:String x:Key="SaveFailedError">Save failed: {0}</system:String>
@@ -200,6 +203,7 @@
     <system:String x:Key="StopRecording">Stop Recording</system:String>
     <system:String x:Key="RealTimeData">Real-time Data</system:String>
     <system:String x:Key="Cadence">Cadence (steps/min)</system:String>
+    <system:String x:Key="CadenceUnit">step/min</system:String>
     <system:String x:Key="Speed">Speed (m/s)</system:String>
 
     <!--  Navigation Menu  -->
@@ -888,6 +892,7 @@
     <system:String x:Key="FrontCameraId">Front Camera ID</system:String>
     <system:String x:Key="DeviceParameterSettings">Device Parameter Settings</system:String>
     <system:String x:Key="ConfigSoftware">Configuration Software</system:String>
+    <system:String x:Key="DahengCameraTest.Button">Daheng Camera Test</system:String>
 
     <!--  User Management  -->
     <system:String x:Key="RowNumber">No.</system:String>
@@ -1235,6 +1240,8 @@
     <system:String x:Key="MA.Step4.Error.SuggestionDefault">Check the logs for details or contact technical support</system:String>
     <system:String x:Key="MA.Step4.Dialog.StopTitle">Stop Analysis</system:String>
     <system:String x:Key="MA.Step4.Dialog.StopMessage">The analysis task is running. Stopping it will not generate a result for this run. Stop analysis?</system:String>
+    <system:String x:Key="MA.Step4.Dialog.ReanalysisTitle">Reanalyze</system:String>
+    <system:String x:Key="MA.Step4.Dialog.ReanalysisMessage">Reanalysis requires uploading or capturing video again. The completed result will remain in history. Return to the new measurement page to select video again?</system:String>
     <system:String x:Key="MA.Dialog.Error.OpenAnalysisDetailFailed">Failed to open analysis details: {0}</system:String>
     <system:String x:Key="MA.Dialog.Error.OpenReportPreviewFailed">Failed to open report preview: {0}</system:String>
     <system:String x:Key="MA.Dialog.Error.OpenVideoFileDialogFailed">Failed to open the video file dialog: {0}</system:String>

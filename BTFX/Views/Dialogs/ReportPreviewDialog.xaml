@@ -700,12 +700,6 @@
                     Padding="32,18,32,24"
                     Background="#FFFFFF">
                     <Grid>
-                        <Button
-                            HorizontalAlignment="Left"
-                            Command="{Binding BackToConfigCommand}"
-                            Content="{DynamicResource AnalysisDetail.ReportPreview.BackToConfig}"
-                            Style="{StaticResource ReportSecondaryButtonStyle}" />
-
                         <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                             <Button
                                 Command="{Binding CloseCommand}"

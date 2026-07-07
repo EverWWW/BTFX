@@ -120,7 +120,7 @@ public partial class ReportView : UserControl
         }
         else
         {
-            ReportStartDateText.Text = "0000.00.00";
+            ReportStartDateText.Text = string.Empty;
             ReportStartDateText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#BBBBBB"));
         }
 
@@ -131,7 +131,7 @@ public partial class ReportView : UserControl
         }
         else
         {
-            ReportEndDateText.Text = "0000.00.00";
+            ReportEndDateText.Text = string.Empty;
             ReportEndDateText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#BBBBBB"));
         }
 

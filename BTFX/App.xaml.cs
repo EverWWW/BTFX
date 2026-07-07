@@ -526,6 +526,7 @@ public partial class App : Application
         services.AddTransient<ReportViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<CameraCaptureDialogViewModel>();
+        services.AddTransient<DahengCameraTestDialogViewModel>();
 
         // Settings 子 ViewModel
         services.AddTransient<ViewModels.Settings.GeneralSettingsViewModel>();
@@ -555,6 +556,7 @@ public partial class App : Application
         services.AddTransient<Views.Dialogs.ConfirmDialog>();
         services.AddTransient<Views.Dialogs.AboutDialog>();
         services.AddTransient<Views.Dialogs.CameraCaptureDialog>();
+        services.AddTransient<Views.Dialogs.DahengCameraTestDialog>();
 
         // Measurement 模块 View
         services.AddTransient<Views.Measurement.MeasurementView>();

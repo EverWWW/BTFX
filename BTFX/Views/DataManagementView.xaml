@@ -438,7 +438,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="22"
                                     Foreground="#BBBBBB"
-                                    Text="0000.00.00" />
+                                    Text="" />
                             </Button>
                             <Popup
                                 x:Name="StartDatePopup"
@@ -519,7 +519,7 @@
                                     FontFamily="{StaticResource AppFont}"
                                     FontSize="22"
                                     Foreground="#BBBBBB"
-                                    Text="0000.00.00" />
+                                    Text="" />
                             </Button>
                             <Popup
                                 x:Name="EndDatePopup"
@@ -1165,3 +1165,4 @@
         </Border>
     </Grid>
 </UserControl>
+

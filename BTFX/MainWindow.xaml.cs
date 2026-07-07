@@ -82,6 +82,8 @@ public partial class MainWindow : Window
     #endregion
 
     private WindowState _previousWindowState = WindowState.Normal;
+    private bool _exitConfirmed;
+    private bool _exitConfirmInProgress;
 
     /// <summary>
     /// 构造函数
@@ -96,7 +98,37 @@ public partial class MainWindow : Window
         // 订阅状态变化
         StateChanged += MainWindow_StateChanged;
         SourceInitialized += MainWindow_SourceInitialized;
+        Closing += MainWindow_Closing;
         Closed += MainWindow_Closed;
+    }
+
+    private async void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        if (_exitConfirmed || App.IsShuttingDown)
+        {
+            return;
+        }
+
+        e.Cancel = true;
+        if (_exitConfirmInProgress)
+        {
+            return;
+        }
+
+        _exitConfirmInProgress = true;
+        try
+        {
+            var confirmed = await ConfirmExitAsync();
+            if (confirmed)
+            {
+                _exitConfirmed = true;
+                Application.Current.Shutdown();
+            }
+        }
+        finally
+        {
+            _exitConfirmInProgress = false;
+        }
     }
 
     /// <summary>
@@ -224,6 +256,30 @@ public partial class MainWindow : Window
     /// </summary>
     private async void TitleBar_CloseClicked(object sender, RoutedEventArgs e)
     {
+        e.Handled = true;
+        if (_exitConfirmInProgress)
+        {
+            return;
+        }
+
+        _exitConfirmInProgress = true;
+        try
+        {
+            var confirmed = await ConfirmExitAsync();
+            if (confirmed)
+            {
+                _exitConfirmed = true;
+                Application.Current.Shutdown();
+            }
+        }
+        finally
+        {
+            _exitConfirmInProgress = false;
+        }
+    }
+
+    private async Task<bool> ConfirmExitAsync()
+    {
         var analysisService = App.Services.GetService<IGaitAnalysisService>();
         if (analysisService?.IsAnalysisRunning == true)
         {
@@ -244,11 +300,10 @@ public partial class MainWindow : Window
             if (stopResult is true)
             {
                 await analysisService.CancelCurrentAnalysisAsync();
-                Application.Current.Shutdown();
+                return true;
             }
 
-            e.Handled = true;
-            return;
+            return false;
         }
 
         var result = await DialogHost.Show(
@@ -265,13 +320,7 @@ public partial class MainWindow : Window
             },
             "RootDialog");
 
-        if (result is true)
-        {
-            Application.Current.Shutdown();
-        }
-
-        // 标记已处理，阻止 TitleBarControl 内部继续执行 window.Close()
-        e.Handled = true;
+        return result is true;
     }
 
     /// <summary>

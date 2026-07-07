@@ -79,6 +79,19 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
         var phaseMetrics = GaitPhaseMetricsCalculator.Calculate(gaitCycle);
         var fps = ReadDouble(root["video_info"] as JsonObject, "fps");
         var eventPhaseMetrics = GaitPhaseMetricsCalculator.CalculateFromEvents(root["gait_events"] as JsonObject, fps);
+        var robustRom = RobustRomCalculator.Calculate(
+            outputDirectory,
+            root,
+            fps,
+            new RobustRomValues
+            {
+                LeftHipRomDeg = ReadJointRom(jointAngles, "left_hip", "left hip"),
+                RightHipRomDeg = ReadJointRom(jointAngles, "right_hip", "right hip"),
+                LeftKneeRomDeg = ReadJointRom(jointAngles, "left_knee", "left knee"),
+                RightKneeRomDeg = ReadJointRom(jointAngles, "right_knee", "right knee"),
+                LeftAnkleRomDeg = ReadJointRom(jointAngles, "left_ankle", "left ankle"),
+                RightAnkleRomDeg = ReadJointRom(jointAngles, "right_ankle", "right ankle")
+            });
 
         var frameCoverageRatio = AnalysisFrameCoverageHelper.FromResultJson(root, outputDirectory)?.Ratio;
         var summary = new AnalysisSummary
@@ -117,15 +130,9 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
             },
             KinematicSummary = new KinematicSummaryDto
             {
-                HipRomDeg = Average(
-                    ReadJointRom(jointAngles, "left_hip", "left hip"),
-                    ReadJointRom(jointAngles, "right_hip", "right hip")),
-                KneeRomDeg = Average(
-                    ReadJointRom(jointAngles, "left_knee", "left knee"),
-                    ReadJointRom(jointAngles, "right_knee", "right knee")),
-                AnkleRomDeg = Average(
-                    ReadJointRom(jointAngles, "left_ankle", "left ankle"),
-                    ReadJointRom(jointAngles, "right_ankle", "right ankle")),
+                HipRomDeg = Average(robustRom.LeftHipRomDeg, robustRom.RightHipRomDeg),
+                KneeRomDeg = Average(robustRom.LeftKneeRomDeg, robustRom.RightKneeRomDeg),
+                AnkleRomDeg = Average(robustRom.LeftAnkleRomDeg, robustRom.RightAnkleRomDeg),
                 PelvisCoronalRomDeg = ReadDouble(root["segment_angles"]?["pelvis_coronal_rom_deg"] as JsonObject, "rom")
                     ?? Difference(
                         ReadDouble(root["segment_angles"]?["pelvis_tilt_deg"] as JsonObject, "max"),
@@ -304,7 +311,7 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
 
         var previewVideo = Directory.GetFiles(outputDirectory, "analysis_preview.mp4", SearchOption.AllDirectories)
             .FirstOrDefault();
-        if (!IsSingleViewOutput(outputDirectory) && !string.IsNullOrWhiteSpace(previewVideo))
+        if (!string.IsNullOrWhiteSpace(previewVideo))
         {
             return ToOutputRelativePath(outputDirectory, previewVideo);
         }

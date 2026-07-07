@@ -143,7 +143,7 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
 
     public string MeasurementTypeDisplay => Report?.MeasurementRecord is null
         ? "--"
-        : GetEnumDescription(Report.MeasurementRecord.MeasurementType);
+        : GetMeasurementTypeText(Report.MeasurementRecord.MeasurementType);
 
     public string MeasurementDateDisplay => Report?.MeasurementRecord?.MeasurementDate.ToString(Constants.DATETIME_FORMAT)
         ?? Report?.ReportDate.ToString(Constants.DATETIME_FORMAT)
@@ -171,7 +171,7 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
 
     public bool CanIncludeTrunkPelvisParameters => IsDualVideoMode;
 
-    public string ReportStatusDisplay => Report is null ? "--" : GetEnumDescription(Report.Status);
+    public string ReportStatusDisplay => Report is null ? "--" : GetReportStatusText(Report.Status);
 
     public string ExportFormatDisplay => SelectedExportFormat;
 
@@ -386,7 +386,7 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
                 (L("ReportPreview.Param.GaitCycle"), FormatSeconds(data.MeanCycleDurationSec), "s", Reference("GaitCycle")),
                 (L("ReportPreview.Param.MeanStepLength"), FormatMeters(data.MeanStepLengthM), "m", Reference("MeanStepLength")),
                 (L("ReportPreview.Param.MeanStrideLength"), FormatMeters(data.MeanStrideLengthM), "m", Reference("MeanStrideLength")),
-                (L("ReportPreview.Param.MeanCadence"), FormatNumber(data.CadenceStepPerMin, "F1"), "step/min", Reference("MeanCadence")),
+                (L("ReportPreview.Param.MeanCadence"), FormatNumber(data.CadenceStepPerMin, "F1"), L("CadenceUnit"), Reference("MeanCadence")),
                 (L("ReportPreview.Param.MeanGaitSpeed"), FormatNumber(data.GaitSpeedMPerS, "F2"), "m/s", Reference("MeanGaitSpeed")),
                 (L("ReportPreview.Param.StanceTime"), FormatNumber(data.MeanStanceTimeSec, "F2"), "s", Reference("StanceTime")),
                 (L("ReportPreview.Param.SwingTime"), FormatNumber(data.MeanSwingTimeSec, "F2"), "s", Reference("SwingTime")),
@@ -557,7 +557,7 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         AddCompactInfoGrid(document, new[]
         {
             (L("Patient"), PatientNameDisplay),
-            (L("Gender"), patient?.GenderDisplay ?? "--"),
+            (L("Gender"), patient is null ? "--" : GetGenderText(patient.Gender)),
             (L("Age"), patient?.Age is int age ? L("ReportPreview.AgeFormat", age) : "--"),
             (L("Height"), patient?.Height is double height ? $"{height:F0} cm" : "--"),
             (L("Report.Field.MeasurementType"), MeasurementTypeDisplay),
@@ -1213,12 +1213,35 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         return string.Join("_", value.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries)).Trim();
     }
 
-    private static string GetEnumDescription<TEnum>(TEnum value)
-        where TEnum : struct, Enum
+    private string GetMeasurementTypeText(MeasurementType type)
     {
-        var member = typeof(TEnum).GetMember(value.ToString()).FirstOrDefault();
-        var attribute = member?.GetCustomAttributes(typeof(DescriptionAttribute), false).OfType<DescriptionAttribute>().FirstOrDefault();
-        return attribute?.Description ?? value.ToString();
+        return type switch
+        {
+            MeasurementType.NormalWalk => L("MeasurementType.NormalWalk"),
+            MeasurementType.FastWalk => L("MeasurementType.FastWalk"),
+            MeasurementType.SlowWalk => L("MeasurementType.SlowWalk"),
+            MeasurementType.Other => L("MeasurementType.Other"),
+            _ => "--"
+        };
+    }
+
+    private string GetReportStatusText(ReportStatus status)
+    {
+        return status switch
+        {
+            ReportStatus.Draft or ReportStatus.Completed or ReportStatus.Printed or ReportStatus.Outdated => L("Report.Status.Viewable"),
+            _ => L("Report.Status.Unknown")
+        };
+    }
+
+    private string GetGenderText(Gender gender)
+    {
+        return gender switch
+        {
+            Gender.Male => L("Male"),
+            Gender.Female => L("Female"),
+            _ => "--"
+        };
     }
 
 }
@@ -1362,12 +1385,25 @@ internal sealed class ReportAnalysisSnapshot
         MeanSingleSupportTimeSec = ReadDouble(sp, "mean_single_support_time_sec") ?? phaseMetrics.MeanSingleSupportTimeSec ?? MeanSingleSupportTimeSec;
 
         var joint = root["joint_angles"] as JsonObject;
-        LeftHipRomDeg = ReadJointRom(joint, "left_hip", "left hip") ?? LeftHipRomDeg;
-        RightHipRomDeg = ReadJointRom(joint, "right_hip", "right hip") ?? RightHipRomDeg;
-        LeftKneeRomDeg = ReadJointRom(joint, "left_knee", "left knee") ?? LeftKneeRomDeg;
-        RightKneeRomDeg = ReadJointRom(joint, "right_knee", "right knee") ?? RightKneeRomDeg;
-        LeftAnkleRomDeg = ReadJointRom(joint, "left_ankle", "left ankle") ?? LeftAnkleRomDeg;
-        RightAnkleRomDeg = ReadJointRom(joint, "right_ankle", "right ankle") ?? RightAnkleRomDeg;
+        var robustRom = RobustRomCalculator.Calculate(
+            Path.GetDirectoryName(path),
+            root,
+            VideoFps,
+            new RobustRomValues
+            {
+                LeftHipRomDeg = ReadJointRom(joint, "left_hip", "left hip") ?? LeftHipRomDeg,
+                RightHipRomDeg = ReadJointRom(joint, "right_hip", "right hip") ?? RightHipRomDeg,
+                LeftKneeRomDeg = ReadJointRom(joint, "left_knee", "left knee") ?? LeftKneeRomDeg,
+                RightKneeRomDeg = ReadJointRom(joint, "right_knee", "right knee") ?? RightKneeRomDeg,
+                LeftAnkleRomDeg = ReadJointRom(joint, "left_ankle", "left ankle") ?? LeftAnkleRomDeg,
+                RightAnkleRomDeg = ReadJointRom(joint, "right_ankle", "right ankle") ?? RightAnkleRomDeg
+            });
+        LeftHipRomDeg = robustRom.LeftHipRomDeg ?? LeftHipRomDeg;
+        RightHipRomDeg = robustRom.RightHipRomDeg ?? RightHipRomDeg;
+        LeftKneeRomDeg = robustRom.LeftKneeRomDeg ?? LeftKneeRomDeg;
+        RightKneeRomDeg = robustRom.RightKneeRomDeg ?? RightKneeRomDeg;
+        LeftAnkleRomDeg = robustRom.LeftAnkleRomDeg ?? LeftAnkleRomDeg;
+        RightAnkleRomDeg = robustRom.RightAnkleRomDeg ?? RightAnkleRomDeg;
 
         var segment = root["segment_angles"] as JsonObject;
         var trunk = segment?["trunk_tilt_deg"] as JsonObject;

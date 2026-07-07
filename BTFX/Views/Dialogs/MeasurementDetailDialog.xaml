@@ -763,54 +763,18 @@
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="124" />
                                                     <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="124" />
-                                                    <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <Grid.RowDefinitions>
-                                                    <RowDefinition Height="Auto" />
                                                     <RowDefinition Height="Auto" />
                                                 </Grid.RowDefinitions>
 
                                                 <TextBlock
                                                     Grid.Row="0"
                                                     Style="{StaticResource InfoLabelTextStyle}"
-                                                    Text="{DynamicResource AnalysisDetail.ResultFileCount}" />
-                                                <TextBlock
-                                                    Grid.Row="0"
-                                                    Grid.Column="1"
-                                                    Style="{StaticResource InfoValueTextStyle}"
-                                                    Text="{Binding FileCountDisplay, TargetNullValue={StaticResource AnalysisDetail.Empty.NoResultFiles}}" />
-                                                <TextBlock
-                                                    Grid.Row="0"
-                                                    Grid.Column="2"
-                                                    Style="{StaticResource InfoLabelTextStyle}"
-                                                    Text="{DynamicResource AnalysisDetail.AnnotatedVideo}" />
-                                                <TextBlock
-                                                    Grid.Row="0"
-                                                    Grid.Column="3"
-                                                    Style="{StaticResource InfoValueTextStyle}"
-                                                    Text="{Binding AnnotatedVideoDisplay, TargetNullValue={StaticResource AnalysisDetail.Empty.NoAnnotatedVideo}}" />
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Margin="0,14,0,0"
-                                                    Style="{StaticResource InfoLabelTextStyle}"
-                                                    Text="{DynamicResource AnalysisDetail.SummaryFile}" />
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="1"
-                                                    Margin="0,14,0,0"
-                                                    Style="{StaticResource InfoValueTextStyle}"
-                                                    Text="{Binding SummaryFileDisplay, TargetNullValue={StaticResource AnalysisDetail.Empty.NoSummaryJson}}" />
-                                                <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="2"
-                                                    Margin="0,14,0,0"
-                                                    Style="{StaticResource InfoLabelTextStyle}"
                                                     Text="{DynamicResource AnalysisDetail.OutputDirectory}" />
                                                 <TextBlock
-                                                    Grid.Row="1"
-                                                    Grid.Column="3"
-                                                    Margin="0,14,0,0"
+                                                    Grid.Row="0"
+                                                    Grid.Column="1"
                                                     Style="{StaticResource InfoValueTextStyle}"
                                                     Text="{Binding OutputDirectory, TargetNullValue=--}" />
                                             </Grid>
@@ -1506,12 +1470,13 @@
                                                     TextAlignment="Center" />
                                                 <TextBlock
                                                     x:Name="AnalysisPreviewDurationText"
-                                                    Margin="0,2,0,0"
+                                                    Margin="0"
                                                     FontFamily="{StaticResource AppFont}"
                                                     FontSize="12"
                                                     Foreground="#EAEAEA"
                                                     Text="{Binding VideoDurationPlaybackDisplay}"
-                                                    TextAlignment="Center" />
+                                                    TextAlignment="Center"
+                                                    Visibility="Collapsed" />
                                             </StackPanel>
                                             <Slider
                                                 x:Name="AnalysisPreviewProgressSlider"

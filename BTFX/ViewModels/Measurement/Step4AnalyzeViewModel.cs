@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
@@ -145,7 +146,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     /// <summary>
     /// 已用时间格式化显示
     /// </summary>
-    public string ElapsedTimeDisplay => ElapsedTime.ToString(@"mm\:ss\.f");
+    public string ElapsedTimeDisplay => FormatAnalysisDuration(ElapsedTime);
 
     #endregion
 
@@ -291,7 +292,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         {
             if (AnalysisResult?.AnalysisDurationSeconds is double seconds)
             {
-                return $"{seconds:F1} s";
+                return FormatAnalysisDuration(TimeSpan.FromSeconds(seconds));
             }
 
             return string.IsNullOrWhiteSpace(AnalysisDurationDisplay) ? "--" : AnalysisDurationDisplay;
@@ -304,7 +305,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         {
             if (AnalysisResult?.GaitCycleDurationS is double cycleDuration && cycleDuration > 0)
             {
-                return $"{120.0 / cycleDuration:F1} 步/min";
+                return $"{120.0 / cycleDuration:F1} {L("CadenceUnit")}";
             }
 
             return "--";
@@ -885,6 +886,11 @@ public partial class Step4AnalyzeViewModel : ObservableObject
 
     private bool CanCancelAnalyze() => IsRunning;
 
+    private static string FormatAnalysisDuration(TimeSpan duration)
+    {
+        return duration.ToString(@"mm\.ss\.ff", CultureInfo.InvariantCulture);
+    }
+
     /// <summary>
     /// 重新分析
     /// </summary>
@@ -902,13 +908,21 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     {
         if (IsPreviewing || CurrentMeasurement?.Status == MeasurementStatus.Completed)
         {
-            var result = MessageBox.Show(
-                "重新分析需要重新上传或重新采集视频，当前已完成结果会保留为历史记录。\n是否返回新建测量页面重新选择视频？",
-                "重新分析",
-                MessageBoxButton.OKCancel,
-                MessageBoxImage.Question);
+            var result = await MaterialDesignThemes.Wpf.DialogHost.Show(
+                new Views.Dialogs.ConfirmDialog
+                {
+                    DataContext = new ConfirmDialogViewModel
+                    {
+                        Title = L("MA.Step4.Dialog.ReanalysisTitle"),
+                        Message = L("MA.Step4.Dialog.ReanalysisMessage"),
+                        ConfirmText = L("Confirm"),
+                        CancelText = L("Cancel"),
+                        IsCancelVisible = true
+                    }
+                },
+                "RootDialog");
 
-            if (result != MessageBoxResult.OK)
+            if (result is not true)
             {
                 return;
             }
@@ -1099,7 +1113,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     private async Task OnAnalysisCompletedAsync(AnalysisResult result)
     {
         AnalysisResult = result;
-        AnalysisDurationDisplay = ElapsedTime.ToString(@"mm\:ss");
+        AnalysisDurationDisplay = FormatAnalysisDuration(ElapsedTime);
         AddLog("分析完成");
 
         // 数据入库
@@ -1187,9 +1201,20 @@ public partial class Step4AnalyzeViewModel : ObservableObject
             try
             {
                 var previewPath = await _analysisService.EnsureAnalysisPreviewVideoAsync(result.OutputDirectory);
-                AddLog(!string.IsNullOrWhiteSpace(previewPath) && File.Exists(previewPath)
-                    ? $"分析详情预览视频已生成: {Path.GetFileName(previewPath)}"
-                    : "⚠ 分析详情预览视频后台生成失败");
+                if (!string.IsNullOrWhiteSpace(previewPath) && File.Exists(previewPath))
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        AnnotatedVideoPath = previewPath;
+                        HasVideoError = false;
+                        VideoErrorMessage = null;
+                    });
+                    AddLog($"分析详情预览视频已生成并切换: {Path.GetFileName(previewPath)}");
+                }
+                else
+                {
+                    AddLog("⚠ 分析详情预览视频后台生成失败");
+                }
             }
             catch (Exception ex)
             {
@@ -1425,16 +1450,23 @@ public partial class Step4AnalyzeViewModel : ObservableObject
 
         var jointAngles = root["joint_angles"] as JsonObject;
         var segmentAngles = root["segment_angles"] as JsonObject;
+        var robustRom = RobustRomCalculator.Calculate(
+            Path.GetDirectoryName(resultJsonPath),
+            root,
+            fps,
+            new RobustRomValues
+            {
+                LeftHipRomDeg = ReadJointRom(jointAngles, "left_hip", "left hip"),
+                RightHipRomDeg = ReadJointRom(jointAngles, "right_hip", "right hip"),
+                LeftKneeRomDeg = ReadJointRom(jointAngles, "left_knee", "left knee"),
+                RightKneeRomDeg = ReadJointRom(jointAngles, "right_knee", "right knee"),
+                LeftAnkleRomDeg = ReadJointRom(jointAngles, "left_ankle", "left ankle"),
+                RightAnkleRomDeg = ReadJointRom(jointAngles, "right_ankle", "right ankle")
+            });
         result.KinematicSummary ??= new KinematicSummary();
-        result.KinematicSummary.HipRomDeg ??= Average(
-            ReadJointRom(jointAngles, "left_hip", "left hip"),
-            ReadJointRom(jointAngles, "right_hip", "right hip"));
-        result.KinematicSummary.KneeRomDeg ??= Average(
-            ReadJointRom(jointAngles, "left_knee", "left knee"),
-            ReadJointRom(jointAngles, "right_knee", "right knee"));
-        result.KinematicSummary.AnkleRomDeg ??= Average(
-            ReadJointRom(jointAngles, "left_ankle", "left ankle"),
-            ReadJointRom(jointAngles, "right_ankle", "right ankle"));
+        result.KinematicSummary.HipRomDeg = Average(robustRom.LeftHipRomDeg, robustRom.RightHipRomDeg) ?? result.KinematicSummary.HipRomDeg;
+        result.KinematicSummary.KneeRomDeg = Average(robustRom.LeftKneeRomDeg, robustRom.RightKneeRomDeg) ?? result.KinematicSummary.KneeRomDeg;
+        result.KinematicSummary.AnkleRomDeg = Average(robustRom.LeftAnkleRomDeg, robustRom.RightAnkleRomDeg) ?? result.KinematicSummary.AnkleRomDeg;
         result.KinematicSummary.PelvisCoronalRomDeg ??= Difference(
             ReadDouble(segmentAngles?["pelvis_tilt_deg"] as JsonObject, "max"),
             ReadDouble(segmentAngles?["pelvis_tilt_deg"] as JsonObject, "min"));
@@ -1553,7 +1585,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
 
         try
         {
-            _jointAngleFrames = ParseJointAngleCsv(csvFile.FilePath);
+            _jointAngleFrames = ParseJointAngleCsv(csvFile.FilePath, ResolveVideoFrameRate(result));
             if (_jointAngleFrames.Count == 0) return;
 
             RebuildJointAnglePlots();
@@ -1567,36 +1599,142 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     /// <summary>
     /// 解析关节角度 CSV 文件
     /// </summary>
-    private static List<JointAngleFrame> ParseJointAngleCsv(string filePath)
+    private static List<JointAngleFrame> ParseJointAngleCsv(string filePath, double frameRate)
     {
         var frames = new List<JointAngleFrame>();
         var lines = File.ReadAllLines(filePath);
+        if (lines.Length < 2)
+        {
+            return frames;
+        }
+
+        var headers = lines[0]
+            .Split(',')
+            .Select((name, index) => new { Name = NormalizeCsvHeader(name), Index = index })
+            .Where(item => !string.IsNullOrWhiteSpace(item.Name))
+            .GroupBy(item => item.Name)
+            .ToDictionary(group => group.Key, group => group.First().Index, StringComparer.OrdinalIgnoreCase);
+
+        var hasCurrentFormat = headers.ContainsKey("frame")
+                               && (headers.ContainsKey("right ankle") || headers.ContainsKey("left ankle"))
+                               && (headers.ContainsKey("right knee") || headers.ContainsKey("left knee"))
+                               && (headers.ContainsKey("right hip") || headers.ContainsKey("left hip"));
 
         for (int i = 1; i < lines.Length; i++)
         {
             var parts = lines[i].Split(',');
             if (parts.Length < 6) continue;
 
-            if (int.TryParse(parts[0], out var frameIndex)
-                && double.TryParse(parts[1], out var time)
-                && double.TryParse(parts[2], out var hip)
-                && double.TryParse(parts[3], out var knee)
-                && double.TryParse(parts[4], out var ankle)
-                && double.TryParse(parts[5], out var pelvis))
+            if (hasCurrentFormat)
             {
+                var frameIndex = ReadCsvInt(parts, headers, "frame") ?? i - 1;
+                var time = frameRate > 0 ? frameIndex / frameRate : i - 1;
+                var hip = AverageNonNull(
+                    ReadCsvDouble(parts, headers, "right hip"),
+                    ReadCsvDouble(parts, headers, "left hip"));
+                var knee = AverageNonNull(
+                    ReadCsvDouble(parts, headers, "right knee"),
+                    ReadCsvDouble(parts, headers, "left knee"));
+                var ankle = AverageNonNull(
+                    ReadCsvDouble(parts, headers, "right ankle"),
+                    ReadCsvDouble(parts, headers, "left ankle"));
+                var pelvis = ReadCsvDouble(parts, headers, "pelvis");
+
+                if (hip is null && knee is null && ankle is null && pelvis is null)
+                {
+                    continue;
+                }
+
                 frames.Add(new JointAngleFrame
                 {
                     FrameIndex = frameIndex,
                     TimeS = time,
-                    HipAngleDeg = hip,
-                    KneeAngleDeg = knee,
-                    AnkleAngleDeg = ankle,
-                    PelvisAngleDeg = pelvis
+                    HipAngleDeg = hip ?? double.NaN,
+                    KneeAngleDeg = knee ?? double.NaN,
+                    AnkleAngleDeg = ankle ?? double.NaN,
+                    PelvisAngleDeg = pelvis ?? double.NaN
+                });
+                continue;
+            }
+
+            if (int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var oldFrameIndex)
+                && TryParseCsvDouble(parts[1], out var oldTime)
+                && TryParseCsvDouble(parts[2], out var oldHip)
+                && TryParseCsvDouble(parts[3], out var oldKnee)
+                && TryParseCsvDouble(parts[4], out var oldAnkle)
+                && TryParseCsvDouble(parts[5], out var oldPelvis))
+            {
+                frames.Add(new JointAngleFrame
+                {
+                    FrameIndex = oldFrameIndex,
+                    TimeS = oldTime,
+                    HipAngleDeg = oldHip,
+                    KneeAngleDeg = oldKnee,
+                    AnkleAngleDeg = oldAnkle,
+                    PelvisAngleDeg = oldPelvis
                 });
             }
         }
 
         return frames;
+    }
+
+    private static double ResolveVideoFrameRate(AnalysisResult result)
+    {
+        var resultJsonPath = ResolveResultJsonPath(result);
+        if (!string.IsNullOrWhiteSpace(resultJsonPath))
+        {
+            try
+            {
+                var root = JsonNode.Parse(File.ReadAllText(resultJsonPath))?.AsObject();
+                var fps = ReadDouble(root?["video_info"] as JsonObject, "fps");
+                if (fps is > 0)
+                {
+                    return fps.Value;
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        return 30d;
+    }
+
+    private static string NormalizeCsvHeader(string value)
+    {
+        return value.Trim().Trim('\uFEFF').Replace('_', ' ').ToLowerInvariant();
+    }
+
+    private static int? ReadCsvInt(string[] parts, IReadOnlyDictionary<string, int> headers, string name)
+    {
+        return headers.TryGetValue(name, out var index)
+               && index >= 0
+               && index < parts.Length
+               && int.TryParse(parts[index], NumberStyles.Integer, CultureInfo.InvariantCulture, out var value)
+            ? value
+            : null;
+    }
+
+    private static double? ReadCsvDouble(string[] parts, IReadOnlyDictionary<string, int> headers, string name)
+    {
+        return headers.TryGetValue(name, out var index)
+               && index >= 0
+               && index < parts.Length
+               && TryParseCsvDouble(parts[index], out var value)
+            ? value
+            : null;
+    }
+
+    private static bool TryParseCsvDouble(string value, out double result)
+    {
+        return double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out result);
+    }
+
+    private static double? AverageNonNull(params double?[] values)
+    {
+        var validValues = values.Where(value => value.HasValue).Select(value => value!.Value).ToArray();
+        return validValues.Length == 0 ? null : validValues.Average();
     }
 
     /// <summary>
@@ -1657,7 +1795,11 @@ public partial class Step4AnalyzeViewModel : ObservableObject
 
         foreach (var frame in frames)
         {
-            series.Points.Add(new DataPoint(frame.TimeS, valueSelector(frame)));
+            var value = valueSelector(frame);
+            if (!double.IsNaN(value) && !double.IsInfinity(value))
+            {
+                series.Points.Add(new DataPoint(frame.TimeS, value));
+            }
         }
 
         model.Series.Add(series);

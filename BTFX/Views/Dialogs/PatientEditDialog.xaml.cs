@@ -101,6 +101,9 @@ public partial class PatientEditDialog : UserControl
     {
         var culture = System.Threading.Thread.CurrentThread.CurrentUICulture;
         BirthDateCalendar.Language = XmlLanguage.GetLanguage(culture.Name);
+        BirthDateCalendar.DisplayDateEnd = DateTime.Today;
+        BirthDateCalendar.BlackoutDates.Clear();
+        BirthDateCalendar.BlackoutDates.Add(new CalendarDateRange(DateTime.Today.AddDays(1), DateTime.Today.AddYears(120)));
     }
 
     private void BirthDateButton_Click(object sender, RoutedEventArgs e)
@@ -123,7 +126,13 @@ public partial class PatientEditDialog : UserControl
     {
         if (DataContext is PatientEditViewModel vm && BirthDateCalendar.SelectedDate.HasValue)
         {
-            vm.BirthDate = BirthDateCalendar.SelectedDate.Value;
+            var selectedDate = BirthDateCalendar.SelectedDate.Value.Date;
+            if (selectedDate > DateTime.Today)
+            {
+                selectedDate = DateTime.Today;
+            }
+
+            vm.BirthDate = selectedDate;
             BirthDatePopup.IsOpen = false;
             SyncBirthDateDisplay();
         }
@@ -138,10 +147,11 @@ public partial class PatientEditDialog : UserControl
 
         if (DataContext is PatientEditViewModel vm && vm.BirthDate.HasValue)
         {
-            BirthDateText.Text = vm.BirthDate.Value.ToString("yyyy/M/d");
+            var birthDate = vm.BirthDate.Value.Date > DateTime.Today ? DateTime.Today : vm.BirthDate.Value.Date;
+            BirthDateText.Text = birthDate.ToString("yyyy/M/d");
             BirthDateText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#333333"));
-            BirthDateCalendar.SelectedDate = vm.BirthDate.Value;
-            BirthDateCalendar.DisplayDate = vm.BirthDate.Value;
+            BirthDateCalendar.SelectedDate = birthDate;
+            BirthDateCalendar.DisplayDate = birthDate;
         }
         else
         {

@@ -962,22 +962,22 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
                 _globalSelectedIds.Clear();
                 SelectedCount = 0;
                 await LoadDataAsync();
-                System.Windows.MessageBox.Show(result.Message, _localizationService.GetString("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                await ShowNoticeDialogAsync(_localizationService.GetString("Tip"), result.Message);
                 _logHelper?.Information($"导入测量结果包成功：{dialog.FileName}, Count={result.ImportedCount}");
             }
             else
             {
-                System.Windows.MessageBox.Show(result.Message, _localizationService.GetString("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                await ShowNoticeDialogAsync(_localizationService.GetString("Error"), result.Message);
             }
         }
         catch (OperationCanceledException)
         {
-            System.Windows.MessageBox.Show(_localizationService.GetString("DataManagement.ImportCanceled"), _localizationService.GetString("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            await ShowNoticeDialogAsync(_localizationService.GetString("Tip"), _localizationService.GetString("DataManagement.ImportCanceled"));
         }
         catch (Exception ex)
         {
             _logHelper?.Error("导入测量结果包失败", ex);
-            System.Windows.MessageBox.Show($"{_localizationService.GetString("ImportFailed")}: {ex.Message}", _localizationService.GetString("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            await ShowNoticeDialogAsync(_localizationService.GetString("Error"), $"{_localizationService.GetString("ImportFailed")}: {ex.Message}");
         }
         finally
         {

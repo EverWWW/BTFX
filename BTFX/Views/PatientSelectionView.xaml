@@ -201,12 +201,16 @@
                                                 <DataTrigger Binding="{Binding SearchText}" Value="{x:Null}">
                                                     <Setter Property="Visibility" Value="Visible" />
                                                 </DataTrigger>
+                                                <DataTrigger Binding="{Binding ElementName=PatientSearchTextBox, Path=IsKeyboardFocusWithin}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </TextBlock.Style>
                                 </TextBlock>
                                 <!--  实际输入框  -->
                                 <TextBox
+                                    x:Name="PatientSearchTextBox"
                                     Grid.Column="0"
                                     VerticalAlignment="Center"
                                     Background="Transparent"
@@ -468,7 +472,7 @@
                         FontFamily="{StaticResource AppFont}"
                         FontSize="22"
                         Foreground="#666666"
-                        Text="{DynamicResource Age}" />
+                        Text="{DynamicResource AgeWithUnit}" />
                     <TextBlock
                         Grid.Column="5"
                         HorizontalAlignment="Center"
@@ -507,7 +511,8 @@
                 <Border
                     x:Name="PatientListViewport"
                     Grid.Row="2"
-                    Background="Transparent">
+                    Background="Transparent"
+                    PreviewMouseDown="PatientListViewport_OnPreviewMouseDown">
                     <ItemsControl
                         Background="Transparent"
                         Focusable="False"

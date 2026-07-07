@@ -109,7 +109,7 @@ public partial class DataManagementView : UserControl
         }
         else
         {
-            StartDateText.Text = "0000.00.00";
+            StartDateText.Text = string.Empty;
             StartDateText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#BBBBBB"));
         }
 
@@ -120,7 +120,7 @@ public partial class DataManagementView : UserControl
         }
         else
         {
-            EndDateText.Text = "0000.00.00";
+            EndDateText.Text = string.Empty;
             EndDateText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#BBBBBB"));
         }
 

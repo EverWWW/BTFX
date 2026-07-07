@@ -4,6 +4,8 @@ using BTFX.Models.Camera;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MaterialDesignThemes.Wpf;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.IO;
@@ -216,6 +218,18 @@ public partial class SettingsViewModel : ObservableObject
                             FileName = ExternalCameraConfigToolPath,
                             UseShellExecute = true
                         });
+                    }
+
+                    [RelayCommand]
+                    private async Task OpenDahengCameraTestDialogAsync()
+                    {
+                        if (App.Services is null)
+                        {
+                            return;
+                        }
+
+                        var dialog = App.Services.GetRequiredService<Views.Dialogs.DahengCameraTestDialog>();
+                        await DialogHost.Show(dialog, "RootDialog");
                     }
                 }
 

@@ -41,7 +41,12 @@ public partial class MeasurementDetailViewModel : ObservableObject
     /// <summary>
     /// 性别
     /// </summary>
-    public string Gender => Record?.Patient?.GenderDisplay ?? "--";
+    public string Gender => Record?.Patient?.Gender switch
+    {
+        BTFX.Common.Gender.Male => L("Male"),
+        BTFX.Common.Gender.Female => L("Female"),
+        _ => "--"
+    };
 
     /// <summary>
     /// 年龄

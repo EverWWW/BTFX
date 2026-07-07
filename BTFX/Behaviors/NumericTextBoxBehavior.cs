@@ -31,6 +31,13 @@ public partial class NumericTextBoxBehavior : Behavior<TextBox>
             typeof(NumericTextBoxBehavior),
             new PropertyMetadata(2));
 
+    public static readonly DependencyProperty AllowXProperty =
+        DependencyProperty.Register(
+            nameof(AllowX),
+            typeof(bool),
+            typeof(NumericTextBoxBehavior),
+            new PropertyMetadata(false));
+
     /// <summary>
     /// Allow decimal point
     /// </summary>
@@ -47,6 +54,12 @@ public partial class NumericTextBoxBehavior : Behavior<TextBox>
     {
         get => (int)GetValue(MaxDecimalPlacesProperty);
         set => SetValue(MaxDecimalPlacesProperty, value);
+    }
+
+    public bool AllowX
+    {
+        get => (bool)GetValue(AllowXProperty);
+        set => SetValue(AllowXProperty, value);
     }
 
     protected override void OnAttached()
@@ -104,6 +117,9 @@ public partial class NumericTextBoxBehavior : Behavior<TextBox>
                     continue;
             }
 
+            if (AllowX && (c == 'X' || c == 'x'))
+                continue;
+
             // Block everything else (Chinese characters, special symbols, etc.)
             e.Handled = true;
             return;
@@ -149,6 +165,12 @@ public partial class NumericTextBoxBehavior : Behavior<TextBox>
                 // Restore caret position (adjusted for removed characters)
                 textBox.CaretIndex = Math.Min(caretIndex, validText.Length);
             }
+        }
+        else if (AllowX && currentText.Contains('x'))
+        {
+            var caretIndex = textBox.CaretIndex;
+            textBox.Text = currentText.Replace('x', 'X');
+            textBox.CaretIndex = Math.Min(caretIndex, textBox.Text.Length);
         }
     }
 
@@ -236,6 +258,10 @@ public partial class NumericTextBoxBehavior : Behavior<TextBox>
                 result.Append(c);
                 hasDecimalPoint = true;
             }
+            else if (AllowX && (c == 'X' || c == 'x'))
+            {
+                result.Append('X');
+            }
             // Skip all other characters (including Chinese, symbols, etc.)
         }
 
@@ -250,7 +276,7 @@ public partial class NumericTextBoxBehavior : Behavior<TextBox>
         // Check if text contains only valid characters
         foreach (char c in text)
         {
-            if (!char.IsDigit(c) && !(AllowDecimal && c == '.'))
+            if (!char.IsDigit(c) && !(AllowDecimal && c == '.') && !(AllowX && (c == 'X' || c == 'x')))
                 return false;
         }
 

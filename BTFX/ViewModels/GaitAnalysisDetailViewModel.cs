@@ -536,7 +536,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// 测量类型。
     /// </summary>
-    public string MeasurementTypeDisplay => Record is null ? L("AnalysisDetail.MeasurementType.NormalWalk") : GetEnumDescription(Record.MeasurementType);
+    public string MeasurementTypeDisplay => Record is null ? L("AnalysisDetail.MeasurementType.NormalWalk") : GetMeasurementTypeText(Record.MeasurementType);
 
     /// <summary>
     /// 分析模式。
@@ -663,7 +663,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// 平均步频。
     /// </summary>
-    public string CadenceDisplay => FormatNumber(Record?.GaitParameters?.Cadence ?? _detailData.CadenceStepPerMin, "F1", "step/min");
+    public string CadenceDisplay => FormatNumber(Record?.GaitParameters?.Cadence ?? _detailData.CadenceStepPerMin, "F1", L("CadenceUnit"));
 
     /// <summary>
     /// 平均步长。
@@ -1518,12 +1518,25 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         _detailData.LeftToeOffCount = ReadArrayCount(gaitEvents, "left_toe_off_frames");
         _detailData.RightToeOffCount = ReadArrayCount(gaitEvents, "right_toe_off_frames");
 
-        _detailData.LeftHipRomDeg = ReadJointRom(jointAngles, "left_hip", "left hip");
-        _detailData.RightHipRomDeg = ReadJointRom(jointAngles, "right_hip", "right hip");
-        _detailData.LeftKneeRomDeg = ReadJointRom(jointAngles, "left_knee", "left knee");
-        _detailData.RightKneeRomDeg = ReadJointRom(jointAngles, "right_knee", "right knee");
-        _detailData.LeftAnkleRomDeg = ReadJointRom(jointAngles, "left_ankle", "left ankle");
-        _detailData.RightAnkleRomDeg = ReadJointRom(jointAngles, "right_ankle", "right ankle");
+        var robustRom = RobustRomCalculator.Calculate(
+            Path.GetDirectoryName(resultPath),
+            root,
+            _detailData.VideoFps,
+            new RobustRomValues
+            {
+                LeftHipRomDeg = ReadJointRom(jointAngles, "left_hip", "left hip"),
+                RightHipRomDeg = ReadJointRom(jointAngles, "right_hip", "right hip"),
+                LeftKneeRomDeg = ReadJointRom(jointAngles, "left_knee", "left knee"),
+                RightKneeRomDeg = ReadJointRom(jointAngles, "right_knee", "right knee"),
+                LeftAnkleRomDeg = ReadJointRom(jointAngles, "left_ankle", "left ankle"),
+                RightAnkleRomDeg = ReadJointRom(jointAngles, "right_ankle", "right ankle")
+            });
+        _detailData.LeftHipRomDeg = robustRom.LeftHipRomDeg;
+        _detailData.RightHipRomDeg = robustRom.RightHipRomDeg;
+        _detailData.LeftKneeRomDeg = robustRom.LeftKneeRomDeg;
+        _detailData.RightKneeRomDeg = robustRom.RightKneeRomDeg;
+        _detailData.LeftAnkleRomDeg = robustRom.LeftAnkleRomDeg;
+        _detailData.RightAnkleRomDeg = robustRom.RightAnkleRomDeg;
 
         var trunk = segmentAngles?["trunk_tilt_deg"] as JsonObject;
         _detailData.TrunkTiltMeanDeg = ReadDouble(trunk, "mean");
@@ -1609,22 +1622,18 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     {
         var outputDirectory = AnalysisResult?.OutputDirectory;
         if (!string.IsNullOrWhiteSpace(outputDirectory)
-            && Directory.Exists(outputDirectory)
-            && !_isSingleViewOutput)
+            && Directory.Exists(outputDirectory))
         {
             var previewPath = GetAnalysisPreviewPath(outputDirectory);
             if (File.Exists(previewPath))
             {
                 return previewPath;
             }
-
-            return null;
         }
 
         var path = AnalysisResult?.AnnotatedVideoPath;
         if (!string.IsNullOrWhiteSpace(path)
-            && File.Exists(path)
-            && !(_isSingleViewOutput && Path.GetFileName(path).Equals("analysis_preview.mp4", StringComparison.OrdinalIgnoreCase)))
+            && File.Exists(path))
         {
             return path;
         }
@@ -1646,7 +1655,6 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         var outputDirectory = AnalysisResult?.OutputDirectory;
         if (string.IsNullOrWhiteSpace(outputDirectory)
             || !Directory.Exists(outputDirectory)
-            || _isSingleViewOutput
             || File.Exists(GetAnalysisPreviewPath(outputDirectory))
             || _analysisPreviewGenerationRequested)
         {
@@ -1690,7 +1698,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     private void UpdateAnalysisPreviewStatus()
     {
         var outputDirectory = AnalysisResult?.OutputDirectory;
-        if (string.IsNullOrWhiteSpace(outputDirectory) || _isSingleViewOutput)
+        if (string.IsNullOrWhiteSpace(outputDirectory))
         {
             IsAnalysisPreviewGenerating = false;
             AnalysisPreviewStatusText = string.Empty;
@@ -2586,12 +2594,16 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         return reportedDuration is > 0 ? reportedDuration : frameDuration;
     }
 
-    private static string GetEnumDescription<TEnum>(TEnum value)
-        where TEnum : struct, Enum
+    private string GetMeasurementTypeText(MeasurementType type)
     {
-        var member = typeof(TEnum).GetMember(value.ToString()).FirstOrDefault();
-        var attribute = member?.GetCustomAttribute<DescriptionAttribute>();
-        return attribute?.Description ?? value.ToString();
+        return type switch
+        {
+            MeasurementType.NormalWalk => L("MeasurementType.NormalWalk"),
+            MeasurementType.FastWalk => L("MeasurementType.FastWalk"),
+            MeasurementType.SlowWalk => L("MeasurementType.SlowWalk"),
+            MeasurementType.Other => L("MeasurementType.Other"),
+            _ => "--"
+        };
     }
 }
 

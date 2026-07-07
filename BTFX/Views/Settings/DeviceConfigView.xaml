@@ -137,16 +137,28 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <StackPanel Orientation="Horizontal">
-                        <Border
-                            Width="4"
-                            Height="16"
-                            Margin="0,0,12,0"
+                    <Grid>
+                        <StackPanel Orientation="Horizontal">
+                            <Border
+                                Width="4"
+                                Height="16"
+                                Margin="0,0,12,0"
+                                VerticalAlignment="Center"
+                                Background="#E4004A"
+                                CornerRadius="2" />
+                            <TextBlock Style="{StaticResource SettingsSectionTitleTextStyle}" Text="{DynamicResource DeviceIdSettings}" />
+                        </StackPanel>
+
+                        <Button
+                            Width="170"
+                            Height="42"
+                            HorizontalAlignment="Right"
                             VerticalAlignment="Center"
-                            Background="#E4004A"
-                            CornerRadius="2" />
-                        <TextBlock Style="{StaticResource SettingsSectionTitleTextStyle}" Text="{DynamicResource DeviceIdSettings}" />
-                    </StackPanel>
+                            Command="{Binding OpenDahengCameraTestDialogCommand}"
+                            Content="{DynamicResource DahengCameraTest.Button}"
+                            FontSize="16"
+                            Style="{StaticResource SettingsSecondaryButtonStyle}" />
+                    </Grid>
 
                     <Grid Grid.Row="1" Margin="0,26,0,0" VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>

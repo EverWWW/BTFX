@@ -169,7 +169,11 @@ public partial class PatientSelectionViewModel : ObservableObject
         {
             // Get all patients from service
             var allPatients = await _patientService.GetAllPatientsAsync();
-            _allPatients = allPatients.Where(p => p.Status == PatientStatus.Active).ToList();
+            _allPatients = allPatients
+                .Where(p => p.Status == PatientStatus.Active)
+                .OrderByDescending(p => p.CreatedAt)
+                .ThenByDescending(p => p.Id)
+                .ToList();
 
             // Apply search filter if needed
             ApplySearchFilter();
@@ -199,7 +203,10 @@ public partial class PatientSelectionViewModel : ObservableObject
                 (p.IdNumber != null && p.IdNumber.ToLower().Contains(searchLower)));//过滤患者列表，保留名称、电话或身份证号包含搜索文本的患者
         }
 
-        var filteredList = filtered.ToList();//将过滤后的结果转换为列表以便后续处理
+        var filteredList = filtered
+            .OrderByDescending(p => p.CreatedAt)
+            .ThenByDescending(p => p.Id)
+            .ToList();//将过滤后的结果转换为列表以便后续处理
         TotalRecords = filteredList.Count;
         TotalPages = TotalRecords == 0 ? 0 : (int)Math.Ceiling(TotalRecords / (double)_pageSize);//计算总页数
 
@@ -647,7 +654,9 @@ public partial class PatientSelectionViewModel : ObservableObject
             var percent = 35 + 55.0 * (index + 1) / Math.Max(importedPatients.Count, 1);
             progress.Report(new OperationProgressInfo(percent, L("Patient.Import.WriteStage"), L("Patient.Import.WriteMessageFormat", index + 1, importedPatients.Count, imported.Name)));
 
-            if (string.IsNullOrWhiteSpace(imported.Name) || imported.Height is not > 0)
+            if (string.IsNullOrWhiteSpace(imported.Name)
+                || string.IsNullOrWhiteSpace(imported.Phone)
+                || imported.Height is not > 0)
             {
                 skipped++;
                 continue;
@@ -689,21 +698,10 @@ public partial class PatientSelectionViewModel : ObservableObject
 
     private static Patient? FindExistingPatient(IEnumerable<Patient> existingPatients, Patient imported)
     {
-        if (!string.IsNullOrWhiteSpace(imported.IdNumber))
-        {
-            var byIdNumber = existingPatients.FirstOrDefault(patient =>
-                !string.IsNullOrWhiteSpace(patient.IdNumber) &&
-                string.Equals(patient.IdNumber.Trim(), imported.IdNumber.Trim(), StringComparison.OrdinalIgnoreCase));
-            if (byIdNumber is not null)
-            {
-                return byIdNumber;
-            }
-        }
-
         if (!string.IsNullOrWhiteSpace(imported.Phone))
         {
             return existingPatients.FirstOrDefault(patient =>
-                string.Equals(patient.Name.Trim(), imported.Name.Trim(), StringComparison.OrdinalIgnoreCase) &&
+                !string.IsNullOrWhiteSpace(patient.Phone) &&
                 string.Equals(patient.Phone.Trim(), imported.Phone.Trim(), StringComparison.OrdinalIgnoreCase));
         }
 

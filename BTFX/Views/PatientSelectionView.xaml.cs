@@ -1,5 +1,6 @@
-﻿using System.Windows.Controls;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using BTFX.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -56,5 +57,10 @@ public partial class PatientSelectionView : UserControl
         }
 
         viewModel.UpdatePageSize(viewportHeight);
+    }
+
+    private void PatientListViewport_OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        Keyboard.ClearFocus();
     }
 }

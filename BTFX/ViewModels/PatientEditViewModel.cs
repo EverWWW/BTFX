@@ -169,7 +169,12 @@ public partial class PatientEditViewModel : ObservableObject
                 return _localizationService.GetString("NameLengthError");
             }
 
-        if (!string.IsNullOrWhiteSpace(Phone) && (Phone.Length < 8 || Phone.Length > 20))
+        if (string.IsNullOrWhiteSpace(Phone))
+        {
+            return _localizationService.GetString("PhoneRequired");
+        }
+
+        if (Phone.Length < 8 || Phone.Length > 20)
         {
             return _localizationService.GetString("PhoneLengthError");
         }
@@ -279,7 +284,13 @@ public partial class PatientEditViewModel : ObservableObject
             return false;
         }
 
-        if (!string.IsNullOrWhiteSpace(Phone) && (Phone.Length < 8 || Phone.Length > 20))
+        if (string.IsNullOrWhiteSpace(Phone))
+        {
+            ErrorMessage = _localizationService.GetString("PhoneRequired");
+            return false;
+        }
+
+        if (Phone.Length < 8 || Phone.Length > 20)
         {
             ErrorMessage = _localizationService.GetString("PhoneLengthError");
             return false;
@@ -294,6 +305,18 @@ public partial class PatientEditViewModel : ObservableObject
         if (!string.IsNullOrWhiteSpace(IdNumber) && IdNumber.Length > 20)
         {
             ErrorMessage = _localizationService.GetString("IdNumberLengthError");
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(IdNumber) && IdNumber.Any(c => !char.IsDigit(c) && c != 'X' && c != 'x'))
+        {
+            ErrorMessage = _localizationService.GetString("IdNumberFormatError");
+            return false;
+        }
+
+        if (BirthDate.HasValue && BirthDate.Value.Date > DateTime.Today)
+        {
+            ErrorMessage = _localizationService.GetString("BirthDateFutureError");
             return false;
         }
 
@@ -326,14 +349,21 @@ public partial class PatientEditViewModel : ObservableObject
             IsSaving = true;
             ErrorMessage = string.Empty;
 
+            var normalizedPhone = Phone.Trim();
+            if (await _patientService.IsPatientExistsAsync(normalizedPhone, _isEditMode ? PatientId : null))
+            {
+                ErrorMessage = _localizationService.GetString("PhoneExists");
+                return;
+            }
+
             var patient = new Patient
             {
                 Id = PatientId,
                 Name = Name.Trim(),
                 Gender = Gender,
                 BirthDate = BirthDate,
-                Phone = Phone.Trim(),
-                IdNumber = string.IsNullOrWhiteSpace(IdNumber) ? null : IdNumber.Trim(),
+                Phone = normalizedPhone,
+                IdNumber = string.IsNullOrWhiteSpace(IdNumber) ? null : IdNumber.Trim().ToUpperInvariant(),
                 HospitalNumber = string.IsNullOrWhiteSpace(HospitalNumber) ? null : HospitalNumber.Trim(),
                 Height = Height,
                 Weight = Weight,

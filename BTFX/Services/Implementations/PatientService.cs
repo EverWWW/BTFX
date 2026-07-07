@@ -31,8 +31,11 @@ public class PatientService : IPatientService
         try
         {
             using var db = DatabaseFactory.CreateSqliteSugarHelper();
-            var all = await db.GetAllAsync<Patient>();
-            return all.Where(p => p.Status == PatientStatus.Active).ToList();
+            return await db.Queryable<Patient>()
+                .Where(p => p.Status == PatientStatus.Active)
+                .OrderByDescending(p => p.CreatedAt)
+                .OrderByDescending(p => p.Id)
+                .ToListAsync();
         }
         catch (Exception ex)
         {
@@ -63,7 +66,7 @@ public class PatientService : IPatientService
             }
 
             // 排序
-            query = query.OrderByDescending(p => p.CreatedAt);
+            query = query.OrderByDescending(p => p.CreatedAt).OrderByDescending(p => p.Id);
 
             // 分页查询
             var totalCount = await query.CountAsync();
@@ -196,6 +199,7 @@ public class PatientService : IPatientService
                     p.Phone.Contains(searchText) || 
                     (p.IdNumber != null && p.IdNumber.Contains(searchText)))
                 .OrderByDescending(p => p.CreatedAt)
+                .OrderByDescending(p => p.Id)
                 .ToListAsync();
         }
         catch (Exception ex)

@@ -34,6 +34,7 @@ public class GaitAnalysisService : IGaitAnalysisService
     private const string AnalysisPreviewVideoFileName = "analysis_preview.mp4";
     private const string AnalysisPreviewGeneratingFileName = "analysis_preview.generating";
     private const string AnalysisPreviewFailedFileName = "analysis_preview.failed";
+    private const int AnalysisPreviewFrameRate = 30;
     private const int MinimumAlgorithmTimeoutMinutes = 30;
     private const string SideInputFileName = "side.mp4";
     private const string FrontInputFileName = "front.mp4";
@@ -1046,8 +1047,8 @@ public class GaitAnalysisService : IGaitAnalysisService
 
                 startInfo.ArgumentList.Add("-filter_complex");
                 startInfo.ArgumentList.Add(string.IsNullOrWhiteSpace(frontPreviewSource)
-                    ? "[0:v]scale=-2:720,pad=iw+16:ih+16:8:8:black,format=yuv420p[v]"
-                    : "[0:v]scale=-2:720,pad=iw+16:ih+16:8:8:black[s];[1:v]scale=-2:720,pad=iw+16:ih+16:8:8:black[f];[s][f]hstack=inputs=2,format=yuv420p[v]");
+                    ? $"[0:v]scale=-2:720,pad=iw+16:ih+16:8:8:black,fps={AnalysisPreviewFrameRate},format=yuv420p[v]"
+                    : $"[0:v]scale=-2:720,pad=iw+16:ih+16:8:8:black[s];[1:v]scale=-2:720,pad=iw+16:ih+16:8:8:black[f];[s][f]hstack=inputs=2,fps={AnalysisPreviewFrameRate},format=yuv420p[v]");
                 startInfo.ArgumentList.Add("-map");
                 startInfo.ArgumentList.Add("[v]");
                 startInfo.ArgumentList.Add("-an");
@@ -1175,7 +1176,7 @@ public class GaitAnalysisService : IGaitAnalysisService
                     concatLabels.Add($"[v{concatLabels.Count}]");
                 }
 
-                filters.Add($"{string.Concat(concatLabels)}concat=n={concatLabels.Count}:v=1:a=0,format=yuv420p[v]");
+                filters.Add($"{string.Concat(concatLabels)}concat=n={concatLabels.Count}:v=1:a=0,fps={AnalysisPreviewFrameRate},format=yuv420p[v]");
                 startInfo.ArgumentList.Add("-filter_complex");
                 startInfo.ArgumentList.Add(string.Join(";", filters));
                 startInfo.ArgumentList.Add("-map");
