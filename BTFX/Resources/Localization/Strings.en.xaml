@@ -237,7 +237,7 @@
     <system:String x:Key="DataManagement.Status.Failed">Failed</system:String>
     <system:String x:Key="DataManagement.Action.ContinueProcess">Continue</system:String>
     <system:String x:Key="DataManagement.Action.ViewProgress">View Progress</system:String>
-    <system:String x:Key="DataManagement.Action.ViewResult">View Result</system:String>
+    <system:String x:Key="DataManagement.Action.ViewResult">View Details</system:String>
     <system:String x:Key="DataManagement.Action.Reanalyze">Reanalyze</system:String>
 
     <system:String x:Key="Report">Report</system:String>

@@ -621,6 +621,12 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
 
         try
         {
+            if (item.HasCompletedAnalysis)
+            {
+                await ViewDetailAsync(item);
+                return;
+            }
+
             if (MergeActiveMeasurementState(item.Record))
             {
                 await _measurementService.UpdateMeasurementAsync(item.Record);

@@ -672,7 +672,6 @@
                             <ColumnDefinition Width="1.05*" />
                             <ColumnDefinition Width="0.65*" />
                             <ColumnDefinition Width="0.65*" />
-                            <ColumnDefinition Width="0.65*" />
                         </Grid.ColumnDefinitions>
 
                         <Button
@@ -711,13 +710,9 @@
                         <TextBlock
                             Grid.Column="8"
                             Style="{StaticResource HeaderTextStyle}"
-                            Text="{DynamicResource ViewDetails}" />
-                        <TextBlock
-                            Grid.Column="9"
-                            Style="{StaticResource HeaderTextStyle}"
                             Text="{DynamicResource Export}" />
                         <TextBlock
-                            Grid.Column="10"
+                            Grid.Column="9"
                             Style="{StaticResource HeaderTextStyle}"
                             Text="{DynamicResource Delete}" />
                     </Grid>
@@ -756,7 +751,6 @@
                                             <ColumnDefinition Width="1.9*" />
                                             <ColumnDefinition Width="1.25*" />
                                             <ColumnDefinition Width="1.05*" />
-                                            <ColumnDefinition Width="0.65*" />
                                             <ColumnDefinition Width="0.65*" />
                                             <ColumnDefinition Width="0.65*" />
                                         </Grid.ColumnDefinitions>
@@ -828,19 +822,6 @@
 
                                         <Button
                                             Grid.Column="8"
-                                            Command="{Binding DataContext.ViewDetailCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                            CommandParameter="{Binding}"
-                                            IsEnabled="{Binding CanViewDetail}"
-                                            Style="{StaticResource ActionIconButtonStyle}">
-                                            <Image
-                                                Width="28"
-                                                Height="28"
-                                                RenderOptions.BitmapScalingMode="HighQuality"
-                                                Source="/Resources/Images/DataManagement/xiangqing.png" />
-                                        </Button>
-
-                                        <Button
-                                            Grid.Column="9"
                                             Command="{Binding DataContext.ExportSingleCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                             CommandParameter="{Binding}"
                                             IsEnabled="{Binding CanExportResult}"
@@ -854,7 +835,7 @@
                                         </Button>
 
                                         <Button
-                                            Grid.Column="10"
+                                            Grid.Column="9"
                                             Command="{Binding DataContext.DeleteSingleCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                             CommandParameter="{Binding}"
                                             IsEnabled="{Binding DataContext.CanDelete, RelativeSource={RelativeSource AncestorType=ItemsControl}}"

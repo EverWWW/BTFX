@@ -238,7 +238,7 @@
     <system:String x:Key="DataManagement.Status.Failed">分析失败</system:String>
     <system:String x:Key="DataManagement.Action.ContinueProcess">继续处理</system:String>
     <system:String x:Key="DataManagement.Action.ViewProgress">查看进度</system:String>
-    <system:String x:Key="DataManagement.Action.ViewResult">查看结果</system:String>
+    <system:String x:Key="DataManagement.Action.ViewResult">查看详情</system:String>
     <system:String x:Key="DataManagement.Action.Reanalyze">重新分析</system:String>
 
     <system:String x:Key="Report">报告</system:String>
