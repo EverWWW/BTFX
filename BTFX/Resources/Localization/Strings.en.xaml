@@ -1479,6 +1479,7 @@
     <system:String x:Key="CameraCapture.CameraStatus.Unconfigured">Unconfigured</system:String>
     <system:String x:Key="CameraCapture.CameraStatus.ProbeFailed">Detection Failed</system:String>
     <system:String x:Key="CameraCapture.Status.StartDelayFormat">Preparing, starts in {0}s</system:String>
+    <system:String x:Key="CameraCapture.Status.DevicePreparing">Preparing recording</system:String>
     <system:String x:Key="CameraCapture.Status.Previewing">Previewing</system:String>
     <system:String x:Key="CameraCapture.Status.Recording">Recording</system:String>
     <system:String x:Key="CameraCapture.Status.Transcoding">Recording completed, transcoding</system:String>
@@ -1487,6 +1488,7 @@
     <system:String x:Key="CameraCapture.Status.Completed">Recording Completed</system:String>
     <system:String x:Key="CameraCapture.Status.Canceled">Canceled</system:String>
     <system:String x:Key="CameraCapture.Status.Failed">Recording Failed</system:String>
+    <system:String x:Key="CameraCapture.Status.CameraUnavailable">Camera not connected. Connect the camera and refresh its status before retrying.</system:String>
     <system:String x:Key="CameraCapture.Log.RecordAndTranscodeCompleted">Recording and transcoding completed.</system:String>
     <system:String x:Key="CameraCapture.Log.RecordingCanceled">Recording canceled.</system:String>
     <system:String x:Key="CameraCapture.Log.RecordStageCompleted">Recording stage completed.</system:String>

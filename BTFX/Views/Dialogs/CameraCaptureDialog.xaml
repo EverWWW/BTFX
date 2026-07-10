@@ -643,7 +643,7 @@
                                 <Image
                                     Source="{Binding SidePreviewImage}"
                                     Stretch="Uniform"
-                                    Visibility="{Binding IsPreviewState, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    Visibility="{Binding IsLivePreviewVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 <Image
                                     x:Name="SidePlaybackPosterImage"
                                     Source="{Binding SidePlaybackPosterImage}"
@@ -849,7 +849,7 @@
                                 <Image
                                     Source="{Binding FrontPreviewImage}"
                                     Stretch="Uniform"
-                                    Visibility="{Binding IsPreviewState, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    Visibility="{Binding IsLivePreviewVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 <Image
                                     x:Name="FrontPlaybackPosterImage"
                                     Source="{Binding FrontPlaybackPosterImage}"
@@ -998,6 +998,7 @@
 
             <Border
                 Grid.RowSpan="4"
+                Margin="-20"
                 Background="#66000000"
                 Visibility="{Binding IsCameraNameEditorOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <materialDesign:Card
@@ -1032,6 +1033,7 @@
             <Border
                 x:Name="ExitConfirmOverlay"
                 Grid.RowSpan="4"
+                Margin="-20"
                 Background="#66000000"
                 Visibility="Collapsed">
                 <Border

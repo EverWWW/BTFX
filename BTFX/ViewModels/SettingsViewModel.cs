@@ -169,16 +169,34 @@ public partial class SettingsViewModel : ObservableObject
                     private void LoadDeviceConfig()
                     {
                         _cameraCaptureSettings = _cameraCaptureSettingsService.Load();
-                        SideCameraName = _cameraCaptureSettings.SideCameraName;
-                        FrontCameraName = _cameraCaptureSettings.FrontCameraName;
+                        if (_cameraCaptureSettings.ResolveBackend() == CameraCaptureBackend.Daheng)
+                        {
+                            SideCameraName = _cameraCaptureSettings.DahengSideCameraSerialNumber;
+                            FrontCameraName = _cameraCaptureSettings.DahengFrontCameraSerialNumber;
+                        }
+                        else
+                        {
+                            SideCameraName = _cameraCaptureSettings.SideCameraName;
+                            FrontCameraName = _cameraCaptureSettings.FrontCameraName;
+                        }
+
                         ExternalCameraConfigToolPath = _cameraCaptureSettings.ExternalConfigToolPath;
                     }
 
                     [RelayCommand]
                     private void SaveDeviceConfig()
                     {
-                        _cameraCaptureSettings.SideCameraName = SideCameraName.Trim();
-                        _cameraCaptureSettings.FrontCameraName = FrontCameraName.Trim();
+                        if (_cameraCaptureSettings.ResolveBackend() == CameraCaptureBackend.Daheng)
+                        {
+                            _cameraCaptureSettings.DahengSideCameraSerialNumber = SideCameraName.Trim();
+                            _cameraCaptureSettings.DahengFrontCameraSerialNumber = FrontCameraName.Trim();
+                        }
+                        else
+                        {
+                            _cameraCaptureSettings.SideCameraName = SideCameraName.Trim();
+                            _cameraCaptureSettings.FrontCameraName = FrontCameraName.Trim();
+                        }
+
                         _cameraCaptureSettings.ExternalConfigToolPath = ExternalCameraConfigToolPath.Trim();
                         _cameraCaptureSettingsService.Save(_cameraCaptureSettings);
                         _logHelper?.Information("保存设备配置");

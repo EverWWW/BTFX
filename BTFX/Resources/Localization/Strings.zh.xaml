@@ -1479,6 +1479,7 @@
     <system:String x:Key="CameraCapture.CameraStatus.Unconfigured">未配置</system:String>
     <system:String x:Key="CameraCapture.CameraStatus.ProbeFailed">检测失败</system:String>
     <system:String x:Key="CameraCapture.Status.StartDelayFormat">准备录制，{0}s 后开始</system:String>
+    <system:String x:Key="CameraCapture.Status.DevicePreparing">正在准备录制</system:String>
     <system:String x:Key="CameraCapture.Status.Previewing">预览中</system:String>
     <system:String x:Key="CameraCapture.Status.Recording">正在录制</system:String>
     <system:String x:Key="CameraCapture.Status.Transcoding">视频录制完成，正在转码</system:String>
@@ -1487,6 +1488,7 @@
     <system:String x:Key="CameraCapture.Status.Completed">录制完成</system:String>
     <system:String x:Key="CameraCapture.Status.Canceled">已取消</system:String>
     <system:String x:Key="CameraCapture.Status.Failed">录制失败</system:String>
+    <system:String x:Key="CameraCapture.Status.CameraUnavailable">相机未连接，请连接相机并刷新状态后重试。</system:String>
     <system:String x:Key="CameraCapture.Log.RecordAndTranscodeCompleted">录制和转码完成。</system:String>
     <system:String x:Key="CameraCapture.Log.RecordingCanceled">录制已取消。</system:String>
     <system:String x:Key="CameraCapture.Log.RecordStageCompleted">录制阶段完成。</system:String>

@@ -157,7 +157,8 @@
                             Command="{Binding OpenDahengCameraTestDialogCommand}"
                             Content="{DynamicResource DahengCameraTest.Button}"
                             FontSize="16"
-                            Style="{StaticResource SettingsSecondaryButtonStyle}" />
+                            Style="{StaticResource SettingsSecondaryButtonStyle}"
+                            Visibility="Collapsed" />
                     </Grid>
 
                     <Grid Grid.Row="1" Margin="0,26,0,0" VerticalAlignment="Center">
@@ -166,8 +167,8 @@
                             <ColumnDefinition Width="390" />
                             <ColumnDefinition Width="56" />
                             <ColumnDefinition Width="Auto" />
-              <ColumnDefinition Width="390" />
-              <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="390" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Style="{StaticResource SettingsLabelTextStyle}" Text="{DynamicResource SideCameraId}" />

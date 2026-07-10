@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="BTFX/BTFX.csproj" />
+  <Project Path="BTFX.Tests/BTFX.Tests.csproj" />
   <Project Path="ActivationCodeTool/ActivationCodeTool.csproj" />
   <Project Path="ToolHelper.Communication/ToolHelper.Communication.csproj" />
   <Project Path="ToolHelper.Database/ToolHelper.Database.csproj" />

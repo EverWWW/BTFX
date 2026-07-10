@@ -6,8 +6,8 @@
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:BTFX.ViewModels"
-    Width="1180"
-    Height="760"
+    Width="1320"
+    Height="820"
     d:DataContext="{d:DesignInstance Type=vm:DahengCameraTestDialogViewModel}"
     FontFamily="{StaticResource AppFont}"
     Loaded="DahengCameraTestDialog_OnLoaded"
@@ -16,15 +16,15 @@
 
     <UserControl.Resources>
         <Style x:Key="DialogButtonStyle" TargetType="Button">
-            <Setter Property="Height" Value="42" />
-            <Setter Property="MinWidth" Value="108" />
-            <Setter Property="Padding" Value="18,0" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="MinWidth" Value="104" />
+            <Setter Property="Padding" Value="16,0" />
             <Setter Property="Background" Value="#403B5B" />
             <Setter Property="Foreground" Value="#FFFFFF" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontSize" Value="15" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
                 <Setter.Value>
@@ -63,15 +63,30 @@
         </Style>
 
         <Style x:Key="DialogComboBoxStyle" TargetType="ComboBox">
-            <Setter Property="Height" Value="42" />
-            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Padding" Value="10,0" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
-            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontSize" Value="14" />
             <Setter Property="Foreground" Value="#403B5B" />
             <Setter Property="Background" Value="#FFFFFF" />
             <Setter Property="BorderBrush" Value="#D1D1D1" />
             <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <Style x:Key="FieldLabelStyle" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Foreground" Value="#666666" />
+        </Style>
+
+        <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}" />
+            <Setter Property="FontSize" Value="17" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Foreground" Value="#403B5B" />
         </Style>
     </UserControl.Resources>
 
@@ -81,7 +96,7 @@
         SnapsToDevicePixels="True">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="76" />
+                <RowDefinition Height="72" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
@@ -97,7 +112,7 @@
                         FontSize="24"
                         FontWeight="Medium"
                         Foreground="#2F2A4A"
-                        Text="大恒相机测试" />
+                        Text="大恒双相机同步测试" />
                     <Button
                         Width="42"
                         Height="42"
@@ -117,86 +132,89 @@
                 </Grid>
             </Border>
 
-            <Grid Grid.Row="1" Margin="28">
+            <Grid Grid.Row="1" Margin="24">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="18" />
+                    <RowDefinition Height="14" />
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="18" />
-                    <RowDefinition Height="150" />
+                    <RowDefinition Height="14" />
+                    <RowDefinition Height="158" />
                 </Grid.RowDefinitions>
 
                 <Border
-                    Padding="20"
+                    Padding="18"
                     Background="#FAFAFA"
                     CornerRadius="8">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="14" />
+                            <RowDefinition Height="12" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="360" />
-                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="320" />
+                                <ColumnDefinition Width="16" />
                                 <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="150" />
-                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="320" />
+                                <ColumnDefinition Width="16" />
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="130" />
-                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="14" />
                                 <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="120" />
-                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="90" />
+                                <ColumnDefinition Width="14" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="90" />
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="16"
-                                Foreground="#666666"
-                                Text="设备" />
+                            <TextBlock Style="{StaticResource FieldLabelStyle}" Text="侧面设备" />
                             <ComboBox
                                 Grid.Column="1"
                                 DisplayMemberPath="DisplayName"
                                 ItemsSource="{Binding Devices}"
-                                SelectedItem="{Binding SelectedDevice}"
+                                SelectedItem="{Binding SideCamera.SelectedDevice}"
                                 Style="{StaticResource DialogComboBoxStyle}" />
 
                             <TextBlock
                                 Grid.Column="3"
-                                VerticalAlignment="Center"
-                                FontSize="16"
-                                Foreground="#666666"
-                                Text="分辨率" />
+                                Style="{StaticResource FieldLabelStyle}"
+                                Text="正面设备" />
                             <ComboBox
                                 Grid.Column="4"
+                                DisplayMemberPath="DisplayName"
+                                ItemsSource="{Binding Devices}"
+                                SelectedItem="{Binding FrontCamera.SelectedDevice}"
+                                Style="{StaticResource DialogComboBoxStyle}" />
+
+                            <TextBlock
+                                Grid.Column="6"
+                                Style="{StaticResource FieldLabelStyle}"
+                                Text="分辨率" />
+                            <ComboBox
+                                Grid.Column="7"
                                 ItemsSource="{Binding ResolutionOptions}"
                                 SelectedItem="{Binding SelectedResolution}"
                                 Style="{StaticResource DialogComboBoxStyle}" />
 
                             <TextBlock
-                                Grid.Column="6"
-                                VerticalAlignment="Center"
-                                FontSize="16"
-                                Foreground="#666666"
+                                Grid.Column="9"
+                                Style="{StaticResource FieldLabelStyle}"
                                 Text="帧率" />
                             <ComboBox
-                                Grid.Column="7"
+                                Grid.Column="10"
                                 ItemsSource="{Binding FrameRateOptions}"
                                 SelectedItem="{Binding SelectedFrameRate}"
                                 Style="{StaticResource DialogComboBoxStyle}" />
 
                             <TextBlock
-                                Grid.Column="9"
-                                VerticalAlignment="Center"
-                                FontSize="16"
-                                Foreground="#666666"
+                                Grid.Column="12"
+                                Style="{StaticResource FieldLabelStyle}"
                                 Text="时长" />
                             <ComboBox
-                                Grid.Column="10"
+                                Grid.Column="13"
                                 ItemsSource="{Binding DurationOptions}"
                                 SelectedItem="{Binding SelectedDurationSeconds}"
                                 Style="{StaticResource DialogComboBoxStyle}" />
@@ -205,48 +223,80 @@
                         <Grid Grid.Row="2">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
                             <CheckBox
                                 VerticalAlignment="Center"
+                                Content="双相机模式"
+                                FontSize="15"
+                                Foreground="#403B5B"
+                                IsChecked="{Binding IsDualMode}" />
+                            <CheckBox
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
                                 Content="加载 UserSet0"
                                 FontSize="15"
                                 Foreground="#403B5B"
                                 IsChecked="{Binding AutoLoadUserSet0}" />
+                            <CheckBox
+                                Grid.Column="4"
+                                VerticalAlignment="Center"
+                                Content="录制时预览"
+                                FontSize="15"
+                                Foreground="#403B5B"
+                                IsChecked="{Binding PreviewDuringRecording}" />
+                            <CheckBox
+                                Grid.Column="6"
+                                VerticalAlignment="Center"
+                                Content="录制前重启采集"
+                                FontSize="15"
+                                Foreground="#403B5B"
+                                IsChecked="{Binding RestartStreamBeforeRecording}" />
 
                             <WrapPanel
-                                Grid.Column="1"
+                                Grid.Column="7"
                                 HorizontalAlignment="Right"
                                 Orientation="Horizontal">
                                 <Button
-                                    Margin="0,0,12,0"
+                                    Margin="0,0,10,0"
                                     Command="{Binding RefreshDevicesCommand}"
                                     Content="刷新设备"
                                     Style="{StaticResource DialogSecondaryButtonStyle}" />
                                 <Button
-                                    Margin="0,0,12,0"
-                                    Command="{Binding OpenDeviceCommand}"
-                                    Content="打开设备"
+                                    Margin="0,0,10,0"
+                                    Command="{Binding OpenSelectedCamerasCommand}"
+                                    Content="打开相机"
                                     Style="{StaticResource DialogButtonStyle}" />
                                 <Button
-                                    Margin="0,0,12,0"
+                                    Margin="0,0,10,0"
                                     Command="{Binding StartPreviewCommand}"
                                     Content="开始预览"
                                     Style="{StaticResource DialogButtonStyle}" />
                                 <Button
-                                    Margin="0,0,12,0"
+                                    Margin="0,0,10,0"
                                     Command="{Binding StopPreviewCommand}"
                                     Content="停止预览"
                                     Style="{StaticResource DialogSecondaryButtonStyle}" />
                                 <Button
-                                    Margin="0,0,12,0"
+                                    Margin="0,0,10,0"
                                     Command="{Binding StartRecordingCommand}"
                                     Content="开始录制"
                                     Style="{StaticResource DialogButtonStyle}" />
                                 <Button
+                                    Margin="0,0,10,0"
                                     Command="{Binding StopRecordingCommand}"
                                     Content="停止录制"
+                                    Style="{StaticResource DialogSecondaryButtonStyle}" />
+                                <Button
+                                    Command="{Binding CloseCamerasCommand}"
+                                    Content="关闭相机"
                                     Style="{StaticResource DialogSecondaryButtonStyle}" />
                             </WrapPanel>
                         </Grid>
@@ -255,46 +305,27 @@
 
                 <Grid Grid.Row="2">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*" />
-                        <ColumnDefinition Width="18" />
-                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
                     <Border
-                        Background="#111111"
-                        ClipToBounds="True"
-                        CornerRadius="8">
-                        <Grid>
-                            <Image
-                                Stretch="Uniform"
-                                Source="{Binding PreviewImage}" />
-                            <TextBlock
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                FontSize="20"
-                                Foreground="#DDDDDD"
-                                Text="未开始预览">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Visibility" Value="Collapsed" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding PreviewImage}" Value="{x:Null}">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </Grid>
-                    </Border>
-
-                    <Border
-                        Grid.Column="2"
-                        Padding="20"
+                        Padding="14"
                         Background="#FAFAFA"
                         CornerRadius="8">
-                        <StackPanel>
-                            <StackPanel Margin="0,0,0,20" Orientation="Horizontal">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="10" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="10" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="8" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Orientation="Horizontal">
                                 <Border
                                     Width="4"
                                     Height="16"
@@ -302,109 +333,233 @@
                                     VerticalAlignment="Center"
                                     Background="#E4004A"
                                     CornerRadius="2" />
+                                <TextBlock Style="{StaticResource SectionTitleStyle}" Text="侧面相机" />
                                 <TextBlock
-                                    FontSize="18"
-                                    FontWeight="Medium"
-                                    Foreground="#403B5B"
-                                    Text="设备信息" />
+                                    Margin="14,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="13"
+                                    Foreground="#999999"
+                                    Text="{Binding SideCamera.StatusText}" />
+                            </StackPanel>
+
+                            <Border
+                                Grid.Row="2"
+                                Background="#111111"
+                                ClipToBounds="True"
+                                CornerRadius="8">
+                                <Grid>
+                                    <Image
+                                        RenderOptions.BitmapScalingMode="LowQuality"
+                                        Source="{Binding SideCamera.PreviewImage}"
+                                        Stretch="Uniform" />
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="20"
+                                        Foreground="#DDDDDD"
+                                        Text="未开始预览">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SideCamera.PreviewImage}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </Border>
+
+                            <StackPanel
+                                Grid.Row="4"
+                                HorizontalAlignment="Center"
+                                Orientation="Horizontal">
+                                <RadioButton
+                                    Content="横向"
+                                    GroupName="DahengSideOrientation"
+                                    IsChecked="{Binding SideCamera.Orientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Landscape}"
+                                    IsEnabled="{Binding IsRecording, Converter={StaticResource InverseBooleanConverter}}" />
+                                <RadioButton
+                                    Margin="14,0,0,0"
+                                    Content="纵向"
+                                    GroupName="DahengSideOrientation"
+                                    IsChecked="{Binding SideCamera.Orientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=PortraitClockwise}"
+                                    IsEnabled="{Binding IsRecording, Converter={StaticResource InverseBooleanConverter}}" />
+                                <CheckBox
+                                    Margin="16,0,0,0"
+                                    Content="上下翻转"
+                                    IsChecked="{Binding SideCamera.FlipVertical}"
+                                    IsEnabled="{Binding IsRecording, Converter={StaticResource InverseBooleanConverter}}" />
                             </StackPanel>
 
                             <TextBlock
-                                FontSize="15"
-                                Foreground="#666666"
-                                Text="{Binding StatusText}"
-                                TextWrapping="Wrap" />
-
-                            <TextBlock
-                                Margin="0,20,0,6"
-                                FontSize="14"
-                                Foreground="#999999"
-                                Text="SN" />
-                            <TextBlock
-                                FontSize="16"
-                                Foreground="#403B5B"
-                                Text="{Binding SelectedDevice.SerialNumber, TargetNullValue=--}" />
-
-                            <TextBlock
-                                Margin="0,16,0,6"
-                                FontSize="14"
-                                Foreground="#999999"
-                                Text="UserID" />
-                            <TextBlock
-                                FontSize="16"
-                                Foreground="#403B5B"
-                                Text="{Binding SelectedDevice.UserId, TargetNullValue=--}" />
-
-                            <TextBlock
-                                Margin="0,16,0,6"
-                                FontSize="14"
-                                Foreground="#999999"
-                                Text="当前参数" />
-                            <TextBlock
-                                FontSize="14"
-                                Foreground="#403B5B"
-                                Text="{Binding CameraParameterSummary}"
-                                TextWrapping="Wrap" />
-
-                            <TextBlock
-                                Margin="0,16,0,6"
-                                FontSize="14"
-                                Foreground="#999999"
-                                Text="录制状态" />
-                            <TextBlock
-                                FontSize="14"
-                                Foreground="#403B5B"
-                                Text="{Binding RecordingStatusText}"
-                                TextWrapping="Wrap" />
-                            <ProgressBar
-                                Height="8"
-                                Margin="0,10,0,0"
-                                Maximum="100"
-                                Minimum="0"
-                                Value="{Binding RecordingProgress}" />
-                            <TextBlock
-                                Margin="0,10,0,0"
+                                Grid.Row="6"
                                 FontSize="12"
-                                Foreground="#999999"
-                                Text="{Binding LastRecordingPath}"
+                                Foreground="#777777"
+                                Text="{Binding SideCamera.ParameterSummary}"
                                 TextTrimming="CharacterEllipsis"
-                                ToolTip="{Binding LastRecordingPath}" />
+                                ToolTip="{Binding SideCamera.ParameterSummary}" />
+                        </Grid>
+                    </Border>
 
-                            <Button
-                                Width="228"
-                                Margin="0,14,0,0"
-                                HorizontalAlignment="Left"
-                                Command="{Binding CloseDeviceCommand}"
-                                Content="关闭设备"
-                                Style="{StaticResource DialogSecondaryButtonStyle}" />
-                        </StackPanel>
+                    <Border
+                        Grid.Column="2"
+                        Padding="14"
+                        Background="#FAFAFA"
+                        CornerRadius="8">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="10" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="10" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="8" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Orientation="Horizontal">
+                                <Border
+                                    Width="4"
+                                    Height="16"
+                                    Margin="0,0,10,0"
+                                    VerticalAlignment="Center"
+                                    Background="#E4004A"
+                                    CornerRadius="2" />
+                                <TextBlock Style="{StaticResource SectionTitleStyle}" Text="正面相机" />
+                                <TextBlock
+                                    Margin="14,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="13"
+                                    Foreground="#999999"
+                                    Text="{Binding FrontCamera.StatusText}" />
+                            </StackPanel>
+
+                            <Border
+                                Grid.Row="2"
+                                Background="#111111"
+                                ClipToBounds="True"
+                                CornerRadius="8">
+                                <Grid>
+                                    <Image
+                                        RenderOptions.BitmapScalingMode="LowQuality"
+                                        Source="{Binding FrontCamera.PreviewImage}"
+                                        Stretch="Uniform" />
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="20"
+                                        Foreground="#DDDDDD"
+                                        Text="未开始预览">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding FrontCamera.PreviewImage}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </Border>
+
+                            <StackPanel
+                                Grid.Row="4"
+                                HorizontalAlignment="Center"
+                                Orientation="Horizontal">
+                                <RadioButton
+                                    Content="横向"
+                                    GroupName="DahengFrontOrientation"
+                                    IsChecked="{Binding FrontCamera.Orientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Landscape}"
+                                    IsEnabled="{Binding IsRecording, Converter={StaticResource InverseBooleanConverter}}" />
+                                <RadioButton
+                                    Margin="14,0,0,0"
+                                    Content="纵向"
+                                    GroupName="DahengFrontOrientation"
+                                    IsChecked="{Binding FrontCamera.Orientation, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=PortraitClockwise}"
+                                    IsEnabled="{Binding IsRecording, Converter={StaticResource InverseBooleanConverter}}" />
+                                <CheckBox
+                                    Margin="16,0,0,0"
+                                    Content="上下翻转"
+                                    IsChecked="{Binding FrontCamera.FlipVertical}"
+                                    IsEnabled="{Binding IsRecording, Converter={StaticResource InverseBooleanConverter}}" />
+                            </StackPanel>
+
+                            <TextBlock
+                                Grid.Row="6"
+                                FontSize="12"
+                                Foreground="#777777"
+                                Text="{Binding FrontCamera.ParameterSummary}"
+                                TextTrimming="CharacterEllipsis"
+                                ToolTip="{Binding FrontCamera.ParameterSummary}" />
+                        </Grid>
                     </Border>
                 </Grid>
 
                 <Border
                     Grid.Row="4"
-                    Padding="16"
+                    Padding="14"
                     Background="#FAFAFA"
                     CornerRadius="8">
                     <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <TextBlock
-                            FontSize="16"
-                            FontWeight="Medium"
-                            Foreground="#403B5B"
-                            Text="运行日志" />
-                        <ListBox
-                            Grid.Row="1"
-                            Margin="0,10,0,0"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            FontFamily="Consolas"
-                            FontSize="12"
-                            Foreground="#666666"
-                            ItemsSource="{Binding LogLines}" />
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="320" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Border
+                                    Width="4"
+                                    Height="16"
+                                    Margin="0,0,10,0"
+                                    VerticalAlignment="Center"
+                                    Background="#E4004A"
+                                    CornerRadius="2" />
+                                <TextBlock Style="{StaticResource SectionTitleStyle}" Text="录制状态" />
+                            </StackPanel>
+                            <TextBlock
+                                Margin="0,12,0,0"
+                                FontSize="14"
+                                Foreground="#403B5B"
+                                Text="{Binding RecordingStatusText}"
+                                TextWrapping="Wrap" />
+                            <ProgressBar
+                                Height="10"
+                                Margin="0,12,0,0"
+                                Maximum="100"
+                                Minimum="0"
+                                Value="{Binding RecordingProgress}" />
+                            <TextBlock
+                                Margin="0,12,0,0"
+                                FontSize="12"
+                                Foreground="#999999"
+                                Text="{Binding LastRecordingPath}"
+                                TextTrimming="CharacterEllipsis"
+                                ToolTip="{Binding LastRecordingPath}" />
+                        </StackPanel>
+
+                        <Grid Grid.Column="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Style="{StaticResource SectionTitleStyle}" Text="运行日志" />
+                            <ListBox
+                                Grid.Row="1"
+                                Margin="0,8,0,0"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                FontFamily="Consolas"
+                                FontSize="12"
+                                Foreground="#666666"
+                                ItemsSource="{Binding LogLines}" />
+                        </Grid>
                     </Grid>
                 </Border>
             </Grid>

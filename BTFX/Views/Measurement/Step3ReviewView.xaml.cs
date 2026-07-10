@@ -19,6 +19,9 @@ namespace BTFX.Views.Measurement;
 /// </summary>
 public partial class Step3ReviewView : UserControl
 {
+    private const int CombinedPreviewHeight = 540;
+    private const int CombinedPreviewFrameRate = 24;
+    private const int CombinedPreviewCrf = 24;
     private static readonly object LogLock = new();
     private readonly DispatcherTimer _playbackTimer;
     private readonly Stopwatch _clock = new();
@@ -451,10 +454,7 @@ public partial class Step3ReviewView : UserControl
                 RedirectStandardOutput = true
             };
 
-            const string filter =
-                "[0:v]scale=-2:360,pad=iw+16:ih+16:8:8:black,fps=24,setpts=PTS-STARTPTS[left];" +
-                "[1:v]scale=-2:360,pad=iw+16:ih+16:8:8:black,fps=24,setpts=PTS-STARTPTS[right];" +
-                "[left][right]hstack=inputs=2[v]";
+            var filter = BuildCombinedPreviewFilter(CombinedPreviewHeight, CombinedPreviewFrameRate);
 
             process.StartInfo.ArgumentList.Add("-y");
             process.StartInfo.ArgumentList.Add("-i");
@@ -472,7 +472,7 @@ public partial class Step3ReviewView : UserControl
             process.StartInfo.ArgumentList.Add("-preset");
             process.StartInfo.ArgumentList.Add("veryfast");
             process.StartInfo.ArgumentList.Add("-crf");
-            process.StartInfo.ArgumentList.Add("28");
+            process.StartInfo.ArgumentList.Add(CombinedPreviewCrf.ToString(CultureInfo.InvariantCulture));
             process.StartInfo.ArgumentList.Add("-g");
             process.StartInfo.ArgumentList.Add("24");
             process.StartInfo.ArgumentList.Add("-keyint_min");
@@ -518,6 +518,14 @@ public partial class Step3ReviewView : UserControl
         }
     }
 
+    internal static string BuildCombinedPreviewFilter(int previewHeight, int frameRate)
+    {
+        return
+            $"[0:v]scale=-2:{previewHeight},pad=iw+16:ih+16:8:8:black,fps={frameRate},setpts=PTS-STARTPTS[left];" +
+            $"[1:v]scale=-2:{previewHeight},pad=iw+16:ih+16:8:8:black,fps={frameRate},setpts=PTS-STARTPTS[right];" +
+            "[left][right]hstack=inputs=2[v]";
+    }
+
     private static bool ShouldUsePreviewProxy(VideoFileInfoViewModel info)
     {
         var (width, height) = ParseResolution(info.Resolution);
@@ -553,7 +561,7 @@ public partial class Step3ReviewView : UserControl
     {
         var front = new FileInfo(frontPath);
         var side = new FileInfo(sidePath);
-        const string previewCacheVersion = "combined-preview-v4-side-left-front-right-dynamic-gap-24fps";
+        const string previewCacheVersion = "combined-preview-v5-540h-crf24-24fps";
         var key = string.Join(
             "|",
             previewCacheVersion,

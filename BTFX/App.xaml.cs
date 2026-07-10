@@ -508,7 +508,10 @@ public partial class App : Application
         services.AddSingleton<IMeasurementWorkflowCoordinator, MeasurementWorkflowCoordinator>();
         services.AddSingleton<IGaitAnalysisService, GaitAnalysisService>();
         services.AddTransient<IChartService, ChartService>();
-        services.AddTransient<ICameraRecordingService, FfmpegCameraRecordingService>();
+        services.AddTransient<FfmpegCameraRecordingService>();
+        services.AddSingleton<DahengCameraRuntime>();
+        services.AddTransient<DahengCameraRecordingService>();
+        services.AddTransient<ICameraRecordingService, CameraRecordingServiceSelector>();
         services.AddSingleton<ICameraCaptureSettingsService, CameraCaptureSettingsService>();
 
         // ========== ViewModel 注册 ==========

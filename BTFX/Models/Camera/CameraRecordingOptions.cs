@@ -14,10 +14,14 @@ public sealed class CameraRecordingOptions
 
     public int DurationSeconds { get; set; } = 6;
 
+    public DateTimeOffset? ScheduledStartAtUtc { get; set; }
+
     public bool TranscodeToMp4 { get; set; } = true;
 
     public bool DeleteAviAfterMp4 { get; set; } = true;
 
     public IReadOnlyDictionary<string, CameraTransformOptions> TransformOptionsByCameraName { get; set; } =
         new Dictionary<string, CameraTransformOptions>(StringComparer.OrdinalIgnoreCase);
+
+    public Action<string, System.Windows.Media.ImageSource>? PreviewFrameReceived { get; set; }
 }
