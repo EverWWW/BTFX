@@ -498,6 +498,7 @@ public partial class App : Application
         services.AddTransient<IPatientService, PatientService>();
         services.AddTransient<IMeasurementService, MeasurementService>();
         services.AddTransient<IReportService, ReportService>();
+        services.AddTransient<AnalysisReportCoordinator>();
         services.AddTransient<IUserService, UserService>();
         services.AddTransient<IExportImportService, ExportImportService>();
         services.AddTransient<IDepartmentService, DepartmentService>();

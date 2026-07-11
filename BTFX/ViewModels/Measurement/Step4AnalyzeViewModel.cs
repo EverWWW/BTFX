@@ -9,6 +9,7 @@ using BTFX.Common;
 using BTFX.Helpers;
 using BTFX.Models;
 using BTFX.Models.Analysis;
+using BTFX.Services.Implementations;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -32,6 +33,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     private readonly ISettingsService _settingsService;
     private readonly ILocalizationService _localizationService;
     private readonly IRuntimeDependencyPreflightService _runtimeDependencyPreflightService;
+    private readonly AnalysisReportCoordinator _analysisReportCoordinator;
     private readonly ILogHelper? _logHelper;
 
     private CancellationTokenSource? _analysisCts;
@@ -548,6 +550,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         ISettingsService settingsService,
         ILocalizationService localizationService,
         IRuntimeDependencyPreflightService runtimeDependencyPreflightService,
+        AnalysisReportCoordinator analysisReportCoordinator,
         ILogHelper? logHelper = null)
     {
         _analysisService = analysisService;
@@ -556,6 +559,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         _settingsService = settingsService;
         _localizationService = localizationService;
         _runtimeDependencyPreflightService = runtimeDependencyPreflightService;
+        _analysisReportCoordinator = analysisReportCoordinator;
         _logHelper = logHelper;
 
         // 订阅分析服务事件
@@ -1158,6 +1162,10 @@ public partial class Step4AnalyzeViewModel : ObservableObject
                 if (CurrentMeasurement is not null)
                 {
                     await UpdateCurrentMeasurementStatusAsync(MeasurementStatus.Completed, "测量状态已更新为已完成");
+                    var reportReady = await _analysisReportCoordinator.EnsureReportExistsAsync(
+                        CurrentMeasurement.Id,
+                        CurrentMeasurement.OperatorId);
+                    AddLog(reportReady ? "报告记录已准备完成" : "报告记录创建失败，可稍后从报告入口重试");
                 }
 
                 StartPackageGeneration(result, CurrentMeasurement);
