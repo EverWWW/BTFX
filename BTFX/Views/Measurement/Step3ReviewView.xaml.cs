@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using BTFX.Services.Implementations;
 using BTFX.ViewModels.Measurement;
 using MaterialDesignThemes.Wpf;
 using OpenCvSharp;
@@ -24,6 +25,7 @@ public partial class Step3ReviewView : UserControl
     private const int CombinedPreviewCrf = 24;
     private static readonly object LogLock = new();
     private readonly DispatcherTimer _playbackTimer;
+    private readonly PreviewGenerationCoordinator _previewGeneration = new();
     private readonly Stopwatch _clock = new();
     private VideoCapture? _frontDualCapture;
     private VideoCapture? _sideDualCapture;
@@ -70,6 +72,8 @@ public partial class Step3ReviewView : UserControl
 
     private void Step3ReviewView_OnUnloaded(object sender, RoutedEventArgs e)
     {
+        _previewGeneration.CancelCurrent();
+        _isPreparingPreview = false;
         StopPlayback();
         DisposeCaptures();
         ClearImages();
@@ -86,6 +90,7 @@ public partial class Step3ReviewView : UserControl
 
     private async Task ReloadPlayersAsync()
     {
+        using var generation = _previewGeneration.Begin();
         WriteLog("ReloadPlayersAsync started.");
         _isPreparingPreview = true;
         _isPlaybackReady = false;
@@ -118,17 +123,20 @@ public partial class Step3ReviewView : UserControl
 
             if (vm.HasDualVideo)
             {
-                var combinedPath = await PrepareCombinedPreviewVideoAsync(vm.SideVideoPath, vm.FrontVideoPath);
+                var combinedPath = await PrepareCombinedPreviewVideoAsync(vm.SideVideoPath, vm.FrontVideoPath, generation.Token);
+                if (!_previewGeneration.IsCurrent(generation.Version)) return;
                 SetPreviewMediaSource(DualPreviewMediaElement, combinedPath);
             }
             else if (vm.HasFrontVideo)
             {
-                var frontPath = await PreparePreviewVideoAsync(vm.FrontVideoPath, vm.FrontVideoInfo);
+                var frontPath = await PreparePreviewVideoAsync(vm.FrontVideoPath, vm.FrontVideoInfo, generation.Token);
+                if (!_previewGeneration.IsCurrent(generation.Version)) return;
                 SetPreviewMediaSource(SinglePreviewMediaElement, frontPath);
             }
             else
             {
-                var sidePath = await PreparePreviewVideoAsync(vm.SideVideoPath, vm.SideVideoInfo);
+                var sidePath = await PreparePreviewVideoAsync(vm.SideVideoPath, vm.SideVideoInfo, generation.Token);
+                if (!_previewGeneration.IsCurrent(generation.Version)) return;
                 SetPreviewMediaSource(SinglePreviewMediaElement, sidePath);
             }
 
@@ -139,17 +147,24 @@ public partial class Step3ReviewView : UserControl
             SetPlaybackControlsEnabled(_isPlaybackReady);
 
         }
+        catch (OperationCanceledException)
+        {
+            WriteLog($"ReloadPlayersAsync canceled. Generation={generation.Version}");
+        }
         finally
         {
-            _isPreparingPreview = false;
-            if (!_isPlaybackReady)
+            if (_previewGeneration.IsCurrent(generation.Version))
             {
-                SetPlaybackControlsEnabled(false);
-            }
-            else if (_pendingPlayAfterPrepare)
-            {
-                _pendingPlayAfterPrepare = false;
-                StartPlayback();
+                _isPreparingPreview = false;
+                if (!_isPlaybackReady)
+                {
+                    SetPlaybackControlsEnabled(false);
+                }
+                else if (_pendingPlayAfterPrepare)
+                {
+                    _pendingPlayAfterPrepare = false;
+                    StartPlayback();
+                }
             }
         }
     }
@@ -313,7 +328,10 @@ public partial class Step3ReviewView : UserControl
         }
     }
 
-    private async Task<string?> PreparePreviewVideoAsync(string? sourcePath, VideoFileInfoViewModel info)
+    private async Task<string?> PreparePreviewVideoAsync(
+        string? sourcePath,
+        VideoFileInfoViewModel info,
+        CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(sourcePath) || !File.Exists(sourcePath))
         {
@@ -337,11 +355,7 @@ public partial class Step3ReviewView : UserControl
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(proxyPath)!);
-        var tempPath = proxyPath + ".tmp.mp4";
-        if (File.Exists(tempPath))
-        {
-            File.Delete(tempPath);
-        }
+        var tempPath = $"{proxyPath}.{Guid.NewGuid():N}.tmp.mp4";
 
         try
         {
@@ -381,12 +395,14 @@ public partial class Step3ReviewView : UserControl
             WriteLog($"PreparePreviewVideoAsync transcode start. Source='{sourcePath}', Proxy='{proxyPath}', Ffmpeg='{ffmpegPath}'");
             process.Start();
             var stderrTask = process.StandardError.ReadToEndAsync();
-            await process.WaitForExitAsync();
+            await WaitForProcessExitAsync(process, cancellationToken);
             var stderr = await stderrTask;
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (process.ExitCode != 0 || !File.Exists(tempPath) || new FileInfo(tempPath).Length <= 128 * 1024)
             {
                 WriteLog($"PreparePreviewVideoAsync transcode failed. ExitCode={process.ExitCode}, TempExists={File.Exists(tempPath)}, Error='{stderr}'");
+                DeleteTemporaryFile(tempPath);
                 return sourcePath;
             }
 
@@ -399,19 +415,24 @@ public partial class Step3ReviewView : UserControl
             WriteLog($"PreparePreviewVideoAsync transcode success. Proxy='{proxyPath}', Length={new FileInfo(proxyPath).Length}");
             return proxyPath;
         }
+        catch (OperationCanceledException)
+        {
+            DeleteTemporaryFile(tempPath);
+            throw;
+        }
         catch (Exception ex)
         {
             WriteLog($"PreparePreviewVideoAsync exception. Source='{sourcePath}', Error={ex}");
-            if (File.Exists(tempPath))
-            {
-                File.Delete(tempPath);
-            }
+            DeleteTemporaryFile(tempPath);
 
             return sourcePath;
         }
     }
 
-    private async Task<string?> PrepareCombinedPreviewVideoAsync(string? sidePath, string? frontPath)
+    private async Task<string?> PrepareCombinedPreviewVideoAsync(
+        string? sidePath,
+        string? frontPath,
+        CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(frontPath) || string.IsNullOrWhiteSpace(sidePath) ||
             !File.Exists(frontPath) || !File.Exists(sidePath))
@@ -436,11 +457,7 @@ public partial class Step3ReviewView : UserControl
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(proxyPath)!);
-        var tempPath = proxyPath + ".tmp.mp4";
-        if (File.Exists(tempPath))
-        {
-            File.Delete(tempPath);
-        }
+        var tempPath = $"{proxyPath}.{Guid.NewGuid():N}.tmp.mp4";
 
         try
         {
@@ -488,12 +505,14 @@ public partial class Step3ReviewView : UserControl
             WriteLog($"PrepareCombinedPreviewVideoAsync transcode start. Side='{sidePath}', Front='{frontPath}', Proxy='{proxyPath}', Ffmpeg='{ffmpegPath}'");
             process.Start();
             var stderrTask = process.StandardError.ReadToEndAsync();
-            await process.WaitForExitAsync();
+            await WaitForProcessExitAsync(process, cancellationToken);
             var stderr = await stderrTask;
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (process.ExitCode != 0 || !File.Exists(tempPath) || new FileInfo(tempPath).Length <= 128 * 1024)
             {
                 WriteLog($"PrepareCombinedPreviewVideoAsync transcode failed. ExitCode={process.ExitCode}, TempExists={File.Exists(tempPath)}, Error='{stderr}'");
+                DeleteTemporaryFile(tempPath);
                 return null;
             }
 
@@ -506,15 +525,55 @@ public partial class Step3ReviewView : UserControl
             WriteLog($"PrepareCombinedPreviewVideoAsync transcode success. Proxy='{proxyPath}', Length={new FileInfo(proxyPath).Length}");
             return proxyPath;
         }
+        catch (OperationCanceledException)
+        {
+            DeleteTemporaryFile(tempPath);
+            throw;
+        }
         catch (Exception ex)
         {
             WriteLog($"PrepareCombinedPreviewVideoAsync exception. Front='{frontPath}', Side='{sidePath}', Error={ex}");
-            if (File.Exists(tempPath))
-            {
-                File.Delete(tempPath);
-            }
+            DeleteTemporaryFile(tempPath);
 
             return null;
+        }
+    }
+
+    private static async Task WaitForProcessExitAsync(Process process, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await process.WaitForExitAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            try
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+            }
+            catch
+            {
+            }
+
+            await process.WaitForExitAsync();
+            throw;
+        }
+    }
+
+    private static void DeleteTemporaryFile(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch
+        {
         }
     }
 
