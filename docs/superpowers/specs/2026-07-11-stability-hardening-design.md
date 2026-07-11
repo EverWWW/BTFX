@@ -1,77 +1,115 @@
-# BTFX Stability Hardening Design
+# BTFX 稳定性加固设计规格
 
-## Goal
+## 一、目标
 
-Resolve the confirmed lifecycle, data-consistency, security, and deployment risks in priority order without changing the existing user workflow or visual design.
+按照已确认的优先级，解决相机生命周期、数据一致性、凭据安全和部署依赖方面的风险，同时不改变现有业务流程和界面风格。
 
-## Scope And Order
+## 二、处理范围与顺序
 
-1. Prevent camera work from restarting after the capture dialog closes.
-2. Make measurement archive import transactional and verify every archived file.
-3. Delete a measurement, all related database rows, and its local result files as one recoverable operation.
-4. Release transient dialog subscriptions and media resources without forced garbage collection.
-5. Cancel stale review-preview generation and isolate concurrent temporary files.
-6. Protect remembered credentials with Windows DPAPI and migrate account password hashes to PBKDF2.
-7. Detect missing runtime dependencies before camera capture or gait analysis starts.
-8. Add focused regression tests for each corrected behavior.
+1. 防止相机采集弹窗关闭后，后台任务再次启动预览或重新占用相机。
+2. 为测量结果包导入增加文件完整性校验、数据库事务和失败回滚。
+3. 删除测量时，同时删除全部关联数据库记录和本地分析结果文件。
+4. 释放临时弹窗的事件订阅和媒体资源，取消强制垃圾回收。
+5. 取消已经失效的回放预览生成任务，避免并发任务争用临时文件。
+6. 使用 Windows DPAPI 保护记住的登录密码，并将账户密码哈希迁移为 PBKDF2。
+7. 在使用相机或算法前检查必要的运行环境和文件。
+8. 为以上修改增加有针对性的自动化回归测试。
 
-## Camera Dialog Lifecycle
+## 三、相机弹窗生命周期
 
-`CameraCaptureDialogViewModel` will own a dialog-lifetime cancellation source and a terminal closing flag. Closing the dialog sets the flag before canceling recording, monitoring, preview, and delayed restart work. Preview startup and every cancellation/error continuation must check the terminal flag before opening a camera or starting FFmpeg.
+`CameraCaptureDialogViewModel` 增加弹窗生命周期取消令牌和不可逆的关闭状态。关闭弹窗时，必须先设置关闭状态，再依次取消录制、相机状态检测、实时预览和延迟重启任务。
 
-Cleanup must be idempotent so repeated `Unloaded`, close-command, and exception paths cannot reopen or double-dispose a device. The existing capture result behavior remains unchanged when the user confirms a completed recording.
+启动预览、录制取消后的处理逻辑以及异常后的恢复逻辑，都必须先检查弹窗是否已经关闭。弹窗关闭后，不允许再次打开相机或启动 FFmpeg。
 
-## Archive Import
+资源清理需要支持重复调用。无论是 `Unloaded`、关闭命令还是异常处理触发清理，都不能重复释放设备或重新启动预览。用户正常完成录制并点击确定时，现有结果返回逻辑保持不变。
 
-An import uses a unique staging directory under `Data/Temp`. Before database insertion, all declared files are extracted into staging, constrained with `Path.GetRelativePath`, and verified against the manifest SHA256 and size. Missing, mismatched, or undeclared paths fail the import.
+## 四、测量结果包导入
 
-All database inserts for the package run in one transaction. After validation, staged files are moved into the final imported-result directory and paths are written to database entities. Any cancellation or exception rolls back database changes and removes staging and newly created final directories. Existing files and measurements are never overwritten.
+每次导入在 `Data/Temp` 下创建唯一的临时目录。写入数据库之前，先将归档中声明的文件解压到临时目录，并完成以下校验：
 
-Patient matching continues to follow the current import behavior in this hardening pass; changing identity rules is outside this scope.
+- 使用 `Path.GetRelativePath` 确认目标路径没有越过临时目录边界；
+- 校验文件大小；
+- 校验清单中记录的 SHA256；
+- 缺少文件、哈希不一致或路径非法时终止导入。
 
-## Measurement Deletion
+同一个结果包涉及的患者、测量、步态参数、分析结果、报告等数据库写入操作，必须在一个事务内完成。文件校验成功后，再将临时文件移动到正式的导入结果目录，并将最终路径写入数据库。
 
-Deletion includes reports, analysis CSV metadata, quality-control rows, kinematic summaries, analysis results, gait parameters, the measurement row, and all result-package files owned by that measurement.
+如果发生取消、磁盘错误或数据库异常，需要回滚数据库事务，并删除本次导入创建的临时目录和正式目录。已有测量和已有文件不能被覆盖。
 
-Before opening the database transaction, owned result directories are resolved and checked to remain under application-managed result roots. During deletion they are moved to a unique quarantine directory under `Data/Temp/DeleteQuarantine`. Database rows are then deleted inside one transaction. On transaction failure, quarantined directories are restored. On success, quarantine is deleted asynchronously after the database commit. Failure to permanently remove quarantine is logged and can be retried without restoring deleted records.
+本轮稳定性加固不改变现有的患者匹配规则，患者唯一性规则的调整不在本次范围内。
 
-Original imported or recorded source videos outside measurement-owned result directories are not deleted. Batch deletion applies the same rule per selected measurement and reports partial filesystem-cleanup warnings explicitly.
+## 五、测量记录与结果文件删除
 
-## Dialog And Media Resource Lifetime
+删除测量需要同时处理以下内容：
 
-Transient view models that subscribe to singleton services implement `IDisposable` and unsubscribe with named handlers. Their owning dialog views dispose them on unload exactly once. Media elements are stopped, detached, and cleared, but explicit `GC.Collect` calls are removed.
+- 报告记录；
+- 分析 CSV 文件记录；
+- 质量控制信息；
+- 运动学汇总信息；
+- 分析结果记录；
+- 步态参数；
+- 测量记录；
+- 该测量拥有的结果包及本地分析结果目录。
 
-## Review Preview Generation
+删除前，需要解析该测量拥有的结果目录，并确认所有目录都位于软件管理的结果目录范围内，禁止删除软件管理范围之外的路径。
 
-Each reload receives a generation number and cancellation token. A later reload or view unload cancels the earlier FFmpeg process and prevents stale completion from assigning a media source. Temporary output names are unique per generation. Only the active generation may promote a completed proxy into the deterministic cache path.
+文件处理采用隔离回收方式：先将结果目录移动到 `Data/Temp/DeleteQuarantine` 下的唯一目录，再开启数据库事务删除关联记录。数据库事务失败时，将隔离目录恢复到原位置；数据库事务成功后，再删除隔离目录。
 
-## Credential Security
+如果数据库已经成功提交，但隔离目录物理删除失败，需要记录明确日志，并允许后续清理，不能恢复已经删除的数据库记录。
 
-Remembered login credentials use `ProtectedData` with `DataProtectionScope.CurrentUser`. Existing AES ciphertext is read only as a migration fallback and is rewritten with DPAPI after successful decryption.
+用户从外部导入的原始视频，以及不属于测量结果目录的录制源视频，不随测量记录删除。批量删除使用相同规则，并明确提示部分文件清理失败的情况。
 
-Account passwords use PBKDF2-SHA256 with a per-user random salt and an explicit iteration count encoded with the stored value. Existing salted SHA256 and legacy hashes remain verifiable. A successful login using an old format immediately upgrades the stored hash.
+## 六、弹窗和媒体资源释放
 
-## Deployment Diagnostics
+订阅了单例服务事件的临时 ViewModel 需要实现 `IDisposable`，使用具名事件处理方法，并在弹窗卸载时退订事件。重复卸载不能造成重复释放异常。
 
-The application retains the current manual deployment policy for the algorithm `_internal` directory and Daheng native runtime. Before entering analysis or opening a Daheng camera, a preflight service verifies FFmpeg/FFprobe, configured algorithm executable, algorithm runtime directory, managed Daheng assembly, and native Daheng runtime availability. Failures are localized, logged with exact missing paths/components, and shown without crashing the window.
+媒体控件需要停止播放、解除文件来源并清理图片引用。删除显式调用的 `GC.Collect()` 和 `GC.WaitForPendingFinalizers()`，由正常的资源释放和 .NET 垃圾回收机制处理内存。
 
-## Verification
+## 七、回放预览生成
 
-Focused tests cover:
+每次重新加载回放预览时，分配一个任务版本号和取消令牌。新任务启动或页面卸载时，必须取消之前的 FFmpeg 任务。
 
-- close/cancel cannot restart camera preview;
-- archive checksum, missing file, path escape, cancellation, and rollback;
-- complete database and filesystem measurement deletion plus rollback;
-- transient localization subscriptions are released;
-- stale preview generations cannot publish output;
-- DPAPI round trip and legacy credential/password migration;
-- dependency preflight results.
+旧任务即使稍后完成，也不能再修改当前页面的媒体来源或播放状态。每个任务使用唯一的临时输出文件，避免多个任务操作同一个 `.tmp.mp4` 文件。
 
-Every phase must pass its focused tests and the full solution test suite. Final verification includes Debug build, Release publish, package vulnerability scan, and a clean Git worktree review.
+只有当前有效任务生成的文件，才能替换正式的预览缓存文件。
 
-## Non-Goals
+## 八、登录凭据和密码安全
 
-- No UI redesign.
-- No change to camera synchronization or encoding parameters.
-- No change to archive patient identity matching.
-- No bundling of the multi-gigabyte algorithm runtime or Daheng driver into the installer.
+“记住密码”使用 Windows `ProtectedData` 和 `DataProtectionScope.CurrentUser` 保存。现有 AES 密文只作为兼容迁移入口：旧密码成功解密后，立即改用 DPAPI 重新保存。
+
+账户密码使用 PBKDF2-SHA256、每个账户独立的随机盐值和明确的迭代次数。现有带盐 SHA256 及更早的旧格式仍可验证；用户使用旧格式密码成功登录后，立即将该账户迁移为新格式。
+
+## 九、部署环境检查
+
+继续沿用当前部署策略：算法 `_internal` 目录和大恒相机原生运行环境不放入安装包，由部署人员单独安装或复制。
+
+在开始分析或打开大恒相机之前，增加运行环境预检查，至少检查：
+
+- FFmpeg 和 FFprobe；
+- 本地配置中指定的算法 EXE；
+- 算法 `_internal` 运行目录；
+- 大恒托管程序集；
+- 大恒原生运行环境是否可加载。
+
+发现缺失项时，使用中英文提示明确显示缺少的文件或组件，并记录完整日志，不能让窗口直接崩溃。
+
+## 十、验证要求
+
+增加以下自动化测试：
+
+- 关闭或取消录制后不能重启相机预览；
+- 结果包哈希不一致、文件缺失、路径越界、取消导入和导入失败回滚；
+- 测量数据库关联记录和本地结果目录完整删除，以及失败恢复；
+- 临时弹窗关闭后解除本地化事件订阅；
+- 旧的预览生成任务不能覆盖新任务结果；
+- DPAPI 加解密及旧凭据、旧密码哈希迁移；
+- 部署依赖预检查结果。
+
+每个阶段完成后，运行该阶段的针对性测试和完整解决方案测试。全部修改结束后，执行 Debug 构建、Release 发布、依赖包漏洞检查和 Git 工作区检查。
+
+## 十一、不在本次范围内的内容
+
+- 不重新设计界面；
+- 不修改双相机同步方案和视频编码参数；
+- 不修改结果包导入时的患者匹配规则；
+- 不将体积较大的算法运行环境和大恒驱动打入安装包。
