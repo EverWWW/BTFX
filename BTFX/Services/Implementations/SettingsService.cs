@@ -1,8 +1,7 @@
 ﻿using System.IO;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using BTFX.Common;
+using BTFX.Helpers;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
 
@@ -188,7 +187,7 @@ public class SettingsService : ISettingsService
     {
         CurrentSettings.Credentials.RememberPassword = true;
         CurrentSettings.Credentials.Username = username;
-        CurrentSettings.Credentials.PasswordHash = EncryptPassword(password);
+        CurrentSettings.Credentials.PasswordHash = CredentialProtector.Protect(password);
         SaveSettings();
         await Task.CompletedTask;
     }
@@ -205,7 +204,20 @@ public class SettingsService : ISettingsService
             return null;
         }
 
-        var password = DecryptPassword(CurrentSettings.Credentials.PasswordHash);
+        if (!CredentialProtector.TryUnprotect(
+                CurrentSettings.Credentials.PasswordHash,
+                out var password,
+                out var requiresMigration))
+        {
+            return null;
+        }
+
+        if (requiresMigration)
+        {
+            CurrentSettings.Credentials.PasswordHash = CredentialProtector.Protect(password);
+            SaveSettings();
+        }
+
         return await Task.FromResult((CurrentSettings.Credentials.Username, password));
     }
 
@@ -254,69 +266,6 @@ public class SettingsService : ISettingsService
         CurrentSettings.Unit.LogoPath = path;
         SaveSettings();
     }
-
-    #region 加密解密辅助方法
-
-    // 加密密钥（实际项目中应该使用更安全的方式存储）
-    private static readonly byte[] Key = Encoding.UTF8.GetBytes("BTFX2026SecretK!");
-    private static readonly byte[] IV = Encoding.UTF8.GetBytes("BTFX2026InitVec!");
-
-    /// <summary>
-    /// 加密密码
-    /// </summary>
-    private static string EncryptPassword(string password)
-    {
-        if (string.IsNullOrEmpty(password)) return string.Empty;
-
-        try
-        {
-            using var aes = Aes.Create();
-            aes.Key = Key;
-            aes.IV = IV;
-
-            using var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-            using var ms = new MemoryStream();
-            using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
-            using (var sw = new StreamWriter(cs))
-            {
-                sw.Write(password);
-            }
-
-            return Convert.ToBase64String(ms.ToArray());
-        }
-        catch
-        {
-            return string.Empty;
-        }
-    }
-
-    /// <summary>
-    /// 解密密码
-    /// </summary>
-    private static string DecryptPassword(string encryptedPassword)
-    {
-        if (string.IsNullOrEmpty(encryptedPassword)) return string.Empty;
-
-        try
-        {
-                        using var aes = Aes.Create();
-                        aes.Key = Key;
-                        aes.IV = IV;
-
-                        using var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
-                        using var ms = new MemoryStream(Convert.FromBase64String(encryptedPassword));
-                        using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
-                        using var sr = new StreamReader(cs);
-
-                        return sr.ReadToEnd();
-                    }
-                    catch
-                    {
-                        return string.Empty;
-                    }
-                }
-
-                #endregion
 
                 #region 设置导入导出
 

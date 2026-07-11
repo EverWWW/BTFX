@@ -40,6 +40,16 @@ public class AuthenticationService : IAuthenticationService
 
         if (passwordValid)
         {
+            if ((string.IsNullOrEmpty(user.PasswordSalt) || PasswordHelper.NeedsRehash(user.PasswordHash))
+                && _userService is UserService userService)
+            {
+                var upgradedSalt = PasswordHelper.GenerateSalt();
+                var upgradedHash = PasswordHelper.HashPassword(password, upgradedSalt);
+                await userService.UpdatePasswordAsync(user.Id, upgradedHash, upgradedSalt);
+                user.PasswordHash = upgradedHash;
+                user.PasswordSalt = upgradedSalt;
+            }
+
             user.LastLoginAt = DateTime.Now;
             await _userService.UpdateUserAsync(user);
             return user;

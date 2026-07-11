@@ -13,6 +13,9 @@ public static class PasswordHelper
     /// 盐值长度（字节）
     /// </summary>
     private const int SaltSize = 16;
+    private const int Pbkdf2Iterations = 210_000;
+    private const int Pbkdf2HashSize = 32;
+    private const string Pbkdf2Prefix = "pbkdf2-sha256$";
 
     /// <summary>
     /// 生成随机盐值
@@ -37,14 +40,14 @@ public static class PasswordHelper
         if (string.IsNullOrEmpty(salt))
             throw new ArgumentNullException(nameof(salt));
 
-        // 将密码和盐值组合
-        var combined = password + salt;
-        var bytes = Encoding.UTF8.GetBytes(combined);
-
-        // 使用 SHA-256 进行哈希
-        var hashBytes = SHA256.HashData(bytes);
-
-        return Convert.ToBase64String(hashBytes);
+        var saltBytes = Convert.FromBase64String(salt);
+        var hashBytes = Rfc2898DeriveBytes.Pbkdf2(
+            password,
+            saltBytes,
+            Pbkdf2Iterations,
+            HashAlgorithmName.SHA256,
+            Pbkdf2HashSize);
+        return $"{Pbkdf2Prefix}{Pbkdf2Iterations}${Convert.ToBase64String(hashBytes)}";
     }
 
     /// <summary>
@@ -59,8 +62,62 @@ public static class PasswordHelper
         if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(hashedPassword) || string.IsNullOrEmpty(salt))
             return false;
 
-        var computedHash = HashPassword(password, salt);
-        return string.Equals(computedHash, hashedPassword, StringComparison.Ordinal);
+        if (hashedPassword.StartsWith(Pbkdf2Prefix, StringComparison.Ordinal))
+        {
+            return VerifyPbkdf2(password, hashedPassword, salt);
+        }
+
+        var combined = password + salt;
+        var computedHash = SHA256.HashData(Encoding.UTF8.GetBytes(combined));
+        byte[] expectedHash;
+        try
+        {
+            expectedHash = Convert.FromBase64String(hashedPassword);
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+
+        return CryptographicOperations.FixedTimeEquals(computedHash, expectedHash);
+    }
+
+    public static bool NeedsRehash(string hashedPassword)
+    {
+        if (!hashedPassword.StartsWith(Pbkdf2Prefix, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        var parts = hashedPassword.Split('$');
+        return parts.Length != 3
+            || !int.TryParse(parts[1], out var iterations)
+            || iterations < Pbkdf2Iterations;
+    }
+
+    private static bool VerifyPbkdf2(string password, string hashedPassword, string salt)
+    {
+        var parts = hashedPassword.Split('$');
+        if (parts.Length != 3 || !int.TryParse(parts[1], out var iterations) || iterations <= 0)
+        {
+            return false;
+        }
+
+        try
+        {
+            var expectedHash = Convert.FromBase64String(parts[2]);
+            var actualHash = Rfc2898DeriveBytes.Pbkdf2(
+                password,
+                Convert.FromBase64String(salt),
+                iterations,
+                HashAlgorithmName.SHA256,
+                expectedHash.Length);
+            return CryptographicOperations.FixedTimeEquals(actualHash, expectedHash);
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
     }
 
     /// <summary>
