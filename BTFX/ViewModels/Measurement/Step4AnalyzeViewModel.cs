@@ -1161,11 +1161,16 @@ public partial class Step4AnalyzeViewModel : ObservableObject
                 // 更新测量记录状态为已完成
                 if (CurrentMeasurement is not null)
                 {
-                    await UpdateCurrentMeasurementStatusAsync(MeasurementStatus.Completed, "测量状态已更新为已完成");
-                    var reportReady = await _analysisReportCoordinator.EnsureReportExistsAsync(
-                        CurrentMeasurement.Id,
-                        CurrentMeasurement.OperatorId);
-                    AddLog(reportReady ? "报告记录已准备完成" : "报告记录创建失败，可稍后从报告入口重试");
+                    var finalized = await _analysisReportCoordinator.FinalizeAsync(CurrentMeasurement, result);
+                    if (finalized)
+                    {
+                        CurrentMeasurement.Status = MeasurementStatus.Completed;
+                        AddLog("测量状态和报告记录已更新完成");
+                    }
+                    else
+                    {
+                        AddLog("⚠ 分析结果已保存，但状态和报告收尾失败，程序将在下次启动时自动修复");
+                    }
                 }
 
                 StartPackageGeneration(result, CurrentMeasurement);

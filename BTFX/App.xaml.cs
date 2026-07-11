@@ -80,6 +80,12 @@ public partial class App : Application
         var settingsService = Services.GetRequiredService<ISettingsService>();
         settingsService.LoadSettings();
 
+        // 7.1 修复历史分析结果与测量状态、报告关联的不一致。
+        Services.GetRequiredService<AnalysisConsistencyRepairService>()
+            .RepairAsync()
+            .GetAwaiter()
+            .GetResult();
+
         // 8. 应用主题
         var themeService = Services.GetRequiredService<IThemeService>();
         themeService.ApplyTheme(settingsService.CurrentSettings.Application.Theme);
@@ -535,6 +541,8 @@ public partial class App : Application
         services.AddTransient<IPatientService, PatientService>();
         services.AddTransient<IMeasurementService, MeasurementService>();
         services.AddTransient<IReportService, ReportService>();
+        services.AddSingleton<AnalysisCompletionPersistenceService>();
+        services.AddSingleton<AnalysisConsistencyRepairService>();
         services.AddTransient<AnalysisReportCoordinator>();
         services.AddTransient<IUserService, UserService>();
         services.AddTransient<IExportImportService, ExportImportService>();

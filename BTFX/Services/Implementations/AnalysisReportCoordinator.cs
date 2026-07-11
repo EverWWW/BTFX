@@ -1,37 +1,38 @@
 using BTFX.Models;
-using BTFX.Services.Interfaces;
+using BTFX.Models.Analysis;
 using ToolHelper.LoggingDiagnostics.Abstractions;
 
 namespace BTFX.Services.Implementations;
 
 public sealed class AnalysisReportCoordinator
 {
-    private readonly Func<int, int, Task<Report?>> _getOrCreateReport;
+    private readonly Func<MeasurementRecord, AnalysisResult, Task<bool>> _finalizeAnalysis;
     private readonly ILogHelper? _logHelper;
 
-    public AnalysisReportCoordinator(IReportService reportService, ILogHelper? logHelper = null)
-        : this(reportService.GetOrCreateDraftReportAsync, logHelper)
+    public AnalysisReportCoordinator(
+        AnalysisCompletionPersistenceService persistenceService,
+        ILogHelper? logHelper = null)
+        : this(persistenceService.FinalizeAsync, logHelper)
     {
     }
 
     internal AnalysisReportCoordinator(
-        Func<int, int, Task<Report?>> getOrCreateReport,
+        Func<MeasurementRecord, AnalysisResult, Task<bool>> finalizeAnalysis,
         ILogHelper? logHelper = null)
     {
-        _getOrCreateReport = getOrCreateReport;
+        _finalizeAnalysis = finalizeAnalysis;
         _logHelper = logHelper;
     }
 
-    public async Task<bool> EnsureReportExistsAsync(int measurementId, int operatorId)
+    public async Task<bool> FinalizeAsync(MeasurementRecord measurement, AnalysisResult result)
     {
         try
         {
-            var report = await _getOrCreateReport(measurementId, operatorId);
-            return report is not null;
+            return await _finalizeAnalysis(measurement, result);
         }
         catch (Exception ex)
         {
-            _logHelper?.Error($"自动创建报告失败: MeasurementId={measurementId}", ex);
+            _logHelper?.Error($"分析完成收尾失败: MeasurementId={measurement.Id}", ex);
             return false;
         }
     }

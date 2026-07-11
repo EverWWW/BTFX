@@ -19,7 +19,7 @@ public class DatabaseInitializer
     /// <summary>
     /// 当前数据库目标版本号。每次结构变更时递增，并在 <see cref="UpgradeDatabaseAsync"/> 中添加对应迁移逻辑。
     /// </summary>
-    public const int CurrentDatabaseVersion = 7;
+    public const int CurrentDatabaseVersion = 8;
 
     private readonly string _databasePath;
     private readonly ILogHelper? _logHelper;
@@ -133,6 +133,7 @@ public class DatabaseInitializer
         {
             _logHelper?.Information("检测到新数据库，开始创建表结构...");
             await CreateTablesAsync(db);
+            UpgradeToV8(db);
 
             _logHelper?.Information("表结构创建完成，开始写入种子数据...");
             await SeedDataAsync(db);
@@ -492,6 +493,10 @@ public class DatabaseInitializer
                 case 7:
                     UpgradeToV7(db);
                     break;
+
+                case 8:
+                    UpgradeToV8(db);
+                    break;
             }
         }
 
@@ -708,6 +713,30 @@ public class DatabaseInitializer
         }
 
         _logHelper?.Information("v7 升级完成。");
+    }
+
+    /// <summary>
+    /// 升级到 v8：每次测量只保留一条最新报告，并建立唯一索引。
+    /// </summary>
+    private void UpgradeToV8(SqliteSugarHelper db)
+    {
+        _logHelper?.Information("升级到 v8：整理重复报告并建立唯一索引...");
+        db.ExecuteSql("""
+            DELETE FROM Reports
+            WHERE Id IN (
+                SELECT Id FROM (
+                    SELECT Id,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY MeasurementId
+                               ORDER BY datetime(UpdatedAt) DESC, Id DESC
+                           ) AS RowNumber
+                    FROM Reports
+                )
+                WHERE RowNumber > 1
+            );
+            """);
+        db.ExecuteSql("CREATE UNIQUE INDEX IF NOT EXISTS UX_Reports_MeasurementId ON Reports(MeasurementId);");
+        _logHelper?.Information("v8 升级完成。");
     }
 
     /// <summary>
