@@ -292,21 +292,39 @@ public class ExportImportService : IExportImportService
                 return new(false, L("ArchiveImport.InvalidPackage"), 0, []);
             }
 
-            using var db = DatabaseFactory.CreateSqliteSugarHelper();
-            var importedIds = new List<int>();
+            var importKey = $"{DateTime.Now:yyyyMMdd_HHmmss_fff}_{Guid.NewGuid():N}";
+            var stagingContainer = Path.Combine(
+                AppContext.BaseDirectory,
+                "Data",
+                "Temp",
+                "ImportStaging",
+                importKey);
             var importRoot = Path.Combine(
                 AppContext.BaseDirectory,
                 "Data",
                 "ImportedResults",
-                DateTime.Now.ToString("yyyyMMdd_HHmmss"));
-            Directory.CreateDirectory(importRoot);
+                importKey);
+            using var stagingSession = new ImportStagingSession(stagingContainer, importRoot);
+            Directory.CreateDirectory(stagingSession.PayloadDirectory);
+            var archivedFilePaths = await StageArchiveFilesAsync(
+                archive,
+                manifest,
+                stagingSession.PayloadDirectory,
+                importRoot,
+                progress,
+                cancellationToken);
+
+            using var db = DatabaseFactory.CreateSqliteSugarHelper();
+            var importedIds = new List<int>();
             var currentUserId = await ResolveCurrentUserIdAsync(db);
-
-            for (var measurementIndex = 0; measurementIndex < manifest.Measurements.Count; measurementIndex++)
+            db.BeginTran();
+            try
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                for (var measurementIndex = 0; measurementIndex < manifest.Measurements.Count; measurementIndex++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                var item = manifest.Measurements[measurementIndex];
+                    var item = manifest.Measurements[measurementIndex];
                 var measurementStart = CalculateSegmentPoint(5, 92, measurementIndex, manifest.Measurements.Count, 0);
                 var measurementEnd = CalculateSegmentPoint(5, 92, measurementIndex, manifest.Measurements.Count, 1);
                 ReportProgress(
@@ -360,7 +378,7 @@ public class ExportImportService : IExportImportService
                     await db.InsertAsync(gaitParameters);
                 }
 
-                foreach (var analysis in item.AnalysisResults)
+                    foreach (var analysis in item.AnalysisResults)
                 {
                     var analysisRoot = $"{measurementRoot}/analysis_results/{analysis.OriginalAnalysisResultId}";
                     var result = ReadJsonEntry<AnalysisResult>(archive, $"{analysisRoot}/analysis_result.json");
@@ -379,7 +397,6 @@ public class ExportImportService : IExportImportService
                         L("ArchiveImport.Progress.RestoreAnalysisMessage", analysis.RequestId));
 
                     var resultDir = Path.Combine(importRoot, $"measurement_{oldMeasurementId}", $"analysis_{analysis.OriginalAnalysisResultId}");
-                    Directory.CreateDirectory(resultDir);
 
                     var fileMaps = ReadJsonEntry<List<MeasurementArchiveFile>>(archive, $"{analysisRoot}/files.json") ?? [];
                     for (var fileIndex = 0; fileIndex < fileMaps.Count; fileIndex++)
@@ -393,10 +410,14 @@ public class ExportImportService : IExportImportService
                             L("ArchiveImport.Progress.RestoreFilesStage"),
                             L("ArchiveImport.Progress.RestoreFileMessage", Path.GetFileName(fileMap.RelativePath)));
 
-                        var extractedPath = ExtractArchiveFile(archive, fileMap.EntryName, resultDir, fileMap.RelativePath);
-                        if (!string.IsNullOrWhiteSpace(extractedPath) && !string.IsNullOrWhiteSpace(fileMap.OriginalPath))
+                        if (!archivedFilePaths.TryGetValue(NormalizeEntryName(fileMap.EntryName), out var finalPath))
                         {
-                            oldToNewFilePath[fileMap.OriginalPath] = extractedPath;
+                            throw new InvalidDataException($"结果包文件未完成校验：{fileMap.EntryName}");
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(fileMap.OriginalPath))
+                        {
+                            oldToNewFilePath[fileMap.OriginalPath] = finalPath;
                         }
                     }
                     ReportProgress(progress, analysisEnd, L("ArchiveImport.Progress.RestoreCompleteStage"), L("ArchiveImport.Progress.RestoreCompleteMessage", fileMaps.Count));
@@ -440,7 +461,8 @@ public class ExportImportService : IExportImportService
                         csv.Id = 0;
                         csv.AnalysisResultId = newAnalysisResultId;
                         csv.FilePath = MapArchivedPath(csv.FilePath, oldToNewFilePath) ?? csv.FilePath;
-                        csv.FileExists = File.Exists(csv.FilePath);
+                        csv.FileExists = !string.IsNullOrWhiteSpace(csv.FilePath)
+                            && archivedFilePaths.Values.Contains(csv.FilePath, StringComparer.OrdinalIgnoreCase);
                         csv.CreatedAt = DateTime.Now;
                     }
 
@@ -468,8 +490,19 @@ public class ExportImportService : IExportImportService
                     await db.InsertAsync(report);
                 }
 
-                _logHelper?.Information($"测量结果包导入完成：OldMeasurementId={oldMeasurementId}, NewMeasurementId={newMeasurementId}, OldPatientId={oldPatientId}, NewPatientId={newPatientId}");
-                ReportProgress(progress, measurementEnd, L("ArchiveImport.Progress.MeasurementCompleteStage"), L("ArchiveImport.Progress.MeasurementCompleteMessage", item.MeasurementName));
+                    _logHelper?.Information($"测量结果包导入完成：OldMeasurementId={oldMeasurementId}, NewMeasurementId={newMeasurementId}, OldPatientId={oldPatientId}, NewPatientId={newPatientId}");
+                    ReportProgress(progress, measurementEnd, L("ArchiveImport.Progress.MeasurementCompleteStage"), L("ArchiveImport.Progress.MeasurementCompleteMessage", item.MeasurementName));
+                }
+
+                stagingSession.Promote();
+                db.CommitTran();
+                stagingSession.Commit();
+            }
+            catch
+            {
+                db.RollbackTran();
+                stagingSession.Rollback();
+                throw;
             }
 
             ReportProgress(progress, 100, L("ArchiveImport.Progress.CompleteStage"), L("ArchiveImport.Progress.CompleteMessage"));
@@ -961,25 +994,66 @@ public class ExportImportService : IExportImportService
         });
     }
 
-    private static string? ExtractArchiveFile(ZipArchive archive, string entryName, string targetRoot, string relativePath)
+    private async Task<Dictionary<string, string>> StageArchiveFilesAsync(
+        ZipArchive archive,
+        MeasurementArchiveManifest manifest,
+        string stagingRoot,
+        string finalRoot,
+        IProgress<OperationProgressInfo>? progress,
+        CancellationToken cancellationToken)
     {
-        var entry = archive.GetEntry(NormalizeEntryName(entryName));
-        if (entry is null)
+        var paths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var allFiles = new List<(int MeasurementId, int AnalysisId, MeasurementArchiveFile File)>();
+        foreach (var measurement in manifest.Measurements)
         {
-            return null;
+            foreach (var analysis in measurement.AnalysisResults)
+            {
+                var analysisRoot = $"measurements/{measurement.OriginalMeasurementId}/analysis_results/{analysis.OriginalAnalysisResultId}";
+                Directory.CreateDirectory(Path.Combine(
+                    stagingRoot,
+                    $"measurement_{measurement.OriginalMeasurementId}",
+                    $"analysis_{analysis.OriginalAnalysisResultId}"));
+                var files = ReadJsonEntry<List<MeasurementArchiveFile>>(archive, $"{analysisRoot}/files.json") ?? [];
+                allFiles.AddRange(files.Select(file => (
+                    measurement.OriginalMeasurementId,
+                    analysis.OriginalAnalysisResultId,
+                    file)));
+            }
         }
 
-        var safeRelativePath = relativePath.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
-        var targetPath = Path.GetFullPath(Path.Combine(targetRoot, safeRelativePath));
-        var targetRootFull = Path.GetFullPath(targetRoot);
-        if (!targetPath.StartsWith(targetRootFull, StringComparison.OrdinalIgnoreCase))
+        for (var index = 0; index < allFiles.Count; index++)
         {
-            throw new InvalidOperationException("结果包内包含非法文件路径。");
+            cancellationToken.ThrowIfCancellationRequested();
+            var item = allFiles[index];
+            ReportProgress(
+                progress,
+                CalculateProgress(1, 5, index, allFiles.Count),
+                L("ArchiveImport.Progress.RestoreFilesStage"),
+                L("ArchiveImport.Progress.RestoreFileMessage", Path.GetFileName(item.File.RelativePath)));
+
+            var stagingAnalysisRoot = Path.Combine(
+                stagingRoot,
+                $"measurement_{item.MeasurementId}",
+                $"analysis_{item.AnalysisId}");
+            var finalAnalysisRoot = Path.Combine(
+                finalRoot,
+                $"measurement_{item.MeasurementId}",
+                $"analysis_{item.AnalysisId}");
+            Directory.CreateDirectory(stagingAnalysisRoot);
+            var stagedPath = await ArchiveImportFileStager.ExtractAndValidateAsync(
+                archive,
+                item.File,
+                stagingAnalysisRoot,
+                cancellationToken);
+            var relativePath = Path.GetRelativePath(stagingAnalysisRoot, stagedPath);
+            var finalPath = ArchiveImportFileStager.ResolveSafePath(finalAnalysisRoot, relativePath);
+            if (!paths.TryAdd(NormalizeEntryName(item.File.EntryName), finalPath))
+            {
+                throw new InvalidDataException($"结果包包含重复文件：{item.File.EntryName}");
+            }
         }
 
-        Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
-        entry.ExtractToFile(targetPath, overwrite: true);
-        return targetPath;
+        return paths;
     }
 
     private static string? MapArchivedPath(string? originalPath, Dictionary<string, string> oldToNewFilePath)
