@@ -43,6 +43,13 @@ public class DatabaseInitializer
         _databasePath = Path.Combine(dbDir, Constants.DATABASE_FILENAME);
     }
 
+    internal DatabaseInitializer(string databasePath, ILogHelper? logHelper = null)
+    {
+        _databasePath = Path.GetFullPath(databasePath);
+        _logHelper = logHelper;
+        Directory.CreateDirectory(Path.GetDirectoryName(_databasePath)!);
+    }
+
     /// <summary>
     /// 获取数据库文件的完整路径。
     /// </summary>
@@ -72,85 +79,42 @@ public class DatabaseInitializer
     {
         _logHelper?.Information("开始初始化数据库...");
 
-        Exception? firstException = null;
+        var databaseExisted = File.Exists(_databasePath);
+        var recoveryManager = new DatabaseRecoveryManager();
+        var guardDirectory = databaseExisted
+            ? recoveryManager.CreateInitializationGuard(_databasePath)
+            : null;
 
         try
         {
             await InitializeDatabaseCoreAsync();
-            return;
+            recoveryManager.DiscardGuard(guardDirectory);
         }
         catch (Exception ex)
         {
-            firstException = ex;
-            _logHelper?.Warning($"数据库初始化失败，准备删除重建：{ex.Message}");
-        }
-
-        // 释放所有 SQLite 连接，等待文件句柄释放
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        await Task.Delay(500);
-
-        try
-        {
-            DeleteDatabaseSafe();
-            _logHelper?.Information("已删除旧数据库文件，重新初始化...");
-
-            await InitializeDatabaseCoreAsync();
-            _logHelper?.Information("数据库重建成功。");
-        }
-        catch (Exception retryEx)
-        {
-            var fullMessage = retryEx.Message;
-            var inner = retryEx.InnerException;
-            while (inner != null)
-            {
-                fullMessage += $"\n内部异常：{inner.Message}";
-                inner = inner.InnerException;
-            }
-
-            _logHelper?.Error($"数据库重建失败：{fullMessage}\n堆栈：{retryEx.StackTrace}", retryEx);
-
-            var originalMessage = firstException?.Message ?? retryEx.Message;
-            throw new Exception($"数据库初始化失败：{originalMessage}", firstException ?? retryEx);
-        }
-    }
-
-    /// <summary>
-    /// 安全删除数据库文件及其 WAL/SHM/Journal 附属文件。
-    /// 先清空连接池，再对每个文件最多重试 5 次（间隔递增）。
-    /// </summary>
-    private void DeleteDatabaseSafe()
-    {
-        Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
-
-        var files = new[]
-        {
-            _databasePath,
-            _databasePath + "-wal",
-            _databasePath + "-shm",
-            _databasePath + "-journal"
-        };
-
-        foreach (var file in files)
-        {
-            if (!File.Exists(file)) continue;
-
-            for (int retry = 0; retry < 5; retry++)
+            string? recoveryDirectory = null;
+            if (databaseExisted && !string.IsNullOrWhiteSpace(guardDirectory))
             {
                 try
                 {
-                    File.Delete(file);
-                    break;
+                    recoveryDirectory = recoveryManager.PromoteGuardToRecovery(_databasePath, guardDirectory);
+                    guardDirectory = null;
                 }
-                catch (IOException) when (retry < 4)
+                catch (Exception recoveryException)
                 {
-                    Thread.Sleep(200 * (retry + 1));
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
+                    _logHelper?.Error("数据库恢复副本创建失败", recoveryException);
                 }
             }
+
+            var recoveryHint = string.IsNullOrWhiteSpace(recoveryDirectory)
+                ? string.Empty
+                : $"，原数据库已备份到：{recoveryDirectory}";
+            _logHelper?.Error($"数据库初始化失败{recoveryHint}", ex);
+            throw new Exception($"数据库初始化失败：{ex.Message}{recoveryHint}", ex);
+        }
+        finally
+        {
+            recoveryManager.DiscardGuard(guardDirectory);
         }
     }
 
@@ -197,15 +161,7 @@ public class DatabaseInitializer
     /// </summary>
     private int GetDatabaseVersion(SqliteSugarHelper db)
     {
-        try
-        {
-            var result = db.SqlQueryScalar<int>("PRAGMA user_version;");
-            return result;
-        }
-        catch
-        {
-            return 0;
-        }
+        return db.SqlQueryScalar<int>("PRAGMA user_version;");
     }
 
     /// <summary>
