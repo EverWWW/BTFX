@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
+using System.Runtime.CompilerServices;
 using ToolHelper.DataProcessing.Abstractions;
 using ToolHelper.DataProcessing.Configuration;
 
@@ -78,7 +79,9 @@ public class ExcelHelper<T> : IFileReader<T>, IFileWriter<T> where T : class, ne
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<T> ReadStreamAsync(string filePath, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<T> ReadStreamAsync(
+        string filePath,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _logger?.LogInformation("开始流式读取Excel文件: {FilePath}", filePath);
 
@@ -98,6 +101,7 @@ public class ExcelHelper<T> : IFileReader<T>, IFileWriter<T> where T : class, ne
 
         for (int i = startRow; i <= sheet.LastRowNum; i++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var row = sheet.GetRow(i);
             if (row == null) continue;
 

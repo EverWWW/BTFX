@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Text;
 using ToolHelper.DataProcessing.Abstractions;
 using ToolHelper.DataProcessing.Configuration;
@@ -80,7 +81,9 @@ public class CsvHelper<T> : IFileReader<T>, IFileWriter<T> where T : class, new(
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<T> ReadStreamAsync(string filePath, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<T> ReadStreamAsync(
+        string filePath,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         _logger?.LogInformation("开始流式读取CSV文件: {FilePath}", filePath);
 

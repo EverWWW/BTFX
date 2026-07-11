@@ -534,11 +534,8 @@ public class LogHelper : ILogHelper
     {
         using var reader = new StreamReader(filePath, Encoding.UTF8);
         
-        while (!reader.EndOfStream)
+        while (await reader.ReadLineAsync(cancellationToken) is { } line)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            
-            var line = await reader.ReadLineAsync(cancellationToken);
             if (string.IsNullOrWhiteSpace(line)) continue;
 
             var entry = ParseLogLine(line);
