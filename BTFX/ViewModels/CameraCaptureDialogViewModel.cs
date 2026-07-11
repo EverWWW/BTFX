@@ -31,6 +31,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
     private readonly List<PreviewProcess> _previewProcesses = new();
     private readonly SemaphoreSlim _cameraStatusProbeGate = new(1, 1);
     private readonly SemaphoreSlim _previewRestartGate = new(1, 1);
+    private readonly CameraDialogLifetime _dialogLifetime = new();
     private CancellationTokenSource? _previewCancellation;
     private CancellationTokenSource? _sidePreviewRestartDebounceCancellation;
     private CancellationTokenSource? _frontPreviewRestartDebounceCancellation;
@@ -356,6 +357,11 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
 
     public void Initialize(CameraCaptureMode mode)
     {
+        if (_dialogLifetime.IsClosed)
+        {
+            return;
+        }
+
         StopPreview();
         LoadSettings(mode);
         ResetRecordingState();
@@ -365,6 +371,11 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
 
     public void StopAllMediaWork()
     {
+        if (!_dialogLifetime.Close())
+        {
+            return;
+        }
+
         StopCameraStatusMonitoring();
         _sidePreviewRestartDebounceCancellation?.Cancel();
         _sidePreviewRestartDebounceCancellation?.Dispose();
@@ -374,8 +385,6 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         _frontPreviewRestartDebounceCancellation = null;
         StopPreview();
         _recordingCancellation?.Cancel();
-        _recordingCancellation?.Dispose();
-        _recordingCancellation = null;
         LogLines.Clear();
         TranscodeLogText = string.Empty;
         CaptureResult = null;
@@ -545,7 +554,9 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
     [RelayCommand]
     private Task RefreshCameraStatusAsync()
     {
-        return RefreshCameraStatusCoreAsync(CancellationToken.None);
+        return _dialogLifetime.IsClosed
+            ? Task.CompletedTask
+            : RefreshCameraStatusCoreAsync(_dialogLifetime.Token);
     }
 
     private async Task RefreshCameraStatusCoreAsync(CancellationToken cancellationToken)
@@ -648,7 +659,8 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         StopPreview();
 
         _recordingCancellation?.Dispose();
-        _recordingCancellation = new CancellationTokenSource();
+        var recordingCancellation = new CancellationTokenSource();
+        _recordingCancellation = recordingCancellation;
         CaptureResult = null;
         SideOutputPath = null;
         FrontOutputPath = null;
@@ -668,14 +680,14 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         using var progressCancellation = new CancellationTokenSource();
         var progressTask = TrackRecordingProgressAsync(progressCancellation.Token);
         var startDelayTask = IsDahengBackend
-            ? TrackDahengRecordingStartDelayAsync(_recordingCancellation.Token)
+            ? TrackDahengRecordingStartDelayAsync(recordingCancellation.Token)
             : Task.CompletedTask;
 
         try
         {
             if (!IsDahengBackend)
             {
-                await DelayBeforeRecordingAsync(_recordingCancellation.Token);
+                await DelayBeforeRecordingAsync(recordingCancellation.Token);
                 StatusText = L("CameraCapture.Status.Recording");
             }
 
@@ -720,7 +732,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
             var results = await _cameraRecordingService.RecordAsync(
                 options,
                 new Progress<string>(HandleRecordingProgress),
-                _recordingCancellation.Token);
+                recordingCancellation.Token);
 
             SidePreviewImage = null;
             FrontPreviewImage = null;
@@ -730,7 +742,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
 
             SideOutputPath = sideResult?.Mp4File ?? sideResult?.AviFile;
             FrontOutputPath = IsDualMode ? frontResult?.Mp4File ?? frontResult?.AviFile : null;
-            await LoadPlaybackPosterImagesAsync(_recordingCancellation.Token);
+            await LoadPlaybackPosterImagesAsync(recordingCancellation.Token);
             CaptureResult = new CameraCaptureDialogResult
             {
                 Mode = CurrentMode,
@@ -748,6 +760,11 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         }
         catch (OperationCanceledException)
         {
+            if (_dialogLifetime.IsClosed)
+            {
+                return;
+            }
+
             CaptureState = CameraCaptureUiState.Preview;
             StatusText = L("CameraCapture.Status.Canceled");
             AppendLog(L("CameraCapture.Log.RecordingCanceled"));
@@ -755,6 +772,11 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         }
         catch (Exception ex)
         {
+            if (_dialogLifetime.IsClosed)
+            {
+                return;
+            }
+
             CaptureState = CameraCaptureUiState.Preview;
             StatusText = L("CameraCapture.Status.Failed");
             AppendLog($"Error: {ex.Message}");
@@ -774,7 +796,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
             {
             }
 
-            _recordingCancellation?.Cancel();
+            recordingCancellation.Cancel();
             try
             {
                 await startDelayTask;
@@ -783,8 +805,11 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
             {
             }
 
-            _recordingCancellation?.Dispose();
-            _recordingCancellation = null;
+            recordingCancellation.Dispose();
+            if (ReferenceEquals(_recordingCancellation, recordingCancellation))
+            {
+                _recordingCancellation = null;
+            }
         }
     }
 
@@ -1041,11 +1066,26 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
 
     private async Task RestartPreviewAsync()
     {
-        await _previewRestartGate.WaitAsync();
+        if (!_dialogLifetime.CanStartPreview)
+        {
+            return;
+        }
+
+        try
+        {
+            await _previewRestartGate.WaitAsync(_dialogLifetime.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
         try
         {
             StopPreview();
-            if (CaptureState != CameraCaptureUiState.Preview || !File.Exists(FfmpegPath))
+            if (!_dialogLifetime.CanStartPreview
+                || CaptureState != CameraCaptureUiState.Preview
+                || !File.Exists(FfmpegPath))
             {
                 return;
             }
@@ -1069,7 +1109,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
 
     private void RestartPreviewIfActive(CameraViewRole role)
     {
-        if (CaptureState == CameraCaptureUiState.Preview)
+        if (_dialogLifetime.CanStartPreview && CaptureState == CameraCaptureUiState.Preview)
         {
             var debounceCancellation = GetPreviewRestartDebounceCancellation(role);
             debounceCancellation?.Cancel();
@@ -1102,10 +1142,25 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
 
     private async Task RestartPreviewRoleAsync(CameraViewRole role)
     {
-        await _previewRestartGate.WaitAsync();
+        if (!_dialogLifetime.CanStartPreview)
+        {
+            return;
+        }
+
         try
         {
-            if (CaptureState != CameraCaptureUiState.Preview || !File.Exists(FfmpegPath))
+            await _previewRestartGate.WaitAsync(_dialogLifetime.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        try
+        {
+            if (!_dialogLifetime.CanStartPreview
+                || CaptureState != CameraCaptureUiState.Preview
+                || !File.Exists(FfmpegPath))
             {
                 return;
             }
@@ -1416,6 +1471,11 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
 
     private void StartCameraStatusMonitoring()
     {
+        if (_dialogLifetime.IsClosed)
+        {
+            return;
+        }
+
         StopCameraStatusMonitoring();
         _cameraStatusMonitoringCancellation = new CancellationTokenSource();
         var token = _cameraStatusMonitoringCancellation.Token;
