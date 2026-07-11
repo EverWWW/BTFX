@@ -79,7 +79,8 @@ english.DeleteUserDataPrompt=Delete user data (database, logs, reports, etc.)?
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "{#PublishDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#PublishDir}\*"; DestDir: "{app}"; Excludes: "Data\Config\report-reference-ranges.json"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#PublishDir}\Data\Config\report-reference-ranges.json"; DestDir: "{app}\Data\Config"; Flags: ignoreversion onlyifdoesntexist
 Source: "license.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "readme.txt"; DestDir: "{app}"; Flags: ignoreversion
 
