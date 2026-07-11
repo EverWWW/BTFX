@@ -510,6 +510,7 @@ public partial class App : Application
         services.AddTransient<IChartService, ChartService>();
         services.AddTransient<FfmpegCameraRecordingService>();
         services.AddSingleton<DahengCameraRuntime>();
+        services.AddSingleton<IRuntimeDependencyPreflightService, RuntimeDependencyPreflightService>();
         services.AddTransient<DahengCameraRecordingService>();
         services.AddTransient<ICameraRecordingService, CameraRecordingServiceSelector>();
         services.AddSingleton<ICameraCaptureSettingsService, CameraCaptureSettingsService>();

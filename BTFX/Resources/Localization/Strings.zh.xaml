@@ -1514,4 +1514,13 @@
     <system:String x:Key="GaitAnalysis.Stage.Failed">分析失败</system:String>
     <system:String x:Key="GaitAnalysis.Stage.Finalizing">算法计算完成，正在整理结果</system:String>
 
+    <!-- 运行依赖检查 -->
+    <system:String x:Key="RuntimeDependency.Title">运行环境不完整</system:String>
+    <system:String x:Key="RuntimeDependency.FfmpegMissing">缺少 FFmpeg：{0}</system:String>
+    <system:String x:Key="RuntimeDependency.FfprobeMissing">缺少 FFprobe：{0}</system:String>
+    <system:String x:Key="RuntimeDependency.AlgorithmExecutableMissing">缺少算法程序：{0}</system:String>
+    <system:String x:Key="RuntimeDependency.AlgorithmRuntimeMissing">缺少算法运行环境目录：{0}</system:String>
+    <system:String x:Key="RuntimeDependency.DahengRuntimeUnavailable">大恒相机运行环境不可用：{0}</system:String>
+    <system:String x:Key="RuntimeDependency.Unknown">运行依赖不可用：{0}</system:String>
+
 </ResourceDictionary>

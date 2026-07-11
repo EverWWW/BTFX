@@ -28,6 +28,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject, IDisposabl
     private readonly ICameraRecordingService _cameraRecordingService;
     private readonly ICameraCaptureSettingsService _settingsService;
     private readonly ILocalizationService _localizationService;
+    private readonly IRuntimeDependencyPreflightService _runtimeDependencyPreflightService;
     private readonly List<PreviewProcess> _previewProcesses = new();
     private readonly SemaphoreSlim _cameraStatusProbeGate = new(1, 1);
     private readonly SemaphoreSlim _previewRestartGate = new(1, 1);
@@ -246,12 +247,14 @@ public partial class CameraCaptureDialogViewModel : ObservableObject, IDisposabl
         ICameraRecordingService cameraRecordingService,
         ICameraCaptureSettingsService settingsService,
         ILocalizationService localizationService,
-        DahengCameraRuntime dahengRuntime)
+        DahengCameraRuntime dahengRuntime,
+        IRuntimeDependencyPreflightService runtimeDependencyPreflightService)
     {
         _cameraRecordingService = cameraRecordingService;
         _settingsService = settingsService;
         _localizationService = localizationService;
         _dahengRuntime = dahengRuntime;
+        _runtimeDependencyPreflightService = runtimeDependencyPreflightService;
         _settings = _settingsService.Load();
         _captureBackend = _settings.ResolveBackend();
 
@@ -369,6 +372,18 @@ public partial class CameraCaptureDialogViewModel : ObservableObject, IDisposabl
         StopPreview();
         LoadSettings(mode);
         ResetRecordingState();
+        var runtimeCheck = _runtimeDependencyPreflightService.CheckCamera(_settings);
+        if (!runtimeCheck.IsReady)
+        {
+            StatusText = RuntimeDependencyMessages.Format(runtimeCheck, _localizationService);
+            SideCameraStatus = runtimeCheck.Issues.Any(issue => issue.Code == RuntimeDependencyIssueCode.FfmpegMissing)
+                ? "FFmpegMissing"
+                : "ProbeFailed";
+            FrontCameraStatus = IsDualMode ? SideCameraStatus : "Disabled";
+            AppendLog(StatusText);
+            return;
+        }
+
         StartCameraStatusMonitoring();
         _ = RestartPreviewAsync();
     }
@@ -655,6 +670,14 @@ public partial class CameraCaptureDialogViewModel : ObservableObject, IDisposabl
 
     private async Task StartRecordingAsync()
     {
+        var runtimeCheck = _runtimeDependencyPreflightService.CheckCamera(_settings);
+        if (!runtimeCheck.IsReady)
+        {
+            StatusText = RuntimeDependencyMessages.Format(runtimeCheck, _localizationService);
+            AppendLog(StatusText);
+            return;
+        }
+
         if (IsDahengBackend
             && (!DahengPreviewStartGuard.CanOpenDevice(SideCameraStatus)
                 || (IsDualMode && !DahengPreviewStartGuard.CanOpenDevice(FrontCameraStatus))))

@@ -31,6 +31,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     private readonly IAnalysisPackageService _analysisPackageService;
     private readonly ISettingsService _settingsService;
     private readonly ILocalizationService _localizationService;
+    private readonly IRuntimeDependencyPreflightService _runtimeDependencyPreflightService;
     private readonly ILogHelper? _logHelper;
 
     private CancellationTokenSource? _analysisCts;
@@ -546,6 +547,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         IAnalysisPackageService analysisPackageService,
         ISettingsService settingsService,
         ILocalizationService localizationService,
+        IRuntimeDependencyPreflightService runtimeDependencyPreflightService,
         ILogHelper? logHelper = null)
     {
         _analysisService = analysisService;
@@ -553,6 +555,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         _analysisPackageService = analysisPackageService;
         _settingsService = settingsService;
         _localizationService = localizationService;
+        _runtimeDependencyPreflightService = runtimeDependencyPreflightService;
         _logHelper = logHelper;
 
         // 订阅分析服务事件
@@ -775,6 +778,14 @@ public partial class Step4AnalyzeViewModel : ObservableObject
 
         try
         {
+            var runtimeCheck = _runtimeDependencyPreflightService.CheckAnalysis(
+                _settingsService.CurrentSettings.Algorithm.ExePath);
+            if (!runtimeCheck.IsReady)
+            {
+                await ShowRuntimeDependencyErrorAsync(runtimeCheck);
+                return;
+            }
+
             if (!DiskSpaceGuard.EnsureProgramDriveHasSpace("步态分析"))
             {
                 return;
@@ -853,6 +864,22 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     }
 
     private bool CanStartAnalyze() => IsReady && AllPrerequisitesMet;
+
+    private async Task ShowRuntimeDependencyErrorAsync(RuntimeDependencyCheckResult result)
+    {
+        await MaterialDesignThemes.Wpf.DialogHost.Show(
+            new Views.Dialogs.ConfirmDialog
+            {
+                DataContext = new ConfirmDialogViewModel
+                {
+                    Title = L("RuntimeDependency.Title"),
+                    Message = RuntimeDependencyMessages.Format(result, _localizationService),
+                    ConfirmText = L("Confirm"),
+                    IsCancelVisible = false
+                }
+            },
+            "RootDialog");
+    }
 
     /// <summary>
     /// 取消分析

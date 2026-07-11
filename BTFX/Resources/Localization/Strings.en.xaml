@@ -1514,4 +1514,13 @@
     <system:String x:Key="GaitAnalysis.Stage.Failed">Analysis Failed</system:String>
     <system:String x:Key="GaitAnalysis.Stage.Finalizing">Algorithm completed, finalizing results</system:String>
 
+    <!-- Runtime dependency checks -->
+    <system:String x:Key="RuntimeDependency.Title">Incomplete Runtime Environment</system:String>
+    <system:String x:Key="RuntimeDependency.FfmpegMissing">FFmpeg is missing: {0}</system:String>
+    <system:String x:Key="RuntimeDependency.FfprobeMissing">FFprobe is missing: {0}</system:String>
+    <system:String x:Key="RuntimeDependency.AlgorithmExecutableMissing">The analysis executable is missing: {0}</system:String>
+    <system:String x:Key="RuntimeDependency.AlgorithmRuntimeMissing">The analysis runtime directory is missing: {0}</system:String>
+    <system:String x:Key="RuntimeDependency.DahengRuntimeUnavailable">The Daheng camera runtime is unavailable: {0}</system:String>
+    <system:String x:Key="RuntimeDependency.Unknown">A runtime dependency is unavailable: {0}</system:String>
+
 </ResourceDictionary>
