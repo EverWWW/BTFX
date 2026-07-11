@@ -18,6 +18,8 @@ public class BackupService : IBackupService, IDisposable
     private readonly ILogHelper? _logHelper;
     private readonly ISettingsService? _settingsService;
     private readonly ZipHelper _zipHelper;
+    private readonly SqliteSnapshotService _snapshotService = new();
+    private readonly SemaphoreSlim _operationGate = new(1, 1);
     private Timer? _autoBackupTimer;
     private bool _disposed;
 
@@ -64,6 +66,19 @@ public class BackupService : IBackupService, IDisposable
     /// <inheritdoc/>
     public async Task<string> CreateBackupAsync()
     {
+        await _operationGate.WaitAsync();
+        try
+        {
+            return await CreateBackupCoreAsync();
+        }
+        finally
+        {
+            _operationGate.Release();
+        }
+    }
+
+    private async Task<string> CreateBackupCoreAsync()
+    {
         try
         {
             _logHelper?.Information("开始创建备份...");
@@ -74,7 +89,7 @@ public class BackupService : IBackupService, IDisposable
             var backupFilePath = Path.Combine(BackupDirectory, backupFileName);
 
             // 创建临时目录用于收集备份文件
-            var tempDir = Path.Combine(Path.GetTempPath(), $"BTFX_Backup_{timestamp}");
+            var tempDir = Path.Combine(Path.GetTempPath(), $"BTFX_Backup_{timestamp}_{Guid.NewGuid():N}");
             if (Directory.Exists(tempDir))
             {
                 Directory.Delete(tempDir, true);
@@ -87,7 +102,7 @@ public class BackupService : IBackupService, IDisposable
                 if (File.Exists(DatabasePath))
                 {
                     var dbDestPath = Path.Combine(tempDir, Constants.DATABASE_FILENAME);
-                    File.Copy(DatabasePath, dbDestPath, true);
+                    await _snapshotService.CreateSnapshotAsync(DatabasePath, dbDestPath);
                     _logHelper?.Information($"已复制数据库文件: {Constants.DATABASE_FILENAME}");
                 }
 
@@ -147,6 +162,19 @@ public class BackupService : IBackupService, IDisposable
     /// <inheritdoc/>
     public async Task<bool> RestoreBackupAsync(string backupFilePath)
     {
+        await _operationGate.WaitAsync();
+        try
+        {
+            return await RestoreBackupCoreAsync(backupFilePath);
+        }
+        finally
+        {
+            _operationGate.Release();
+        }
+    }
+
+    private async Task<bool> RestoreBackupCoreAsync(string backupFilePath)
+    {
         try
         {
             if (!File.Exists(backupFilePath))
@@ -158,7 +186,7 @@ public class BackupService : IBackupService, IDisposable
             _logHelper?.Information($"开始恢复备份: {Path.GetFileName(backupFilePath)}");
 
             // 创建临时目录用于解压
-            var tempDir = Path.Combine(Path.GetTempPath(), $"BTFX_Restore_{DateTime.Now:yyyyMMddHHmmss}");
+            var tempDir = Path.Combine(Path.GetTempPath(), $"BTFX_Restore_{DateTime.Now:yyyyMMddHHmmss}_{Guid.NewGuid():N}");
             if (Directory.Exists(tempDir))
             {
                 Directory.Delete(tempDir, true);
@@ -169,58 +197,30 @@ public class BackupService : IBackupService, IDisposable
                 // 1. 解压备份文件
                 await _zipHelper.ExtractAsync(backupFilePath, tempDir, true);
 
-                // 2. 恢复数据库文件
+                // 2. 校验并暂存数据库和配置，下一次启动前执行替换。
                 var dbSourcePath = Path.Combine(tempDir, Constants.DATABASE_FILENAME);
-                if (File.Exists(dbSourcePath))
+                if (!File.Exists(dbSourcePath)
+                    || !await _snapshotService.ValidateAsync(dbSourcePath))
                 {
-                    // 先备份当前数据库
-                    var currentBackup = DatabasePath + ".bak";
-                    if (File.Exists(DatabasePath))
-                    {
-                        File.Copy(DatabasePath, currentBackup, true);
-                    }
-
-                    try
-                    {
-                        File.Copy(dbSourcePath, DatabasePath, true);
-                        _logHelper?.Information("数据库文件已恢复");
-                    }
-                    catch
-                    {
-                        // 恢复失败，还原当前数据库
-                        if (File.Exists(currentBackup))
-                        {
-                            File.Copy(currentBackup, DatabasePath, true);
-                        }
-                        throw;
-                    }
-                    finally
-                    {
-                        if (File.Exists(currentBackup))
-                        {
-                            File.Delete(currentBackup);
-                        }
-                    }
+                    throw new InvalidDataException("备份包中的数据库文件缺失或完整性校验失败。");
                 }
 
-                // 3. 恢复配置文件
                 var configSourceDir = Path.Combine(tempDir, "Config");
-                if (Directory.Exists(configSourceDir))
-                {
-                    if (!Directory.Exists(ConfigDirectory))
-                    {
-                        Directory.CreateDirectory(ConfigDirectory);
-                    }
+                var pendingDirectory = Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory,
+                    "Data",
+                    "Temp",
+                    "PendingRestore");
+                var restoreManager = new PendingRestoreManager(
+                    DatabasePath,
+                    ConfigDirectory,
+                    pendingDirectory,
+                    _snapshotService);
+                await restoreManager.StageAsync(
+                    dbSourcePath,
+                    Directory.Exists(configSourceDir) ? configSourceDir : null);
 
-                    foreach (var file in Directory.GetFiles(configSourceDir, "*.json"))
-                    {
-                        var destFile = Path.Combine(ConfigDirectory, Path.GetFileName(file));
-                        File.Copy(file, destFile, true);
-                    }
-                    _logHelper?.Information("配置文件已恢复");
-                }
-
-                _logHelper?.Information("备份恢复成功");
+                _logHelper?.Information("备份已校验并暂存，将在下次启动时恢复");
                 return true;
             }
             finally
@@ -337,6 +337,11 @@ public class BackupService : IBackupService, IDisposable
     {
         try
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             StopAutoBackup();
 
             var settings = _settingsService?.CurrentSettings?.AutoBackup;
@@ -409,7 +414,10 @@ public class BackupService : IBackupService, IDisposable
         finally
         {
             // 重新启动定时器（设置下次备份）
-            StartAutoBackup();
+            if (!_disposed)
+            {
+                StartAutoBackup();
+            }
         }
     }
 
@@ -420,8 +428,8 @@ public class BackupService : IBackupService, IDisposable
     {
         if (!_disposed)
         {
-            StopAutoBackup();
             _disposed = true;
+            StopAutoBackup();
         }
     }
 }

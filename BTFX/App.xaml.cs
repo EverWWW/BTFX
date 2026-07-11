@@ -61,6 +61,13 @@ public partial class App : Application
         // 4. 初始化日志框架
         InitializeLogging();
 
+        // 4.1 应用上次请求的数据库恢复（必须早于数据库初始化）
+        if (!ApplyPendingRestore())
+        {
+            Shutdown();
+            return;
+        }
+
         // 5. 初始化数据库
         InitializeDatabase();
 
@@ -474,6 +481,36 @@ public partial class App : Application
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
             Environment.Exit(1);
+        }
+    }
+
+    private static bool ApplyPendingRestore()
+    {
+        try
+        {
+            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            var manager = new PendingRestoreManager(
+                DatabaseFactory.DatabasePath,
+                Path.Combine(baseDirectory, Constants.CONFIG_DIRECTORY),
+                Path.Combine(baseDirectory, "Data", "Temp", "PendingRestore"),
+                new SqliteSnapshotService());
+            var restored = manager.ApplyIfPresentAsync().GetAwaiter().GetResult();
+            if (restored)
+            {
+                _logHelper?.Information("待恢复备份已成功应用");
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logHelper?.Error("应用待恢复备份失败", ex);
+            MessageBox.Show(
+                $"备份恢复失败，原数据库已保留。\n\n{ex.Message}",
+                Constants.APP_DISPLAY_NAME,
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            return false;
         }
     }
 
