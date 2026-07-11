@@ -1090,7 +1090,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
 
     private static async Task<FlowDocument?> BuildExportPreviewDocumentAsync(Report report)
     {
-        var previewViewModel = App.Services?.GetService(typeof(ReportPreviewDialogViewModel)) as ReportPreviewDialogViewModel;
+        using var previewViewModel = App.Services?.GetService(typeof(ReportPreviewDialogViewModel)) as ReportPreviewDialogViewModel;
         var settingsService = App.Services?.GetService(typeof(ISettingsService)) as ISettingsService;
         if (previewViewModel is null || settingsService is null)
         {

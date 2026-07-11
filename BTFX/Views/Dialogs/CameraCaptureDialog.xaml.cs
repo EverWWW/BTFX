@@ -17,7 +17,6 @@ public partial class CameraCaptureDialog : UserControl
     private CameraCaptureDialogViewModel? _viewModel;
     private string? _preparedSidePath;
     private string? _preparedFrontPath;
-    private int _mediaCleanupQueued;
 
     public CameraCaptureDialog()
     {
@@ -50,7 +49,7 @@ public partial class CameraCaptureDialog : UserControl
         ReleaseAllPlaybackResources();
         if (DataContext is CameraCaptureDialogViewModel vm)
         {
-            vm.StopAllMediaWork();
+            vm.Dispose();
         }
 
         if (_viewModel != null)
@@ -293,7 +292,6 @@ public partial class CameraCaptureDialog : UserControl
         _preparedSidePath = null;
         _preparedFrontPath = null;
         _playbackTimer.Stop();
-        QueueMediaResourceCleanup();
     }
 
     private void ReleasePlaybackElement(MediaElement element, bool resetSlider)
@@ -329,29 +327,6 @@ public partial class CameraCaptureDialog : UserControl
                 FrontPlaybackIcon.Kind = PackIconKind.Play;
             }
         }
-    }
-
-    private void QueueMediaResourceCleanup()
-    {
-        if (Interlocked.Exchange(ref _mediaCleanupQueued, 1) == 1)
-        {
-            return;
-        }
-
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await Task.Delay(250);
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-            }
-            finally
-            {
-                Interlocked.Exchange(ref _mediaCleanupQueued, 0);
-            }
-        });
     }
 
     private async Task WarmPlaybackElementAsync(MediaElement element, Slider slider)

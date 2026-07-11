@@ -13,5 +13,6 @@ public partial class AboutDialog : UserControl
     {
         InitializeComponent();
         DataContext = App.Services.GetRequiredService<AboutDialogViewModel>();
+        Unloaded += (_, _) => (DataContext as IDisposable)?.Dispose();
     }
 }

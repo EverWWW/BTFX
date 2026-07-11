@@ -17,7 +17,7 @@ using GxIAPINET;
 
 namespace BTFX.ViewModels;
 
-public partial class CameraCaptureDialogViewModel : ObservableObject
+public partial class CameraCaptureDialogViewModel : ObservableObject, IDisposable
 {
     private const int PreviewDisplayFrameRate = 30;
     private const int DahengPreviewDisplayFrameRate = 12;
@@ -44,8 +44,10 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
     private int _sidePreviewGeneration;
     private int _frontPreviewGeneration;
     private readonly DahengCameraRuntime _dahengRuntime;
+    private readonly LanguageChangeSubscription _languageChangeSubscription;
     private readonly List<DahengPreviewSlot> _dahengPreviewSlots = new();
     private DateTimeOffset? _recordingScheduledStartAtUtc;
+    private bool _disposed;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDualMode))]
@@ -258,7 +260,9 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         RebuildResolutionOptions();
         RebuildFrameRateOptions(_settings.FrameRate);
         _isLoadingSettings = false;
-        _localizationService.LanguageChanged += (_, _) => RefreshLocalizedText();
+        _languageChangeSubscription = new LanguageChangeSubscription(
+            _localizationService,
+            (_, _) => RefreshLocalizedText());
         LoadSettings(_settings.LastMode);
     }
 
@@ -390,6 +394,19 @@ public partial class CameraCaptureDialogViewModel : ObservableObject
         CaptureResult = null;
         SidePlaybackPosterImage = null;
         FrontPlaybackPosterImage = null;
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        StopAllMediaWork();
+        _languageChangeSubscription.Dispose();
+        _dialogLifetime.Dispose();
+        _disposed = true;
     }
 
     partial void OnCurrentModeChanged(CameraCaptureMode value)

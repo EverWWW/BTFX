@@ -1,5 +1,6 @@
 using BTFX.Common;
 using BTFX.Models;
+using BTFX.Services.Implementations;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -10,10 +11,12 @@ namespace BTFX.ViewModels;
 /// <summary>
 /// 关于弹窗 ViewModel。
 /// </summary>
-public partial class AboutDialogViewModel : ObservableObject
+public partial class AboutDialogViewModel : ObservableObject, IDisposable
 {
     private readonly ISettingsService _settingsService;
     private readonly ILocalizationService _localizationService;
+    private readonly LanguageChangeSubscription _languageChangeSubscription;
+    private bool _disposed;
 
     [ObservableProperty]
     private bool _isInternalVersionVisible;
@@ -22,7 +25,9 @@ public partial class AboutDialogViewModel : ObservableObject
     {
         _settingsService = settingsService;
         _localizationService = localizationService;
-        _localizationService.LanguageChanged += (_, _) => RefreshLocalizedValues();
+        _languageChangeSubscription = new LanguageChangeSubscription(
+            _localizationService,
+            (_, _) => RefreshLocalizedValues());
     }
 
     public string CompanyName => UseValue(IsEnglish
@@ -93,5 +98,16 @@ public partial class AboutDialogViewModel : ObservableObject
         OnPropertyChanged(nameof(SoftwareVersion));
         OnPropertyChanged(nameof(InternalVersion));
         OnPropertyChanged(nameof(Website));
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _languageChangeSubscription.Dispose();
+        _disposed = true;
     }
 }

@@ -11,6 +11,7 @@ using System.Windows.Media.Imaging;
 using BTFX.Common;
 using BTFX.Helpers;
 using BTFX.Models;
+using BTFX.Services.Implementations;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -21,10 +22,11 @@ namespace BTFX.ViewModels;
 /// <summary>
 /// 报告预览对话框视图模型。
 /// </summary>
-public partial class ReportPreviewDialogViewModel : ObservableObject
+public partial class ReportPreviewDialogViewModel : ObservableObject, IDisposable
 {
     private readonly ILocalizationService _localizationService;
     private readonly IReportReferenceRangeService _referenceRangeService;
+    private readonly LanguageChangeSubscription _languageChangeSubscription;
     private Report? _report;
     private FlowDocument? _previewDocument;
     private string _previewStatus;
@@ -36,6 +38,7 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
     private bool _includeLeftRightParameters = true;
     private bool _includeCurveCharts = true;
     private string _selectedExportFormat = "PDF";
+    private bool _disposed;
 
     public ReportPreviewDialogViewModel(
         ILocalizationService localizationService,
@@ -44,7 +47,7 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         _localizationService = localizationService;
         _referenceRangeService = referenceRangeService;
         _previewStatus = L("AnalysisDetail.ReportPreview.Status.NotLoaded");
-        _localizationService.LanguageChanged += OnLanguageChanged;
+        _languageChangeSubscription = new LanguageChangeSubscription(_localizationService, OnLanguageChanged);
     }
 
     private string L(string key) => _localizationService.GetString(key);
@@ -59,6 +62,17 @@ public partial class ReportPreviewDialogViewModel : ObservableObject
         NotifyReportPropertiesChanged();
         NotifySectionPropertiesChanged();
         OnPropertyChanged(nameof(PreviewStatus));
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _languageChangeSubscription.Dispose();
+        _disposed = true;
     }
 
     public Report? Report

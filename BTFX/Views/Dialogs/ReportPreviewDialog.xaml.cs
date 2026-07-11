@@ -181,6 +181,7 @@ public partial class ReportPreviewDialog : UserControl
         {
             _currentViewModel.CloseRequested -= OnCloseRequested;
             _currentViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+            _currentViewModel.Dispose();
             _currentViewModel = null;
         }
     }
