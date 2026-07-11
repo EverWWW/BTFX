@@ -8,13 +8,16 @@ public sealed class MeasurementWorkflowResumeService : IMeasurementWorkflowResum
 {
     private readonly IMeasurementVideoValidationService _videoValidationService;
     private readonly IGaitAnalysisService _analysisService;
+    private readonly ILocalizationService _localizationService;
 
     public MeasurementWorkflowResumeService(
         IMeasurementVideoValidationService videoValidationService,
-        IGaitAnalysisService analysisService)
+        IGaitAnalysisService analysisService,
+        ILocalizationService localizationService)
     {
         _videoValidationService = videoValidationService;
         _analysisService = analysisService;
+        _localizationService = localizationService;
     }
 
     public async Task<MeasurementResumeDecision> DecideAsync(
@@ -28,22 +31,24 @@ public sealed class MeasurementWorkflowResumeService : IMeasurementWorkflowResum
         return record.Status switch
         {
             MeasurementStatus.Pending => videoValidation.CanContinue
-                ? new MeasurementResumeDecision(true, 2, "继续处理", "已恢复到回放检查，可继续确认视频后进入分析。")
-                : new MeasurementResumeDecision(true, 1, "继续处理", videoValidation.Message),
+                ? new MeasurementResumeDecision(true, 2, L("Measurement.Resume.Action.Continue"), L("Measurement.Resume.Message.PendingReview"))
+                : new MeasurementResumeDecision(true, 1, L("Measurement.Resume.Action.Continue"), videoValidation.Message),
 
             MeasurementStatus.InProgress => _analysisService.IsAnalysisRunning
-                ? new MeasurementResumeDecision(true, 3, "查看进度", "该测量正在分析中，已恢复到分析进度界面。")
-                : new MeasurementResumeDecision(true, 3, "继续处理", "上次分析没有检测到后台任务，建议重新分析。", RequiresReanalysis: true),
+                ? new MeasurementResumeDecision(true, 3, L("Measurement.Resume.Action.ViewProgress"), L("Measurement.Resume.Message.InProgress"))
+                : new MeasurementResumeDecision(true, 3, L("Measurement.Resume.Action.Continue"), L("Measurement.Resume.Message.ReanalysisNeeded"), RequiresReanalysis: true),
 
-            MeasurementStatus.Completed => new MeasurementResumeDecision(true, 3, "查看详情", "已恢复到分析结果界面。"),
+            MeasurementStatus.Completed => new MeasurementResumeDecision(true, 3, L("Measurement.Resume.Action.ViewDetails"), L("Measurement.Resume.Message.Completed")),
 
             MeasurementStatus.Failed => videoValidation.CanContinue
-                ? new MeasurementResumeDecision(true, 3, "重新分析", "上次分析失败，可检查配置后重新分析。", RequiresReanalysis: true)
-                : new MeasurementResumeDecision(true, 1, "继续处理", videoValidation.Message, RequiresReanalysis: true),
+                ? new MeasurementResumeDecision(true, 3, L("Measurement.Resume.Action.Reanalyze"), L("Measurement.Resume.Message.Failed"), RequiresReanalysis: true)
+                : new MeasurementResumeDecision(true, 1, L("Measurement.Resume.Action.Continue"), videoValidation.Message, RequiresReanalysis: true),
 
-            MeasurementStatus.Cancelled => new MeasurementResumeDecision(true, 1, "继续处理", "该测量处于待处理状态，可继续编辑测量和视频。"),
+            MeasurementStatus.Cancelled => new MeasurementResumeDecision(true, 1, L("Measurement.Resume.Action.Continue"), L("Measurement.Resume.Message.Cancelled")),
 
-            _ => new MeasurementResumeDecision(true, 1, "继续处理", "已恢复到新建测量界面。")
+            _ => new MeasurementResumeDecision(true, 1, L("Measurement.Resume.Action.Continue"), L("Measurement.Resume.Message.Default"))
         };
     }
+
+    private string L(string key) => _localizationService.GetString(key);
 }

@@ -989,7 +989,7 @@ public class GaitAnalysisService : IGaitAnalysisService
             }
 
             var sideVideo = FindSports2DVideo(outputDir, allowFallback: true, "side", "侧面", "渚ч潰");
-            var frontVideo = FindSports2DVideo(outputDir, allowFallback: false, "front", "正面", "姝ｉ潰");
+            var frontVideo = FindSports2DVideo(outputDir, allowFallback: false, "front", "正面");
             if (string.IsNullOrWhiteSpace(sideVideo))
             {
                 RaiseLog("未找到侧面标注视频，跳过分析详情预览生成。");

@@ -714,7 +714,7 @@
     <system:String x:Key="PasswordNumericHint">密码由纯数字组成，登录密码需与确认密码一致。</system:String>
     <system:String x:Key="PasswordMismatch">密码不匹配</system:String>
     <system:String x:Key="OldPasswordIncorrect">旧密码错误</system:String>
-    <system:String x:Key="DefaultPassword">默认密码：123456</system:String>
+    <system:String x:Key="DefaultPassword">默认密码：688626</system:String>
     <system:String x:Key="ConfirmResetPassword">确定要重置密码为默认吗？</system:String>
 
     <system:String x:Key="Department">科室</system:String>
@@ -1494,6 +1494,22 @@
     <system:String x:Key="CameraCapture.Log.RecordStageCompleted">录制阶段完成。</system:String>
     <system:String x:Key="CameraCapture.Log.TranscodeStarted">开始转码。</system:String>
     <system:String x:Key="CameraCapture.Log.AllTasksCompleted">全部任务完成。</system:String>
+    <system:String x:Key="CameraCapture.Log.PreviewStartFailedFormat">预览启动失败（{0}）：{1}</system:String>
+    <system:String x:Key="CameraCapture.Log.PreviewErrorFormat">预览（{0}）：{1}</system:String>
+    <system:String x:Key="CameraCapture.Log.PosterLoadFailedFormat">首帧加载失败：{0}</system:String>
+
+    <!-- 测量流程恢复 -->
+    <system:String x:Key="Measurement.Resume.Action.Continue">继续处理</system:String>
+    <system:String x:Key="Measurement.Resume.Action.ViewProgress">查看进度</system:String>
+    <system:String x:Key="Measurement.Resume.Action.ViewDetails">查看详情</system:String>
+    <system:String x:Key="Measurement.Resume.Action.Reanalyze">重新分析</system:String>
+    <system:String x:Key="Measurement.Resume.Message.PendingReview">已恢复到回放检查，可继续确认视频后进入分析。</system:String>
+    <system:String x:Key="Measurement.Resume.Message.InProgress">该测量正在分析中，已恢复到分析进度界面。</system:String>
+    <system:String x:Key="Measurement.Resume.Message.ReanalysisNeeded">上次分析没有检测到后台任务，建议重新分析。</system:String>
+    <system:String x:Key="Measurement.Resume.Message.Completed">已恢复到分析结果界面。</system:String>
+    <system:String x:Key="Measurement.Resume.Message.Failed">上次分析失败，可检查配置后重新分析。</system:String>
+    <system:String x:Key="Measurement.Resume.Message.Cancelled">该测量处于待处理状态，可继续编辑测量和视频。</system:String>
+    <system:String x:Key="Measurement.Resume.Message.Default">已恢复到新建测量界面。</system:String>
 
     <!--  算法状态  -->
     <system:String x:Key="GaitAnalysis.Stage.Pending">任务已接收</system:String>

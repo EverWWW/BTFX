@@ -1278,7 +1278,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject, IDisposabl
         }
         catch (Exception ex)
         {
-            AppendLog($"棰勮鍚姩澶辫触({cameraName}): {ex.Message}");
+            AppendLog(L("CameraCapture.Log.PreviewStartFailedFormat", cameraName, ex.Message));
         }
     }
 
@@ -1354,7 +1354,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject, IDisposabl
                 var line = await process.StandardError.ReadLineAsync(cancellationToken);
                 if (!string.IsNullOrWhiteSpace(line))
                 {
-                    AppendLog($"棰勮({cameraName}): {line}");
+                    AppendLog(L("CameraCapture.Log.PreviewErrorFormat", cameraName, line));
                 }
                 else if (line == null)
                 {
@@ -1645,7 +1645,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject, IDisposabl
             {
                 if (!string.IsNullOrWhiteSpace(error))
                 {
-                    AppendLog($"棣栧抚鍔犺浇澶辫触: {error.Trim()}");
+                    AppendLog(L("CameraCapture.Log.PosterLoadFailedFormat", error.Trim()));
                 }
 
                 return null;
@@ -1660,7 +1660,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject, IDisposabl
         }
         catch (Exception ex)
         {
-            AppendLog($"棣栧抚鍔犺浇澶辫触: {ex.Message}");
+            AppendLog(L("CameraCapture.Log.PosterLoadFailedFormat", ex.Message));
             return null;
         }
     }

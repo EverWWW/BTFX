@@ -714,7 +714,7 @@
     <system:String x:Key="PasswordNumericHint">Use numbers only. Login password and confirmation must match.</system:String>
     <system:String x:Key="PasswordMismatch">Passwords do not match</system:String>
     <system:String x:Key="OldPasswordIncorrect">Incorrect old password</system:String>
-    <system:String x:Key="DefaultPassword">Default password is: 123456</system:String>
+    <system:String x:Key="DefaultPassword">Default password: 688626</system:String>
     <system:String x:Key="ConfirmResetPassword">Are you sure you want to reset the password to default?</system:String>
 
     <system:String x:Key="Department">Department</system:String>
@@ -1494,6 +1494,22 @@
     <system:String x:Key="CameraCapture.Log.RecordStageCompleted">Recording stage completed.</system:String>
     <system:String x:Key="CameraCapture.Log.TranscodeStarted">Transcoding started.</system:String>
     <system:String x:Key="CameraCapture.Log.AllTasksCompleted">All tasks completed.</system:String>
+    <system:String x:Key="CameraCapture.Log.PreviewStartFailedFormat">Failed to start preview ({0}): {1}</system:String>
+    <system:String x:Key="CameraCapture.Log.PreviewErrorFormat">Preview ({0}): {1}</system:String>
+    <system:String x:Key="CameraCapture.Log.PosterLoadFailedFormat">Failed to load the first frame: {0}</system:String>
+
+    <!-- Measurement workflow resume -->
+    <system:String x:Key="Measurement.Resume.Action.Continue">Continue</system:String>
+    <system:String x:Key="Measurement.Resume.Action.ViewProgress">View Progress</system:String>
+    <system:String x:Key="Measurement.Resume.Action.ViewDetails">View Details</system:String>
+    <system:String x:Key="Measurement.Resume.Action.Reanalyze">Reanalyze</system:String>
+    <system:String x:Key="Measurement.Resume.Message.PendingReview">Restored to playback review. Confirm the videos to continue to analysis.</system:String>
+    <system:String x:Key="Measurement.Resume.Message.InProgress">This measurement is being analyzed. The analysis progress view has been restored.</system:String>
+    <system:String x:Key="Measurement.Resume.Message.ReanalysisNeeded">No active background task was found for the previous analysis. Run the analysis again.</system:String>
+    <system:String x:Key="Measurement.Resume.Message.Completed">The analysis result view has been restored.</system:String>
+    <system:String x:Key="Measurement.Resume.Message.Failed">The previous analysis failed. Check the configuration and run it again.</system:String>
+    <system:String x:Key="Measurement.Resume.Message.Cancelled">This measurement is pending. You can continue editing the measurement and videos.</system:String>
+    <system:String x:Key="Measurement.Resume.Message.Default">The new measurement view has been restored.</system:String>
 
     <!-- Algorithm Status -->
     <system:String x:Key="GaitAnalysis.Stage.Pending">Task Received</system:String>
