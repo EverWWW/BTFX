@@ -1,7 +1,10 @@
 ﻿using BTFX.Common;
+using System.IO;
 using BTFX.Data;
 using BTFX.Models;
+using BTFX.Models.Analysis;
 using BTFX.Services.Interfaces;
+using ToolHelper.Database.Sqlite;
 using ToolHelper.LoggingDiagnostics.Abstractions;
 
 namespace BTFX.Services.Implementations;
@@ -12,17 +15,25 @@ namespace BTFX.Services.Implementations;
 public class MeasurementService : IMeasurementService
 {
     private readonly ILogHelper? _logHelper;
+    private readonly Func<SqliteSugarHelper> _databaseFactory;
 
     /// <summary>
     /// 构造函数
     /// </summary>
     public MeasurementService()
     {
+        _databaseFactory = DatabaseFactory.CreateSqliteSugarHelper;
         try
         {
             _logHelper = App.Services?.GetService(typeof(ILogHelper)) as ILogHelper;
         }
         catch { }
+    }
+
+    internal MeasurementService(Func<SqliteSugarHelper> databaseFactory, ILogHelper? logHelper = null)
+    {
+        _databaseFactory = databaseFactory ?? throw new ArgumentNullException(nameof(databaseFactory));
+        _logHelper = logHelper;
     }
 
     /// <inheritdoc/>
@@ -148,13 +159,68 @@ public class MeasurementService : IMeasurementService
     {
         try
         {
-            using var db = DatabaseFactory.CreateSqliteSugarHelper();
+            using var db = _databaseFactory();
+            var measurement = await db.GetByIdAsync<MeasurementRecord>(id);
+            if (measurement is null)
+            {
+                return false;
+            }
 
-            // 先删除关联的步态参数
-            await db.DeleteAsync<GaitParameters>(g => g.MeasurementRecordId == id);
+            var analysisResults = await db.Queryable<AnalysisResult>()
+                .Where(result => result.MeasurementId == id)
+                .ToListAsync();
+            var analysisResultIds = analysisResults.Select(result => result.Id).ToArray();
+            var candidateDirectories = analysisResults
+                .Select(result => result.OutputDirectory)
+                .Cast<string?>()
+                .Append(measurement.MeasurementFolderPath);
+            var dataRoot = Path.Combine(AppContext.BaseDirectory, "Data");
+            using var quarantine = new MeasurementResultFileQuarantine(
+                candidateDirectories,
+                [
+                    Path.Combine(dataRoot, "Analysis"),
+                    Path.Combine(dataRoot, "ImportedResults")
+                ],
+                Path.Combine(dataRoot, "Temp", "DeleteQuarantine"));
 
-            // 再删除测量记录
-            var success = await db.DeleteByIdAsync<MeasurementRecord>(id);
+            quarantine.Stage();
+            db.BeginTran();
+            bool success;
+            try
+            {
+                await db.DeleteAsync<Report>(report => report.MeasurementId == id);
+                if (analysisResultIds.Length > 0)
+                {
+                    await db.DeleteAsync<AnalysisCsvFile>(file => analysisResultIds.Contains(file.AnalysisResultId));
+                    await db.DeleteAsync<QualityControlInfo>(quality => analysisResultIds.Contains(quality.AnalysisResultId));
+                    await db.DeleteAsync<KinematicSummary>(summary => analysisResultIds.Contains(summary.AnalysisResultId));
+                }
+
+                await db.DeleteAsync<GaitParameters>(parameters => parameters.MeasurementRecordId == id);
+                await db.DeleteAsync<AnalysisResult>(result => result.MeasurementId == id);
+                success = await db.DeleteByIdAsync<MeasurementRecord>(id);
+                if (!success)
+                {
+                    throw new InvalidOperationException($"测量记录删除失败：Id={id}");
+                }
+
+                db.CommitTran();
+            }
+            catch
+            {
+                db.RollbackTran();
+                quarantine.Restore();
+                throw;
+            }
+
+            try
+            {
+                await Task.Run(quarantine.CommitDelete);
+            }
+            catch (Exception cleanupException)
+            {
+                _logHelper?.Warning($"测量记录已删除，但隔离结果文件清理失败：Id={id}, Error={cleanupException.Message}");
+            }
 
             if (success)
             {
