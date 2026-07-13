@@ -1492,7 +1492,7 @@
     <system:String x:Key="CameraCapture.Status.Recording">Recording</system:String>
     <system:String x:Key="CameraCapture.Status.Transcoding">Recording completed, transcoding</system:String>
     <system:String x:Key="CameraCapture.Status.TranscodePreparing">Preparing Transcode</system:String>
-    <system:String x:Key="CameraCapture.Status.TranscodingShort">Transcoding</system:String>
+    <system:String x:Key="CameraCapture.Status.TranscodingShort">Transcoding...</system:String>
     <system:String x:Key="CameraCapture.Status.Completed">Recording Completed</system:String>
     <system:String x:Key="CameraCapture.Status.Canceled">Canceled</system:String>
     <system:String x:Key="CameraCapture.Status.Failed">Recording Failed</system:String>

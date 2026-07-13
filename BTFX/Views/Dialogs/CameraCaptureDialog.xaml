@@ -661,10 +661,13 @@
                                             VerticalAlignment="Center"
                                             Fill="#EF4444" />
                                         <TextBlock
+                                            MaxWidth="400"
                                             FontSize="32"
                                             FontWeight="Bold"
                                             Foreground="#F87171"
-                                            Text="{Binding RecordingStageTextDisplay}" />
+                                            Text="{Binding RecordingStageTextDisplay}"
+                                            TextAlignment="Center"
+                                            TextWrapping="Wrap" />
                                     </StackPanel>
                                     <TextBlock
                                         Margin="0,12,0,0"
@@ -684,16 +687,6 @@
                                         Background="#374151"
                                         BorderBrush="{x:Null}"
                                         Value="{Binding RecordingProgress}"
-                                        Visibility="{Binding IsTranscodingVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                    <TextBlock
-                                        Width="420"
-                                        Margin="0,14,0,0"
-                                        HorizontalAlignment="Center"
-                                        FontSize="14"
-                                        Foreground="#D1D5DB"
-                                        Text="{Binding TranscodeLogText}"
-                                        TextAlignment="Center"
-                                        TextTrimming="CharacterEllipsis"
                                         Visibility="{Binding IsTranscodingVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 </StackPanel>
                                 <MediaElement
@@ -867,10 +860,13 @@
                                             VerticalAlignment="Center"
                                             Fill="#EF4444" />
                                         <TextBlock
+                                            MaxWidth="400"
                                             FontSize="32"
                                             FontWeight="Bold"
                                             Foreground="#F87171"
-                                            Text="{Binding RecordingStageTextDisplay}" />
+                                            Text="{Binding RecordingStageTextDisplay}"
+                                            TextAlignment="Center"
+                                            TextWrapping="Wrap" />
                                     </StackPanel>
                                     <TextBlock
                                         Margin="0,12,0,0"
@@ -890,16 +886,6 @@
                                         Background="#374151"
                                         BorderBrush="{x:Null}"
                                         Value="{Binding RecordingProgress}"
-                                        Visibility="{Binding IsTranscodingVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                    <TextBlock
-                                        Width="420"
-                                        Margin="0,14,0,0"
-                                        HorizontalAlignment="Center"
-                                        FontSize="14"
-                                        Foreground="#D1D5DB"
-                                        Text="{Binding TranscodeLogText}"
-                                        TextAlignment="Center"
-                                        TextTrimming="CharacterEllipsis"
                                         Visibility="{Binding IsTranscodingVisible, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 </StackPanel>
                                 <MediaElement

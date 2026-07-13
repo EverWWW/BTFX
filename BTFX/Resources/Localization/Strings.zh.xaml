@@ -1492,7 +1492,7 @@
     <system:String x:Key="CameraCapture.Status.Recording">正在录制</system:String>
     <system:String x:Key="CameraCapture.Status.Transcoding">视频录制完成，正在转码</system:String>
     <system:String x:Key="CameraCapture.Status.TranscodePreparing">转码准备中</system:String>
-    <system:String x:Key="CameraCapture.Status.TranscodingShort">转码中</system:String>
+    <system:String x:Key="CameraCapture.Status.TranscodingShort">正在转码...</system:String>
     <system:String x:Key="CameraCapture.Status.Completed">录制完成</system:String>
     <system:String x:Key="CameraCapture.Status.Canceled">已取消</system:String>
     <system:String x:Key="CameraCapture.Status.Failed">录制失败</system:String>

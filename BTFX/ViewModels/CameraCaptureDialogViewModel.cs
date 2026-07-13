@@ -216,7 +216,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject, IDisposabl
         ? RecordingStartDelayRemainingSeconds > 0
             ? L("CameraCapture.Status.StartDelayFormat", RecordingStartDelayRemainingSeconds)
             : L("CameraCapture.Status.DevicePreparing")
-        : IsTranscodingVisible ? L("CameraCapture.Status.Transcoding") : IsRecordingState ? L("CameraCapture.Status.Recording") : string.Empty;
+        : IsTranscodingVisible ? L("CameraCapture.Status.TranscodingShort") : IsRecordingState ? L("CameraCapture.Status.Recording") : string.Empty;
 
     public string RecordingElapsedDisplayText =>
         $"{FormatDuration(SelectedDuration.Value - RecordingRemainingSeconds)} / {FormatDuration(SelectedDuration.Value)}";
@@ -237,7 +237,7 @@ public partial class CameraCaptureDialogViewModel : ObservableObject, IDisposabl
         ? RecordingStartDelayRemainingSeconds > 0
             ? L("CameraCapture.Status.StartDelayFormat", RecordingStartDelayRemainingSeconds)
             : L("CameraCapture.Status.DevicePreparing")
-        : IsTranscodingVisible ? L("CameraCapture.Status.Transcoding") : IsRecordingState ? L("CameraCapture.Status.Recording") : string.Empty;
+        : IsTranscodingVisible ? L("CameraCapture.Status.TranscodingShort") : IsRecordingState ? L("CameraCapture.Status.Recording") : string.Empty;
 
     public string FfmpegPath => Path.Combine(AppContext.BaseDirectory, "ffmpeg", "ffmpeg.exe");
 
