@@ -290,7 +290,7 @@ public static class ReportPreviewHelper
         var row1 = new TableRow();
         row1.Cells.Add(CreateParameterCell("步幅（左）", GaitLengthUnitConverter.ToMeters(gait?.StrideLengthLeft), "m"));
         row1.Cells.Add(CreateParameterCell("步幅（右）", GaitLengthUnitConverter.ToMeters(gait?.StrideLengthRight), "m"));
-        row1.Cells.Add(CreateParameterCell("步频", gait?.Cadence, "步/分"));
+        row1.Cells.Add(CreateParameterCell("步频", gait?.Cadence, "step/min"));
         row1.Cells.Add(CreateParameterCell("步速", gait?.Velocity, "m/s"));
         table.RowGroups[0].Rows.Add(row1);
 
@@ -298,7 +298,7 @@ public static class ReportPreviewHelper
         var row2 = new TableRow();
         row2.Cells.Add(CreateParameterCell("左脚支撑相", gait?.StancePhaseLeft, "%"));
         row2.Cells.Add(CreateParameterCell("右脚支撑相", gait?.StancePhaseRight, "%"));
-        row2.Cells.Add(CreateParameterCell("双支撑时间", gait?.DoubleSupport, "%"));
+        row2.Cells.Add(CreateParameterCell("双支撑时间", gait?.DoubleSupportTimeS, "s"));
         row2.Cells.Add(CreateParameterCell("步宽", gait?.StepWidth, "cm"));
         table.RowGroups[0].Rows.Add(row2);
 

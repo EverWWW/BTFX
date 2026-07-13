@@ -43,6 +43,34 @@ public sealed class MeasurementLengthUnitTests
         Assert.Equal(expectedMeters, BTFX.Helpers.GaitLengthUnitConverter.ToMeters(centimeters), precision: 6);
     }
 
+    [Fact]
+    public void AllReportPaths_UseStepPerMinuteForCadence()
+    {
+        var projectDirectory = FindProjectDirectory();
+        var reportPreviewHelper = File.ReadAllText(Path.Combine(projectDirectory, "Helpers", "ReportPreviewHelper.cs"));
+        var reportPdfExporter = File.ReadAllText(Path.Combine(projectDirectory, "Helpers", "ReportPdfExporter.cs"));
+
+        Assert.Contains("gait?.Cadence, \"step/min\"", reportPreviewHelper, StringComparison.Ordinal);
+        Assert.Contains("gait?.Cadence, \"step/min\"", reportPdfExporter, StringComparison.Ordinal);
+        Assert.DoesNotContain("gait?.Cadence, \"步/分\"", reportPreviewHelper, StringComparison.Ordinal);
+        Assert.DoesNotContain("gait?.Cadence, \"步/分\"", reportPdfExporter, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AllLegacyReportPaths_DisplayDoubleSupportTimeInSeconds()
+    {
+        var projectDirectory = FindProjectDirectory();
+        var reportViewModel = File.ReadAllText(Path.Combine(projectDirectory, "ViewModels", "ReportViewModel.cs"));
+        var reportPreviewHelper = File.ReadAllText(Path.Combine(projectDirectory, "Helpers", "ReportPreviewHelper.cs"));
+        var reportPdfExporter = File.ReadAllText(Path.Combine(projectDirectory, "Helpers", "ReportPdfExporter.cs"));
+
+        Assert.Contains("gait?.DoubleSupportTimeS, \"s\"", reportPreviewHelper, StringComparison.Ordinal);
+        Assert.Contains("gait?.DoubleSupportTimeS, \"s\"", reportPdfExporter, StringComparison.Ordinal);
+        Assert.Contains("gait.DoubleSupportTimeS?.ToString(\"F2\")", reportViewModel, StringComparison.Ordinal);
+        Assert.DoesNotContain("gait?.DoubleSupport, \"%\"", reportPreviewHelper, StringComparison.Ordinal);
+        Assert.DoesNotContain("gait?.DoubleSupport, \"%\"", reportPdfExporter, StringComparison.Ordinal);
+    }
+
     private static string FindProjectDirectory()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

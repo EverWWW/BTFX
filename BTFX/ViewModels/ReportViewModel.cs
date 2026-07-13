@@ -2038,7 +2038,7 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                     sb.AppendLine($"步速：{gait.Velocity?.ToString("F2") ?? "--"} m/s");
                     sb.AppendLine($"左脚支撑相：{gait.StancePhaseLeft?.ToString("F1") ?? "--"} %");
                     sb.AppendLine($"右脚支撑相：{gait.StancePhaseRight?.ToString("F1") ?? "--"} %");
-                    sb.AppendLine($"双支撑时间：{gait.DoubleSupport?.ToString("F1") ?? "--"} %");
+                    sb.AppendLine($"双支撑时间：{gait.DoubleSupportTimeS?.ToString("F2") ?? "--"} s");
                     sb.AppendLine();
                 }
             }
