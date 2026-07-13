@@ -1,5 +1,6 @@
 ﻿using BTFX.Common;
 using BTFX.Models;
+using BTFX.Helpers;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -241,17 +242,17 @@ public partial class MeasurementDetailViewModel : ObservableObject
 
                                 if (success)
                                 {
-                                    System.Windows.MessageBox.Show(L("MeasurementDetail.Export.Success"), L("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                                    AppDialog.Show(L("MeasurementDetail.Export.Success"), L("Tip"), AppDialogButtons.Ok, AppDialogIcon.Information);
                                 }
                                 else
                                 {
-                                    System.Windows.MessageBox.Show(L("MeasurementDetail.Export.FailedRetry"), L("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                                    AppDialog.Show(L("MeasurementDetail.Export.FailedRetry"), L("Error"), AppDialogButtons.Ok, AppDialogIcon.Error);
                                 }
                             }
                         }
                         catch (Exception ex)
                         {
-                            System.Windows.MessageBox.Show(L("MeasurementDetail.Export.FailedFormat", ex.Message), L("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                            AppDialog.Show(L("MeasurementDetail.Export.FailedFormat", ex.Message), L("Error"), AppDialogButtons.Ok, AppDialogIcon.Error);
                         }
                     }
                 }

@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Threading;
 using BTFX.Common;
 using BTFX.Data;
+using BTFX.Helpers;
 using BTFX.Services.Implementations;
 using BTFX.Services.Interfaces;
 using BTFX.ViewModels;
@@ -43,11 +44,11 @@ public partial class App : Application
         // 1. 单实例检测
         if (!CheckSingleInstance())
         {
-            MessageBox.Show(
-                FindResource("ProgramAlreadyRunning")?.ToString() ?? "程序已运行，请勿重复启动。",
-                Constants.APP_DISPLAY_NAME,
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            AppDialog.Show(
+                Localize("ProgramAlreadyRunning", "The program is already running."),
+                Localize("AppName", Constants.APP_DISPLAY_NAME),
+                AppDialogButtons.Ok,
+                AppDialogIcon.Information);
             Shutdown();
             return;
         }
@@ -370,14 +371,17 @@ public partial class App : Application
             if (_isShuttingDown) return;
 
             var message = string.IsNullOrWhiteSpace(ex.Message)
-                ? "应用程序发生未知错误。"
-                : $"应用程序发生错误，请联系技术支持。\n\n错误信息：{ex.Message}";
+                ? Localize("App.UnhandledError.Unknown", "An unknown application error occurred.")
+                : Localize(
+                    "App.UnhandledError.Format",
+                    "An application error occurred. Please contact technical support.\n\nError: {0}",
+                    ex.Message);
 
-            MessageBox.Show(
+            AppDialog.Show(
                 message,
-                "错误",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                Localize("Error", "Error"),
+                AppDialogButtons.Ok,
+                AppDialogIcon.Error);
         }
         catch
         {
@@ -481,11 +485,14 @@ public partial class App : Application
             System.Diagnostics.Debug.WriteLine(ex.StackTrace);
 
             // 数据库初始化失败是致命错误，显示错误并退出
-            MessageBox.Show(
-                $"数据库初始化失败：{ex.Message}\n\n应用程序将退出。",
-                Constants.APP_DISPLAY_NAME,
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+            AppDialog.Show(
+                Localize(
+                    "App.DatabaseInitializationFailedFormat",
+                    "Database initialization failed: {0}\n\nThe application will exit.",
+                    ex.Message),
+                Localize("AppName", Constants.APP_DISPLAY_NAME),
+                AppDialogButtons.Ok,
+                AppDialogIcon.Error);
             Environment.Exit(1);
         }
     }
@@ -511,13 +518,27 @@ public partial class App : Application
         catch (Exception ex)
         {
             _logHelper?.Error("应用待恢复备份失败", ex);
-            MessageBox.Show(
-                $"备份恢复失败，原数据库已保留。\n\n{ex.Message}",
-                Constants.APP_DISPLAY_NAME,
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+            AppDialog.Show(
+                Localize(
+                    "App.PendingRestoreFailedFormat",
+                    "Backup restoration failed. The original database has been preserved.\n\n{0}",
+                    ex.Message),
+                Localize("AppName", Constants.APP_DISPLAY_NAME),
+                AppDialogButtons.Ok,
+                AppDialogIcon.Error);
             return false;
         }
+    }
+
+    private static string Localize(string key, string fallback, params object[] args)
+    {
+        var template = Current?.TryFindResource(key)?.ToString();
+        if (string.IsNullOrWhiteSpace(template))
+        {
+            template = fallback;
+        }
+
+        return args.Length == 0 ? template : string.Format(template, args);
     }
 
     /// <summary>

@@ -24,11 +24,15 @@ public static class DiskSpaceGuard
                 return true;
             }
 
-            MessageBox.Show(
-                $"{operationName}需要写入视频或分析结果文件，当前程序所在磁盘剩余空间不足 2GB。\n\n请先清理磁盘空间后再继续。",
-                "磁盘空间不足",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+            var messageTemplate = Application.Current?.TryFindResource("DiskSpace.LowMessageFormat")?.ToString()
+                                  ?? "{0} needs to write video or analysis result files, but the drive has less than 2 GB of free space.";
+            var title = Application.Current?.TryFindResource("DiskSpace.LowTitle")?.ToString()
+                        ?? "Insufficient Disk Space";
+            AppDialog.Show(
+                string.Format(messageTemplate, operationName),
+                title,
+                AppDialogButtons.Ok,
+                AppDialogIcon.Warning);
             return false;
         }
         catch

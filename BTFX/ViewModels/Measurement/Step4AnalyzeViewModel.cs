@@ -790,7 +790,7 @@ public partial class Step4AnalyzeViewModel : ObservableObject
                 return;
             }
 
-            if (!DiskSpaceGuard.EnsureProgramDriveHasSpace("步态分析"))
+            if (!DiskSpaceGuard.EnsureProgramDriveHasSpace(L("MA.Step4.Title")))
             {
                 return;
             }

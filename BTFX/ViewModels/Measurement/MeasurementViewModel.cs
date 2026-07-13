@@ -434,11 +434,11 @@ public partial class MeasurementViewModel : ObservableObject
         catch (Exception ex)
         {
             _logHelper?.Error($"从测量分析步骤打开分析详情失败：MeasurementId={CurrentMeasurement.Id}", ex);
-            MessageBox.Show(
+            AppDialog.Show(
                 L("MA.Dialog.Error.OpenAnalysisDetailFailed", ex.Message),
                 L("Error"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                AppDialogButtons.Ok,
+                AppDialogIcon.Error);
         }
     }
 
@@ -478,11 +478,11 @@ public partial class MeasurementViewModel : ObservableObject
 
             if (report is null)
             {
-                MessageBox.Show(
+                AppDialog.Show(
                     L("MA.Dialog.ReportDraftCreateFailed"),
                     L("Tip"),
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                    AppDialogButtons.Ok,
+                    AppDialogIcon.Warning);
                 return;
             }
 
@@ -523,11 +523,11 @@ public partial class MeasurementViewModel : ObservableObject
         catch (Exception ex)
         {
             _logHelper?.Error($"从测量分析步骤打开报告预览失败：MeasurementId={CurrentMeasurement.Id}", ex);
-            MessageBox.Show(
+            AppDialog.Show(
                 L("MA.Dialog.Error.OpenReportPreviewFailed", ex.Message),
                 L("Error"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                AppDialogButtons.Ok,
+                AppDialogIcon.Error);
         }
     }
 
@@ -551,11 +551,11 @@ public partial class MeasurementViewModel : ObservableObject
             return true;
         }
 
-        MessageBox.Show(
+        AppDialog.Show(
             L("MA.Dialog.PackageValidationFailedMessage", validation.Message),
             L("MA.Dialog.PackageValidationFailedTitle"),
-            MessageBoxButton.OK,
-            MessageBoxImage.Warning);
+            AppDialogButtons.Ok,
+            AppDialogIcon.Warning);
         return false;
     }
 
@@ -1038,11 +1038,11 @@ public partial class MeasurementViewModel : ObservableObject
             return;
         }
 
-        MessageBox.Show(
+        AppDialog.Show(
             L("MA.Step1.Dialog.VideoValidationFailedMessage", title, videoInfo.ValidationMessage),
             L("MA.Step1.Dialog.VideoValidationFailedTitle"),
-            MessageBoxButton.OK,
-            MessageBoxImage.Warning);
+            AppDialogButtons.Ok,
+            AppDialogIcon.Warning);
     }
 
     private string? TrySelectVideoFile()
@@ -1065,11 +1065,11 @@ public partial class MeasurementViewModel : ObservableObject
         catch (Exception ex)
         {
             _logHelper?.Error("打开视频文件选择框失败", ex);
-            MessageBox.Show(
+            AppDialog.Show(
                 L("MA.Dialog.Error.OpenVideoFileDialogFailed", ex.Message),
                 L("Error"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                AppDialogButtons.Ok,
+                AppDialogIcon.Error);
             return null;
         }
     }
@@ -1160,11 +1160,11 @@ public partial class MeasurementViewModel : ObservableObject
         catch (Exception ex)
         {
             _logHelper?.Error("打开相机采集弹窗失败", ex);
-            MessageBox.Show(
+            AppDialog.Show(
                 L("MA.Dialog.Error.OpenCameraCaptureFailed", ex.Message),
                 L("Error"),
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                AppDialogButtons.Ok,
+                AppDialogIcon.Error);
         }
     }
 

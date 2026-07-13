@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Windows;
 using System.Xml;
 using BTFX.Common;
+using BTFX.Helpers;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
 using ToolHelper.LoggingDiagnostics.Abstractions;
@@ -178,7 +179,7 @@ public class AppUpdateService : IAppUpdateService
 
         Application.Current.Dispatcher.Invoke(() =>
         {
-            MessageBox.Show(message, L("Update.FoundTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
+            AppDialog.Show(message, L("Update.FoundTitle"), AppDialogButtons.Ok, AppDialogIcon.Information);
         });
     }
 

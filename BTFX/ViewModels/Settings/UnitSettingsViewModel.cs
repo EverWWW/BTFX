@@ -1,5 +1,6 @@
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
+using BTFX.Helpers;
 using CommunityToolkit.Mvvm.Input;
 using ToolHelper.LoggingDiagnostics.Abstractions;
 using BtfxConstants = BTFX.Common.Constants;
@@ -72,11 +73,11 @@ public partial class UnitSettingsViewModel : ObservableObject
             var fileInfo = new System.IO.FileInfo(dialog.FileName);
             if (fileInfo.Length > BtfxConstants.LOGO_MAX_SIZE_KB * 1024)
             {
-                System.Windows.MessageBox.Show(
+                AppDialog.Show(
                     _localizationService.GetString("LogoFileTooLargeFormat", BtfxConstants.LOGO_MAX_SIZE_KB),
                     _localizationService.GetString("Tip"),
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Warning);
+                    AppDialogButtons.Ok,
+                    AppDialogIcon.Warning);
                 return;
             }
 
@@ -103,15 +104,15 @@ public partial class UnitSettingsViewModel : ObservableObject
             _settingsService.CurrentSettings.Unit.LogoPath = LogoPath;
             _settingsService.SaveSettings();
 
-            System.Windows.MessageBox.Show(_localizationService.GetString("UnitSettingsSaved"), _localizationService.GetString("Tip"),
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            AppDialog.Show(_localizationService.GetString("UnitSettingsSaved"), _localizationService.GetString("Tip"),
+                AppDialogButtons.Ok, AppDialogIcon.Information);
             _logHelper?.Information("保存单位设置");
         }
         catch (Exception ex)
         {
             _logHelper?.Error("保存单位设置失败", ex);
-            System.Windows.MessageBox.Show($"{_localizationService.GetString("SaveFailed")}: {ex.Message}", _localizationService.GetString("Error"),
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            AppDialog.Show($"{_localizationService.GetString("SaveFailed")}: {ex.Message}", _localizationService.GetString("Error"),
+                AppDialogButtons.Ok, AppDialogIcon.Error);
         }
         finally
         {

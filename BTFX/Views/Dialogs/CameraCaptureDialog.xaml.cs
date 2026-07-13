@@ -1,5 +1,6 @@
 using System.Windows.Controls;
 using System.Windows.Threading;
+using BTFX.Helpers;
 using BTFX.Models.Camera;
 using BTFX.ViewModels;
 using MaterialDesignThemes.Wpf;
@@ -72,13 +73,13 @@ public partial class CameraCaptureDialog : UserControl
     {
         var title = TryFindResource("CameraCapture.ExitConfirmTitle")?.ToString() ?? "Confirm Exit";
         var message = TryFindResource("CameraCapture.ExitConfirmMessage")?.ToString() ?? "Exit video capture?";
-        var result = System.Windows.MessageBox.Show(
+        var result = AppDialog.Show(
             message,
             title,
-            System.Windows.MessageBoxButton.OKCancel,
-            System.Windows.MessageBoxImage.Question);
+            AppDialogButtons.OkCancel,
+            AppDialogIcon.Question);
 
-        if (result == System.Windows.MessageBoxResult.OK)
+        if (result == AppDialogResult.Ok)
         {
             DialogHost.CloseDialogCommand.Execute(null, this);
         }

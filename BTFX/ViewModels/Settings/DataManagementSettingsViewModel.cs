@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using BTFX.Services.Interfaces;
+using BTFX.Helpers;
 using BTFX.ViewModels;
 using BTFX.Views.Dialogs;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -233,8 +234,8 @@ public partial class DataManagementSettingsViewModel : ObservableObject
 
             if (!string.IsNullOrEmpty(filePath))
             {
-                System.Windows.MessageBox.Show(_localizationService.GetString("BackupSuccessFormat", filePath), _localizationService.GetString("Information"),
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                AppDialog.Show(_localizationService.GetString("BackupSuccessFormat", filePath), _localizationService.GetString("Information"),
+                    AppDialogButtons.Ok, AppDialogIcon.Information);
                 _logHelper?.Information($"手动备份成功：{filePath}");
                 await LoadBackupHistoryAsync();
             }
@@ -242,8 +243,8 @@ public partial class DataManagementSettingsViewModel : ObservableObject
         catch (Exception ex)
         {
             _logHelper?.Error("手动备份失败", ex);
-            System.Windows.MessageBox.Show(_localizationService.GetString("BackupFailedFormat", ex.Message), _localizationService.GetString("Error"),
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            AppDialog.Show(_localizationService.GetString("BackupFailedFormat", ex.Message), _localizationService.GetString("Error"),
+                AppDialogButtons.Ok, AppDialogIcon.Error);
         }
         finally
         {
@@ -375,13 +376,13 @@ public partial class DataManagementSettingsViewModel : ObservableObject
     {
         if (item == null) return;
 
-        var result = System.Windows.MessageBox.Show(
+        var result = AppDialog.Show(
             _localizationService.GetString("ConfirmRestoreBackup"),
             _localizationService.GetString("ConfirmRestore"),
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Warning);
+            AppDialogButtons.YesNo,
+            AppDialogIcon.Warning);
 
-        if (result != System.Windows.MessageBoxResult.Yes) return;
+        if (result != AppDialogResult.Yes) return;
 
         try
         {
@@ -389,16 +390,16 @@ public partial class DataManagementSettingsViewModel : ObservableObject
             var success = await _backupService.RestoreBackupAsync(item.FilePath);
             if (success)
             {
-                System.Windows.MessageBox.Show(_localizationService.GetString("RestoreSuccessRestart"), _localizationService.GetString("Information"),
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                AppDialog.Show(_localizationService.GetString("RestoreSuccessRestart"), _localizationService.GetString("Information"),
+                    AppDialogButtons.Ok, AppDialogIcon.Information);
                 _logHelper?.Information($"恢复备份成功：{item.FilePath}");
             }
         }
         catch (Exception ex)
         {
             _logHelper?.Error($"恢复备份失败：{item.FilePath}", ex);
-            System.Windows.MessageBox.Show(_localizationService.GetString("RestoreFailedFormat", ex.Message), _localizationService.GetString("Error"),
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            AppDialog.Show(_localizationService.GetString("RestoreFailedFormat", ex.Message), _localizationService.GetString("Error"),
+                AppDialogButtons.Ok, AppDialogIcon.Error);
         }
         finally
         {
@@ -435,21 +436,21 @@ public partial class DataManagementSettingsViewModel : ObservableObject
                 _backupService.StopAutoBackup();
             }
 
-            System.Windows.MessageBox.Show(_localizationService.GetString("BackupSettingsSaved"), _localizationService.GetString("Information"),
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            AppDialog.Show(_localizationService.GetString("BackupSettingsSaved"), _localizationService.GetString("Information"),
+                AppDialogButtons.Ok, AppDialogIcon.Information);
             _logHelper?.Information($"保存备份设置：启用={AutoBackupEnabled}，时间={normalizedBackupTime}，保留数量={normalizedRetainCount}");
         }
         catch (ArgumentException ex)
         {
             _logHelper?.Warning($"保存备份设置失败：{ex.Message}");
-            System.Windows.MessageBox.Show(ex.Message, _localizationService.GetString("Warning"),
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+            AppDialog.Show(ex.Message, _localizationService.GetString("Warning"),
+                AppDialogButtons.Ok, AppDialogIcon.Warning);
         }
         catch (Exception ex)
         {
             _logHelper?.Error("保存备份设置失败", ex);
-            System.Windows.MessageBox.Show(_localizationService.GetString("SaveExceptionFormat", ex.Message), _localizationService.GetString("Error"),
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            AppDialog.Show(_localizationService.GetString("SaveExceptionFormat", ex.Message), _localizationService.GetString("Error"),
+                AppDialogButtons.Ok, AppDialogIcon.Error);
         }
         finally
         {

@@ -259,14 +259,14 @@ public partial class ReportPreviewDialogViewModel : ObservableObject, IDisposabl
     {
         if (PreviewDocument is null)
         {
-            MessageBox.Show(L("ReportPreview.Print.NoPreview"), L("Tip"), MessageBoxButton.OK, MessageBoxImage.Information);
+            AppDialog.Show(L("ReportPreview.Print.NoPreview"), L("Tip"), AppDialogButtons.Ok, AppDialogIcon.Information);
             return;
         }
 
         var printed = PrintHelper.PrintDocument(PreviewDocument, $"{L("ReportPreview.FilePrefix")}_{ReportNumber}", showDialog: true);
         if (printed)
         {
-            MessageBox.Show(L("ReportPreview.Print.Sent"), L("Print"), MessageBoxButton.OK, MessageBoxImage.Information);
+            AppDialog.Show(L("ReportPreview.Print.Sent"), L("Print"), AppDialogButtons.Ok, AppDialogIcon.Information);
         }
     }
 
@@ -318,15 +318,15 @@ public partial class ReportPreviewDialogViewModel : ObservableObject, IDisposabl
                 report.Status = originalStatus;
             }
 
-            MessageBox.Show(
+            AppDialog.Show(
                 success ? L("ReportPreview.Export.SuccessFormat", filePath) : L("ReportPreview.Export.Failed"),
                 success ? L("ReportPreview.Export.SuccessTitle") : L("ReportPreview.Export.FailedTitle"),
-                MessageBoxButton.OK,
-                success ? MessageBoxImage.Information : MessageBoxImage.Error);
+                AppDialogButtons.Ok,
+                success ? AppDialogIcon.Information : AppDialogIcon.Error);
         }
         catch (Exception ex)
         {
-            MessageBox.Show(L("ReportPreview.Export.FailedFormat", ex.Message), L("ReportPreview.Export.FailedTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+            AppDialog.Show(L("ReportPreview.Export.FailedFormat", ex.Message), L("ReportPreview.Export.FailedTitle"), AppDialogButtons.Ok, AppDialogIcon.Error);
         }
     }
 

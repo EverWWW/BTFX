@@ -1,5 +1,6 @@
 using System.Windows;
 using BTFX.Common;
+using BTFX.Helpers;
 using BTFX.Models.Activation;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -155,11 +156,11 @@ public partial class ActivationViewModel : ObservableObject
         Message = result.Message;
         if (!result.IsSuccess)
         {
-            MessageBox.Show(result.Message, _localizationService.GetString("Activation.FailedTitle"), MessageBoxButton.OK, MessageBoxImage.Warning);
+            AppDialog.Show(result.Message, _localizationService.GetString("Activation.FailedTitle"), AppDialogButtons.Ok, AppDialogIcon.Warning);
             return;
         }
 
-        MessageBox.Show(result.Message, _localizationService.GetString("Activation.SuccessTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
+        AppDialog.Show(result.Message, _localizationService.GetString("Activation.SuccessTitle"), AppDialogButtons.Ok, AppDialogIcon.Information);
         _navigationService.NavigateTo<LoginViewModel>();
         _ = _appUpdateService.CheckForUpdatesAsync();
         await Task.CompletedTask;

@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
 using BTFX.Common;
+using BTFX.Helpers;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
 using BTFX.ViewModels.Measurement;
@@ -607,7 +608,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             catch (Exception ex)
             {
                 _logHelper?.Error($"打开详情对话框失败：ID={item.Record.Id}", ex);
-                MessageBox.Show(_localizationService.GetString("DataManagement.OpenDetailFailedFormat", ex.Message), _localizationService.GetString("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
+                AppDialog.Show(_localizationService.GetString("DataManagement.OpenDetailFailedFormat", ex.Message), _localizationService.GetString("Error"), AppDialogButtons.Ok, AppDialogIcon.Error);
             }
         }
 
@@ -635,7 +636,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
             var decision = await _measurementWorkflowResumeService.DecideAsync(item.Record, _cancellationTokenSource.Token);
             if (!decision.CanResume)
             {
-                MessageBox.Show(decision.Message, _localizationService.GetString("Tip"), MessageBoxButton.OK, MessageBoxImage.Information);
+                AppDialog.Show(decision.Message, _localizationService.GetString("Tip"), AppDialogButtons.Ok, AppDialogIcon.Information);
                 return;
             }
 
@@ -645,7 +646,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             _logHelper?.Error($"继续处理测量失败：ID={item.Record.Id}", ex);
-            MessageBox.Show(_localizationService.GetString("DataManagement.ResumeFailedFormat", ex.Message), _localizationService.GetString("Error"), MessageBoxButton.OK, MessageBoxImage.Error);
+            AppDialog.Show(_localizationService.GetString("DataManagement.ResumeFailedFormat", ex.Message), _localizationService.GetString("Error"), AppDialogButtons.Ok, AppDialogIcon.Error);
         }
     }
 
@@ -726,23 +727,23 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
 
                     if (result.Success)
                     {
-                        System.Windows.MessageBox.Show(result.Message, _localizationService.GetString("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                        AppDialog.Show(result.Message, _localizationService.GetString("Tip"), AppDialogButtons.Ok, AppDialogIcon.Information);
                         _logHelper?.Information($"导出测量结果包：ID={item.Record.Id}, 文件={dialog.FileName}");
                     }
                     else
                     {
-                        System.Windows.MessageBox.Show(result.Message, _localizationService.GetString("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                        AppDialog.Show(result.Message, _localizationService.GetString("Error"), AppDialogButtons.Ok, AppDialogIcon.Error);
                     }
                 }
             }
             catch (OperationCanceledException)
             {
-                System.Windows.MessageBox.Show(_localizationService.GetString("DataManagement.ExportCanceled"), _localizationService.GetString("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                AppDialog.Show(_localizationService.GetString("DataManagement.ExportCanceled"), _localizationService.GetString("Tip"), AppDialogButtons.Ok, AppDialogIcon.Information);
             }
             catch (Exception ex)
             {
                 _logHelper?.Error($"导出测量结果包失败：ID={item.Record.Id}", ex);
-                System.Windows.MessageBox.Show($"{_localizationService.GetString("ExportFailed")}: {ex.Message}", _localizationService.GetString("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                AppDialog.Show($"{_localizationService.GetString("ExportFailed")}: {ex.Message}", _localizationService.GetString("Error"), AppDialogButtons.Ok, AppDialogIcon.Error);
             }
         }
 
@@ -883,7 +884,7 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
 
         if (_globalSelectedIds.Count == 0)
         {
-            System.Windows.MessageBox.Show(_localizationService.GetString("DataManagement.SelectExportFirst"), _localizationService.GetString("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            AppDialog.Show(_localizationService.GetString("DataManagement.SelectExportFirst"), _localizationService.GetString("Tip"), AppDialogButtons.Ok, AppDialogIcon.Information);
             return;
         }
 
@@ -913,23 +914,23 @@ public partial class DataManagementViewModel : ObservableObject, IDisposable
 
                 if (result.Success)
                 {
-                    System.Windows.MessageBox.Show(result.Message, _localizationService.GetString("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    AppDialog.Show(result.Message, _localizationService.GetString("Tip"), AppDialogButtons.Ok, AppDialogIcon.Information);
                     _logHelper?.Information($"批量导出测量结果包：{_globalSelectedIds.Count}条, 文件={dialog.FileName}");
                 }
                 else
                 {
-                    System.Windows.MessageBox.Show(result.Message, _localizationService.GetString("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    AppDialog.Show(result.Message, _localizationService.GetString("Error"), AppDialogButtons.Ok, AppDialogIcon.Error);
                 }
             }
         }
         catch (OperationCanceledException)
         {
-            System.Windows.MessageBox.Show(_localizationService.GetString("DataManagement.BatchExportCanceled"), _localizationService.GetString("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            AppDialog.Show(_localizationService.GetString("DataManagement.BatchExportCanceled"), _localizationService.GetString("Tip"), AppDialogButtons.Ok, AppDialogIcon.Information);
         }
         catch (Exception ex)
         {
             _logHelper?.Error($"批量导出测量数据失败", ex);
-            System.Windows.MessageBox.Show($"{_localizationService.GetString("ExportFailed")}: {ex.Message}", _localizationService.GetString("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            AppDialog.Show($"{_localizationService.GetString("ExportFailed")}: {ex.Message}", _localizationService.GetString("Error"), AppDialogButtons.Ok, AppDialogIcon.Error);
         }
         }
 

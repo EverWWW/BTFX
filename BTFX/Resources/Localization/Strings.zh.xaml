@@ -297,6 +297,8 @@
     <system:String x:Key="Report.OpenPreviewFailedFormat">打开报告预览失败：{0}</system:String>
     <system:String x:Key="Report.ResumeFailedFormat">继续处理报告失败：{0}</system:String>
     <system:String x:Key="Report.NoDataForPreview">未找到报告数据，无法打开预览。</system:String>
+    <system:String x:Key="Report.PackageValidationFailedTitle">结果包校验失败</system:String>
+    <system:String x:Key="Report.PackageValidationFailedMessage">{0}&#x0a;请重新分析后再生成或查看报告。</system:String>
     <system:String x:Key="Report.PrintFailedOrCanceled">打印失败或已取消</system:String>
     <system:String x:Key="Report.PrintFailedFormat">打印失败：{0}</system:String>
     <system:String x:Key="ExportCompleted">导出完成</system:String>
@@ -763,6 +765,12 @@
     <system:String x:Key="OperationProgress.FailedMessage">操作执行失败。</system:String>
     <system:String x:Key="UnsavedChanges">您有未保存的更改，是否保存？</system:String>
     <system:String x:Key="ProgramAlreadyRunning">程序已在运行中。</system:String>
+    <system:String x:Key="App.UnhandledError.Unknown">应用程序发生未知错误。</system:String>
+    <system:String x:Key="App.UnhandledError.Format">应用程序发生错误，请联系技术支持。&#x0a;&#x0a;错误信息：{0}</system:String>
+    <system:String x:Key="App.DatabaseInitializationFailedFormat">数据库初始化失败：{0}&#x0a;&#x0a;应用程序将退出。</system:String>
+    <system:String x:Key="App.PendingRestoreFailedFormat">备份恢复失败，原数据库已保留。&#x0a;&#x0a;{0}</system:String>
+    <system:String x:Key="DiskSpace.LowTitle">磁盘空间不足</system:String>
+    <system:String x:Key="DiskSpace.LowMessageFormat">{0}需要写入视频或分析结果文件，当前程序所在磁盘剩余空间不足 2GB。&#x0a;&#x0a;请先清理磁盘空间后再继续。</system:String>
 
     <!--  确认对话框相关  -->
     <system:String x:Key="ConfirmImportSettings">导入设置将覆盖当前的通用设置和单位设置，是否继续？</system:String>

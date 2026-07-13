@@ -1099,17 +1099,17 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
 
             if (result.Success)
             {
-                System.Windows.MessageBox.Show(result.Message, L("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                AppDialog.Show(result.Message, L("Tip"), AppDialogButtons.Ok, AppDialogIcon.Information);
                 _logHelper?.Information($"导出测量结果包：MeasurementId={Record.Id}, 文件={dialog.FileName}");
                 return;
             }
 
-            System.Windows.MessageBox.Show(result.Message, L("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            AppDialog.Show(result.Message, L("Error"), AppDialogButtons.Ok, AppDialogIcon.Error);
         }
         catch (Exception ex)
         {
             _logHelper?.Error($"导出测量结果包失败：MeasurementId={Record.Id}", ex);
-            System.Windows.MessageBox.Show(L("AnalysisDetail.Export.FailedFormat", ex.Message), L("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            AppDialog.Show(L("AnalysisDetail.Export.FailedFormat", ex.Message), L("Error"), AppDialogButtons.Ok, AppDialogIcon.Error);
         }
     }
 
@@ -1387,7 +1387,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         var path = ResolveOutputDirectory();
         if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
         {
-            System.Windows.MessageBox.Show(L("AnalysisDetail.OutputDirectory.Empty"), L("Tip"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            AppDialog.Show(L("AnalysisDetail.OutputDirectory.Empty"), L("Tip"), AppDialogButtons.Ok, AppDialogIcon.Information);
             return;
         }
 
@@ -1402,7 +1402,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         catch (Exception ex)
         {
             _logHelper?.Error($"打开结果目录失败：Path={path}", ex);
-            System.Windows.MessageBox.Show(L("AnalysisDetail.OutputDirectory.OpenFailedFormat", ex.Message), L("Error"), System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            AppDialog.Show(L("AnalysisDetail.OutputDirectory.OpenFailedFormat", ex.Message), L("Error"), AppDialogButtons.Ok, AppDialogIcon.Error);
         }
     }
 

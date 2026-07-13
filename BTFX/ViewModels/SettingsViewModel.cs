@@ -1,5 +1,6 @@
 ﻿using BTFX.Common;
 using BTFX.Models;
+using BTFX.Helpers;
 using BTFX.Models.Camera;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -223,11 +224,11 @@ public partial class SettingsViewModel : ObservableObject
                     {
                         if (string.IsNullOrWhiteSpace(ExternalCameraConfigToolPath) || !File.Exists(ExternalCameraConfigToolPath))
                         {
-                            System.Windows.MessageBox.Show(
+                            AppDialog.Show(
                                 _localizationService.GetString("DeviceSettings.InvalidCameraConfigToolPath"),
                                 _localizationService.GetString("Tip"),
-                                System.Windows.MessageBoxButton.OK,
-                                System.Windows.MessageBoxImage.Information);
+                                AppDialogButtons.Ok,
+                                AppDialogIcon.Information);
                             return;
                         }
 

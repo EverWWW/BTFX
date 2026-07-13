@@ -296,6 +296,8 @@
     <system:String x:Key="Report.OpenPreviewFailedFormat">Failed to open report preview: {0}</system:String>
     <system:String x:Key="Report.ResumeFailedFormat">Failed to continue report processing: {0}</system:String>
     <system:String x:Key="Report.NoDataForPreview">Report data was not found, so preview cannot be opened.</system:String>
+    <system:String x:Key="Report.PackageValidationFailedTitle">Result Package Validation Failed</system:String>
+    <system:String x:Key="Report.PackageValidationFailedMessage">{0}&#x0a;Please rerun the analysis before generating or viewing the report.</system:String>
     <system:String x:Key="Report.PrintFailedOrCanceled">Printing failed or was canceled.</system:String>
     <system:String x:Key="Report.PrintFailedFormat">Printing failed: {0}</system:String>
     <system:String x:Key="ExportCompleted">Export Completed</system:String>
@@ -762,6 +764,12 @@
     <system:String x:Key="OperationProgress.FailedMessage">Operation failed.</system:String>
     <system:String x:Key="UnsavedChanges">You have unsaved changes. Do you want to save?</system:String>
     <system:String x:Key="ProgramAlreadyRunning">The program is already running.</system:String>
+    <system:String x:Key="App.UnhandledError.Unknown">An unknown application error occurred.</system:String>
+    <system:String x:Key="App.UnhandledError.Format">An application error occurred. Please contact technical support.&#x0a;&#x0a;Error: {0}</system:String>
+    <system:String x:Key="App.DatabaseInitializationFailedFormat">Database initialization failed: {0}&#x0a;&#x0a;The application will exit.</system:String>
+    <system:String x:Key="App.PendingRestoreFailedFormat">Backup restoration failed. The original database has been preserved.&#x0a;&#x0a;{0}</system:String>
+    <system:String x:Key="DiskSpace.LowTitle">Insufficient Disk Space</system:String>
+    <system:String x:Key="DiskSpace.LowMessageFormat">{0} needs to write video or analysis result files, but the drive containing the application has less than 2 GB of free space.&#x0a;&#x0a;Please free some disk space before continuing.</system:String>
 
     <!--  Confirm Dialog Related  -->
     <system:String x:Key="ConfirmImportSettings">Importing settings will overwrite current general and unit settings. Continue?</system:String>

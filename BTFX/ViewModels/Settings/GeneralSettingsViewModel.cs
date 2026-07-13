@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using BTFX.Models;
+using BTFX.Helpers;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -71,15 +72,15 @@ public partial class GeneralSettingsViewModel : ObservableObject
         try
         {
             _settingsService.SaveSettings();
-            System.Windows.MessageBox.Show(_localizationService.GetString("SaveSuccess"), _localizationService.GetString("Information"),
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            AppDialog.Show(_localizationService.GetString("SaveSuccess"), _localizationService.GetString("Information"),
+                AppDialogButtons.Ok, AppDialogIcon.Information);
             _logHelper?.Information("保存通用设置");
         }
         catch (Exception ex)
         {
             _logHelper?.Error("保存通用设置失败", ex);
-            System.Windows.MessageBox.Show(string.Format(_localizationService.GetString("SaveExceptionFormat"), ex.Message), _localizationService.GetString("Error"),
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            AppDialog.Show(string.Format(_localizationService.GetString("SaveExceptionFormat"), ex.Message), _localizationService.GetString("Error"),
+                AppDialogButtons.Ok, AppDialogIcon.Error);
         }
     }
 
@@ -103,21 +104,21 @@ public partial class GeneralSettingsViewModel : ObservableObject
 
             if (success)
             {
-                System.Windows.MessageBox.Show(string.Format(_localizationService.GetString("SettingsExportSuccessFormat"), dialog.FileName), _localizationService.GetString("Information"),
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                AppDialog.Show(string.Format(_localizationService.GetString("SettingsExportSuccessFormat"), dialog.FileName), _localizationService.GetString("Information"),
+                    AppDialogButtons.Ok, AppDialogIcon.Information);
                 _logHelper?.Information($"设置导出成功：{dialog.FileName}");
             }
             else
             {
-                System.Windows.MessageBox.Show(_localizationService.GetString("SettingsExportFailed"), _localizationService.GetString("Error"),
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                AppDialog.Show(_localizationService.GetString("SettingsExportFailed"), _localizationService.GetString("Error"),
+                    AppDialogButtons.Ok, AppDialogIcon.Error);
             }
         }
         catch (Exception ex)
         {
             _logHelper?.Error("设置导出失败", ex);
-            System.Windows.MessageBox.Show(string.Format(_localizationService.GetString("ExportFailedFormat"), ex.Message), _localizationService.GetString("Error"),
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            AppDialog.Show(string.Format(_localizationService.GetString("ExportFailedFormat"), ex.Message), _localizationService.GetString("Error"),
+                AppDialogButtons.Ok, AppDialogIcon.Error);
         }
         finally
         {
@@ -139,13 +140,13 @@ public partial class GeneralSettingsViewModel : ObservableObject
 
             if (dialog.ShowDialog() != true) return;
 
-            var result = System.Windows.MessageBox.Show(
+            var result = AppDialog.Show(
                 _localizationService.GetString("ConfirmImportSettings"),
                 _localizationService.GetString("ConfirmImport"),
-                System.Windows.MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Question);
+                AppDialogButtons.YesNo,
+                AppDialogIcon.Question);
 
-            if (result != System.Windows.MessageBoxResult.Yes) return;
+            if (result != AppDialogResult.Yes) return;
 
             IsSaving = true;
             var success = await _settingsService.ImportSettingsAsync(dialog.FileName);
@@ -156,21 +157,21 @@ public partial class GeneralSettingsViewModel : ObservableObject
                 LoadSettings();
                 _isInitializing = false;
 
-                System.Windows.MessageBox.Show(_localizationService.GetString("SettingsImportSuccessRestartHint"), _localizationService.GetString("Information"),
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                AppDialog.Show(_localizationService.GetString("SettingsImportSuccessRestartHint"), _localizationService.GetString("Information"),
+                    AppDialogButtons.Ok, AppDialogIcon.Information);
                 _logHelper?.Information($"设置导入成功：{dialog.FileName}");
             }
             else
             {
-                System.Windows.MessageBox.Show(_localizationService.GetString("SettingsImportFailedCheckFormat"), _localizationService.GetString("Error"),
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                AppDialog.Show(_localizationService.GetString("SettingsImportFailedCheckFormat"), _localizationService.GetString("Error"),
+                    AppDialogButtons.Ok, AppDialogIcon.Error);
             }
         }
         catch (Exception ex)
         {
             _logHelper?.Error("设置导入失败", ex);
-            System.Windows.MessageBox.Show(string.Format(_localizationService.GetString("ImportFailedFormat"), ex.Message), _localizationService.GetString("Error"),
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            AppDialog.Show(string.Format(_localizationService.GetString("ImportFailedFormat"), ex.Message), _localizationService.GetString("Error"),
+                AppDialogButtons.Ok, AppDialogIcon.Error);
         }
         finally
         {

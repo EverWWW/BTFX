@@ -1,5 +1,6 @@
 ﻿using BTFX.Common;
 using BTFX.Services.Interfaces;
+using BTFX.Helpers;
 using BTFX.Views.Dialogs;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -158,30 +159,30 @@ public partial class SystemInfoViewModel : ObservableObject
             var updateInfo = await _appUpdateService.CheckForUpdatesAsync(true);
             if (updateInfo is null)
             {
-                System.Windows.MessageBox.Show(_localizationService.GetString("Update.NoUpdate"), _localizationService.GetString("CheckForUpdates"),
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                AppDialog.Show(_localizationService.GetString("Update.NoUpdate"), _localizationService.GetString("CheckForUpdates"),
+                    AppDialogButtons.Ok, AppDialogIcon.Information);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(updateInfo.PackageUrl))
             {
-                System.Windows.MessageBox.Show(
+                AppDialog.Show(
                     string.Format(_localizationService.GetString("Update.PackageUrlEmptyFormat"), updateInfo.Version),
                     _localizationService.GetString("CheckForUpdates"),
-                    System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Warning);
+                    AppDialogButtons.Ok,
+                    AppDialogIcon.Warning);
                 return;
             }
 
             var message = string.IsNullOrWhiteSpace(updateInfo.Detail)
                 ? string.Format(_localizationService.GetString("Update.FoundMessageFormat"), updateInfo.Version)
                 : string.Format(_localizationService.GetString("Update.FoundMessageWithDetailFormat"), updateInfo.Version, updateInfo.Detail);
-            var confirm = System.Windows.MessageBox.Show(
+            var confirm = AppDialog.Show(
                 message,
                 _localizationService.GetString("Update.FoundTitle"),
-                System.Windows.MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Information);
-            if (confirm != System.Windows.MessageBoxResult.Yes)
+                AppDialogButtons.YesNo,
+                AppDialogIcon.Information);
+            if (confirm != AppDialogResult.Yes)
             {
                 return;
             }
@@ -192,26 +193,26 @@ public partial class SystemInfoViewModel : ObservableObject
                 _localizationService.GetString("Update.PreparingDownloadMessage"),
                 (progress, token) => _appUpdateService.DownloadUpdatePackageAsync(updateInfo, progress, token));
 
-            var installConfirm = System.Windows.MessageBox.Show(
+            var installConfirm = AppDialog.Show(
                 _localizationService.GetString("Update.DownloadCompletedMessage"),
                 _localizationService.GetString("Update.InstallTitle"),
-                System.Windows.MessageBoxButton.OKCancel,
-                System.Windows.MessageBoxImage.Information);
-            if (installConfirm == System.Windows.MessageBoxResult.OK)
+                AppDialogButtons.OkCancel,
+                AppDialogIcon.Information);
+            if (installConfirm == AppDialogResult.Ok)
             {
                 _appUpdateService.StartInstallerAndShutdown(installerPath);
             }
         }
         catch (OperationCanceledException)
         {
-            System.Windows.MessageBox.Show(_localizationService.GetString("Update.DownloadCanceled"), _localizationService.GetString("CheckForUpdates"),
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            AppDialog.Show(_localizationService.GetString("Update.DownloadCanceled"), _localizationService.GetString("CheckForUpdates"),
+                AppDialogButtons.Ok, AppDialogIcon.Information);
         }
         catch (Exception ex)
         {
             _logHelper?.Error("Failed to check or download update", ex);
-            System.Windows.MessageBox.Show(string.Format(_localizationService.GetString("Update.CheckFailedFormat"), ex.Message), _localizationService.GetString("CheckForUpdates"),
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            AppDialog.Show(string.Format(_localizationService.GetString("Update.CheckFailedFormat"), ex.Message), _localizationService.GetString("CheckForUpdates"),
+                AppDialogButtons.Ok, AppDialogIcon.Error);
         }
         finally
         {
@@ -250,8 +251,8 @@ public partial class SystemInfoViewModel : ObservableObject
             }
             else
             {
-                System.Windows.MessageBox.Show(_localizationService.GetString("Error"), _localizationService.GetString("Information"),
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                AppDialog.Show(_localizationService.GetString("Error"), _localizationService.GetString("Information"),
+                    AppDialogButtons.Ok, AppDialogIcon.Warning);
             }
         }
         catch (Exception ex)
@@ -278,8 +279,8 @@ public partial class SystemInfoViewModel : ObservableObject
             }
             else
             {
-                System.Windows.MessageBox.Show(_localizationService.GetString("Error"), _localizationService.GetString("Information"),
-                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                AppDialog.Show(_localizationService.GetString("Error"), _localizationService.GetString("Information"),
+                    AppDialogButtons.Ok, AppDialogIcon.Warning);
             }
         }
         catch (Exception ex)
@@ -319,15 +320,15 @@ public partial class SystemInfoViewModel : ObservableObject
                 exportedCount = await logExportHelper.ExportLogsAsync(dialog.FileName, startDate, endDate);
             }
 
-            System.Windows.MessageBox.Show(string.Format(_localizationService.GetString("LogExportSuccessFormat"), exportedCount, dialog.FileName), _localizationService.GetString("Tip"),
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            AppDialog.Show(string.Format(_localizationService.GetString("LogExportSuccessFormat"), exportedCount, dialog.FileName), _localizationService.GetString("Tip"),
+                AppDialogButtons.Ok, AppDialogIcon.Information);
             _logHelper?.Information($"Log export completed: {exportedCount} records");
         }
         catch (Exception ex)
         {
             _logHelper?.Error("Log export failed", ex);
-            System.Windows.MessageBox.Show(string.Format(_localizationService.GetString("LogExportFailedFormat"), ex.Message), _localizationService.GetString("Error"),
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            AppDialog.Show(string.Format(_localizationService.GetString("LogExportFailedFormat"), ex.Message), _localizationService.GetString("Error"),
+                AppDialogButtons.Ok, AppDialogIcon.Error);
         }
         finally
         {
@@ -338,13 +339,13 @@ public partial class SystemInfoViewModel : ObservableObject
     [RelayCommand]
     private async Task CleanupLogsAsync()
     {
-        var result = System.Windows.MessageBox.Show(
+        var result = AppDialog.Show(
             string.Format(_localizationService.GetString("ConfirmCleanupLogs"), LogCleanupDays),
             _localizationService.GetString("Confirm"),
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Warning);
+            AppDialogButtons.YesNo,
+            AppDialogIcon.Warning);
 
-        if (result != System.Windows.MessageBoxResult.Yes) return;
+        if (result != AppDialogResult.Yes) return;
 
         try
         {
@@ -353,8 +354,8 @@ public partial class SystemInfoViewModel : ObservableObject
             var logExportHelper = new LogExportHelper(LogDirectory);
             var deletedCount = await logExportHelper.CleanupOldLogsAsync(LogCleanupDays);
 
-            System.Windows.MessageBox.Show(string.Format(_localizationService.GetString("LogCleanupSuccessFormat"), deletedCount), _localizationService.GetString("Tip"),
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            AppDialog.Show(string.Format(_localizationService.GetString("LogCleanupSuccessFormat"), deletedCount), _localizationService.GetString("Tip"),
+                AppDialogButtons.Ok, AppDialogIcon.Information);
             _logHelper?.Information($"Log cleanup completed: {deletedCount} files deleted");
 
             // Refresh log statistics.
@@ -363,8 +364,8 @@ public partial class SystemInfoViewModel : ObservableObject
         catch (Exception ex)
         {
             _logHelper?.Error("Log cleanup failed", ex);
-            System.Windows.MessageBox.Show(string.Format(_localizationService.GetString("LogCleanupFailedFormat"), ex.Message), _localizationService.GetString("Error"),
-                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            AppDialog.Show(string.Format(_localizationService.GetString("LogCleanupFailedFormat"), ex.Message), _localizationService.GetString("Error"),
+                AppDialogButtons.Ok, AppDialogIcon.Error);
         }
         finally
         {
