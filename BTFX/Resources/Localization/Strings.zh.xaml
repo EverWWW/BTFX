@@ -1537,6 +1537,11 @@
     <system:String x:Key="GaitAnalysis.Stage.Completed">分析完成</system:String>
     <system:String x:Key="GaitAnalysis.Stage.Failed">分析失败</system:String>
     <system:String x:Key="GaitAnalysis.Stage.Finalizing">算法计算完成，正在整理结果</system:String>
+    <system:String x:Key="GaitAnalysis.Timeout.Startup">算法启动后未及时返回状态，任务已自动停止。请检查算法运行环境。</system:String>
+    <system:String x:Key="GaitAnalysis.Timeout.Pose">人体关键点识别超过 {0:0} 分钟，任务已自动停止。视频可能未包含完整人体或内容不符合要求。</system:String>
+    <system:String x:Key="GaitAnalysis.Timeout.Stage">算法阶段“{0}”超过 {1:0} 分钟无进展，任务已自动停止。</system:String>
+    <system:String x:Key="GaitAnalysis.Timeout.Total">分析超过 {0} 分钟，任务已自动停止。请检查视频内容后重试。</system:String>
+    <system:String x:Key="GaitAnalysis.Timeout.LogPath">详细日志：{0}</system:String>
 
     <!-- 运行依赖检查 -->
     <system:String x:Key="RuntimeDependency.Title">运行环境不完整</system:String>

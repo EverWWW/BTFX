@@ -1537,6 +1537,11 @@
     <system:String x:Key="GaitAnalysis.Stage.Completed">Analysis Completed</system:String>
     <system:String x:Key="GaitAnalysis.Stage.Failed">Analysis Failed</system:String>
     <system:String x:Key="GaitAnalysis.Stage.Finalizing">Algorithm completed, finalizing results</system:String>
+    <system:String x:Key="GaitAnalysis.Timeout.Startup">The algorithm did not report its status after startup and was stopped. Check the algorithm runtime.</system:String>
+    <system:String x:Key="GaitAnalysis.Timeout.Pose">Body keypoint detection exceeded {0:0} minutes and was stopped. The video may not contain a complete visible person.</system:String>
+    <system:String x:Key="GaitAnalysis.Timeout.Stage">Algorithm stage "{0}" made no progress for {1:0} minutes and was stopped.</system:String>
+    <system:String x:Key="GaitAnalysis.Timeout.Total">Analysis exceeded {0} minutes and was stopped. Check the video content and try again.</system:String>
+    <system:String x:Key="GaitAnalysis.Timeout.LogPath">Detailed log: {0}</system:String>
 
     <!-- Runtime dependency checks -->
     <system:String x:Key="RuntimeDependency.Title">Incomplete Runtime Environment</system:String>

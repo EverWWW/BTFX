@@ -35,7 +35,9 @@ public class GaitAnalysisService : IGaitAnalysisService
     private const string AnalysisPreviewGeneratingFileName = "analysis_preview.generating";
     private const string AnalysisPreviewFailedFileName = "analysis_preview.failed";
     private const int AnalysisPreviewFrameRate = 30;
-    private const int MinimumAlgorithmTimeoutMinutes = 30;
+    private static readonly TimeSpan AlgorithmStartupTimeout = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan PoseEstimationStageTimeout = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan ProcessingStageTimeout = TimeSpan.FromMinutes(2);
     private const string SideInputFileName = "side.mp4";
     private const string FrontInputFileName = "front.mp4";
     private static readonly string[] AlgorithmStatusFiles =
@@ -166,11 +168,11 @@ public class GaitAnalysisService : IGaitAnalysisService
                 runtimeDir,
                 preparedInput);
             var settings = _settingsService.CurrentSettings.Algorithm;
-            var timeoutMinutes = Math.Max(settings.TimeoutMinutes, MinimumAlgorithmTimeoutMinutes);
-            if (settings.TimeoutMinutes < MinimumAlgorithmTimeoutMinutes)
+            var timeoutMinutes = AnalysisTimeoutPolicy.GetEffectiveTotalTimeoutMinutes(settings.TimeoutMinutes);
+            if (settings.TimeoutMinutes != timeoutMinutes)
             {
-                RaiseLog($"当前算法超时配置为 {settings.TimeoutMinutes} 分钟，低于后台分析最低保护值，已按 {MinimumAlgorithmTimeoutMinutes} 分钟执行。");
-                settings.TimeoutMinutes = MinimumAlgorithmTimeoutMinutes;
+                RaiseLog($"当前算法超时配置为 {settings.TimeoutMinutes} 分钟，已调整到有效范围 1-{AnalysisTimeoutPolicy.MaximumTotalTimeoutMinutes} 分钟。");
+                settings.TimeoutMinutes = timeoutMinutes;
                 _settingsService.SaveSettings();
             }
 
@@ -186,7 +188,45 @@ public class GaitAnalysisService : IGaitAnalysisService
             RaiseLog($"算法运行目录: {runtimeDir}");
             RaiseLog($"分析归档目录: {archiveDir}");
             WriteRunInfo(runtimeDir, logDir, request, requestId, exePath, configPath, inputDir, runtimeDir);
-            var exitCode = await RunProcessAsync(exePath, requestId, logDir, runtimeDir, _linkedCts.Token);
+            int exitCode;
+            try
+            {
+                exitCode = await RunProcessAsync(exePath, requestId, logDir, runtimeDir, _linkedCts.Token);
+            }
+            catch (AlgorithmStageTimeoutException ex)
+            {
+                stopwatch.Stop();
+                var errorMessage = BuildStageTimeoutMessage(ex.Timeout, logDir);
+                RaiseLog(errorMessage, isError: true);
+                _logHelper?.Error(errorMessage);
+                var failedDir = ArchiveFailedRuntimeDirectory(runtimeDir, archiveDir);
+                errorMessage = errorMessage.Replace(logDir, Path.Combine(failedDir, LogDirectoryName), StringComparison.OrdinalIgnoreCase);
+                return BuildFailedResult(
+                    request,
+                    requestId,
+                    failedDir,
+                    MapPathToArchive(runtimeDir, failedDir, configPath),
+                    (int)AnalysisErrorCode.AnalysisFailed,
+                    errorMessage,
+                    stopwatch.Elapsed.TotalSeconds);
+            }
+            catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested && !ct.IsCancellationRequested)
+            {
+                stopwatch.Stop();
+                var errorMessage = L("GaitAnalysis.Timeout.Total", timeoutMinutes) + $" {L("GaitAnalysis.Timeout.LogPath", logDir)}";
+                RaiseLog(errorMessage, isError: true);
+                _logHelper?.Error(errorMessage);
+                var failedDir = ArchiveFailedRuntimeDirectory(runtimeDir, archiveDir);
+                errorMessage = errorMessage.Replace(logDir, Path.Combine(failedDir, LogDirectoryName), StringComparison.OrdinalIgnoreCase);
+                return BuildFailedResult(
+                    request,
+                    requestId,
+                    failedDir,
+                    MapPathToArchive(runtimeDir, failedDir, configPath),
+                    (int)AnalysisErrorCode.AnalysisFailed,
+                    errorMessage,
+                    stopwatch.Elapsed.TotalSeconds);
+            }
 
             stopwatch.Stop();
             var analysisDuration = stopwatch.Elapsed.TotalSeconds;
@@ -1644,6 +1684,11 @@ public class GaitAnalysisService : IGaitAnalysisService
 
         var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
         _currentProcess = process;
+        var watchdog = new AlgorithmProgressWatchdog(
+            DateTimeOffset.UtcNow,
+            AlgorithmStartupTimeout,
+            PoseEstimationStageTimeout,
+            ProcessingStageTimeout);
 
         var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -1651,7 +1696,7 @@ public class GaitAnalysisService : IGaitAnalysisService
         {
             if (App.IsShuttingDown || string.IsNullOrEmpty(e.Data)) return;
             AppendProcessLog(stdoutLogPath, e.Data);
-            HandleStdoutLine(e.Data, requestId);
+            HandleStdoutLine(e.Data, requestId, watchdog);
         };
 
         process.ErrorDataReceived += (_, e) =>
@@ -1694,6 +1739,33 @@ public class GaitAnalysisService : IGaitAnalysisService
                 tcs.TrySetCanceled(ct);
             });
 
+            using var watchdogCancellation = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            var watchdogTask = WaitForWatchdogTimeoutAsync(watchdog, watchdogCancellation.Token);
+            var completedTask = await Task.WhenAny(tcs.Task, watchdogTask);
+            if (completedTask == watchdogTask)
+            {
+                var timeout = await watchdogTask;
+                TryTerminateAlgorithmProcess(process);
+                try
+                {
+                    await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                }
+                catch
+                {
+                }
+
+                throw new AlgorithmStageTimeoutException(timeout);
+            }
+
+            watchdogCancellation.Cancel();
+            try
+            {
+                await watchdogTask;
+            }
+            catch (OperationCanceledException)
+            {
+            }
+
             return await tcs.Task;
         }
         finally
@@ -1702,14 +1774,42 @@ public class GaitAnalysisService : IGaitAnalysisService
         }
     }
 
-    /// <summary>
-    /// 澶勭悊 stdout 鍗曡杈撳嚭
-    /// </summary>
-    private void HandleStdoutLine(string line, string requestId)
+    private static async Task<AlgorithmWatchdogTimeout> WaitForWatchdogTimeoutAsync(
+        AlgorithmProgressWatchdog watchdog,
+        CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+            if (watchdog.Check(DateTimeOffset.UtcNow) is { } timeout)
+            {
+                return timeout;
+            }
+        }
+    }
+
+    private static void TryTerminateAlgorithmProcess(Process process)
     {
         try
         {
-            if (TryHandlePlainProgressLine(line, requestId))
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+            }
+        }
+        catch
+        {
+        }
+    }
+
+    /// <summary>
+    /// 澶勭悊 stdout 鍗曡杈撳嚭
+    /// </summary>
+    private void HandleStdoutLine(string line, string requestId, AlgorithmProgressWatchdog watchdog)
+    {
+        try
+        {
+            if (TryHandlePlainProgressLine(line, requestId, watchdog))
             {
                 return;
             }
@@ -1732,6 +1832,7 @@ public class GaitAnalysisService : IGaitAnalysisService
             var text = GetDisplayStatusMessage(message, status);
             var errorCode = message.ErrorCode ?? (string.IsNullOrWhiteSpace(message.Error) ? null : (int?)AnalysisErrorCode.Unknown);
 
+            watchdog.ObserveStage(message.CurrentStage ?? status, DateTimeOffset.UtcNow);
             CaptureStdoutStatus(message, status);
 
             var displayStatus = status;
@@ -1796,6 +1897,24 @@ public class GaitAnalysisService : IGaitAnalysisService
     {
         var value = _localizationService.GetString(key);
         return string.IsNullOrWhiteSpace(value) ? key : value;
+    }
+
+    private string L(string key, params object[] args)
+    {
+        var value = _localizationService.GetString(key, args);
+        return string.IsNullOrWhiteSpace(value) ? key : value;
+    }
+
+    private string BuildStageTimeoutMessage(AlgorithmWatchdogTimeout timeout, string logDir)
+    {
+        var message = timeout.Kind switch
+        {
+            AlgorithmWatchdogTimeoutKind.Startup => L("GaitAnalysis.Timeout.Startup"),
+            AlgorithmWatchdogTimeoutKind.PoseEstimation => L("GaitAnalysis.Timeout.Pose", timeout.Limit.TotalMinutes),
+            _ => L("GaitAnalysis.Timeout.Stage", timeout.Stage ?? "processing", timeout.Limit.TotalMinutes)
+        };
+
+        return $"{message} {L("GaitAnalysis.Timeout.LogPath", logDir)}";
     }
 
     private bool TryGetLocalizedStageMessage(string stage, out string text)
@@ -1938,7 +2057,10 @@ public class GaitAnalysisService : IGaitAnalysisService
         }
     }
 
-    private bool TryHandlePlainProgressLine(string line, string requestId)
+    private bool TryHandlePlainProgressLine(
+        string line,
+        string requestId,
+        AlgorithmProgressWatchdog watchdog)
     {
         if (!line.StartsWith("PROGRESS ", StringComparison.OrdinalIgnoreCase))
         {
@@ -1954,6 +2076,7 @@ public class GaitAnalysisService : IGaitAnalysisService
 
         var status = parts[2];
         var message = parts.Length >= 4 ? parts[3] : status;
+        watchdog.ObserveStage(status, DateTimeOffset.UtcNow);
         RaiseProgress(requestId, status, Math.Clamp(progress, 0, 100), message);
         RaiseLog($"[{status}] {progress}% - {message}");
         return true;
