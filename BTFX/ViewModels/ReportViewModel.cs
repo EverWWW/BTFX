@@ -2032,8 +2032,8 @@ public partial class ReportViewModel : ObservableObject, IDisposable
                 {
                     var gait = fullReport.MeasurementRecord.GaitParameters;
                     sb.AppendLine("【步态参数】");
-                    sb.AppendLine($"步幅（左）：{gait.StrideLengthLeft?.ToString("F2") ?? "--"} cm");
-                    sb.AppendLine($"步幅（右）：{gait.StrideLengthRight?.ToString("F2") ?? "--"} cm");
+                    sb.AppendLine($"步幅（左）：{(GaitLengthUnitConverter.ToMeters(gait.StrideLengthLeft) is double leftStride ? $"{leftStride:F2} m" : "--")}");
+                    sb.AppendLine($"步幅（右）：{(GaitLengthUnitConverter.ToMeters(gait.StrideLengthRight) is double rightStride ? $"{rightStride:F2} m" : "--")}");
                     sb.AppendLine($"步频：{gait.Cadence?.ToString("F1") ?? "--"} {L("CadenceUnit")}");
                     sb.AppendLine($"步速：{gait.Velocity?.ToString("F2") ?? "--"} m/s");
                     sb.AppendLine($"左脚支撑相：{gait.StancePhaseLeft?.ToString("F1") ?? "--"} %");

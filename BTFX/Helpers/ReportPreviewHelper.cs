@@ -288,8 +288,8 @@ public static class ReportPreviewHelper
 
         // 第一行
         var row1 = new TableRow();
-        row1.Cells.Add(CreateParameterCell("步幅（左）", gait?.StrideLengthLeft, "cm"));
-        row1.Cells.Add(CreateParameterCell("步幅（右）", gait?.StrideLengthRight, "cm"));
+        row1.Cells.Add(CreateParameterCell("步幅（左）", GaitLengthUnitConverter.ToMeters(gait?.StrideLengthLeft), "m"));
+        row1.Cells.Add(CreateParameterCell("步幅（右）", GaitLengthUnitConverter.ToMeters(gait?.StrideLengthRight), "m"));
         row1.Cells.Add(CreateParameterCell("步频", gait?.Cadence, "步/分"));
         row1.Cells.Add(CreateParameterCell("步速", gait?.Velocity, "m/s"));
         table.RowGroups[0].Rows.Add(row1);

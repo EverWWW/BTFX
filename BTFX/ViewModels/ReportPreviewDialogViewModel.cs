@@ -1056,7 +1056,9 @@ public partial class ReportPreviewDialogViewModel : ObservableObject, IDisposabl
         => FormatNumber(value, "F2");
 
     private static string FormatMetersFromCentimeters(double? centimeters, double fallbackMeters)
-        => centimeters is double value ? (value / 100.0).ToString("F2", CultureInfo.CurrentCulture) : fallbackMeters.ToString("F2", CultureInfo.CurrentCulture);
+        => GaitLengthUnitConverter.ToMeters(centimeters) is double meters
+            ? meters.ToString("F2", CultureInfo.CurrentCulture)
+            : fallbackMeters.ToString("F2", CultureInfo.CurrentCulture);
 
     private static double? AbsDiff(double? left, double? right)
         => left.HasValue && right.HasValue ? Math.Abs(left.Value - right.Value) : null;

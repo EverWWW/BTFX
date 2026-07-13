@@ -1401,8 +1401,8 @@ public partial class Step4AnalyzeViewModel : ObservableObject
                 SwingTime = FormatValue(result.SwingTimeS, "s"),
                 DoubleSupportTime = FormatValue(result.DoubleSupportTimeS, "s"),
                 SingleSupportTime = FormatValue(result.SingleSupportTimeS, "s"),
-                StepLength = FormatLengthCm(result.StepLengthM),
-                StrideLength = FormatLengthCm(result.StrideLengthM),
+                StepLength = FormatLengthMeters(result.StepLengthM),
+                StrideLength = FormatLengthMeters(result.StrideLengthM),
                 GaitSpeed = FormatValue(result.GaitSpeedMPerS, "m/s")
             };
         }
@@ -2036,11 +2036,11 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     }
 
     /// <summary>
-    /// 将米转换为厘米后格式化（步长/步幅等更适合以 cm 展示）
+    /// 按米格式化步长和步幅，与分析详情和报告保持一致。
     /// </summary>
-    private static string FormatLengthCm(double? valueInMeters)
+    private static string FormatLengthMeters(double? valueInMeters)
     {
-        return valueInMeters.HasValue ? $"{valueInMeters.Value * 100:F1}cm" : "--";
+        return valueInMeters.HasValue ? $"{valueInMeters.Value:F2} m" : "--";
     }
 
     #endregion

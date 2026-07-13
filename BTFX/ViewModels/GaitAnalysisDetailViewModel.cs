@@ -2527,7 +2527,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
 
     private static string FormatMetersFromCentimeters(double? value)
     {
-        return value.HasValue ? $"{(value.Value / 100d):F2} m" : "--";
+        return GaitLengthUnitConverter.ToMeters(value) is double meters ? $"{meters:F2} m" : "--";
     }
 
     private string FormatCount(int? value)
