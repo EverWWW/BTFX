@@ -112,7 +112,7 @@ public class ProductInfoSettings
     /// <summary>
     /// 内部版本
     /// </summary>
-    public string InternalVersion { get; set; } = "V1.0.0.20260626_alpha01";
+    public string InternalVersion { get; set; } = Constants.VERSION_INTERNAL;
 
     /// <summary>
     /// 公司网址

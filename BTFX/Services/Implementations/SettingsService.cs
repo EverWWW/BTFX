@@ -115,6 +115,14 @@ public class SettingsService : ISettingsService
             CurrentSettings.ProductInfo = new ProductInfoSettings();
             changed = true;
         }
+        else if (string.Equals(
+                     CurrentSettings.ProductInfo.InternalVersion,
+                     "V1.0.0.20260626_alpha01",
+                     StringComparison.Ordinal))
+        {
+            CurrentSettings.ProductInfo.InternalVersion = Constants.VERSION_INTERNAL;
+            changed = true;
+        }
 
         return changed;
     }
