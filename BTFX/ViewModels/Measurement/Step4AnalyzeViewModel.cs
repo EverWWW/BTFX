@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.IO;
 using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Threading;
 using BTFX.Common;
@@ -1294,6 +1293,8 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         ErrorCode = errorCode;
         ErrorDescription = friendlyMessage.Description;
         ErrorSuggestion = friendlyMessage.Suggestion ?? GetErrorSuggestion(errorCode);
+        CurrentStage = L("MA.Step4.Status.Failed");
+        StatusMessage = friendlyMessage.Description;
         AnalysisState = AnalysisState.Failed;
         await UpdateCurrentMeasurementStatusAsync(MeasurementStatus.Failed, "测量状态已更新为分析失败");
         AddLog($"分析失败: [{errorCode}] {friendlyMessage.Description}");
@@ -1301,37 +1302,16 @@ public partial class Step4AnalyzeViewModel : ObservableObject
 
     private (string Description, string? Suggestion) ToUserFriendlyAnalysisError(string? rawMessage)
     {
-        var message = NormalizeWhitespace(rawMessage);
-        if (string.IsNullOrWhiteSpace(message))
+        return AnalysisFailureClassifier.Classify(rawMessage) switch
         {
-            return (L("MA.Step4.Error.AnalysisFailed"), L("MA.Step4.Error.CheckVideoAndLog"));
-        }
-
-        var lower = message.ToLowerInvariant();
-        if (lower.Contains("未检测到完整人体关键点", StringComparison.Ordinal)
-            || lower.Contains("at least one of the following markers is missing", StringComparison.Ordinal)
-            || lower.Contains("marker is missing", StringComparison.Ordinal)
-            || lower.Contains("markers is missing", StringComparison.Ordinal)
-            || lower.Contains("person is entirely visible", StringComparison.Ordinal)
-            || lower.Contains("person is entirely wisible", StringComparison.Ordinal))
-        {
-            return (L("MA.Step4.Error.MissingBodyKeypoints"), L("MA.Step4.Error.MissingBodyKeypointsSuggestion"));
-        }
-
-        var logIndex = message.IndexOf("详细日志:", StringComparison.Ordinal);
-        if (logIndex >= 0)
-        {
-            message = message[..logIndex].TrimEnd('。', '，', ' ');
-        }
-
-        return (message, null);
-    }
-
-    private static string NormalizeWhitespace(string? value)
-    {
-        return string.IsNullOrWhiteSpace(value)
-            ? string.Empty
-            : Regex.Replace(value.Trim(), @"\s+", " ");
+            AnalysisFailureKind.MissingBodyKeypoints =>
+                (L("MA.Step4.Error.MissingBodyKeypoints"), L("MA.Step4.Error.MissingBodyKeypointsSuggestion")),
+            AnalysisFailureKind.InputVideoUnavailable =>
+                (L("MA.Step4.Error.InputVideoUnavailable"), L("MA.Step4.Error.InputVideoUnavailableSuggestion")),
+            AnalysisFailureKind.Timeout =>
+                (L("MA.Step4.Error.Timeout"), L("MA.Step4.Error.TimeoutSuggestion")),
+            _ => (L("MA.Step4.Error.AnalysisFailed"), L("MA.Step4.Error.Suggestion4"))
+        };
     }
 
     private async Task UpdateCurrentMeasurementStatusAsync(MeasurementStatus status, string logMessage)

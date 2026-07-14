@@ -1240,6 +1240,10 @@
     <system:String x:Key="MA.Step4.Error.CheckVideoAndLog">Please check the video files and algorithm logs, then analyze again.</system:String>
     <system:String x:Key="MA.Step4.Error.MissingBodyKeypoints">Complete body keypoints were not detected</system:String>
     <system:String x:Key="MA.Step4.Error.MissingBodyKeypointsSuggestion">Make sure the subject is fully visible, the lighting is sufficient, and there are no occlusions, then use a valid gait video and analyze again.</system:String>
+    <system:String x:Key="MA.Step4.Error.InputVideoUnavailable">The input video could not be read</system:String>
+    <system:String x:Key="MA.Step4.Error.InputVideoUnavailableSuggestion">Make sure the video still exists, is not in use, and can be played normally, then analyze again.</system:String>
+    <system:String x:Key="MA.Step4.Error.Timeout">Analysis timed out without producing a valid result</system:String>
+    <system:String x:Key="MA.Step4.Error.TimeoutSuggestion">Check that the video contains a complete and clear gait sequence, then analyze again.</system:String>
     <system:String x:Key="MA.Step4.Error.Suggestion1">Please analyze again or contact technical support</system:String>
     <system:String x:Key="MA.Step4.Error.Suggestion2">Return to Step 2 and check whether the video files exist</system:String>
     <system:String x:Key="MA.Step4.Error.Suggestion3">The video format may not be supported. Please import the video again</system:String>

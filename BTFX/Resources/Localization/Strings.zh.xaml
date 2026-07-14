@@ -1240,6 +1240,10 @@
     <system:String x:Key="MA.Step4.Error.CheckVideoAndLog">请检查视频文件和算法日志后重新分析。</system:String>
     <system:String x:Key="MA.Step4.Error.MissingBodyKeypoints">未检测到完整人体关键点</system:String>
     <system:String x:Key="MA.Step4.Error.MissingBodyKeypointsSuggestion">请确认被采集人完整入镜、光线充足、无遮挡，并使用有效的人体步态视频重新分析。</system:String>
+    <system:String x:Key="MA.Step4.Error.InputVideoUnavailable">无法读取输入视频</system:String>
+    <system:String x:Key="MA.Step4.Error.InputVideoUnavailableSuggestion">请确认视频文件仍然存在、未被占用且可以正常播放，然后重新分析。</system:String>
+    <system:String x:Key="MA.Step4.Error.Timeout">分析超时，未生成有效结果</system:String>
+    <system:String x:Key="MA.Step4.Error.TimeoutSuggestion">请检查视频中是否包含完整、清晰的人体步态画面，然后重新分析。</system:String>
     <system:String x:Key="MA.Step4.Error.Suggestion1">请重新分析或联系技术支持</system:String>
     <system:String x:Key="MA.Step4.Error.Suggestion2">请返回步骤2检查视频文件是否存在</system:String>
     <system:String x:Key="MA.Step4.Error.Suggestion3">视频格式可能不受支持，请重新导入视频</system:String>
