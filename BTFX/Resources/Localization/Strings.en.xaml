@@ -1253,7 +1253,7 @@
     <system:String x:Key="MA.Step4.Dialog.StopTitle">Stop Analysis</system:String>
     <system:String x:Key="MA.Step4.Dialog.StopMessage">The analysis task is running. Stopping it will not generate a result for this run. Stop analysis?</system:String>
     <system:String x:Key="MA.Step4.Dialog.ReanalysisTitle">Reanalyze</system:String>
-    <system:String x:Key="MA.Step4.Dialog.ReanalysisMessage">Reanalysis requires uploading or capturing video again. The completed result will remain in history. Return to the new measurement page to select video again?</system:String>
+    <system:String x:Key="MA.Step4.Dialog.ReanalysisMessage">Reanalysis requires new videos. The current result will be kept. Return to New Measurement?</system:String>
     <system:String x:Key="MA.Dialog.Error.OpenAnalysisDetailFailed">Failed to open analysis details: {0}</system:String>
     <system:String x:Key="MA.Dialog.Error.OpenReportPreviewFailed">Failed to open report preview: {0}</system:String>
     <system:String x:Key="MA.Dialog.Error.OpenVideoFileDialogFailed">Failed to open the video file dialog: {0}</system:String>
