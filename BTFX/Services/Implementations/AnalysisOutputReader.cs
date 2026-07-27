@@ -63,6 +63,7 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
         var directSummary = JsonSerializer.Deserialize<AnalysisSummary>(json, JsonOptions);
         if (!string.IsNullOrWhiteSpace(directSummary?.RequestId) || directSummary?.GaitEventParameters is not null)
         {
+            NormalizeCadence(directSummary);
             EnsureCsvFallbacks(directSummary, outputDirectory);
             return directSummary;
         }
@@ -94,6 +95,9 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
             });
 
         var frameCoverageRatio = AnalysisFrameCoverageHelper.FromResultJson(root, outputDirectory)?.Ratio;
+        var meanCycleDuration = ReadDouble(gaitCycle, "mean_cycle_duration_sec")
+            ?? ReadDouble(gaitCycle, "cycle_time_sec")
+            ?? AverageCycleDuration(gaitCycle);
         var summary = new AnalysisSummary
         {
             RequestId = ReadString(root, "task_id") ?? ReadString(root, "request_id") ?? $"RESULT_{DateTime.Now:yyyyMMdd_HHmmss}",
@@ -112,12 +116,12 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
                 ?? FindAnnotatedVideo(outputDirectory),
             GaitEventParameters = new GaitEventParametersDto
             {
-                GaitCycleDurationS = ReadDouble(gaitCycle, "mean_cycle_duration_sec")
-                    ?? ReadDouble(gaitCycle, "cycle_time_sec")
-                    ?? AverageCycleDuration(gaitCycle),
+                GaitCycleDurationS = meanCycleDuration,
                 StepLengthM = ReadDouble(spatiotemporal, "mean_step_length_m"),
                 StrideLengthM = ReadDouble(spatiotemporal, "mean_stride_length_m"),
-                CadenceStepPerMin = ReadDouble(spatiotemporal, "cadence_step_per_min"),
+                CadenceStepPerMin = GaitCadenceCalculator.PreferCycleDerived(
+                    meanCycleDuration,
+                    ReadDouble(spatiotemporal, "cadence_step_per_min")),
                 GaitSpeedMPerS = ReadDouble(spatiotemporal, "gait_velocity_m_per_sec") ?? ReadDouble(spatiotemporal, "gait_speed_m_per_s"),
                 StanceTimeS = ReadDouble(spatiotemporal, "mean_stance_time_sec") ?? phaseMetrics.MeanStanceTimeSec ?? eventPhaseMetrics.MeanStanceTimeSec,
                 SwingTimeS = ReadDouble(spatiotemporal, "mean_swing_time_sec") ?? phaseMetrics.MeanSwingTimeSec ?? eventPhaseMetrics.MeanSwingTimeSec,
@@ -155,6 +159,18 @@ public sealed class AnalysisOutputReader : IAnalysisOutputReader
 
         EnsureCsvFallbacks(summary, outputDirectory);
         return summary;
+    }
+
+    private static void NormalizeCadence(AnalysisSummary summary)
+    {
+        if (summary.GaitEventParameters is not { } gait)
+        {
+            return;
+        }
+
+        gait.CadenceStepPerMin = GaitCadenceCalculator.PreferCycleDerived(
+            gait.GaitCycleDurationS,
+            gait.CadenceStepPerMin);
     }
 
     private static void EnsureCsvFallbacks(AnalysisSummary summary, string outputDirectory)

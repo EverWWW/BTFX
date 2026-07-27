@@ -339,13 +339,21 @@
                         <ColumnDefinition Width="1.45*" />
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0" Orientation="Horizontal">
-                        <TextBlock Style="{StaticResource FieldLabelStyle}" Text="{DynamicResource MA.Step1.MeasurementName}" />
+                    <Grid Grid.Column="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            Grid.Column="0"
+                            Style="{StaticResource FieldLabelStyle}"
+                            Text="{DynamicResource MA.Step1.MeasurementName}" />
                         <TextBox
-                            MinWidth="280"
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
                             Style="{StaticResource RoundedInputTextBoxStyle}"
                             Text="{Binding MeasurementName, UpdateSourceTrigger=PropertyChanged}" />
-                    </StackPanel>
+                    </Grid>
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
                         <TextBlock Style="{StaticResource FieldLabelStyle}" Text="{DynamicResource MA.Step1.MeasurementType}" />
@@ -373,13 +381,21 @@
                         </ComboBox>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="6" Orientation="Horizontal">
-                        <TextBlock Style="{StaticResource FieldLabelStyle}" Text="{DynamicResource MA.Step1.Remark}" />
+                    <Grid Grid.Column="6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            Grid.Column="0"
+                            Style="{StaticResource FieldLabelStyle}"
+                            Text="{DynamicResource MA.Step1.Remark}" />
                         <TextBox
-                            MinWidth="420"
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
                             Style="{StaticResource RoundedInputTextBoxStyle}"
                             Text="{Binding Remark, UpdateSourceTrigger=PropertyChanged}" />
-                    </StackPanel>
+                    </Grid>
                 </Grid>
             </Grid>
         </Border>

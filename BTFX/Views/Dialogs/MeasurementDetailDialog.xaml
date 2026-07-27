@@ -809,7 +809,7 @@
                                                     CornerRadius="2" />
                                                 <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="{DynamicResource AnalysisDetail.SpatiotemporalParameters}" />
                                             </StackPanel>
-                                            <Border Height="300" Style="{StaticResource SectionCardStyle}">
+                                            <Border Height="330" Style="{StaticResource SectionCardStyle}">
                                                 <UniformGrid Columns="2">
                                                     <StackPanel Margin="0,0,24,14">
                                                         <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.GaitCycle}" />
@@ -835,6 +835,8 @@
                                                     <StackPanel Margin="0,0,0,14">
                                                         <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.Cadence}" />
                                                         <TextBlock
+                                                            LineHeight="20"
+                                                            LineStackingStrategy="BlockLineHeight"
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
                                                             Text="{Binding CadenceDisplay, TargetNullValue=--}" />
@@ -888,7 +890,7 @@
                                                     CornerRadius="2" />
                                                 <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="{DynamicResource AnalysisDetail.KinematicParameters}" />
                                             </StackPanel>
-                                            <Border Height="300" Style="{StaticResource SectionCardStyle}">
+                                            <Border Height="330" Style="{StaticResource SectionCardStyle}">
                                                 <UniformGrid Columns="2">
                                                     <StackPanel Margin="0,0,24,14">
                                                         <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.LeftHipRom}" />
@@ -1015,18 +1017,18 @@
                                             <Border Height="250" Style="{StaticResource SectionCardStyle}">
                                                 <UniformGrid Columns="2">
                                                     <StackPanel Margin="0,0,24,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.StepLengthDiff}" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.StrideDiff}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
-                                                            Text="{Binding StepLengthDiffDisplay}" />
+                                                            Text="{Binding StrideLengthDiffDisplay}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,0,14">
-                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.StepLengthDiffPercent}" />
+                                                        <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.StrideDiffPercent}" />
                                                         <TextBlock
                                                             Margin="0,6,0,0"
                                                             Style="{StaticResource InfoValueTextStyle}"
-                                                            Text="{Binding StepLengthDiffPercentDisplay}" />
+                                                            Text="{Binding StrideLengthDiffPercentDisplay}" />
                                                     </StackPanel>
                                                     <StackPanel Margin="0,0,24,14">
                                                         <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.KneeRomDiff}" />
@@ -1072,7 +1074,7 @@
                                             <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="{DynamicResource AnalysisDetail.SideParameters}" />
                                         </StackPanel>
                                         <Border Style="{StaticResource SectionCardStyle}">
-                                            <UniformGrid Columns="4">
+                                            <UniformGrid Columns="3">
                                                 <StackPanel Margin="0,0,24,14">
                                                     <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.LeftStride}" />
                                                     <TextBlock
@@ -1086,20 +1088,6 @@
                                                         Margin="0,6,0,0"
                                                         Style="{StaticResource InfoValueTextStyle}"
                                                         Text="{Binding RightStrideLengthDisplay, TargetNullValue=--}" />
-                                                </StackPanel>
-                                                <StackPanel Margin="0,0,24,14">
-                                                    <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.StrideDiff}" />
-                                                    <TextBlock
-                                                        Margin="0,6,0,0"
-                                                        Style="{StaticResource InfoValueTextStyle}"
-                                                        Text="{Binding StrideLengthDiffDisplay, TargetNullValue=--}" />
-                                                </StackPanel>
-                                                <StackPanel Margin="0,0,0,14">
-                                                    <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.StrideDiffPercent}" />
-                                                    <TextBlock
-                                                        Margin="0,6,0,0"
-                                                        Style="{StaticResource InfoValueTextStyle}"
-                                                        Text="{Binding StrideLengthDiffPercentDisplay, TargetNullValue=--}" />
                                                 </StackPanel>
                                                 <StackPanel Margin="0,0,24,14">
                                                     <TextBlock Style="{StaticResource InfoLabelTextStyle}" Text="{DynamicResource AnalysisDetail.LeftStanceRatio}" />

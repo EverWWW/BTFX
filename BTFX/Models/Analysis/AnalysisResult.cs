@@ -161,6 +161,12 @@ public class AnalysisResult
     public double? GaitCycleDurationS { get; set; }
 
     /// <summary>
+    /// 步频（step/min，优先由完整步态周期推导）
+    /// </summary>
+    [SugarColumn(IsIgnore = true)]
+    public double? CadenceStepPerMin { get; set; }
+
+    /// <summary>
     /// 站立相时长（秒）
     /// </summary>
     [SugarColumn(IsIgnore = true)]

@@ -305,9 +305,12 @@ public partial class Step4AnalyzeViewModel : ObservableObject
     {
         get
         {
-            if (AnalysisResult?.GaitCycleDurationS is double cycleDuration && cycleDuration > 0)
+            var cadence = GaitCadenceCalculator.PreferCycleDerived(
+                AnalysisResult?.GaitCycleDurationS,
+                AnalysisResult?.CadenceStepPerMin);
+            if (cadence.HasValue)
             {
-                return $"{120.0 / cycleDuration:F1} {L("CadenceUnit")}";
+                return $"{cadence.Value:F1} {L("CadenceUnit")}";
             }
 
             return "--";
@@ -1456,6 +1459,9 @@ public partial class Step4AnalyzeViewModel : ObservableObject
         result.GaitCycleDurationS ??= ReadDouble(gaitCycle, "mean_cycle_duration_sec")
             ?? ReadDouble(gaitCycle, "cycle_time_sec")
             ?? AverageCycleDuration(gaitCycle);
+        result.CadenceStepPerMin = GaitCadenceCalculator.PreferCycleDerived(
+            result.GaitCycleDurationS,
+            ReadDouble(sp, "cadence_step_per_min") ?? result.CadenceStepPerMin);
         result.StanceTimeS ??= ReadDouble(sp, "mean_stance_time_sec") ?? phaseMetrics.MeanStanceTimeSec ?? eventPhaseMetrics.MeanStanceTimeSec;
         result.SwingTimeS ??= ReadDouble(sp, "mean_swing_time_sec") ?? phaseMetrics.MeanSwingTimeSec ?? eventPhaseMetrics.MeanSwingTimeSec;
         result.DoubleSupportTimeS ??= ReadDouble(sp, "mean_double_support_time_sec") ?? phaseMetrics.MeanDoubleSupportTimeSec;

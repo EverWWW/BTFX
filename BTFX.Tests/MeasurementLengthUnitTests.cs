@@ -50,8 +50,8 @@ public sealed class MeasurementLengthUnitTests
         var reportPreviewHelper = File.ReadAllText(Path.Combine(projectDirectory, "Helpers", "ReportPreviewHelper.cs"));
         var reportPdfExporter = File.ReadAllText(Path.Combine(projectDirectory, "Helpers", "ReportPdfExporter.cs"));
 
-        Assert.Contains("gait?.Cadence, \"step/min\"", reportPreviewHelper, StringComparison.Ordinal);
-        Assert.Contains("gait?.Cadence, \"step/min\"", reportPdfExporter, StringComparison.Ordinal);
+        Assert.Contains("GaitCadenceCalculator.PreferCycleDerived(gait?.GaitCycleDurationS, gait?.Cadence)", reportPreviewHelper, StringComparison.Ordinal);
+        Assert.Contains("GaitCadenceCalculator.PreferCycleDerived(gait?.GaitCycleDurationS, gait?.Cadence)", reportPdfExporter, StringComparison.Ordinal);
         Assert.DoesNotContain("gait?.Cadence, \"步/分\"", reportPreviewHelper, StringComparison.Ordinal);
         Assert.DoesNotContain("gait?.Cadence, \"步/分\"", reportPdfExporter, StringComparison.Ordinal);
     }
@@ -69,6 +69,59 @@ public sealed class MeasurementLengthUnitTests
         Assert.Contains("gait.DoubleSupportTimeS?.ToString(\"F2\")", reportViewModel, StringComparison.Ordinal);
         Assert.DoesNotContain("gait?.DoubleSupport, \"%\"", reportPreviewHelper, StringComparison.Ordinal);
         Assert.DoesNotContain("gait?.DoubleSupport, \"%\"", reportPdfExporter, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AnalysisDetailAndReport_UseStrideDifferenceTerminology()
+    {
+        var projectDirectory = FindProjectDirectory();
+        var detailView = File.ReadAllText(Path.Combine(
+            projectDirectory,
+            "Views",
+            "Dialogs",
+            "MeasurementDetailDialog.xaml"));
+        var detailViewModel = File.ReadAllText(Path.Combine(
+            projectDirectory,
+            "ViewModels",
+            "GaitAnalysisDetailViewModel.cs"));
+        var chineseResources = File.ReadAllText(Path.Combine(
+            projectDirectory,
+            "Resources",
+            "Localization",
+            "Strings.zh.xaml"));
+        var englishResources = File.ReadAllText(Path.Combine(
+            projectDirectory,
+            "Resources",
+            "Localization",
+            "Strings.en.xaml"));
+
+        Assert.DoesNotContain("AnalysisDetail.StepLengthDiff", detailView, StringComparison.Ordinal);
+        Assert.DoesNotContain("StepLengthDiffDisplay", detailViewModel, StringComparison.Ordinal);
+        Assert.Contains("<system:String x:Key=\"AnalysisDetail.StrideDiff\">左右步幅差</system:String>", chineseResources, StringComparison.Ordinal);
+        Assert.Contains("<system:String x:Key=\"AnalysisDetail.StrideDiffPercent\">左右步幅差百分比</system:String>", chineseResources, StringComparison.Ordinal);
+        Assert.Contains("<system:String x:Key=\"ReportPreview.Param.StrideDiff\">左右步幅差</system:String>", chineseResources, StringComparison.Ordinal);
+        Assert.Contains("<system:String x:Key=\"ReportPreview.Param.StrideDiffPercent\">左右步幅差百分比</system:String>", chineseResources, StringComparison.Ordinal);
+        Assert.Contains("<system:String x:Key=\"AnalysisDetail.StrideDiff\">Stride Difference</system:String>", englishResources, StringComparison.Ordinal);
+        Assert.Contains("<system:String x:Key=\"ReportPreview.Param.StrideDiff\">Stride Difference</system:String>", englishResources, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SettingsDataTab_UsesStorageManagementName()
+    {
+        var projectDirectory = FindProjectDirectory();
+        var chineseResources = File.ReadAllText(Path.Combine(
+            projectDirectory,
+            "Resources",
+            "Localization",
+            "Strings.zh.xaml"));
+        var englishResources = File.ReadAllText(Path.Combine(
+            projectDirectory,
+            "Resources",
+            "Localization",
+            "Strings.en.xaml"));
+
+        Assert.Contains("<system:String x:Key=\"DataManagementTab\">存储管理</system:String>", chineseResources, StringComparison.Ordinal);
+        Assert.Contains("<system:String x:Key=\"DataManagementTab\">Storage</system:String>", englishResources, StringComparison.Ordinal);
     }
 
     private static string FindProjectDirectory()

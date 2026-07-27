@@ -127,7 +127,10 @@ public partial class MeasurementDetailViewModel : ObservableObject
     /// <summary>
     /// 步频
     /// </summary>
-    public string Cadence => Record?.GaitParameters?.Cadence?.ToString("F1") ?? "--";
+    public string Cadence => GaitCadenceCalculator.PreferCycleDerived(
+            Record?.GaitParameters?.GaitCycleDurationS,
+            Record?.GaitParameters?.Cadence)
+        ?.ToString("F1") ?? "--";
 
     /// <summary>
     /// 步速

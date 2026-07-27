@@ -150,7 +150,6 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     private bool _isAnalysisPreviewGenerating;
     private bool _analysisPreviewGenerationRequested;
     private string _analysisPreviewStatusText = string.Empty;
-    private bool _isSingleViewOutput;
     private string? _annotatedVideoPath;
 
     /// <summary>
@@ -471,7 +470,6 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         Record = record;
         AnalysisResult = null;
         CurrentReportDraft = null;
-        _isSingleViewOutput = false;
         _annotatedVideoPath = null;
         _analysisPreviewGenerationRequested = false;
         ResetReportConfigState();
@@ -663,7 +661,12 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     /// <summary>
     /// 平均步频。
     /// </summary>
-    public string CadenceDisplay => FormatNumber(Record?.GaitParameters?.Cadence ?? _detailData.CadenceStepPerMin, "F1", L("CadenceUnit"));
+    public string CadenceDisplay => FormatNumber(
+        GaitCadenceCalculator.PreferCycleDerived(
+            AnalysisResult?.GaitCycleDurationS ?? Record?.GaitParameters?.GaitCycleDurationS ?? _detailData.MeanCycleDurationSec,
+            Record?.GaitParameters?.Cadence ?? _detailData.CadenceStepPerMin),
+        "F1",
+        L("CadenceUnit"));
 
     /// <summary>
     /// 平均步长。
@@ -874,10 +877,6 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     public string PelvicTiltMeanDisplay => FormatNumber(_detailData.PelvisTiltMeanDeg, "F1", "°");
 
     public string PelvicObliquityMeanDisplay => "--";
-
-    public string StepLengthDiffDisplay => FormatNumber(Difference(_detailData.LeftStrideMeanM, _detailData.RightStrideMeanM), "F2", "m");
-
-    public string StepLengthDiffPercentDisplay => FormatNumber(DifferencePercent(_detailData.LeftStrideMeanM, _detailData.RightStrideMeanM), "F1", "%");
 
     public string StanceTimeDiffPercentDisplay => FormatNumber(Difference(_detailData.LeftStanceRatioPct, _detailData.RightStanceRatioPct), "F1", "%");
 
@@ -1440,7 +1439,6 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
     {
         _detailData = new AnalysisDetailData();
         _angleFrames = [];
-        _isSingleViewOutput = IsSingleViewOutput(result.OutputDirectory);
         _annotatedVideoPath = ResolveAnnotatedVideoPath();
         CycleDetails.Clear();
 
@@ -1504,7 +1502,9 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         LoadCycleDetails(gaitCycle, gaitEvents, _detailData.VideoFps ?? 30d);
         var phaseMetrics = GaitPhaseMetricsCalculator.Calculate(gaitCycle);
         var eventPhaseMetrics = GaitPhaseMetricsCalculator.CalculateFromEvents(gaitEvents, _detailData.VideoFps);
-        _detailData.CadenceStepPerMin = ReadDouble(spatiotemporal, "cadence_step_per_min");
+        _detailData.CadenceStepPerMin = GaitCadenceCalculator.PreferCycleDerived(
+            _detailData.MeanCycleDurationSec,
+            ReadDouble(spatiotemporal, "cadence_step_per_min"));
         _detailData.GaitSpeedMPerS = ReadDouble(spatiotemporal, "gait_velocity_m_per_sec");
         _detailData.MeanStepLengthM = ReadDouble(spatiotemporal, "mean_step_length_m");
         _detailData.MeanStrideLengthM = ReadDouble(spatiotemporal, "mean_stride_length_m");
@@ -1620,60 +1620,51 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
 
     private string? ResolveAnnotatedVideoPath()
     {
-        var outputDirectory = AnalysisResult?.OutputDirectory;
+        var outputDirectory = ResolveOutputDirectory();
         if (!string.IsNullOrWhiteSpace(outputDirectory)
             && Directory.Exists(outputDirectory))
         {
-            var previewPath = GetAnalysisPreviewPath(outputDirectory);
-            if (File.Exists(previewPath))
-            {
-                return previewPath;
-            }
+            return AnalysisPreviewFiles.GetReadyPreviewPath(outputDirectory);
         }
 
         var path = AnalysisResult?.AnnotatedVideoPath;
-        if (!string.IsNullOrWhiteSpace(path)
-            && File.Exists(path))
-        {
-            return path;
-        }
-
-        if (!_isSingleViewOutput || !Directory.Exists(outputDirectory))
-        {
-            return path;
-        }
-
-        return Directory.GetFiles(outputDirectory, "*.mp4", SearchOption.AllDirectories)
-            .Where(file => Path.GetFileName(file).Contains("Sports2D", StringComparison.OrdinalIgnoreCase))
-            .FirstOrDefault(file => file.Contains("side", StringComparison.OrdinalIgnoreCase) || file.Contains("侧面", StringComparison.OrdinalIgnoreCase))
-            ?? Directory.GetFiles(outputDirectory, "*.mp4", SearchOption.AllDirectories)
-                .FirstOrDefault(file => Path.GetFileName(file).Contains("Sports2D", StringComparison.OrdinalIgnoreCase));
+        return !string.IsNullOrWhiteSpace(path) && File.Exists(path)
+            ? path
+            : null;
     }
 
     private void EnsureAnalysisPreviewGenerationStarted()
     {
-        var outputDirectory = AnalysisResult?.OutputDirectory;
+        var outputDirectory = ResolveOutputDirectory();
+        var readyPreviewPath = string.IsNullOrWhiteSpace(outputDirectory)
+            ? null
+            : AnalysisPreviewFiles.GetReadyPreviewPath(outputDirectory);
         if (string.IsNullOrWhiteSpace(outputDirectory)
             || !Directory.Exists(outputDirectory)
-            || File.Exists(GetAnalysisPreviewPath(outputDirectory))
+            || !string.IsNullOrWhiteSpace(readyPreviewPath)
             || _analysisPreviewGenerationRequested)
         {
-            _annotatedVideoPath = ResolveAnnotatedVideoPath();
+            _annotatedVideoPath = readyPreviewPath ?? ResolveAnnotatedVideoPath();
             UpdateAnalysisPreviewStatus();
             return;
         }
 
         _analysisPreviewGenerationRequested = true;
+        _annotatedVideoPath = null;
         IsAnalysisPreviewGenerating = true;
         AnalysisPreviewStatusText = L("AnalysisDetail.PreviewGenerating");
+        OnPropertyChanged(nameof(AnnotatedVideoDisplay));
+        OnPropertyChanged(nameof(HasAnnotatedVideo));
+        OnPropertyChanged(nameof(AnnotatedVideoUri));
         _ = _gaitAnalysisService.EnsureAnalysisPreviewVideoAsync(outputDirectory).ContinueWith(task =>
         {
             var previewPath = task.Status == TaskStatus.RanToCompletion ? task.Result : null;
-            var failed = string.IsNullOrWhiteSpace(previewPath) || !File.Exists(previewPath);
+            var readyPath = AnalysisPreviewFiles.GetReadyPreviewPath(outputDirectory);
+            var failed = string.IsNullOrWhiteSpace(previewPath) || string.IsNullOrWhiteSpace(readyPath);
             void UpdateUi()
             {
                 IsAnalysisPreviewGenerating = false;
-                _annotatedVideoPath = failed ? ResolveAnnotatedVideoPath() : previewPath;
+                _annotatedVideoPath = failed ? null : readyPath;
                 AnalysisPreviewStatusText = failed
                     ? L("AnalysisDetail.PreviewGenerateFailed")
                     : string.Empty;
@@ -1697,7 +1688,7 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
 
     private void UpdateAnalysisPreviewStatus()
     {
-        var outputDirectory = AnalysisResult?.OutputDirectory;
+        var outputDirectory = ResolveOutputDirectory();
         if (string.IsNullOrWhiteSpace(outputDirectory))
         {
             IsAnalysisPreviewGenerating = false;
@@ -1705,8 +1696,8 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             return;
         }
 
-        var previewPath = GetAnalysisPreviewPath(outputDirectory);
-        if (File.Exists(previewPath))
+        var previewPath = AnalysisPreviewFiles.GetReadyPreviewPath(outputDirectory);
+        if (!string.IsNullOrWhiteSpace(previewPath))
         {
             IsAnalysisPreviewGenerating = false;
             _annotatedVideoPath = previewPath;
@@ -1717,51 +1708,25 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
             return;
         }
 
-        var generatingPath = Path.Combine(outputDirectory, "preview", "analysis_preview.generating");
-        IsAnalysisPreviewGenerating = File.Exists(generatingPath);
+        _annotatedVideoPath = null;
+        var failed = HasAnalysisPreviewFailedMarker();
+        IsAnalysisPreviewGenerating = !failed
+            && (File.Exists(AnalysisPreviewFiles.GetGeneratingPath(outputDirectory)) || _analysisPreviewGenerationRequested);
         AnalysisPreviewStatusText = IsAnalysisPreviewGenerating
             ? L("AnalysisDetail.PreviewGenerating")
-            : HasAnalysisPreviewFailedMarker()
+            : failed
                 ? L("AnalysisDetail.PreviewGenerateFailed")
                 : L("AnalysisDetail.PreviewGeneratePending");
         OnPropertyChanged(nameof(AnnotatedVideoDisplay));
-    }
-
-    private static string GetAnalysisPreviewPath(string outputDirectory)
-    {
-        return Path.Combine(outputDirectory, "preview", "analysis_preview.mp4");
+        OnPropertyChanged(nameof(HasAnnotatedVideo));
+        OnPropertyChanged(nameof(AnnotatedVideoUri));
     }
 
     private bool HasAnalysisPreviewFailedMarker()
     {
-        var outputDirectory = AnalysisResult?.OutputDirectory;
+        var outputDirectory = ResolveOutputDirectory();
         return !string.IsNullOrWhiteSpace(outputDirectory)
-               && File.Exists(Path.Combine(outputDirectory, "preview", "analysis_preview.failed"));
-    }
-
-    private static bool IsSingleViewOutput(string? outputDirectory)
-    {
-        if (string.IsNullOrWhiteSpace(outputDirectory) || !Directory.Exists(outputDirectory))
-        {
-            return false;
-        }
-
-        var taskConfigPath = Directory.GetFiles(outputDirectory, "task_config.json", SearchOption.AllDirectories)
-            .FirstOrDefault();
-        if (string.IsNullOrWhiteSpace(taskConfigPath))
-        {
-            return false;
-        }
-
-        try
-        {
-            var root = JsonNode.Parse(File.ReadAllText(taskConfigPath))?.AsObject();
-            return root is not null && root.TryGetPropertyValue("front_video", out var node) && node is null;
-        }
-        catch
-        {
-            return false;
-        }
+               && File.Exists(AnalysisPreviewFiles.GetFailedPath(outputDirectory));
     }
 
     private static string? ResolveResultJsonPath(AnalysisResult result)
@@ -2298,8 +2263,6 @@ public partial class GaitAnalysisDetailViewModel : ObservableObject
         OnPropertyChanged(nameof(TrunkTiltRomDisplay));
         OnPropertyChanged(nameof(PelvicTiltMeanDisplay));
         OnPropertyChanged(nameof(PelvicObliquityMeanDisplay));
-        OnPropertyChanged(nameof(StepLengthDiffDisplay));
-        OnPropertyChanged(nameof(StepLengthDiffPercentDisplay));
         OnPropertyChanged(nameof(StanceTimeDiffPercentDisplay));
         OnPropertyChanged(nameof(KneeRomDiffDisplay));
         OnPropertyChanged(nameof(HipRomDiffDisplay));

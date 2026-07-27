@@ -380,7 +380,7 @@
     <system:String x:Key="ReportPreview.Param.PelvisTiltMax">Maximum Pelvis Tilt</system:String>
     <system:String x:Key="ReportPreview.Param.PelvisRom">Pelvis ROM</system:String>
     <system:String x:Key="ReportPreview.Param.StrideDiff">Stride Difference</system:String>
-    <system:String x:Key="ReportPreview.Param.StrideDiffPercent">Stride Difference Percent</system:String>
+    <system:String x:Key="ReportPreview.Param.StrideDiffPercent">Stride Difference (%)</system:String>
     <system:String x:Key="ReportPreview.Param.StanceRatioDiff">Stance Ratio Difference</system:String>
     <system:String x:Key="ReportPreview.Param.StanceRatioDiffPercent">Stance Ratio Difference Percent</system:String>
     <system:String x:Key="ReportPreview.Param.KneeRomDiff">Knee ROM Difference</system:String>
@@ -502,8 +502,6 @@
     <system:String x:Key="AnalysisDetail.TrunkTiltRom">Trunk Tilt ROM</system:String>
     <system:String x:Key="AnalysisDetail.PelvicTilt">Pelvic Tilt</system:String>
     <system:String x:Key="AnalysisDetail.SymmetryAnalysis">Symmetry Analysis</system:String>
-    <system:String x:Key="AnalysisDetail.StepLengthDiff">Step Length Difference</system:String>
-    <system:String x:Key="AnalysisDetail.StepLengthDiffPercent">Step Length Difference Percent</system:String>
     <system:String x:Key="AnalysisDetail.KneeRomDiff">Knee ROM Difference</system:String>
     <system:String x:Key="AnalysisDetail.HipRomDiff">Hip ROM Difference</system:String>
     <system:String x:Key="AnalysisDetail.AnkleRomDiff">Ankle ROM Difference</system:String>
@@ -512,7 +510,7 @@
     <system:String x:Key="AnalysisDetail.LeftStride">Left Stride</system:String>
     <system:String x:Key="AnalysisDetail.RightStride">Right Stride</system:String>
     <system:String x:Key="AnalysisDetail.StrideDiff">Stride Difference</system:String>
-    <system:String x:Key="AnalysisDetail.StrideDiffPercent">Stride Difference Percent</system:String>
+    <system:String x:Key="AnalysisDetail.StrideDiffPercent">Stride Difference (%)</system:String>
     <system:String x:Key="AnalysisDetail.LeftStanceRatio">Left Stance Ratio</system:String>
     <system:String x:Key="AnalysisDetail.RightStanceRatio">Right Stance Ratio</system:String>
     <system:String x:Key="AnalysisDetail.LeftSwingRatio">Left Swing Ratio</system:String>
@@ -879,7 +877,7 @@
     <system:String x:Key="SettingsTitle">Settings</system:String>
     <system:String x:Key="GeneralSettingsTab">General</system:String>
     <system:String x:Key="DeviceConfigTab">Device</system:String>
-    <system:String x:Key="DataManagementTab">Data</system:String>
+    <system:String x:Key="DataManagementTab">Storage</system:String>
     <system:String x:Key="SystemInfoTab">System Info</system:String>
 
     <!--  General Settings  -->

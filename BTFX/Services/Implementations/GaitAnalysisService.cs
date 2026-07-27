@@ -30,10 +30,6 @@ public class GaitAnalysisService : IGaitAnalysisService
     private const string LogDirectoryName = "logs";
     private const string AnalysisRuntimeDirectoryName = "AnalysisRuntime";
     private const string AnalysisFailedDirectoryName = "AnalysisFailed";
-    private const string PreviewDirectoryName = "preview";
-    private const string AnalysisPreviewVideoFileName = "analysis_preview.mp4";
-    private const string AnalysisPreviewGeneratingFileName = "analysis_preview.generating";
-    private const string AnalysisPreviewFailedFileName = "analysis_preview.failed";
     private const int AnalysisPreviewFrameRate = 30;
     private static readonly TimeSpan AlgorithmStartupTimeout = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan PoseEstimationStageTimeout = TimeSpan.FromMinutes(5);
@@ -313,8 +309,8 @@ public class GaitAnalysisService : IGaitAnalysisService
                 archivedSummaryPath,
                 summary,
                 analysisDuration);
-            var archivedPreviewPath = Path.Combine(archiveDir, PreviewDirectoryName, AnalysisPreviewVideoFileName);
-            if (File.Exists(archivedPreviewPath))
+            var archivedPreviewPath = AnalysisPreviewFiles.GetReadyPreviewPath(archiveDir);
+            if (!string.IsNullOrWhiteSpace(archivedPreviewPath))
             {
                 result.AnnotatedVideoPath = archivedPreviewPath;
             }
@@ -367,8 +363,8 @@ public class GaitAnalysisService : IGaitAnalysisService
             return Task.FromResult<string?>(null);
         }
 
-        var previewPath = GetAnalysisPreviewPath(outputDirectory);
-        if (File.Exists(previewPath))
+        var previewPath = AnalysisPreviewFiles.GetReadyPreviewPath(outputDirectory);
+        if (!string.IsNullOrWhiteSpace(previewPath))
         {
             return Task.FromResult<string?>(previewPath);
         }
@@ -859,13 +855,13 @@ public class GaitAnalysisService : IGaitAnalysisService
     private async Task<string?> GenerateAnalysisPreviewInBackgroundAsync(string outputDir, CancellationToken ct)
     {
         var key = Path.GetFullPath(outputDir);
-        var previewDir = Path.Combine(outputDir, PreviewDirectoryName);
+        var previewDir = AnalysisPreviewFiles.GetPreviewDirectory(outputDir);
         var logDir = Path.Combine(outputDir, LogDirectoryName);
         Directory.CreateDirectory(previewDir);
         Directory.CreateDirectory(logDir);
 
-        var generatingPath = Path.Combine(previewDir, AnalysisPreviewGeneratingFileName);
-        var failedPath = Path.Combine(previewDir, AnalysisPreviewFailedFileName);
+        var generatingPath = AnalysisPreviewFiles.GetGeneratingPath(outputDir);
+        var failedPath = AnalysisPreviewFiles.GetFailedPath(outputDir);
 
         try
         {
@@ -925,11 +921,6 @@ public class GaitAnalysisService : IGaitAnalysisService
 
             _previewGenerationTasks.TryRemove(key, out _);
         }
-    }
-
-    private static string GetAnalysisPreviewPath(string outputDirectory)
-    {
-        return Path.Combine(outputDirectory, PreviewDirectoryName, AnalysisPreviewVideoFileName);
     }
 
     private static ProcessStartInfo CreateFfmpegStartInfo(string ffmpegPath)
@@ -1043,9 +1034,10 @@ public class GaitAnalysisService : IGaitAnalysisService
                 return null;
             }
 
-            var previewDir = Path.Combine(outputDir, PreviewDirectoryName);
+            var previewDir = AnalysisPreviewFiles.GetPreviewDirectory(outputDir);
             Directory.CreateDirectory(previewDir);
-            var previewPath = Path.Combine(previewDir, AnalysisPreviewVideoFileName);
+            var previewPath = AnalysisPreviewFiles.GetPreviewPath(outputDir);
+            var encodingPath = AnalysisPreviewFiles.GetEncodingPath(outputDir);
             var previewLogPath = Path.Combine(logDir, "preview_ffmpeg.log");
             ResetProcessLog(previewLogPath);
             var frameMetadata = ReadPreviewFrameRangeMetadata(outputDir);
@@ -1074,7 +1066,7 @@ public class GaitAnalysisService : IGaitAnalysisService
 
             async Task<bool> RunPreviewEncodeAsync(PreviewEncoderMode encoderMode)
             {
-                TryDeleteFile(previewPath);
+                TryDeleteFile(encodingPath);
                 var startInfo = CreateFfmpegStartInfo(ffmpegPath);
                 startInfo.ArgumentList.Add("-y");
                 startInfo.ArgumentList.Add("-i");
@@ -1095,10 +1087,10 @@ public class GaitAnalysisService : IGaitAnalysisService
                 AddPreviewEncodingArguments(startInfo, encoderMode);
                 startInfo.ArgumentList.Add("-movflags");
                 startInfo.ArgumentList.Add("+faststart");
-                startInfo.ArgumentList.Add(previewPath);
+                startInfo.ArgumentList.Add(encodingPath);
 
                 var exitCode = await RunFfmpegProcessAsync(startInfo, previewLogPath, ct);
-                return exitCode == 0 && File.Exists(previewPath);
+                return exitCode == 0 && File.Exists(encodingPath);
             }
 
             var usedEncoder = PreviewEncoderMode.NvidiaNvenc;
@@ -1112,6 +1104,7 @@ public class GaitAnalysisService : IGaitAnalysisService
 
             if (success)
             {
+                AnalysisPreviewFiles.PublishEncodingOutput(outputDir);
                 RaiseLog($"分析详情拼接预览已生成: {previewPath}，编码器: {GetPreviewEncoderName(usedEncoder)}");
                 return previewPath;
             }
@@ -1128,6 +1121,10 @@ public class GaitAnalysisService : IGaitAnalysisService
             RaiseLog($"生成分析详情拼接预览异常: {ex.Message}", isError: true);
             _logHelper?.Warning($"生成分析详情拼接预览异常: {ex.Message}");
             return null;
+        }
+        finally
+        {
+            TryDeleteFile(AnalysisPreviewFiles.GetEncodingPath(outputDir));
         }
     }
 
@@ -1674,6 +1671,7 @@ public class GaitAnalysisService : IGaitAnalysisService
             RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true,
+            WindowStyle = ProcessWindowStyle.Hidden,
             StandardOutputEncoding = Encoding.UTF8,
             StandardErrorEncoding = Encoding.UTF8,
             WorkingDirectory = workingDirectory
@@ -1691,6 +1689,8 @@ public class GaitAnalysisService : IGaitAnalysisService
             ProcessingStageTimeout);
 
         var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        CancellationTokenSource? windowSuppressionCancellation = null;
+        Task? windowSuppressionTask = null;
 
         process.OutputDataReceived += (_, e) =>
         {
@@ -1715,6 +1715,11 @@ public class GaitAnalysisService : IGaitAnalysisService
         try
         {
             process.Start();
+            windowSuppressionCancellation = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            windowSuppressionTask = AlgorithmProcessWindowSuppressor.SuppressWindowsAsync(
+                process.Id,
+                message => _logHelper?.Warning(message),
+                windowSuppressionCancellation.Token);
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
@@ -1770,6 +1775,23 @@ public class GaitAnalysisService : IGaitAnalysisService
         }
         finally
         {
+            if (windowSuppressionCancellation is not null)
+            {
+                windowSuppressionCancellation.Cancel();
+            }
+
+            if (windowSuppressionTask is not null)
+            {
+                try
+                {
+                    await windowSuppressionTask;
+                }
+                catch (OperationCanceledException)
+                {
+                }
+            }
+
+            windowSuppressionCancellation?.Dispose();
             process.Dispose();
         }
     }
@@ -2179,6 +2201,9 @@ public class GaitAnalysisService : IGaitAnalysisService
         {
             var gep = summary.GaitEventParameters;
             result.GaitCycleDurationS = gep.GaitCycleDurationS;
+            result.CadenceStepPerMin = GaitCadenceCalculator.PreferCycleDerived(
+                gep.GaitCycleDurationS,
+                gep.CadenceStepPerMin);
             result.StanceTimeS = gep.StanceTimeS;
             result.SwingTimeS = gep.SwingTimeS;
             result.DoubleSupportTimeS = gep.DoubleSupportTimeS;
@@ -2378,6 +2403,9 @@ public class GaitAnalysisService : IGaitAnalysisService
                     {
                         gaitParams.AnalysisResultId = resultId;
                         gaitParams.GaitCycleDurationS = result.GaitCycleDurationS;
+                        gaitParams.Cadence = GaitCadenceCalculator.PreferCycleDerived(
+                            result.GaitCycleDurationS,
+                            result.CadenceStepPerMin ?? gaitParams.Cadence);
                         gaitParams.StanceTimeS = result.StanceTimeS;
                         gaitParams.SwingTimeS = result.SwingTimeS;
                         gaitParams.DoubleSupportTimeS = result.DoubleSupportTimeS;

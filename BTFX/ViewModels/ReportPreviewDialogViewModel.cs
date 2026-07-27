@@ -1353,7 +1353,7 @@ internal sealed class ReportAnalysisSnapshot
         MeanStepLengthM = analysis?.StepLengthM ?? gait?.StepLengthM;
         MeanStrideLengthM = analysis?.StrideLengthM ?? gait?.StrideLengthM;
         GaitSpeedMPerS = analysis?.GaitSpeedMPerS ?? gait?.GaitSpeedMPerS ?? gait?.Velocity;
-        CadenceStepPerMin = gait?.Cadence;
+        CadenceStepPerMin = GaitCadenceCalculator.PreferCycleDerived(MeanCycleDurationSec, gait?.Cadence);
         LeftStrideMeanM = MetersFromCentimeters(gait?.StrideLengthLeft);
         RightStrideMeanM = MetersFromCentimeters(gait?.StrideLengthRight);
         LeftStanceRatioPct = gait?.StancePhaseLeft;
@@ -1391,7 +1391,9 @@ internal sealed class ReportAnalysisSnapshot
         var sp = root["spatiotemporal_parameters"] as JsonObject;
         var phaseMetrics = GaitPhaseMetricsCalculator.Calculate(gaitCycle);
         var eventPhaseMetrics = GaitPhaseMetricsCalculator.CalculateFromEvents(root["gait_events"] as JsonObject, VideoFps);
-        CadenceStepPerMin = ReadDouble(sp, "cadence_step_per_min") ?? CadenceStepPerMin;
+        CadenceStepPerMin = GaitCadenceCalculator.PreferCycleDerived(
+            MeanCycleDurationSec,
+            ReadDouble(sp, "cadence_step_per_min") ?? CadenceStepPerMin);
         GaitSpeedMPerS = ReadDouble(sp, "gait_velocity_m_per_sec") ?? GaitSpeedMPerS;
         MeanStepLengthM = ReadDouble(sp, "mean_step_length_m") ?? MeanStepLengthM;
         MeanStrideLengthM = ReadDouble(sp, "mean_stride_length_m") ?? MeanStrideLengthM;

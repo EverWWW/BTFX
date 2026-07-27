@@ -2,6 +2,7 @@
 using System.IO;
 using System.Windows;
 using BTFX.Common;
+using BTFX.Helpers;
 using BTFX.Models;
 using BTFX.Services.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -196,11 +197,7 @@ public partial class PatientSelectionViewModel : ObservableObject
         // Apply search//如果搜索框输入不为空，则进行过滤
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
-            var searchLower = SearchText.Trim().ToLower();//将搜索文本转换为小写以进行不区分大小写的比较
-            filtered = filtered.Where(p =>
-                p.Name.ToLower().Contains(searchLower) ||
-                (p.Phone != null && p.Phone.Contains(searchLower)) ||
-                (p.IdNumber != null && p.IdNumber.ToLower().Contains(searchLower)));//过滤患者列表，保留名称、电话或身份证号包含搜索文本的患者
+            filtered = filtered.Where(p => PatientNameSearchMatcher.Matches(p, SearchText));
         }
 
         var filteredList = filtered
@@ -622,11 +619,7 @@ public partial class PatientSelectionViewModel : ObservableObject
         IEnumerable<Patient> filtered = _allPatients;
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
-            var searchLower = SearchText.Trim().ToLower();
-            filtered = filtered.Where(p =>
-                p.Name.ToLower().Contains(searchLower) ||
-                (!string.IsNullOrWhiteSpace(p.Phone) && p.Phone.Contains(searchLower)) ||
-                (!string.IsNullOrWhiteSpace(p.IdNumber) && p.IdNumber.ToLower().Contains(searchLower)));
+            filtered = filtered.Where(p => PatientNameSearchMatcher.Matches(p, SearchText));
         }
 
         return filtered.OrderByDescending(patient => patient.CreatedAt);

@@ -976,7 +976,7 @@
                         </Button>
 
                         <Button
-                            Width="160"
+                            Width="150"
                             Height="48"
                             Margin="22,0,0,0"
                             Background="#FFFFFF"

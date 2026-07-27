@@ -1371,7 +1371,9 @@ public partial class MeasurementViewModel : ObservableObject
             return L("MA.Step1.Validation.DualDurationFailed", durationDiff);
         }
 
-        if (Math.Abs(SideVideoInfo.FrameRate - FrontVideoInfo.FrameRate) > 0.01)
+        if (!VideoFrameRateComparer.AreEquivalent(
+                SideVideoInfo.FrameRate,
+                FrontVideoInfo.FrameRate))
         {
             return L("MA.Step1.Validation.DualFrameRateMismatch");
         }

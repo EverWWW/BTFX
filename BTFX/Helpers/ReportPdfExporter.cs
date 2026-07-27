@@ -375,7 +375,11 @@ public class ReportPdfExporter
                 // 第一行
                 table.Cell().Element(c => CreateParameterCell(c, "步幅（左）", GaitLengthUnitConverter.ToMeters(gait?.StrideLengthLeft), "m"));
                 table.Cell().Element(c => CreateParameterCell(c, "步幅（右）", GaitLengthUnitConverter.ToMeters(gait?.StrideLengthRight), "m"));
-                table.Cell().Element(c => CreateParameterCell(c, "步频", gait?.Cadence, "step/min"));
+                table.Cell().Element(c => CreateParameterCell(
+                    c,
+                    "步频",
+                    GaitCadenceCalculator.PreferCycleDerived(gait?.GaitCycleDurationS, gait?.Cadence),
+                    "step/min"));
                 table.Cell().Element(c => CreateParameterCell(c, "步速", gait?.Velocity, "m/s"));
 
                 // 第二行

@@ -503,8 +503,6 @@
     <system:String x:Key="AnalysisDetail.TrunkTiltRom">躯干倾斜活动范围</system:String>
     <system:String x:Key="AnalysisDetail.PelvicTilt">骨盆倾斜角</system:String>
     <system:String x:Key="AnalysisDetail.SymmetryAnalysis">对称性分析</system:String>
-    <system:String x:Key="AnalysisDetail.StepLengthDiff">左右步长差</system:String>
-    <system:String x:Key="AnalysisDetail.StepLengthDiffPercent">左右步长差百分比</system:String>
     <system:String x:Key="AnalysisDetail.KneeRomDiff">膝关节 ROM 差</system:String>
     <system:String x:Key="AnalysisDetail.HipRomDiff">髋关节 ROM 差</system:String>
     <system:String x:Key="AnalysisDetail.AnkleRomDiff">踝关节 ROM 差</system:String>
@@ -513,7 +511,7 @@
     <system:String x:Key="AnalysisDetail.LeftStride">左侧步幅</system:String>
     <system:String x:Key="AnalysisDetail.RightStride">右侧步幅</system:String>
     <system:String x:Key="AnalysisDetail.StrideDiff">左右步幅差</system:String>
-    <system:String x:Key="AnalysisDetail.StrideDiffPercent">步幅差百分比</system:String>
+    <system:String x:Key="AnalysisDetail.StrideDiffPercent">左右步幅差百分比</system:String>
     <system:String x:Key="AnalysisDetail.LeftStanceRatio">左侧站立相占比</system:String>
     <system:String x:Key="AnalysisDetail.RightStanceRatio">右侧站立相占比</system:String>
     <system:String x:Key="AnalysisDetail.LeftSwingRatio">左侧摆动相占比</system:String>
@@ -879,7 +877,7 @@
     <system:String x:Key="SettingsTitle">系统设置</system:String>
     <system:String x:Key="GeneralSettingsTab">通用设置</system:String>
     <system:String x:Key="DeviceConfigTab">设备配置</system:String>
-    <system:String x:Key="DataManagementTab">数据管理</system:String>
+    <system:String x:Key="DataManagementTab">存储管理</system:String>
     <system:String x:Key="SystemInfoTab">系统信息</system:String>
 
     <!--  General Settings  -->
@@ -1510,7 +1508,7 @@
     <system:String x:Key="CameraCapture.Log.PreviewErrorFormat">预览（{0}）：{1}</system:String>
     <system:String x:Key="CameraCapture.Log.PosterLoadFailedFormat">首帧加载失败：{0}</system:String>
 
-    <!-- 测量流程恢复 -->
+    <!--  测量流程恢复  -->
     <system:String x:Key="Measurement.Resume.Action.Continue">继续处理</system:String>
     <system:String x:Key="Measurement.Resume.Action.ViewProgress">查看进度</system:String>
     <system:String x:Key="Measurement.Resume.Action.ViewDetails">查看详情</system:String>
@@ -1547,7 +1545,7 @@
     <system:String x:Key="GaitAnalysis.Timeout.Total">分析超过 {0} 分钟，任务已自动停止。请检查视频内容后重试。</system:String>
     <system:String x:Key="GaitAnalysis.Timeout.LogPath">详细日志：{0}</system:String>
 
-    <!-- 运行依赖检查 -->
+    <!--  运行依赖检查  -->
     <system:String x:Key="RuntimeDependency.Title">运行环境不完整</system:String>
     <system:String x:Key="RuntimeDependency.FfmpegMissing">缺少 FFmpeg：{0}</system:String>
     <system:String x:Key="RuntimeDependency.FfprobeMissing">缺少 FFprobe：{0}</system:String>
