@@ -25,7 +25,7 @@ public static class Constants
     /// <summary>
     /// 内部版本号（用于开发测试）
     /// </summary>
-    public const string VERSION_INTERNAL = "V1.0.0.20260714_alpha01";
+    public const string VERSION_INTERNAL = "V1.0.0.20260725_alpha01";
 
     #endregion
 
